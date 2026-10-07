@@ -139,6 +139,8 @@ article .ahead{display:grid;gap:11px;padding-bottom:18px;border-bottom:1px solid
 .sec{display:grid;gap:8px}
 .sec h2{font-size:18px;color:var(--accent);font-family:var(--display)}
 .sec p{font-size:16px;line-height:1.85;color:var(--fg)}
+.meet{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.meet h2{margin:0}
 .src{font-size:13px;line-height:1.7;color:var(--muted)}
 .src b{color:var(--fg)}
 .back{font-size:13.5px;color:var(--muted);font-weight:700}
@@ -599,7 +601,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
     </aside>
     <div class="amain">
       <div class="fig"><div class="fig-scroll">
-        <img src="img/figs/a-invivocar.jpg" alt="脂质纳米颗粒进入 T 细胞，细胞表面出现 CAR，随后清除 B 细胞">
+        <img src="img/figs/a-invivocar.jpg?v=3" alt="脂质纳米颗粒进入 T 细胞，细胞表面出现 CAR，随后清除 B 细胞">
       </div>
       <ol class="figsteps">
         <li><b>1 静脉注射</b>抗 CD8 抗体导航的脂质纳米颗粒，内载 CAR mRNA。</li>
@@ -612,7 +614,8 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
       <div class="sec"><h2>研究背景</h2><p>CAR-T 已经改变了 B 细胞肿瘤的治疗，近年也被用于狼疮等自身免疫病。但现行流程要先抽取患者 T 细胞、在体外用病毒载体改造并扩增数周，回输前还要用化疗清淋，成本高、周期长，能用上的患者有限。能否跳过体外制造、直接在体内把 T 细胞改造成 CAR-T，是这几年细胞治疗最受关注的方向之一。</p></div>
       <div class="sec"><h2>核心发现</h2><p>作者做出一种靶向脂质纳米颗粒：表面偶联抗 CD8 抗体，内部装载编码抗 CD19 CAR 的 mRNA，静脉注射后主要被 CD8 阳性 T 细胞摄取，肝脏摄取明显减少。在健康人和自身免疫病患者的原代 T 细胞中都能有效表达 CAR，患者来源细胞的改造效率与健康人相当。在带人免疫系统的小鼠中，单次给药可在数小时内清除 B 细胞，作用持续约两周；白血病移植模型中重复给药使肿瘤几乎完全清除。在食蟹猴中给药后 B 细胞被快速深度清除，恢复后回升的以初始 B 细胞为主，作者认为提示免疫系统发生了重置。</p></div>
       <div class="sec"><h2>机制解读</h2><p>关键在两处设计。一是靶向：常规 LNP 主要进肝，作者换用新的可电离脂质并偶联抗 CD8 抗体，把递送窗口移到 T 细胞。二是载荷形式：用 mRNA 而非病毒载体，CAR 只瞬时表达，不整合基因组。瞬时表达意味着作用时间可控、可重复给药，也避免长期基因改造的不确定性；代价是单次窗口有限，要靠给药方案维持疗效。B 细胞回升后以初始细胞为主，正是自免治疗追求的结果：清掉产生自身抗体的记忆 B 细胞和浆细胞前体，让免疫系统从新的库重建。</p></div>
-      <div class="sec"><h2>意义与局限</h2><p>若能在人体复现，体内 CAR-T 会把细胞治疗从定制化制造变成像常规生物药一样的现货给药，大幅降低成本并扩展到自免等更大的患者群体。需要注意：本研究全部为临床前数据，猴和小鼠的 B 细胞清除不等于人体疗效；mRNA 瞬时表达下的最佳剂量与间隔仍需临床确定；重复给药可能带来的抗药抗体和细胞因子反应、以及 CD8 靶向是否影响正常 T 细胞功能，都还没有长期数据。</p></div>
+      <div class="sec"><h2>讨论</h2><p>若能在人体复现，体内 CAR-T 会把细胞治疗从定制化制造变成像常规生物药一样的现货给药，大幅降低成本并扩展到自免等更大的患者群体。需要注意：本研究全部为临床前数据，猴和小鼠的 B 细胞清除不等于人体疗效；mRNA 瞬时表达下的最佳剂量与间隔仍需临床确定；重复给药可能带来的抗药抗体和细胞因子反应、以及 CD8 靶向是否影响正常 T 细胞功能，都还没有长期数据。</p></div>
+      <div class="sec meet"><h2>作者介绍</h2><p>第一作者 Theresa L. Hunter，Capstan Therapeutics。末位通讯 Haig Aghajanian，Capstan 联合创始人。共同作者 Carl H. June，宾夕法尼亚大学，CAR-T 领域奠基人之一。</p><p>对齐 ACIR 的 Meet the researcher：没有采访稿，不编问答，只写论文里能核对的作者和单位。</p></div>
       <div class="sec"><h2>出处与延伸</h2><p class="src"><b>原文</b>：Hunter TL, Bao Y, Zhang Y, …, June CH, Aghajanian H. In vivo CAR T cell generation to treat cancer and autoimmune disease. <i>Science</i> 2025;388(6749):1311–1317. <a href="https://doi.org/10.1126/science.ads8473">doi:10.1126/science.ads8473</a><br><b>相关动态</b>：这条技术路线对应的企业交易见<a href="#deals">商业化动态</a>页。</p></div>
     </div>
   </div>
@@ -645,7 +648,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
     </aside>
     <div class="amain">
       <div class="fig"><div class="fig-scroll">
-        <img src="img/figs/a-trap.jpg" alt="从数据库取序列，机器人点样，T细胞与靶细胞接触，再进入网络预测">
+        <img src="img/figs/a-trap.jpg?v=3" alt="从数据库取序列，机器人点样，T细胞与靶细胞接触，再进入网络预测">
       </div>
       <ol class="figsteps">
         <li><b>1 重新注释</b>从 VDJdb 取出约 6300 条已知特异性 TCR，筛成 3693 条。</li>
@@ -658,7 +661,8 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
       <div class="sec"><h2>研究背景</h2><p>要做新抗原疫苗或 TCR-T 疗法，先得知道哪条 TCR 能认出哪个抗原肽-MHC 复合物。这件事目前靠湿实验一条一条验证，慢且贵，所以大家都希望用计算预测。问题是训练和检验模型要靠数据，而现有公共数据库（如 VDJdb）里的配对多是从各种实验里汇总来的，标注质量参差，没人系统验证过。</p></div>
       <div class="sec"><h2>核心发现</h2><p>作者先重新注释 VDJdb 里约 6300 条 TCR，挑出覆盖最密的 10 个抗原，得到 3693 条的 VDJdb-10 子集。随后搭建 T-RAP：基于机器人的高通量平台，只凭序列信息就能阵列化组装 TCR，速度快、成本低，且把反应性分析与克隆丰度、T 细胞状态、细胞功能障碍彻底分开。把组装好的 TCR 导入无内源 TCR 的 Jurkat CD8 T 细胞，再与呈递相应抗原的靶细胞共培养，逐条读出是否真的被激活。结果醒目：平均只有 56% 的 TCR 表现出数据库里标注的反应性。拿这批功能验证数据检验预测工具，tcrdist3 按序列相似度预测，不同抗原间波动较大；AlphaFold3 用 TCR-肽界面残基的最小预测对齐误差判断，配对同源 pMHC 的 AUROC 从 0.83 到 0.90，部分情形降到 0.65 左右。</p></div>
       <div class="sec"><h2>机制解读</h2><p>价值有两层。方法上，T-RAP 把 TCR 的来源从“在病人样本里找到的克隆”变成“写下序列就能造出来”，于是可以主动设计标准化 TCR 库，而不是被动依赖样本里碰巧扩增出来的克隆。数据上，56% 这个数字说明公共数据库的噪声比想象的大——此前所有用 VDJdb 训练或评测的模型，近一半样本标签是错的，这直接解释了为什么各家模型在真实任务里常不如报告的好。AlphaFold3 尤其值得注意：它没有为这个任务做任何专门训练，纯靠结构预测的界面置信度就能区分真假配对，说明结构信息本身携带了足够的特异性线索。</p></div>
-      <div class="sec"><h2>意义与局限</h2><p>短期最实用的用法是筛选：从一批候选 TCR 里挑出最可能真的识别患者个体新抗原的几条，再送湿实验验证，省掉大部分无用功。局限同样清楚：VDJdb-10 只有 10 个抗原且多为常见病毒表位，肿瘤新抗原的多样性远超此；Jurkat 报告系统测的是 TCR 能否被激活，不等于原代 T 细胞在体内的杀伤能力；AUROC 0.65 这一档的场景下，预测还远达不到替代实验的程度。</p></div>
+      <div class="sec"><h2>讨论</h2><p>短期最实用的用法是筛选：从一批候选 TCR 里挑出最可能真的识别患者个体新抗原的几条，再送湿实验验证，省掉大部分无用功。局限同样清楚：VDJdb-10 只有 10 个抗原且多为常见病毒表位，肿瘤新抗原的多样性远超此；Jurkat 报告系统测的是 TCR 能否被激活，不等于原代 T 细胞在体内的杀伤能力；AUROC 0.65 这一档的场景下，预测还远达不到替代实验的程度。</p></div>
+      <div class="sec meet"><h2>作者介绍</h2><p>共同第一作者 Marius Messemaker、Benjamin P. Y. Kwee，荷兰癌症研究所。末位通讯 Ton N. Schumacher，NKI 与莱顿大学医学中心，肿瘤新抗原概念的主要奠基人之一。共同通讯 Wouter Scheper；结构部分有 Anastassis Perrakis。</p><p>ACIR 周报这一期的 Meet the researcher 是对两位共同第一作者的采访。本站没有采访稿，不编问答，只保留论文和周报里能核对的作者与单位。</p></div>
       <div class="sec"><h2>出处与延伸</h2><p class="src"><b>原文</b>：Messemaker M, Kwee BPY, Moravec Ž, …, Scheper W, Schumacher TN. Functional evaluation of TCR-pMHC pairs at scale allows in silico TCR reactivity prediction. <i>Immunity</i> 2026 Oct 1. <a href="https://doi.org/10.1016/j.immuni.2026.09.007">doi:10.1016/j.immuni.2026.09.007</a><br><b>来源</b>：<a href="https://acir.org/weekly-digests/2026/october/t-rap-a-new-tool-for-predicting-tcr-pmhc-reactivity">ACIR 周报，2026 年 10 月</a></p></div>
     </div>
   </div>
@@ -796,7 +800,7 @@ function paperHref(a){return a.deep?('#'+a.deep):('#p-'+a.id)}
 function catCard(a){
   const href=paperHref(a);
   return `<div class="item" style="--kc:var(--${a.f})">
-    <a href="${href}">${cover(FIELD_MOTIF[a.f],a.f,`img/papers/${a.id}.jpg?v=2`)}</a>
+    <a href="${href}">${cover(FIELD_MOTIF[a.f],a.f,`img/papers/${a.id}.jpg?v=3`)}</a>
     <div class="cbody">
       <h3><a href="${href}">${a.t}</a></h3>
       <div class="metarow"><span class="idate">${a.disp}</span><span class="jname">${a.j}</span>
@@ -810,11 +814,10 @@ function renderPaper(id){
   const a=CAT.find(x=>x.id===id);
   if(!a){el.innerHTML='<p class="empty">没有找到这一篇。</p>';return}
   const bits=a.sum.split(/(?<=。)/).map(s=>s.trim()).filter(Boolean);
-  const n=bits.length;
-  const bg=bits.slice(0,Math.max(1,Math.ceil(n*0.34))).join('');
-  const find=bits.slice(Math.ceil(n*0.34),Math.max(Math.ceil(n*0.34)+1,Math.ceil(n*0.72))).join('')||bits[0];
-  const mech=bits.slice(Math.ceil(n*0.72),Math.max(0,n-1)).join('');
-  const limit=n>1?bits[n-1]:'';
+  const open=bits[0]||a.sum;
+  const walk=bits.slice(1,Math.max(1,bits.length-1)).join('');
+  const close=bits.length>1?bits[bits.length-1]:'';
+  const steps=bits.slice(0,4);
   const tags=(a.tags||[]).map(t=>`<span class="tag" style="--tc:var(--${t})">${FNAMES[t]||''}</span>`).join('');
   el.innerHTML=`<a class="back" href="#fields">← 返回领域</a>
     <article>
@@ -825,21 +828,20 @@ function renderPaper(id){
       </div>
       <div class="abody">
         <aside class="meta">
-          <div><span class="k">文献出处</span><p><b>${a.j||''}</b>${a.ds?`<br>${cnDate(a.ds)}`:''}<br><a href="${a.url}" target="_blank" rel="noopener">原文链接</a></p></div>
-          ${a.au?`<div><span class="k">作者</span><p>${a.au}</p></div>`:''}
-          <div><span class="k">研究类型</span><p>${FNAMES[a.f]||''}</p></div>
+          <div><span class="k">文献出处</span><p><b>${a.j||''}</b>${a.ds?`<br>${cnDate(a.ds)}`:''}<br><a href="${a.url}" target="_blank" rel="noopener">原文</a></p></div>
+          <div><span class="k">领域</span><p>${(a.tags||[]).map(t=>FNAMES[t]||'').filter(Boolean).join('、')}</p></div>
         </aside>
         <div class="amain">
+          <div class="sec"><h2>这篇在解决什么</h2><p>${open}</p></div>
           <div class="fig paperfig">
-            <div class="fig-scroll"><img src="img/papers/${a.id}.jpg?v=2" alt="" onerror="this.remove()"></div>
-            <p class="cap">图按这篇摘要里的实验流程绘制，不是期刊原图，也不代表真实比例。中文说明写在下面各节，不写进图里。</p>
+            <div class="fig-scroll"><img src="img/papers/${a.id}.jpg?v=3" alt="" onerror="this.remove()"></div>
+            <ol class="figsteps">${steps.map((s,i)=>`<li><b>${i+1}</b>${s}</li>`).join('')}</ol>
+            <p class="cap">机制图按 BioRender 的扁平科学图来画，依据上面的步骤，不是期刊原图，也不代表分子比例。图内不写字。</p>
           </div>
-          <div class="sec"><h2>研究背景</h2><p>${bg}</p></div>
-          <div class="sec"><h2>核心发现</h2><p>${find}</p></div>
-          ${mech?`<div class="sec"><h2>机制解读</h2><p>${mech}</p></div>`:''}
-          ${limit?`<div class="sec"><h2>意义与局限</h2><p>${limit}</p></div>`:''}
-          ${a.note?`<div class="sec"><h2>核实说明</h2><p>${a.note}</p></div>`:''}
-          <div class="sec"><h2>出处与延伸</h2><p class="src"><b>原文</b>：${a.j||''}。 <a href="${a.url}" target="_blank" rel="noopener">打开原文</a></p></div>
+          ${walk?`<div class="sec"><h2>他们怎么做、看到了什么</h2><p>${walk}</p></div>`:''}
+          <div class="sec"><h2>讨论</h2><p>${close||open}${a.note?` ${a.note}`:''}</p></div>
+          <div class="sec meet"><h2>作者介绍</h2><p>${a.au||'论文页面没有给出可核对的通讯作者。'}</p><p>对齐 ACIR 周报的 Meet the researcher：这里没有采访，只写论文或新闻稿里能核对的作者、身份和单位。页面没标通讯作者时，按末位或资深作者写明，不另编履历。</p></div>
+          <div class="sec"><h2>出处</h2><p class="src"><b>原文</b>：${a.j||''}。 <a href="${a.url}" target="_blank" rel="noopener">打开原文</a></p></div>
         </div>
       </div>
     </article>`;
