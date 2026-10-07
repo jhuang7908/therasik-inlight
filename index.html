@@ -69,8 +69,11 @@ nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:color-
 
 .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;display:grid;grid-template-columns:1fr;gap:0;align-content:start;overflow:hidden;color:inherit}
 .card:hover{border-color:color-mix(in srgb,var(--dc,var(--accent)) 45%,var(--line))}
-.cover{display:block;width:100%;aspect-ratio:2/1;background:var(--raise);position:relative}
-.cover .coverimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;z-index:1}
+.cover{display:flex;align-items:center;justify-content:center;width:100%;height:92px;background:var(--raise);position:relative}
+.cover .coverimg{position:static;width:auto;height:68px;max-width:64%;object-fit:contain;display:block;z-index:1}
+.item h3 a{color:inherit}
+.paperfig{max-width:520px;margin:0 auto}
+.paperfig img{display:block;width:100%;max-height:240px;object-fit:contain;margin:0 auto}
 .cover svg{display:block;width:100%;height:100%}
 .cbody{display:grid;gap:4px;align-content:start;min-width:0;padding:8px 10px 9px}
 .card h3{font-size:13.5px;line-height:1.45;font-family:var(--display);font-weight:800;
@@ -111,8 +114,10 @@ tr:last-child td{border-bottom:0}
 .tn{font-size:11.5px;color:var(--muted)}
 
 article .ahead{display:grid;gap:11px;padding-bottom:18px;border-bottom:1px solid var(--line);margin-bottom:20px}
-.shell:has(.view[id^="v-a-"]:not([hidden])){display:block;max-width:980px}
-.shell:has(.view[id^="v-a-"]:not([hidden]))>.rail{display:none}
+.shell:has(.view[id^="v-a-"]:not([hidden])),
+.shell:has(#v-paper:not([hidden])){display:block;max-width:980px}
+.shell:has(.view[id^="v-a-"]:not([hidden]))>.rail,
+.shell:has(#v-paper:not([hidden]))>.rail{display:none}
 .eyebrow{font-size:12px;letter-spacing:.1em;font-weight:700;color:var(--accent)}
 .zh-title{font-family:var(--display);font-size:clamp(18px,2.4vw,24px);font-weight:800;line-height:1.4}
 .en-title{font-size:13.5px;color:var(--muted);font-style:italic}
@@ -275,7 +280,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 .card.wide .cbody{padding:11px 13px 12px}
 @media (max-width:560px){.card.wide{grid-template-columns:minmax(0,1fr)}.card.wide .cover{aspect-ratio:2/1;height:auto}}
 .item.wide{grid-column:1/-1;grid-template-columns:200px minmax(0,1fr)}
-.item.wide .cover{aspect-ratio:auto;height:100%;min-height:120px}
+.item.wide .cover{aspect-ratio:auto;height:92px;min-height:0}
 .item.wide .cbody{padding:11px 14px 12px}
 .item.wide h3{-webkit-line-clamp:2;font-size:14.5px}
 @media (max-width:620px){.item.wide{grid-template-columns:minmax(0,1fr)}.item.wide .cover{aspect-ratio:2/1;height:auto}}
@@ -658,6 +663,8 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 </article>
 </div>
 
+<div class="wrap view" id="v-paper" hidden></div>
+
 </div>
 <aside class="rail rail-r" aria-label="右侧广告位"><div class="railin"><div class="adbox ad-med"><b>R1</b><span>300×250</span></div><div class="adbox ad-tall"><b>R2</b><span>300×600</span></div><div class="adbox ad-med"><b>R3</b><span>300×250</span></div><div class="adtext"><b>文字链广告</b><span>推广链接位 1</span><span>推广链接位 2</span><span>推广链接位 3</span><span>推广链接位 4</span><span>推广链接位 5</span><span>推广链接位 6</span></div><div class="adbox ad-med"><b>R4</b><span>300×250</span></div><div class="adbox ad-med"><b>R5</b><span>300×250</span></div></div></aside>
 </div>
@@ -752,8 +759,8 @@ const ICONS={
 };
 function cover(kind,cvar,img){
   const c=`var(--${cvar})`;
-  const layer=img?`<img class="coverimg" src="${img}" alt="" loading="lazy" onerror="this.remove()">`:'';
-  return `<div class="cover" aria-hidden="true">${layer}<svg viewBox="0 0 300 150" preserveAspectRatio="xMidYMid slice">
+  if(img) return `<div class="cover" aria-hidden="true"><img class="coverimg" src="${img}" alt="" loading="lazy" onerror="this.remove()"></div>`;
+  return `<div class="cover" aria-hidden="true"><svg viewBox="0 0 300 150" preserveAspectRatio="xMidYMid slice">
     <rect width="300" height="150" fill="${c}" opacity=".08"/>
     <circle cx="266" cy="20" r="42" fill="${c}" opacity=".07"/>
     <circle cx="30" cy="136" r="32" fill="${c}" opacity=".06"/>
@@ -783,25 +790,49 @@ const ARTICLES=CAT.filter(a=>a.deep);
 
 const MONTH={'01':'1 月','02':'2 月','03':'3 月','04':'4 月','05':'5 月','06':'6 月','07':'7 月','08':'8 月','09':'9 月','10':'10 月','11':'11 月','12':'12 月'};
 function cnDate(d){const [y,m,dd]=d.split('-');return `${y} 年 ${+m} 月 ${+dd} 日`}
-function catCard(a,i){
+function paperHref(a){return a.deep?('#'+a.deep):('#p-'+a.id)}
+function catCard(a){
+  const href=paperHref(a);
   return `<div class="item" style="--kc:var(--${a.f})">
-    ${cover(FIELD_MOTIF[a.f],a.f,`img/fields/${FIELD_IMG[a.f]}`)}
+    <a href="${href}">${cover(FIELD_MOTIF[a.f],a.f,`img/papers/${a.id}.jpg`)}</a>
     <div class="cbody">
-      <h3>${a.t}</h3>
+      <h3><a href="${href}">${a.t}</a></h3>
       <div class="metarow"><span class="idate">${a.disp}</span><span class="jname">${a.j}</span>
         ${a.deep?`<span class="kind" style="--kc:var(--${a.f})">本站解读</span>`:''}
         ${a.sec?`<span class="kind" style="--kc:var(--c4)">二手核实</span>`:''}
-        <button class="expbtn" type="button" aria-expanded="false" data-exp="${i}">详情 ↓</button></div>
-      <div class="exp" id="exp-${i}" hidden>
-        <p>${a.sum}</p>
-        ${a.au?`<p class="msline">${a.au}</p>`:''}
-        ${a.note?`<p class="vnote">核实说明：${a.note}</p>`:''}
-        <div class="foot">
-          <a href="${a.url}"${a.deep?'':' target="_blank" rel="noopener"'}>${a.deep?'读本站解读 →':'原文：'+(a.j||'出处')}</a>
-          <span class="tagrow">${a.tags.map(t=>`<span class="tag" style="--tc:var(--${t})">${FNAMES[t]}</span>`).join('')}</span>
+        <a class="expbtn" href="${href}">阅读</a></div>
+    </div></div>`;
+}
+function renderPaper(id){
+  const el=document.getElementById('v-paper');
+  const a=CAT.find(x=>x.id===id);
+  if(!a){el.innerHTML='<p class="empty">没有找到这一篇。</p>';return}
+  const bits=a.sum.split(/(?<=。)/).map(s=>s.trim()).filter(Boolean);
+  const cut=Math.max(1,bits.length-1);
+  const intro=bits.slice(0,cut).join('');
+  const analysis=bits.length>1?bits.slice(cut).join(''):a.sum;
+  const tags=(a.tags||[]).map(t=>`<span class="tag" style="--tc:var(--${t})">${FNAMES[t]||''}</span>`).join('');
+  el.innerHTML=`<a class="back" href="#fields">← 返回领域</a>
+    <article>
+      <div class="ahead">
+        <div class="eyebrow">${FNAMES[a.f]||''} · ${a.ds?cnDate(a.ds):a.disp}</div>
+        <div class="zh-title">${a.t}</div>
+        <div class="tags">${tags}${a.sec?'<span class="tag" style="--tc:var(--c4)">二手核实</span>':''}</div>
+      </div>
+      <div class="abody">
+        <aside class="meta">
+          <div><span class="k">文献出处</span><p><b>${a.j||''}</b>${a.ds?`<br>${cnDate(a.ds)}`:''}</p></div>
+          ${a.au?`<div><span class="k">作者</span><p>${a.au}</p></div>`:''}
+          <div><span class="k">原文</span><p><a href="${a.url}" target="_blank" rel="noopener">打开期刊或新闻原文</a></p></div>
+        </aside>
+        <div class="amain">
+          <div class="fig paperfig"><div class="fig-scroll"><img src="img/papers/${a.id}.jpg" alt="" onerror="this.parentElement.remove()"></div></div>
+          <div class="sec"><h2>介绍</h2><p>${intro}</p></div>
+          <div class="sec"><h2>分析</h2><p>${analysis}</p></div>
+          ${a.note?`<div class="sec"><h2>核实说明</h2><p>${a.note}</p></div>`:''}
         </div>
       </div>
-    </div></div>`;
+    </article>`;
 }
 function colsOf(el){return getComputedStyle(el).gridTemplateColumns.split(' ').filter(Boolean).length}
 function fitRows(el,html){ // 先按条目数挑列数，挑不到整除再截断，保证整行填满
@@ -816,7 +847,7 @@ document.getElementById('latestgrid').innerHTML=CAT.slice(0,8).map((a,i)=>catCar
 const byMonth={};
 CAT.forEach(a=>{const k=a.ds.slice(0,7);(byMonth[k]=byMonth[k]||[]).push(a)});
 function arcRow(a){
-  return `<a class="arow" style="--dc:var(--${a.f})" href="${a.url}"${a.deep?'':' target="_blank" rel="noopener"'}>
+  return `<a class="arow" style="--dc:var(--${a.f})" href="${a.deep?('#'+a.deep):('#p-'+a.id)}">
     <span class="adate">${a.disp}</span>
     <span class="atitle">${a.t}</span>
     <span class="atags">${a.tags.slice(0,2).map(t=>`<span class="tag" style="--tc:var(--${t})">${FNAMES[t]}</span>`).join('')}</span>
@@ -986,8 +1017,12 @@ let rt; addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{
 const views=[...document.querySelectorAll('.view')];
 function route(){
   const h=(location.hash||'#home').slice(1);
-  const id='v-'+h;
-  const target=document.getElementById(id)?h:'home';
+  let target=document.getElementById('v-'+h)?h:'home';
+  if(h.startsWith('p-')){
+    const a=CAT.find(x=>x.id===h.slice(2));
+    if(a&&a.deep) target=a.deep;
+    else { renderPaper(h.slice(2)); target='paper'; }
+  }
   views.forEach(v=>{v.hidden = v.id!=='v-'+target});
   if(target==='deals') renderFeed();   // 隐藏时读不到网格列数，显示后重排末行
   if(target==='home') refit();
