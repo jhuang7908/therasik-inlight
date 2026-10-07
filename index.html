@@ -211,6 +211,16 @@ svg text{font-family:var(--body)}
 .adtext b{font-size:11px;letter-spacing:.05em;color:var(--accent);font-weight:700}
 .adtext span{font-size:11px;color:var(--muted);border-bottom:1px dotted var(--line);padding-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .adtext span:last-child{border-bottom:0;padding-bottom:0}
+.srcard{display:grid;gap:1px;padding:7px 8px 8px;border:1px solid var(--line);border-radius:9px;background:var(--surface);text-decoration:none;color:inherit;min-width:0}
+.srcard:hover{border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+.srcard b{font-size:12px;line-height:1.25;font-family:var(--display);font-weight:800}
+.srcard .dom{font-size:10px;color:var(--accent);font-weight:700;overflow-wrap:anywhere}
+.srcard em{font-size:11px;line-height:1.35;color:var(--muted);font-style:normal}
+.srgroup{border:1px solid var(--line);border-radius:9px;background:var(--surface);padding:7px 8px 8px;display:grid;gap:3px;min-width:0}
+.srgroup .k{font-size:10px;letter-spacing:.08em;font-weight:700;color:var(--muted)}
+.srgroup a{font-size:11.5px;font-weight:700;line-height:1.3}
+.srnote{display:block;border:1px dashed var(--line);border-radius:9px;padding:7px 8px;font-size:11px;line-height:1.4;color:var(--muted);text-decoration:none}
+.srnote:hover{color:var(--accent)}
 .ad-inline{min-height:110px}
 .adslot-mobile{display:grid;gap:14px;margin-top:6px}
 @media (min-width:1100px){.adslot-mobile{display:none}}
@@ -329,7 +339,27 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 </div></div></nav>
 
 <div class="shell">
-<aside class="rail rail-l" aria-label="左侧广告位"><div class="railin"><div class="adbox ad-tall"><b>L1</b><span>160×600<br>宽屏 300×600</span></div><div class="adbox ad-med"><b>L2</b><span>300×250</span></div><div class="adbox ad-med"><b>L3</b><span>300×250</span></div><div class="adtext"><b>文字链广告</b><span>赞助链接位 1</span><span>赞助链接位 2</span><span>赞助链接位 3</span><span>赞助链接位 4</span><span>赞助链接位 5</span><span>赞助链接位 6</span></div><div class="adbox ad-med"><b>L4</b><span>300×250</span></div><div class="adbox ad-tall"><b>L5</b><span>160×600<br>宽屏 300×600</span></div></div></aside>
+<aside class="rail rail-l" aria-label="左侧信息来源"><div class="railin">
+<!-- L1（原 160×600 广告位，宽屏 300×600）：有赞助商时替换这一块 -->
+<a class="srcard" href="https://acir.org" target="_blank" rel="noopener"><b>ACIR 周报</b><span class="dom">acir.org</span><em>肿瘤免疫周报，本站的起点。</em></a>
+<!-- L2（原 300×250 广告位）：有赞助商时替换这一块 -->
+<a class="srcard" href="https://endpts.com" target="_blank" rel="noopener"><b>Endpoints News</b><span class="dom">endpts.com</span><em>生物技术公司、临床和交易。</em></a>
+<!-- L3（原 300×250 广告位）：有赞助商时替换这一块 -->
+<a class="srcard" href="https://www.fiercebiotech.com" target="_blank" rel="noopener"><b>Fierce Biotech</b><span class="dom">fiercebiotech.com</span><em>管线与临床试验新闻。</em></a>
+<!-- L4（原 300×250 广告位）：有赞助商时替换这一块 -->
+<a class="srcard" href="https://www.biopharmadive.com" target="_blank" rel="noopener"><b>BioPharma Dive</b><span class="dom">biopharmadive.com</span><em>制药业新闻，含交易与监管。</em></a>
+<!-- L5（原 160×600 广告位，宽屏 300×600）：有赞助商时替换这一块 -->
+<a class="srcard" href="https://www.statnews.com" target="_blank" rel="noopener"><b>STAT News</b><span class="dom">statnews.com</span><em>医药与健康报道。</em></a>
+<!-- 文字链（原 6 个赞助链接位）：有赞助商时替换这一块 -->
+<div class="srgroup"><span class="k">常用来源</span>
+<a href="https://www.pharmcube.com" target="_blank" rel="noopener">医药魔方</a>
+<a href="https://pubmed.ncbi.nlm.nih.gov/" target="_blank" rel="noopener">PubMed</a>
+<a href="https://www.fda.gov/news-events/fda-newsroom/press-announcements" target="_blank" rel="noopener">FDA 公告</a>
+<a href="https://www.ema.europa.eu/en/news" target="_blank" rel="noopener">EMA</a>
+</div>
+<!-- 栏底说明，不是广告位 -->
+<a class="srnote" href="#support">这些栏位可用于赞助 · 联系 contact@therasik.com</a>
+</div></aside>
 <div class="col">
 
 
@@ -672,7 +702,27 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 <div class="wrap view" id="v-paper" hidden></div>
 
 </div>
-<aside class="rail rail-r" aria-label="右侧广告位"><div class="railin"><div class="adbox ad-med"><b>R1</b><span>300×250</span></div><div class="adbox ad-tall"><b>R2</b><span>300×600</span></div><div class="adbox ad-med"><b>R3</b><span>300×250</span></div><div class="adtext"><b>文字链广告</b><span>推广链接位 1</span><span>推广链接位 2</span><span>推广链接位 3</span><span>推广链接位 4</span><span>推广链接位 5</span><span>推广链接位 6</span></div><div class="adbox ad-med"><b>R4</b><span>300×250</span></div><div class="adbox ad-med"><b>R5</b><span>300×250</span></div></div></aside>
+<aside class="rail rail-r" aria-label="右侧信息来源"><div class="railin">
+<!-- R1（原 300×250 广告位）：有赞助商时替换这一块 -->
+<a class="srcard" href="https://www.nature.com" target="_blank" rel="noopener"><b>Nature 系列</b><span class="dom">nature.com</span><em>主刊和各子刊。</em></a>
+<!-- R2（原 300×600 广告位）：有赞助商时替换这一块 -->
+<a class="srcard" href="https://www.science.org" target="_blank" rel="noopener"><b>Science 系列</b><span class="dom">science.org</span><em>《科学》及子刊。</em></a>
+<!-- R3（原 300×250 广告位）：有赞助商时替换这一块 -->
+<a class="srcard" href="https://www.cell.com" target="_blank" rel="noopener"><b>Cell Press</b><span class="dom">cell.com</span><em>Cell 及细胞出版社子刊。</em></a>
+<!-- R4（原 300×250 广告位）：有赞助商时替换这一块 -->
+<a class="srcard" href="https://www.biorxiv.org" target="_blank" rel="noopener"><b>bioRxiv</b><span class="dom">biorxiv.org</span><em>生物学预印本。</em></a>
+<!-- R5（原 300×250 广告位）：有赞助商时替换这一块 -->
+<a class="srcard" href="https://clinicaltrials.gov" target="_blank" rel="noopener"><b>ClinicalTrials.gov</b><span class="dom">clinicaltrials.gov</span><em>临床试验登记。</em></a>
+<!-- 文字链（原 6 个推广链接位）：有赞助商时替换这一块 -->
+<div class="srgroup"><span class="k">还会翻的</span>
+<a href="https://www.nature.com/nature-index/" target="_blank" rel="noopener">Nature Index</a>
+<a href="https://endpts.com/news-category/deals/" target="_blank" rel="noopener">Endpoints 交易库</a>
+<a href="https://www.biorxiv.org/collection/immunology" target="_blank" rel="noopener">bioRxiv 免疫学</a>
+<a href="https://www.eurekalert.org" target="_blank" rel="noopener">EurekAlert</a>
+</div>
+<!-- 栏底说明，不是广告位 -->
+<a class="srnote" href="#support">这些栏位可用于赞助 · 联系 contact@therasik.com</a>
+</div></aside>
 </div>
 
 <footer>
