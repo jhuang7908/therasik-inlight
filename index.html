@@ -800,7 +800,7 @@ function paperHref(a){return a.deep?('#'+a.deep):('#p-'+a.id)}
 function catCard(a){
   const href=paperHref(a);
   return `<div class="item" style="--kc:var(--${a.f})">
-    <a href="${href}">${cover(FIELD_MOTIF[a.f],a.f,`img/papers/${a.id}.jpg?v=4`)}</a>
+    <a href="${href}">${cover(FIELD_MOTIF[a.f],a.f,`img/papers/${a.id}.jpg?v=5`)}</a>
     <div class="cbody">
       <h3><a href="${href}">${a.t}</a></h3>
       <div class="metarow"><span class="idate">${a.disp}</span><span class="jname">${a.j}</span>
@@ -834,7 +834,7 @@ function renderPaper(id){
         <div class="amain">
           <div class="sec"><h2>这篇在解决什么</h2><p>${open}</p></div>
           <div class="fig paperfig">
-            <div class="fig-scroll"><img src="img/papers/${a.id}.jpg?v=4" alt="" onerror="this.remove()"></div>
+            <div class="fig-scroll"><img src="img/papers/${a.id}.jpg?v=5" alt="" onerror="this.remove()"></div>
             <ol class="figsteps">${steps.map((s,i)=>`<li><b>${i+1}</b>${s}</li>`).join('')}</ol>
             <p class="cap">机制图按 BioRender 的扁平科学图来画，依据上面的步骤，不是期刊原图，也不代表分子比例。图内不写字。</p>
           </div>
