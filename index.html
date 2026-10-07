@@ -375,7 +375,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
           <circle cx="792" cy="196" r="3"/><circle cx="1160" cy="352" r="4"/>
         </g>
       </svg>
-      <img src="img/hero.jpg" alt="" onerror="this.remove()">
+      <img src="img/hero.jpg?v=4" alt="" onerror="this.remove()">
     </div>
     <div class="hb-text">
       <span class="hb-kicker">中文 · 每周更新</span>
@@ -601,7 +601,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
     </aside>
     <div class="amain">
       <div class="fig"><div class="fig-scroll">
-        <img src="img/figs/a-invivocar.jpg?v=3" alt="脂质纳米颗粒进入 T 细胞，细胞表面出现 CAR，随后清除 B 细胞">
+        <img src="img/figs/a-invivocar.jpg?v=4" alt="脂质纳米颗粒进入 T 细胞，细胞表面出现 CAR，随后清除 B 细胞">
       </div>
       <ol class="figsteps">
         <li><b>1 静脉注射</b>抗 CD8 抗体导航的脂质纳米颗粒，内载 CAR mRNA。</li>
@@ -648,7 +648,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
     </aside>
     <div class="amain">
       <div class="fig"><div class="fig-scroll">
-        <img src="img/figs/a-trap.jpg?v=3" alt="从数据库取序列，机器人点样，T细胞与靶细胞接触，再进入网络预测">
+        <img src="img/figs/a-trap.jpg?v=4" alt="从数据库取序列，机器人点样，T细胞与靶细胞接触，再进入网络预测">
       </div>
       <ol class="figsteps">
         <li><b>1 重新注释</b>从 VDJdb 取出约 6300 条已知特异性 TCR，筛成 3693 条。</li>
@@ -786,7 +786,7 @@ const FIELD_IMG={c1:'organoid.jpg',c2:'ai-drug-design.jpg',c3:'tumor-immunology.
   c4:'autoimmune.jpg',c5:'animal-model.jpg',c6:'antibody-engineering.jpg',
   c7:'cell-therapy.jpg',c8:'vaccine.jpg',c9:'lnp-oligo.jpg'};
 function fieldThumb(k){
-  return `<span class="fthumb">${icon(FIELD_MOTIF[k],k)}<img src="img/fields/${FIELD_IMG[k]}" alt="" loading="lazy" onerror="this.remove()"></span>`;
+  return `<span class="fthumb">${icon(FIELD_MOTIF[k],k)}<img src="img/fields/${FIELD_IMG[k]}?v=4" alt="" loading="lazy" onerror="this.remove()"></span>`;
 }
 const FIELD_MOTIF={c1:'organoid',c2:'net',c3:'cell',c4:'antibody',c5:'model',c6:'antibody',c7:'cell',c8:'vaccine',c9:'lnp'};
 const KIND_MOTIF={acq:'acq',lic:'lic',newco:'newco',clin:'clin',inv:'inv',policy:'model'};
@@ -800,7 +800,7 @@ function paperHref(a){return a.deep?('#'+a.deep):('#p-'+a.id)}
 function catCard(a){
   const href=paperHref(a);
   return `<div class="item" style="--kc:var(--${a.f})">
-    <a href="${href}">${cover(FIELD_MOTIF[a.f],a.f,`img/papers/${a.id}.jpg?v=3`)}</a>
+    <a href="${href}">${cover(FIELD_MOTIF[a.f],a.f,`img/papers/${a.id}.jpg?v=4`)}</a>
     <div class="cbody">
       <h3><a href="${href}">${a.t}</a></h3>
       <div class="metarow"><span class="idate">${a.disp}</span><span class="jname">${a.j}</span>
@@ -834,7 +834,7 @@ function renderPaper(id){
         <div class="amain">
           <div class="sec"><h2>这篇在解决什么</h2><p>${open}</p></div>
           <div class="fig paperfig">
-            <div class="fig-scroll"><img src="img/papers/${a.id}.jpg?v=3" alt="" onerror="this.remove()"></div>
+            <div class="fig-scroll"><img src="img/papers/${a.id}.jpg?v=4" alt="" onerror="this.remove()"></div>
             <ol class="figsteps">${steps.map((s,i)=>`<li><b>${i+1}</b>${s}</li>`).join('')}</ol>
             <p class="cap">机制图按 BioRender 的扁平科学图来画，依据上面的步骤，不是期刊原图，也不代表分子比例。图内不写字。</p>
           </div>
@@ -958,7 +958,7 @@ function dealCard(x,i){
   const k0=x.kinds[0], kc=KINDS[k0][1];
   const [y,mo]=x.d.split('-');
   return `<div class="item" style="--kc:${kc}">
-    ${cover(KIND_MOTIF[k0],KIND_CVAR[k0],`img/kinds/${k0}.jpg`)}
+    ${cover(KIND_MOTIF[k0],KIND_CVAR[k0],`img/kinds/${k0}.jpg?v=4`)}
     <div class="cbody">
       <h3>${x.t}</h3>
       <div class="money">${x.m}</div>
