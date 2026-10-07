@@ -796,7 +796,7 @@ function paperHref(a){return a.deep?('#'+a.deep):('#p-'+a.id)}
 function catCard(a){
   const href=paperHref(a);
   return `<div class="item" style="--kc:var(--${a.f})">
-    <a href="${href}">${cover(FIELD_MOTIF[a.f],a.f,`img/papers/${a.id}.jpg`)}</a>
+    <a href="${href}">${cover(FIELD_MOTIF[a.f],a.f,`img/papers/${a.id}.jpg?v=2`)}</a>
     <div class="cbody">
       <h3><a href="${href}">${a.t}</a></h3>
       <div class="metarow"><span class="idate">${a.disp}</span><span class="jname">${a.j}</span>
@@ -831,7 +831,7 @@ function renderPaper(id){
         </aside>
         <div class="amain">
           <div class="fig paperfig">
-            <div class="fig-scroll"><img src="img/papers/${a.id}.jpg" alt="" onerror="this.remove()"></div>
+            <div class="fig-scroll"><img src="img/papers/${a.id}.jpg?v=2" alt="" onerror="this.remove()"></div>
             <p class="cap">图按这篇摘要里的实验流程绘制，不是期刊原图，也不代表真实比例。中文说明写在下面各节，不写进图里。</p>
           </div>
           <div class="sec"><h2>研究背景</h2><p>${bg}</p></div>
