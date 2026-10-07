@@ -850,7 +850,7 @@ function paperHref(a){return a.deep?('#'+a.deep):('#p-'+a.id)}
 function catCard(a){
   const href=paperHref(a);
   return `<div class="item" style="--kc:var(--${a.f})">
-    <a href="${href}">${cover(FIELD_MOTIF[a.f],a.f,`img/papers/${a.id}.jpg?v=5`)}</a>
+    <a href="${href}">${cover(FIELD_MOTIF[a.f],a.f,a.img||`img/papers/${a.id}.jpg?v=5`)}</a>
     <div class="cbody">
       <h3><a href="${href}">${a.t}</a></h3>
       <div class="metarow"><span class="idate">${a.disp}</span><span class="jname">${a.j}</span>
@@ -863,11 +863,11 @@ function renderPaper(id){
   const el=document.getElementById('v-paper');
   const a=CAT.find(x=>x.id===id);
   if(!a){el.innerHTML='<p class="empty">没有找到这一篇。</p>';return}
-  const bits=a.sum.split(/(?<=。)/).map(s=>s.trim()).filter(Boolean);
-  const open=bits[0]||a.sum;
-  const walk=bits.slice(1,Math.max(1,bits.length-1)).join('');
-  const close=bits.length>1?bits[bits.length-1]:'';
-  const steps=bits.slice(0,4);
+  const bits=(a.sum||'').split(/(?<=。)/).map(s=>s.trim()).filter(Boolean);
+  const open=a.lead||bits[0]||a.sum||'';
+  const walk=a.body||bits.slice(1,Math.max(1,bits.length-1)).join('');
+  const close=a.discuss||(bits.length>1?bits[bits.length-1]:'');
+  const steps=(Array.isArray(a.steps)&&a.steps.length)?a.steps:bits.slice(0,4);
   const tags=(a.tags||[]).map(t=>`<span class="tag" style="--tc:var(--${t})">${FNAMES[t]||''}</span>`).join('');
   el.innerHTML=`<a class="back" href="#fields">← 返回领域</a>
     <article>
@@ -884,7 +884,7 @@ function renderPaper(id){
         <div class="amain">
           <div class="sec"><h2>这篇在解决什么</h2><p>${open}</p></div>
           <div class="fig paperfig">
-            <div class="fig-scroll"><img src="img/papers/${a.id}.jpg?v=5" alt="" onerror="this.remove()"></div>
+            <div class="fig-scroll"><img src="${a.img||('img/papers/'+a.id+'.jpg?v=5')}" alt="" onerror="this.remove()"></div>
             <ol class="figsteps">${steps.map((s,i)=>`<li><b>${i+1}</b>${s}</li>`).join('')}</ol>
             <p class="cap">机制图按 BioRender 的扁平科学图来画，依据上面的步骤，不是期刊原图，也不代表分子比例。图内不写字。</p>
           </div>
@@ -903,49 +903,19 @@ function fitRows(el,html){ // 先按条目数挑列数，挑不到整除再截�
   const c=colsOf(el), n=el.children.length, keep=n-(n%c);
   if(keep>0 && keep<n) el.innerHTML=[...el.children].slice(0,keep).map(x=>x.outerHTML).join('');
 }
-document.getElementById('latestgrid').innerHTML=CAT.slice(0,8).map((a,i)=>catCard(a,'l'+i)).join('');
-
-// 存档：按月份倒序，时间为唯一主索引
-const byMonth={};
-CAT.forEach(a=>{const k=a.ds.slice(0,7);(byMonth[k]=byMonth[k]||[]).push(a)});
 function arcRow(a){
   return `<a class="arow" style="--dc:var(--${a.f})" href="${a.deep?('#'+a.deep):('#p-'+a.id)}">
     <span class="adate">${a.disp}</span>
     <span class="atitle">${a.t}</span>
-    <span class="atags">${a.tags.slice(0,2).map(t=>`<span class="tag" style="--tc:var(--${t})">${FNAMES[t]}</span>`).join('')}</span>
+    <span class="atags">${(a.tags||[]).slice(0,2).map(t=>`<span class="tag" style="--tc:var(--${t})">${FNAMES[t]||''}</span>`).join('')}</span>
     <span class="asrc">${a.j}</span></a>`;
 }
-document.getElementById('archivelist').innerHTML=Object.keys(byMonth).sort().reverse().map(k=>{
-  const [y,m]=k.split('-');
-  return `<section style="margin-bottom:26px">
-    <div class="sechead"><h2>${y} 年 ${MONTH[m]}</h2><span>${byMonth[k].length} 篇</span></div>
-    <div class="arclist">${byMonth[k].map(arcRow).join('')}</div></section>`;
-}).join('');
-
-// 首页的两个标签页
+function artsOf(k){return CAT.filter(a=>a.tags.includes(k))}
 document.querySelectorAll('.tabs .chip').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('.tabs .chip').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
   document.getElementById('tab-latest').hidden = b.dataset.tab!=='latest';
   document.getElementById('tab-byfield').hidden = b.dataset.tab!=='byfield';
 });
-
-const fl=document.getElementById('fieldlist');
-function artsOf(k){return CAT.filter(a=>a.tags.includes(k))}
-fl.innerHTML=FIELDS.map(f=>{
-  const n=artsOf(f.k).length;
-  return `<a class="fcard" style="--dc:var(--${f.k})" href="#fields">${fieldThumb(f.k)}<div class="cbody"><b>${f.n}</b><span>${f.d}</span><em>${n} 篇</em></div></a>`;
-}).join('');
-document.getElementById('fieldlist2').innerHTML=fl.innerHTML;
-
-const fsec=document.getElementById('fieldsections');
-fsec.innerHTML=FIELDS.map(f=>{
-  const arts=artsOf(f.k);
-  return `<section style="margin-bottom:34px">
-    <div class="sechead"><h2 style="color:var(--${f.k})">${f.n}</h2><span>${f.d} · ${arts.length} 篇</span></div>
-    <div class="grid">${arts.map((a,i)=>catCard(a,f.k+i)).join('')}</div>
-  </section>`;
-}).join('');
-wireExpand(fsec);
 
 const KINDS={acq:['收购','var(--c3)'],lic:['授权交易','var(--c2)'],newco:['NewCo','var(--c7)'],clin:['临床进展','var(--c1)'],inv:['投资融资','var(--c5)'],policy:['监管政策','var(--c6)']};
 const DEALS=[
@@ -1034,9 +1004,36 @@ document.addEventListener('click',e=>{
   b.setAttribute('aria-expanded',String(open));
   b.textContent=open?'收起 ↑':'详情 ↓';
 });
-renderTracker();
-{const a=document.getElementById('hb-arts'),b=document.getElementById('hb-deals');
- if(a)a.textContent=CAT.length; if(b)b.textContent=DEALS.length;}
+function repaintCatalog(){
+  document.getElementById('latestgrid').innerHTML=CAT.slice(0,8).map((a,i)=>catCard(a,'l'+i)).join('');
+  const byMonth={};
+  CAT.forEach(a=>{if(!a.ds)return; const k=a.ds.slice(0,7);(byMonth[k]=byMonth[k]||[]).push(a)});
+  document.getElementById('archivelist').innerHTML=Object.keys(byMonth).sort().reverse().map(k=>{
+    const [y,m]=k.split('-');
+    return `<section style="margin-bottom:26px">
+      <div class="sechead"><h2>${y} 年 ${MONTH[m]}</h2><span>${byMonth[k].length} 篇</span></div>
+      <div class="arclist">${byMonth[k].map(arcRow).join('')}</div></section>`;
+  }).join('');
+  const fl=document.getElementById('fieldlist');
+  fl.innerHTML=FIELDS.map(f=>{
+    const n=artsOf(f.k).length;
+    return `<a class="fcard" style="--dc:var(--${f.k})" href="#fields">${fieldThumb(f.k)}<div class="cbody"><b>${f.n}</b><span>${f.d}</span><em>${n} 篇</em></div></a>`;
+  }).join('');
+  document.getElementById('fieldlist2').innerHTML=fl.innerHTML;
+  const fsec=document.getElementById('fieldsections');
+  fsec.innerHTML=FIELDS.map(f=>{
+    const arts=artsOf(f.k);
+    return `<section style="margin-bottom:34px">
+      <div class="sechead"><h2 style="color:var(--${f.k})">${f.n}</h2><span>${f.d} · ${arts.length} 篇</span></div>
+      <div class="grid">${arts.map((a,i)=>catCard(a,f.k+i)).join('')}</div>
+    </section>`;
+  }).join('');
+  renderTracker();
+  renderChips();
+  lgHtml=document.getElementById('latestgrid').innerHTML;
+  const ha=document.getElementById('hb-arts'), hb=document.getElementById('hb-deals');
+  if(ha)ha.textContent=CAT.length; if(hb)hb.textContent=DEALS.length;
+}
 function renderFeed(){
   const rows=DEALS.filter(x=>filter==='all'||x.kinds.includes(filter));
   dc.textContent=filter==='all'?`共 ${rows.length} 条，按时间倒序`:`已筛选 ${rows.length} 条`;
@@ -1064,9 +1061,8 @@ renderChips();renderFeed();
 const hf=document.getElementById('homefeed');
 const hfHtml=DEALS.slice(0,4).map((x,i)=>dealCard(x,'h'+i)).join('');
 const lg=document.getElementById('latestgrid');
-const lgHtml=lg.innerHTML;
+let lgHtml='';
 function refit(){ fitRows(lg,lgHtml); fitRows(hf,hfHtml); fillLastRow(hf); wireExpand(hf); }
-refit();
 let rt; addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{
   if(!document.getElementById('v-home').hidden) refit();
   if(!document.getElementById('v-deals').hidden) renderFeed();
@@ -1095,6 +1091,24 @@ function route(){
   document.querySelectorAll('.nav-in a').forEach(a=>a.classList.toggle('on',a.dataset.v===target));
   window.scrollTo(0,0);
 }
+function mergeWeekly(data){
+  const ids=new Set(CAT.map(a=>a.id));
+  const fresh=(data.articles||[]).filter(a=>a&&a.id&&a.t&&a.url&&!ids.has(a.id));
+  fresh.forEach(a=>{
+    if(!Array.isArray(a.tags)||!a.tags.length) a.tags=a.f?[a.f]:[];
+    if(!a.disp&&a.ds) a.disp=a.ds.slice(0,7).replace('-','.');
+  });
+  const seen=new Set(DEALS.map(d=>d.url));
+  const nd=(data.deals||[]).filter(d=>d&&d.url&&d.t&&Array.isArray(d.kinds)&&d.kinds.length&&!seen.has(d.url));
+  if(!fresh.length&&!nd.length) return;
+  if(fresh.length) CAT.unshift(...fresh);
+  if(nd.length) DEALS.unshift(...nd);
+  repaintCatalog();
+  if(!document.getElementById('v-deals').hidden) renderFeed();
+}
+repaintCatalog();
+refit();
+fetch('content/latest.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(data=>{if(data)mergeWeekly(data)}).catch(()=>{});
 addEventListener('hashchange',route);
 route();
 </script>

@@ -1,0 +1,100 @@
+# 每周抓取的固定来源。改名单只改这个文件，不要改 Python。
+# kind: academic 学术 / industry 行业
+# type: rss 或 pubmed
+# feed 或 query 必填。url 是给人看的站点首页。
+
+window_days: 7
+max_per_source: 6
+max_academic: 6
+max_industry: 4
+
+sources:
+  - name: ACIR 周报
+    kind: academic
+    type: rss
+    url: https://acir.org
+    feed: https://acir.org/rss
+
+  - name: Nature
+    kind: academic
+    type: rss
+    url: https://www.nature.com
+    feed: https://www.nature.com/nature.rss
+
+  - name: Nature Medicine
+    kind: academic
+    type: rss
+    url: https://www.nature.com/nm
+    feed: https://www.nature.com/nm.rss
+
+  - name: Nature Biotechnology
+    kind: academic
+    type: rss
+    url: https://www.nature.com/nbt
+    feed: https://www.nature.com/nbt.rss
+
+  - name: Science
+    kind: academic
+    type: rss
+    url: https://www.science.org
+    feed: https://www.science.org/rss/news_current.xml
+
+  - name: Cell
+    kind: academic
+    type: rss
+    url: https://www.cell.com
+    feed: https://www.cell.com/cell/current.rss
+
+  - name: bioRxiv 免疫学
+    kind: academic
+    type: rss
+    url: https://www.biorxiv.org/collection/immunology
+    feed: https://connect.biorxiv.org/biorxiv_xml.php?subject=immunology
+
+  - name: PubMed
+    kind: academic
+    type: pubmed
+    url: https://pubmed.ncbi.nlm.nih.gov/
+    query: organoid OR "CAR-T" OR "lipid nanoparticle" OR "mRNA vaccine" OR "autoimmune"
+
+  - name: Endpoints News
+    kind: industry
+    type: rss
+    url: https://endpts.com
+    feed: https://endpts.com/feed/
+
+  - name: Fierce Biotech
+    kind: industry
+    type: rss
+    url: https://www.fiercebiotech.com
+    feed: https://www.fiercebiotech.com/rss/xml
+
+  - name: BioPharma Dive
+    kind: industry
+    type: rss
+    url: https://www.biopharmadive.com
+    feed: https://www.biopharmadive.com/feeds/news/
+
+  - name: STAT News
+    kind: industry
+    type: rss
+    url: https://www.statnews.com
+    feed: https://www.statnews.com/feed/
+
+  - name: FDA 公告
+    kind: industry
+    type: rss
+    url: https://www.fda.gov/news-events/fda-newsroom/press-announcements
+    feed: https://www.fda.gov/about-fda/contact-fda/stay-informed/rss-feeds/press-releases/rss.xml
+
+  - name: EMA
+    kind: industry
+    type: rss
+    url: https://www.ema.europa.eu/en/news
+    feed: https://www.ema.europa.eu/en/news-events/whats-new.xml
+
+  - name: EurekAlert
+    kind: industry
+    type: rss
+    url: https://www.eurekalert.org
+    feed: https://www.eurekalert.org/rss.xml

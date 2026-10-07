@@ -1,0 +1,6 @@
+.env
+.wrangler/
+preview/
+logs/
+__pycache__/
+*.pyc

@@ -1,0 +1,83 @@
+# 每周自动更新
+
+仓库：`jhuang7908/therasik-inlight`  
+默认分支：`main`  
+线上：http://inlight.therasik.com/
+
+这个仓库没有 GitHub Actions 定时任务。每周由助手在本机跑命令，不要再加 schedule。
+
+## 安装
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+Windows 上如果 `python` 不在 PATH 里，用 `py -3` 代替 `python`。
+
+密钥放在环境变量里，不要写进文件，也不要提交。可以参照 `.env.example` 在本机导出，`.env` 已被 git 忽略。
+
+| 变量 | 用在哪 |
+| --- | --- |
+| `ANTHROPIC_API_KEY` | `run_weekly.py` 筛选和写中文 |
+| `OPENAI_API_KEY` | `run_weekly.py` 配图和公众号封面 |
+| `ANTHROPIC_MODEL` | 可选，默认 `claude-sonnet-4-5` |
+| `OPENAI_IMAGE_MODEL` | 可选，默认 `gpt-image-1` |
+| `WECHAT_APPID` | 只有 `publish_wechat.py` 需要 |
+| `WECHAT_APPSECRET` | 只有 `publish_wechat.py` 需要 |
+
+## 每周运行
+
+```bash
+python run_weekly.py
+```
+
+顺序是：读 `sources.yaml`，抓最近 7 天，调用 Claude 筛选并写中文，调用 OpenAI 图像接口画配图和封面，把结果写入网站内容目录，并写出一份公众号 HTML。这条命令不推送 git，也不调用公众号接口。
+
+只想先看生成结果、不改网站文件：
+
+```bash
+python run_weekly.py --dry-run
+```
+
+`--dry-run` 仍会调用 Claude 和 OpenAI（会消耗额度），但只写到 `preview/weekly/日期/`。它不修改 `content/`，也不推送公众号。
+
+确认内容可以上站之后，在仓库里提交并推送 `main`。GitHub Pages 监听 `main` 的根目录，推送后自动重新构建，站点跟着更新。不要打开 Enforce HTTPS，证书目前还是 `*.github.io`，自定义域名用 http://inlight.therasik.com/ 。
+
+公众号只进草稿箱，不群发：
+
+```bash
+python publish_wechat.py
+python publish_wechat.py --week 2026-10-07
+```
+
+不写 `--week` 时，用 `content/weekly/` 里日期最新的一周。
+
+## 新闻源
+
+名单在 `sources.yaml`。每条有名称、学术或行业、`rss` 或 `pubmed`、首页和 feed。改来源只改这个文件。
+
+## 输出文件
+
+正式运行：
+
+- `content/weekly/YYYY-MM-DD/articles.json` 学术文章
+- `content/weekly/YYYY-MM-DD/deals.json` 行业动态
+- `content/weekly/YYYY-MM-DD/images/` 配图
+- `content/weekly/YYYY-MM-DD/wechat/article.html` 公众号正文
+- `content/weekly/YYYY-MM-DD/wechat/cover.png` 公众号封面
+- `content/latest.json` 网站实际读取的最近一批；首页、领域和存档会把这里的新条目叠在原有内容前面
+
+预览运行：同样的结构在 `preview/weekly/YYYY-MM-DD/`。`preview/` 不进 git。
+
+文章只保留来源列表里出现过的链接。模型补出来的地址会被丢掉，并写进日志。
+
+## 出错时看哪里
+
+日志在 `logs/`。
+
+- 每周任务：`logs/weekly-日期-时间.log`
+- 公众号草稿：`logs/wechat-日期-时间.log`
+
+退出码：`1` 缺少密钥，`2` 这一窗口没有抓到条目或找不到一周目录，`3` 模型结果里没有可用条目，`4` 其他错误（接口返回、目录已存在、上传失败）。同日目录已存在时不会覆盖，先看日志再决定要不要换一天或清掉那一天的目录。
+
+来源 feed 打不开时，这一条记警告，其余来源继续。全部失败才会以退出码 `2` 结束，并且不会改 `content/latest.json`。
