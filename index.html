@@ -69,11 +69,11 @@ nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:color-
 
 .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;display:grid;grid-template-columns:1fr;gap:0;align-content:start;overflow:hidden;color:inherit}
 .card:hover{border-color:color-mix(in srgb,var(--dc,var(--accent)) 45%,var(--line))}
-.cover{display:flex;align-items:center;justify-content:center;width:100%;height:92px;background:var(--raise);position:relative}
-.cover .coverimg{position:static;width:auto;height:68px;max-width:64%;object-fit:contain;display:block;z-index:1}
+.cover{display:block;width:100%;aspect-ratio:2/1;height:auto;overflow:hidden;background:#f4f1ea;position:relative}
+.cover .coverimg{position:absolute;inset:0;width:100%;height:100%;max-width:none;object-fit:cover;object-position:center;display:block;z-index:1}
 .item h3 a{color:inherit}
-.paperfig{max-width:520px;margin:0 auto}
-.paperfig img{display:block;width:100%;max-height:240px;object-fit:contain;margin:0 auto}
+.paperfig{max-width:none}
+.paperfig img{display:block;width:100%;height:auto;max-height:none;object-fit:cover}
 .cover svg{display:block;width:100%;height:100%}
 .cbody{display:grid;gap:4px;align-content:start;min-width:0;padding:8px 10px 9px}
 .card h3{font-size:13.5px;line-height:1.45;font-family:var(--display);font-weight:800;
@@ -121,8 +121,9 @@ article .ahead{display:grid;gap:11px;padding-bottom:18px;border-bottom:1px solid
 .eyebrow{font-size:12px;letter-spacing:.1em;font-weight:700;color:var(--accent)}
 .zh-title{font-family:var(--display);font-size:clamp(18px,2.4vw,24px);font-weight:800;line-height:1.4}
 .en-title{font-size:13.5px;color:var(--muted);font-style:italic}
-.abody{display:grid;grid-template-columns:minmax(0,1fr);gap:18px}
-.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px 18px;align-content:start;font-size:12.5px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:15px}
+.abody{display:grid;grid-template-columns:232px minmax(0,1fr);gap:28px;align-items:start}
+@media (max-width:860px){.abody{grid-template-columns:1fr;gap:16px}}
+.meta{display:grid;grid-template-columns:1fr;gap:14px;align-content:start;font-size:13px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 16px 18px;position:sticky;top:12px}
 .meta div{display:grid;gap:4px}
 .meta p{max-width:none}
 .meta .k{color:var(--muted);font-size:12.5px}
@@ -135,8 +136,9 @@ article .ahead{display:grid;gap:11px;padding-bottom:18px;border-bottom:1px solid
 .figsteps b{display:block;color:var(--accent);margin-bottom:2px}
 @media (max-width:720px){.figsteps{grid-template-columns:1fr 1fr}}
 .cap{font-size:12.5px;color:var(--muted);line-height:1.6}
-.sec{display:grid;gap:6px}
-.sec h2{font-size:16px;color:var(--accent)}
+.sec{display:grid;gap:8px}
+.sec h2{font-size:18px;color:var(--accent);font-family:var(--display)}
+.sec p{font-size:16px;line-height:1.85;color:var(--fg)}
 .src{font-size:13px;line-height:1.7;color:var(--muted)}
 .src b{color:var(--fg)}
 .back{font-size:13.5px;color:var(--muted);font-weight:700}
@@ -280,7 +282,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 .card.wide .cbody{padding:11px 13px 12px}
 @media (max-width:560px){.card.wide{grid-template-columns:minmax(0,1fr)}.card.wide .cover{aspect-ratio:2/1;height:auto}}
 .item.wide{grid-column:1/-1;grid-template-columns:200px minmax(0,1fr)}
-.item.wide .cover{aspect-ratio:auto;height:92px;min-height:0}
+.item.wide .cover{aspect-ratio:auto;height:100%;min-height:140px}
 .item.wide .cbody{padding:11px 14px 12px}
 .item.wide h3{-webkit-line-clamp:2;font-size:14.5px}
 @media (max-width:620px){.item.wide{grid-template-columns:minmax(0,1fr)}.item.wide .cover{aspect-ratio:2/1;height:auto}}
@@ -808,9 +810,11 @@ function renderPaper(id){
   const a=CAT.find(x=>x.id===id);
   if(!a){el.innerHTML='<p class="empty">没有找到这一篇。</p>';return}
   const bits=a.sum.split(/(?<=。)/).map(s=>s.trim()).filter(Boolean);
-  const cut=Math.max(1,bits.length-1);
-  const intro=bits.slice(0,cut).join('');
-  const analysis=bits.length>1?bits.slice(cut).join(''):a.sum;
+  const n=bits.length;
+  const bg=bits.slice(0,Math.max(1,Math.ceil(n*0.34))).join('');
+  const find=bits.slice(Math.ceil(n*0.34),Math.max(Math.ceil(n*0.34)+1,Math.ceil(n*0.72))).join('')||bits[0];
+  const mech=bits.slice(Math.ceil(n*0.72),Math.max(0,n-1)).join('');
+  const limit=n>1?bits[n-1]:'';
   const tags=(a.tags||[]).map(t=>`<span class="tag" style="--tc:var(--${t})">${FNAMES[t]||''}</span>`).join('');
   el.innerHTML=`<a class="back" href="#fields">← 返回领域</a>
     <article>
@@ -821,15 +825,21 @@ function renderPaper(id){
       </div>
       <div class="abody">
         <aside class="meta">
-          <div><span class="k">文献出处</span><p><b>${a.j||''}</b>${a.ds?`<br>${cnDate(a.ds)}`:''}</p></div>
+          <div><span class="k">文献出处</span><p><b>${a.j||''}</b>${a.ds?`<br>${cnDate(a.ds)}`:''}<br><a href="${a.url}" target="_blank" rel="noopener">原文链接</a></p></div>
           ${a.au?`<div><span class="k">作者</span><p>${a.au}</p></div>`:''}
-          <div><span class="k">原文</span><p><a href="${a.url}" target="_blank" rel="noopener">打开期刊或新闻原文</a></p></div>
+          <div><span class="k">研究类型</span><p>${FNAMES[a.f]||''}</p></div>
         </aside>
         <div class="amain">
-          <div class="fig paperfig"><div class="fig-scroll"><img src="img/papers/${a.id}.jpg" alt="" onerror="this.parentElement.remove()"></div></div>
-          <div class="sec"><h2>介绍</h2><p>${intro}</p></div>
-          <div class="sec"><h2>分析</h2><p>${analysis}</p></div>
+          <div class="fig paperfig">
+            <div class="fig-scroll"><img src="img/papers/${a.id}.jpg" alt="" onerror="this.remove()"></div>
+            <p class="cap">图按这篇摘要里的实验流程绘制，不是期刊原图，也不代表真实比例。中文说明写在下面各节，不写进图里。</p>
+          </div>
+          <div class="sec"><h2>研究背景</h2><p>${bg}</p></div>
+          <div class="sec"><h2>核心发现</h2><p>${find}</p></div>
+          ${mech?`<div class="sec"><h2>机制解读</h2><p>${mech}</p></div>`:''}
+          ${limit?`<div class="sec"><h2>意义与局限</h2><p>${limit}</p></div>`:''}
           ${a.note?`<div class="sec"><h2>核实说明</h2><p>${a.note}</p></div>`:''}
+          <div class="sec"><h2>出处与延伸</h2><p class="src"><b>原文</b>：${a.j||''}。 <a href="${a.url}" target="_blank" rel="noopener">打开原文</a></p></div>
         </div>
       </div>
     </article>`;
