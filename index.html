@@ -1,0 +1,1043 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>
+:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;font-size:14px}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+<title>前沿追踪</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;800&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<style>
+/* Layout: 顶部固定导航 + 单页多视图（首页 / 领域 / 文章 / 商业化动态 / 订阅赞助），hash 路由 */
+:root{
+  --bg:#f5f7f6; --surface:#ffffff; --raise:#eef2f0; --fg:#1d2a27; --muted:#5c6b67; --line:#d6dedb; --accent:#0f6b5c;
+  --c1:#2f7d6d; --c2:#5a55b5; --c3:#c0492f; --c4:#b07a12; --c5:#3d6fa8; --c6:#9a3f7e; --c7:#6f7d10; --c8:#1d7f9c; --c9:#8a5a2b;
+  --display:"Noto Serif SC","Songti SC",serif; --body:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#111715; --surface:#1a2220; --raise:#222b29; --fg:#e4ece9; --muted:#9aaba6; --line:#2e3a37; --accent:#5cc4ae;
+  --c1:#5cc4ae; --c2:#9d98f0; --c3:#f08a6e; --c4:#e2b24e; --c5:#7fb0e8; --c6:#e08cc7; --c7:#c3d45a; --c8:#6cc8e4; --c9:#dba878;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111715; --surface:#1a2220; --raise:#222b29; --fg:#e4ece9; --muted:#9aaba6; --line:#2e3a37; --accent:#5cc4ae;
+  --c1:#5cc4ae; --c2:#9d98f0; --c3:#f08a6e; --c4:#e2b24e; --c5:#7fb0e8; --c6:#e08cc7; --c7:#c3d45a; --c8:#6cc8e4; --c9:#dba878;
+  color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:14px;line-height:1.65}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;line-height:1.35}
+p{margin:0;max-width:66ch}
+a{color:var(--accent);text-decoration:none}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px}
+
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.nav-in{padding:9px 16px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto;padding:2px 0}
+.brand:hover{background:none}
+.bmark{width:38px;height:38px;flex:none}
+.bmark-wrap{position:relative;display:block;width:38px;height:38px;flex:none;border-radius:10px;overflow:hidden}
+.bmark-wrap img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;z-index:1}
+.btext{display:grid;gap:1px;line-height:1.15}
+.brand .bn{font-family:var(--display);font-weight:800;font-size:21px;color:var(--fg)}
+.brand .bs{font-size:10px;letter-spacing:.2em;color:var(--muted);font-weight:700}
+.nav-in a{font-size:13px;padding:4px 10px;border-radius:999px;color:var(--muted)}
+.nav-in a:hover{background:var(--raise);color:var(--fg)}
+.nav-in a.on{background:var(--accent);color:var(--bg)}
+
+.wrap{max-width:1060px;margin:0 auto;padding:22px 16px 52px;display:grid;gap:24px}
+.wrap>*{min-width:0}
+@media (min-width:1100px){.wrap{max-width:none;padding-left:4px;padding-right:4px}}
+.hero{display:grid;gap:9px}
+.hero h1{font-size:clamp(21px,3vw,28px);font-weight:800}
+.hero p{color:var(--muted);font-size:13.5px}
+.cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
+.btn{font-size:14px;padding:9px 18px;border-radius:999px;background:var(--accent);color:var(--bg);font-weight:700}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+
+.sechead{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:7px;margin-bottom:12px}
+.sechead h2{font-size:18px}
+.sechead span{font-size:12.5px;color:var(--muted)}
+
+/* 固定列数，保证每行填满：桌面 3 列，平板 2 列，手机 1 列 */
+/* 小红书式卡片网格：卡片窄、列数多、间距小 */
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+
+@media (max-width:860px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;display:grid;grid-template-columns:1fr;gap:0;align-content:start;overflow:hidden;color:inherit}
+.card:hover{border-color:color-mix(in srgb,var(--dc,var(--accent)) 45%,var(--line))}
+.cover{display:block;width:100%;aspect-ratio:2/1;background:var(--raise);position:relative}
+.cover .coverimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;z-index:1}
+.cover svg{display:block;width:100%;height:100%}
+.cbody{display:grid;gap:4px;align-content:start;min-width:0;padding:8px 10px 9px}
+.card h3{font-size:13.5px;line-height:1.45;font-family:var(--display);font-weight:800;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card .date{font-size:10.5px;letter-spacing:.03em;color:var(--muted);font-weight:700}
+.ic{display:block;width:44px;height:44px}
+.fthumb{position:relative;display:block;width:44px;height:44px;border-radius:11px;overflow:hidden}
+.fthumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.ic svg{display:block;width:100%;height:100%}
+.card.soon{opacity:.72;border-style:dashed}
+.card.soon .go{color:var(--muted)}
+.tags{display:flex;flex-wrap:wrap;gap:5px}
+.tag{font-size:10.5px;padding:0 7px;border-radius:999px;border:1px solid var(--tc);color:var(--tc)}
+
+/* 九个领域排成 3×3 九宫格，正好填满 */
+.fieldlist{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:1000px){.fieldlist{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:720px){.fieldlist{grid-template-columns:1fr}}
+.fcard{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:12px 13px;display:grid;grid-template-columns:44px minmax(0,1fr);gap:11px;align-items:center}
+.fcard:hover{border-color:color-mix(in srgb,var(--dc) 45%,var(--line))}
+.fcard .cbody{padding:0;gap:2px}
+.fcard b{font-family:var(--display);font-size:15px;color:var(--dc)}
+.fcard span{font-size:11.5px;color:var(--muted);line-height:1.45}
+.fcard em{font-size:11px;color:var(--muted);font-style:normal}
+/* 文本型页面（关于、订阅）：容器定宽，段落与列表共用同一换行宽度 */
+.textpage{max-width:940px}
+@media (min-width:1100px){.textpage{margin-left:0;margin-right:auto}}
+.textpage p,.textpage li,.textpage .note{max-width:none}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:17px 19px;display:grid;gap:11px}
+.panel ol,.panel ul{margin:0;padding-left:22px;display:grid;gap:7px;font-size:14px}
+
+.tblw{overflow-x:auto;max-width:100%;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:760px;font-size:13px}
+th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;line-height:1.55}
+th{font-size:12px;letter-spacing:.05em;color:var(--muted);font-weight:700}
+tr:last-child td{border-bottom:0}
+.num{font-variant-numeric:tabular-nums;font-weight:700;color:var(--accent);white-space:nowrap}
+.tn{font-size:11.5px;color:var(--muted)}
+
+article .ahead{display:grid;gap:11px;padding-bottom:18px;border-bottom:1px solid var(--line);margin-bottom:20px}
+.eyebrow{font-size:12px;letter-spacing:.1em;font-weight:700;color:var(--accent)}
+.zh-title{font-family:var(--display);font-size:clamp(18px,2.4vw,24px);font-weight:800;line-height:1.4}
+.en-title{font-size:13.5px;color:var(--muted);font-style:italic}
+.abody{display:grid;grid-template-columns:252px minmax(0,1fr);gap:26px}
+@media (max-width:860px){.abody{grid-template-columns:1fr;gap:20px}}
+.meta{display:grid;gap:13px;align-content:start;font-size:12.5px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:15px}
+.meta div{display:grid;gap:4px}
+.meta p{max-width:none}
+.meta .k{color:var(--muted);font-size:12.5px}
+.amain{display:grid;gap:16px;min-width:0}
+.fig{display:grid;gap:10px}
+.fig-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px;padding:14px 10px;background:var(--surface)}
+.fig svg{display:block;width:100%;height:auto;max-width:100%}
+.cap{font-size:12.5px;color:var(--muted);line-height:1.6}
+.sec{display:grid;gap:6px}
+.sec h2{font-size:16px;color:var(--accent)}
+.src{font-size:13px;line-height:1.7;color:var(--muted)}
+.src b{color:var(--fg)}
+.back{font-size:13.5px;color:var(--muted);font-weight:700}
+.contact{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:720px){.contact{grid-template-columns:1fr}}
+.cc{border:1px solid var(--line);border-radius:9px;background:var(--raise);padding:10px 12px;display:grid;gap:3px;min-width:0}
+.cc span{font-size:11px;letter-spacing:.04em;color:var(--muted);font-weight:700}
+.cc a{font-size:13px;font-weight:700;color:var(--accent);overflow-wrap:anywhere}
+.note{font-size:13px;color:var(--muted);background:var(--raise);border-radius:9px;padding:13px 15px}
+svg text{font-family:var(--body)}
+.metarow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;row-gap:4px}
+.metarow .date,.metarow .idate{white-space:nowrap}
+.metarow .expbtn{margin-left:auto}
+.thumb{display:block;width:100%;aspect-ratio:5/3;max-width:100%}
+.thumb svg{display:block;width:100%;height:100%}
+.fcard .thumb{aspect-ratio:16/6}
+.exp{display:grid;gap:6px}
+.msline{font-size:12px;color:var(--fg);font-weight:700}
+.exp p{font-size:13.5px;color:var(--muted);max-width:none}
+.expbtn{font-size:12.5px;font-weight:700;color:var(--accent);background:none;border:0;padding:0;cursor:pointer;font-family:inherit;text-align:left;justify-self:start}
+.expbtn:hover{text-decoration:underline}
+/* 八格追踪器：4×2 */
+.tracker{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+@media (max-width:900px){.tracker{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tile{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--tkc,var(--accent));border-radius:9px;padding:10px 12px;display:grid;gap:1px}
+.tile .tv{font-size:19px;font-weight:800;font-family:var(--display);font-variant-numeric:tabular-nums;line-height:1.25}
+.tile .tk{font-size:11.5px;color:var(--muted)}
+/* 两侧广告位：双栏从 1100px 起显示，随屏宽放大；窄屏折叠到正文下方 */
+.shell,.navshell,.footshell{max-width:1060px;margin:0 auto}
+@media (min-width:1100px){
+  .navshell,.footshell{display:grid;grid-template-columns:124px minmax(0,1fr) 124px;gap:14px;max-width:1340px;padding:0 10px}
+  .navshell>*,.footshell>*{grid-column:2;padding-left:4px;padding-right:4px}
+}
+@media (min-width:1400px){
+  .navshell,.footshell{grid-template-columns:168px minmax(0,1fr) 168px;gap:18px;max-width:1480px}
+}
+@media (min-width:1700px){
+  .navshell,.footshell{grid-template-columns:176px minmax(0,1fr) 312px;max-width:1700px}
+}
+.col{min-width:0}
+.view{min-height:62vh;align-content:start;min-width:0}
+.rail{display:none}
+@media (min-width:1100px){
+  .shell{display:grid;grid-template-columns:124px minmax(0,1fr) 124px;gap:14px;max-width:1340px;padding:0 10px}
+  /* 广告栏高度跟随正文：绝对定位不参与撑高，超出正文的广告位被裁掉，页尾不留空白 */
+  .rail{display:block;position:relative;overflow:hidden}
+  .railin{position:absolute;inset:0;display:grid;gap:10px;align-content:start;padding-top:30px}
+}
+@media (min-width:1400px){
+  .shell{grid-template-columns:168px minmax(0,1fr) 168px;gap:18px;max-width:1480px}
+  .railin{gap:12px}
+}
+@media (min-width:1700px){
+  .shell{grid-template-columns:176px minmax(0,1fr) 312px;max-width:1700px}
+}
+.adbox{border:1px dashed var(--line);border-radius:9px;background:var(--surface);display:grid;place-content:center;gap:3px;text-align:center;padding:8px 6px}
+.adbox b{font-size:11.5px;letter-spacing:.05em;color:var(--accent);font-weight:700}
+.adbox span{font-size:10px;color:var(--muted);line-height:1.5}
+.ad-tall{min-height:300px}
+.ad-med{min-height:150px}
+.ad-small{min-height:70px}
+@media (min-width:1400px){.ad-tall{min-height:360px}.ad-med{min-height:180px}}
+@media (min-width:1700px){.rail-r .ad-tall{min-height:430px}.rail-r .ad-med{min-height:215px}}
+.adtext{border:1px dashed var(--line);border-radius:9px;background:var(--surface);padding:9px 10px;display:grid;gap:5px}
+.adtext b{font-size:11px;letter-spacing:.05em;color:var(--accent);font-weight:700}
+.adtext span{font-size:11px;color:var(--muted);border-bottom:1px dotted var(--line);padding-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.adtext span:last-child{border-bottom:0;padding-bottom:0}
+.ad-inline{min-height:110px}
+.adslot-mobile{display:grid;gap:14px;margin-top:6px}
+@media (min-width:1100px){.adslot-mobile{display:none}}
+.sponsored{border:1px solid var(--line);border-left:3px solid var(--c4);border-radius:10px;background:var(--surface);padding:13px 15px;display:grid;gap:5px}
+.sponsored .slabel{font-size:11px;letter-spacing:.1em;font-weight:700;color:var(--c4)}
+.sponsored h3{font-size:16px}
+.sponsored p{font-size:13.5px;color:var(--muted);max-width:none}
+.navsub{background:var(--accent);color:var(--bg)!important;font-weight:700}
+.navsub:hover{background:var(--accent);opacity:.9}
+/* hero 大图 */
+.hero-band{position:relative;border-radius:16px;overflow:hidden;min-height:300px;display:grid;align-items:end;isolation:isolate}
+.hb-art{position:absolute;inset:0;z-index:0}
+.hb-art svg,.hb-art img{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:cover}
+.hero-band{border:1px solid var(--line)}
+.hero-band::after{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(100deg,rgba(255,255,255,.92) 0%,rgba(255,255,255,.8) 44%,rgba(255,255,255,.1) 100%)}
+.hb-text{position:relative;z-index:2;padding:30px 28px 26px;display:grid;gap:11px;max-width:640px;color:var(--fg)}
+.hb-kicker{font-size:11.5px;letter-spacing:.14em;font-weight:700;color:var(--accent)}
+.hb-text h1{font-family:var(--display);font-size:clamp(28px,4.4vw,44px);font-weight:800;line-height:1.1;letter-spacing:.01em;color:var(--fg)}
+.hb-text p{font-size:14px;line-height:1.7;color:var(--muted);max-width:none}
+.hb-cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:3px}
+.hb-cta .btn{font-weight:800}
+.hb-cta .btn.ghost{background:transparent;color:var(--accent);border:1px solid color-mix(in srgb,var(--accent) 40%,var(--line))}
+.hb-stats{display:flex;gap:20px;flex-wrap:wrap;margin-top:6px;font-size:12px;color:var(--muted)}
+.hb-stats b{font-family:var(--display);font-size:17px;color:var(--accent);margin-right:4px}
+@media (max-width:620px){.hero-band{min-height:260px}.hb-text{padding:22px 18px 20px}}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .hero-band::after{background:linear-gradient(100deg,rgba(17,23,21,.93) 0%,rgba(17,23,21,.8) 44%,rgba(17,23,21,.25) 100%)}}
+:root[data-theme="dark"] .hero-band::after{background:linear-gradient(100deg,rgba(17,23,21,.93) 0%,rgba(17,23,21,.8) 44%,rgba(17,23,21,.25) 100%)}
+.lead{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--c3);border-radius:12px;padding:18px 20px;display:grid;gap:8px}
+.leadtag{font-size:11px;letter-spacing:.08em;font-weight:700;color:var(--c3)}
+.lead h1{font-size:clamp(19px,2.6vw,25px);font-weight:800}
+.lead p{font-size:13.5px;color:var(--muted);max-width:none}
+.leadfoot{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.tabs{display:flex;gap:7px;margin-left:auto}
+.sechead{align-items:center}
+.sechead span a{font-size:13px}
+.subblock{background:var(--accent);color:var(--bg);border-radius:11px;padding:15px 19px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.subblock h2{font-size:17px}
+.subblock p{font-size:14px;opacity:.9;margin-top:4px}
+.subblock .btn{background:var(--bg);color:var(--accent);margin-left:auto}
+footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20px}
+.foot-in{padding:28px 16px 40px;display:grid;gap:13px;justify-items:start}
+.foot-in>*{max-width:760px;width:100%}
+.foot-in div p{max-width:none}
+.foot-in b{font-family:var(--display);font-size:15px}
+.foot-in p{font-size:13px;color:var(--muted)}
+.footnav{display:flex;gap:16px;flex-wrap:wrap}
+.footnav a{font-size:13.5px}
+.footmail{font-size:13px;color:var(--muted)}
+.footmail a{font-weight:700}
+.footnote{font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
+.arclist{display:grid;gap:7px}
+.arow{display:grid;grid-template-columns:62px minmax(0,1fr) auto auto;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--dc,var(--accent));border-radius:10px;padding:11px 14px;color:inherit}
+.arow:hover{background:var(--raise)}
+.arow .adate{font-size:12px;color:var(--muted);font-weight:700;font-variant-numeric:tabular-nums}
+.arow .atitle{font-family:var(--display);font-weight:800;font-size:14px;line-height:1.45}
+.arow .asrc{font-size:12px;color:var(--muted);white-space:nowrap}
+@media (max-width:720px){.arow{grid-template-columns:minmax(0,1fr);gap:6px}.arow .asrc{white-space:normal}}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.chip{font-size:13px;padding:5px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--muted);cursor:pointer;font-family:inherit}
+.chip:hover{color:var(--fg)}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--bg);font-weight:700}
+/* 卡片网格：桌面 3 列，平板 2 列，手机 1 列 */
+.feed{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+@media (max-width:1240px){.feed{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:860px){.feed{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.item{background:var(--surface);border:1px solid var(--line);border-radius:14px;display:grid;align-content:start;overflow:hidden}
+.item .cbody{padding:8px 10px 9px}
+.card.wide{grid-column:1/-1;grid-template-columns:190px minmax(0,1fr)}
+.card.wide .cover{aspect-ratio:auto;height:100%;min-height:112px}
+.card.wide .cbody{padding:11px 13px 12px}
+@media (max-width:560px){.card.wide{grid-template-columns:minmax(0,1fr)}.card.wide .cover{aspect-ratio:2/1;height:auto}}
+.item.wide{grid-column:1/-1;grid-template-columns:200px minmax(0,1fr)}
+.item.wide .cover{aspect-ratio:auto;height:100%;min-height:120px}
+.item.wide .cbody{padding:11px 14px 12px}
+.item.wide h3{-webkit-line-clamp:2;font-size:14.5px}
+@media (max-width:620px){.item.wide{grid-template-columns:minmax(0,1fr)}.item.wide .cover{aspect-ratio:2/1;height:auto}}
+.item h3{font-size:13.5px;line-height:1.45;font-family:var(--display);font-weight:800;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.itop{padding-top:13px}
+.item>.foot,.item>.exp{padding-bottom:14px}
+.itop{display:flex;align-items:baseline;gap:7px;flex-wrap:wrap}
+.idate{font-size:11px;letter-spacing:.03em;color:var(--muted);font-weight:700;font-variant-numeric:tabular-nums}
+.kind{font-size:10.5px;padding:0 7px;border-radius:999px;border:1px solid var(--kc);color:var(--kc)}
+
+.money{font-size:13px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums}
+.money small{font-weight:400;color:var(--muted);font-size:11.5px}
+.item p{font-size:12.5px;color:var(--muted);max-width:none;line-height:1.55}
+.item .foot{display:flex;gap:12px;flex-wrap:wrap;font-size:12px}
+.empty{font-size:14px;color:var(--muted);background:var(--raise);border-radius:10px;padding:18px}
+.lbl{font-size:12.5px;font-weight:700;fill:var(--fg)}
+.sub{font-size:11px;fill:var(--muted)}
+.stepn{font-size:12px;font-weight:700;fill:var(--surface)}
+.steph{font-size:12px;font-weight:700}
+.mol{font-size:10.5px;font-weight:700}
+</style>
+</head>
+<body>
+
+
+<nav><div class="navshell"><div class="nav-in">
+  <a class="brand" href="#home">
+    <span class="bmark-wrap"><img src="img/logo.png" alt="" onerror="this.remove()" onload="var s=this.nextElementSibling;if(s)s.remove()"><svg class="bmark" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+      <rect x="1.5" y="1.5" width="45" height="45" rx="12" fill="var(--accent)" opacity=".12"/>
+      <g stroke="var(--accent)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="21" cy="21" r="10"/><path d="M28.5 28.5L39 39"/><path d="M17 21h8M21 17v8"/></g>
+    </svg></span>
+    <span class="btext"><span class="bn">前沿追踪</span><span class="bs">FRONTIER DIGEST</span></span>
+  </a>
+  <a href="#home" data-v="home">首页</a>
+  <a href="#fields" data-v="fields">领域</a>
+  <a href="#deals" data-v="deals">商业化动态</a>
+  <a href="#archive" data-v="archive">存档</a>
+  <a href="#about" data-v="about">关于我们</a>
+  <a class="navsub" href="#support">订阅</a>
+</div></div></nav>
+
+<div class="shell">
+<aside class="rail rail-l" aria-label="左侧广告位"><div class="railin"><div class="adbox ad-tall"><b>L1</b><span>160×600<br>宽屏 300×600</span></div><div class="adbox ad-med"><b>L2</b><span>300×250</span></div><div class="adbox ad-med"><b>L3</b><span>300×250</span></div><div class="adtext"><b>文字链广告</b><span>赞助链接位 1</span><span>赞助链接位 2</span><span>赞助链接位 3</span><span>赞助链接位 4</span><span>赞助链接位 5</span><span>赞助链接位 6</span></div><div class="adbox ad-med"><b>L4</b><span>300×250</span></div><div class="adbox ad-tall"><b>L5</b><span>160×600<br>宽屏 300×600</span></div></div></aside>
+<div class="col">
+
+
+
+
+<!-- ============ HOME ============ -->
+<div class="wrap view" id="v-home">
+
+
+  <!-- 首页 hero：整宽大图 + 站名 + 定位 + 订阅。img/hero.jpg 存在时自动替换背景图 -->
+  <section class="hero-band">
+    <div class="hb-art" aria-hidden="true">
+      <svg viewBox="0 0 1200 420" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <linearGradient id="hbg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#fbfdfc"/><stop offset=".5" stop-color="#eef5f2"/><stop offset="1" stop-color="#e3f0f3"/>
+          </linearGradient>
+          <radialGradient id="hglow" cx=".74" cy=".22" r=".7">
+            <stop offset="0" stop-color="#9fd8cb" stop-opacity=".38"/><stop offset="1" stop-color="#9fd8cb" stop-opacity="0"/>
+          </radialGradient>
+          <pattern id="hdots" width="26" height="26" patternUnits="userSpaceOnUse">
+            <circle cx="2" cy="2" r="1.4" fill="#0f6b5c" opacity=".1"/>
+          </pattern>
+        </defs>
+        <rect width="1200" height="420" fill="url(#hbg)"/>
+        <rect width="1200" height="420" fill="url(#hdots)"/>
+        <rect width="1200" height="420" fill="url(#hglow)"/>
+        <g fill="none" stroke="#2f7d6d" stroke-opacity=".3" stroke-width="2">
+          <path d="M700 420c0-120 48-168 128-200s150-66 178-150"/>
+          <path d="M760 420c0-96 44-140 118-172s142-64 170-146"/>
+          <path d="M820 420c0-72 40-112 108-146s134-62 162-134"/>
+        </g>
+        <g stroke="#1d7f9c" stroke-opacity=".45" stroke-width="2.2" fill="none">
+          <circle cx="968" cy="150" r="66"/><circle cx="968" cy="150" r="27" fill="#1d7f9c" fill-opacity=".12"/>
+          <circle cx="1088" cy="262" r="40"/><circle cx="1088" cy="262" r="16" fill="#2f7d6d" fill-opacity=".12"/>
+          <circle cx="878" cy="296" r="28" stroke="#2f7d6d" stroke-opacity=".4"/>
+        </g>
+        <g stroke="#2f7d6d" stroke-opacity=".35" stroke-width="1.8">
+          <path d="M968 216l120 6M1008 196l80 66M912 272l56 24M1060 300l-92-4"/>
+        </g>
+        <g fill="#0f6b5c" fill-opacity=".5">
+          <circle cx="1148" cy="96" r="5"/><circle cx="1104" cy="58" r="3.5"/><circle cx="836" cy="118" r="4"/>
+          <circle cx="792" cy="196" r="3"/><circle cx="1160" cy="352" r="4"/>
+        </g>
+      </svg>
+      <img src="img/hero.jpg" alt="" onerror="this.remove()">
+    </div>
+    <div class="hb-text">
+      <span class="hb-kicker">中文 · 每周更新</span>
+      <h1>前沿追踪</h1>
+      <p>九个领域的一手文献和交易动态，中文整理。每篇一张自己画的机制图，一千字以内讲清楚，原文链接附在末尾。</p>
+      <div class="hb-cta">
+        <a class="btn" href="#support">订阅每周更新</a>
+        <a class="btn ghost" href="#fields">看九个领域</a>
+      </div>
+      <div class="hb-stats">
+        <span><b>9</b> 个领域</span><span><b>27</b> 篇在排</span><span><b>5</b> 条交易在追</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 头条：对标 BioPharma Dive / Fierce 的 lead story -->
+  <section class="lead">
+    <div class="leadtag">本周头条 · 肿瘤免疫</div>
+    <h1>用机器人批量组装 TCR，再让 AlphaFold3 预测它能不能认出抗原</h1>
+    <p>功能验证后发现，公共数据库里平均只有 56% 的 TCR 真的具有标注的反应性。此前所有用 VDJdb 训练或评测的预测模型，近一半样本标签是错的。</p>
+    <div class="leadfoot">
+      <span class="idate">2026 年 10 月 1 日 · Immunity</span>
+      <a class="go" href="#a-trap">读解读 →</a>
+    </div>
+  </section>
+
+  <div class="adslot-mobile"><div class="adbox ad-inline"><b>广告位</b><span>窄屏 728×90 或 300×250</span></div></div>
+
+  <!-- 最新 / 按领域 两个标签：对标 Endpoints 的 Latest / Most read -->
+  <section>
+    <div class="sechead">
+      <h2>解读</h2>
+      <div class="tabs">
+        <button class="chip" type="button" data-tab="latest" aria-pressed="true">最新</button>
+        <button class="chip" type="button" data-tab="byfield" aria-pressed="false">按领域</button>
+      </div>
+    </div>
+    <div id="tab-latest"><div class="grid" id="latestgrid"></div></div>
+    <div id="tab-byfield" hidden><div class="fieldlist" id="fieldlist"></div></div>
+  </section>
+
+  <section class="sponsored">
+    <div class="slabel">赞助内容</div>
+    <h3>这里是赞助位</h3>
+    <p>赞助内容与编辑内容分开排版，并标注「赞助」。这个位置可以放赞助方的一段介绍、白皮书或活动信息。目前为占位。</p>
+  </section>
+
+  <!-- 正文中部的订阅块：对标 BioPharma Dive / STAT 把表单放在内容流里 -->
+  <section class="subblock">
+    <div>
+      <h2>每周一封，中文</h2>
+      <p>九个领域的解读摘要加商业化动态，正文附原文链接。免费，可随时退订。</p>
+    </div>
+    <a class="btn" href="#support">订阅每周更新</a>
+  </section>
+
+  <!-- 商业化动态频道：对标 Endpoints 的 Deals 频道与 BioPharma Dive 的 tracker -->
+  <section>
+    <div class="sechead"><h2>商业化动态</h2><span><a href="#deals">看完整时间流 →</a></span></div>
+    <div class="feed" id="homefeed"></div>
+  </section>
+
+  <!-- 领域导航 -->
+  <section>
+    <div class="sechead"><h2>九个领域</h2><span>每个领域三篇，持续补齐</span></div>
+    <div class="fieldlist" id="fieldlist2"></div>
+  </section>
+</div>
+
+<!-- ============ FIELDS ============ -->
+<div class="wrap view" id="v-fields" hidden>
+  <header class="hero"><h1>九个领域</h1><p>每个领域计划三篇。写完的能点开，其余只是定了选题。一篇文章常常同时挂在几个领域下，但只写一次。</p></header>
+  <div id="fieldsections"></div>
+</div>
+
+<!-- ============ ARCHIVE ============ -->
+<div class="wrap view" id="v-archive" hidden>
+  <header class="hero"><h1>存档</h1><p>按月份倒序。领域只是标签，不单独分栏。</p></header>
+  <div id="archivelist"></div>
+</div>
+
+<!-- ============ DEALS ============ -->
+<div class="wrap view" id="v-deals" hidden>
+  <header class="hero">
+    <h1>投资与商业化动态</h1>
+    <p>论文说一条路线成立，交易说有人愿意为它掏钱，两头都记一下。最新的在上面，下面的分类只是筛选器。只收公开披露或双方确认的，传闻不收；来源是公司公告、各家季报和 Endpoints、Fierce 这类行业媒体，每条都挂原链接。</p>
+  </header>
+
+  <section>
+    <div class="sechead"><h2>追踪器</h2><span>本站收录条目的统计，随每周更新变化</span></div>
+    <div class="tracker" id="tracker"></div>
+  </section>
+
+  <section>
+    <div class="sechead"><h2>最新更新</h2><span id="dealcount"></span></div>
+    <div class="chips" id="chips"></div>
+    <div class="feed" id="feed"></div>
+  </section>
+
+  <section>
+    <div class="sechead"><h2>年度盘点</h2><span>中国创新药对外授权</span></div>
+    <div class="tblw"><table>
+      <tr><th>年份</th><th>交易笔数</th><th>总金额</th><th>首付款合计</th></tr>
+      <tr><td>2024</td><td class="num">94 笔</td><td class="num">519 亿美元</td><td>—</td></tr>
+      <tr><td>2025</td><td class="num">157 笔</td><td class="num">1357 亿美元</td><td class="num">70 亿美元</td></tr>
+    </table></div>
+    <p class="note" style="margin-top:12px">数据来自 <a href="https://globalforum.diaglobal.org/issue/march-2026/chinas-out-licensing-deals-bear-fruit-in-2025/">DIA Global Forum 2026 年 3 月刊</a>。首付只占总金额 5% 左右。剩下的要等研发走到约定节点才付，其中不少永远走不到。</p>
+  </section>
+
+</div>
+
+<!-- ============ SUPPORT ============ -->
+<div class="wrap view textpage" id="v-support" hidden>
+  <header class="hero">
+    <h1>订阅与赞助</h1>
+    <p>这个站每周整理九个领域的前沿进展和商业化动态，中文、免费、可退订。</p>
+  </header>
+  <section class="panel">
+    <h2>欢迎订阅</h2>
+    <p>每周一封邮件，含当周各领域的解读摘要和交易动态，正文附原文链接。</p>
+    <p>也可以直接写信给 <a href="mailto:contact@therasik.com?subject=%E8%AE%A2%E9%98%85%E5%89%8D%E6%B2%BF%E8%BF%BD%E8%B8%AA%E6%AF%8F%E5%91%A8%E6%9B%B4%E6%96%B0">contact@therasik.com</a>，标题写「订阅」，我们手动加进名单。</p>
+    <p class="note">MVP 阶段还没有接入邮件服务，这里先占位。接下来可以用 Buttondown、MailerLite 或 Substack，免费额度都够起步；确定用哪家之后，这里换成真实的订阅表单。</p>
+  </section>
+  <section class="panel">
+    <h2>欢迎赞助</h2>
+    <p>赞助用于支付文献获取、绘图工具和邮件服务的成本。我们接受三种形式：</p>
+    <ol>
+      <li><b>署名赞助</b>　在首页和每周邮件页脚标注赞助方名称与链接。</li>
+      <li><b>领域冠名</b>　赞助某一个领域的整年解读，在该领域页标注。</li>
+      <li><b>内容合作</b>　就某个主题做深度专题，内容独立，赞助方不干预结论。</li>
+      <li><b>网页广告位</b>　正文两侧各一组（桌面 160×600 与 300×250，宽屏放大到 300×600），以及正文流中一个标注「赞助内容」的区块。窄屏时两侧广告折叠到正文下方。</li>
+      <li><b>邮件赞助位</b>　每封邮件在各领域摘要之后、页脚之前，设一个独立的「赞助」区块：一行标题、两三行介绍、一个链接。位置固定，与正文有明显分隔和标注。</li>
+    </ol>
+    <p class="note">网页和邮件里的赞助位都标「赞助」，和正文分开排。《广告法》要求广告可识别，邮件还得有真实发信人和一键退订，这几条没有商量的余地。想做成看不出是广告的那种，请找别人。</p>
+  </section>
+  <section class="panel">
+    <h2>MVP 还缺什么</h2>
+    <ul>
+      <li>邮件订阅表单与发信服务（需要选定服务商并绑定域名）。</li>
+      <li>其余领域各三篇解读，目前已完成两篇。</li>
+      <li>商业化动态的每周更新机制，可以做成定时任务自动检索再人工复核。</li>
+      <li>独立域名与站点托管。当前是单页原型，一个文件、无后端。</li>
+    </ul>
+  </section>
+</div>
+
+<!-- ============ ABOUT ============ -->
+<div class="wrap view textpage" id="v-about" hidden>
+  <header class="hero">
+    <h1>关于</h1>
+    <p>一个人维护的中文研究资讯站，每周整理文献和交易动态。还在起步阶段。</p>
+  </header>
+
+  <section class="panel">
+    <h2>为什么做这个站</h2>
+    <p>ACIR 的周报我每周都看。英文那边还有 Fierce Biotech、Endpoints，一手消息当天就有。中文这边没有对应的东西。等公众号转述，往上两三天，而且转述大多只留一句结论，原文链接也不给，想核对都没处核对。</p>
+    <p>与其每次自己翻，不如顺手写下来。反正文献是要读的。</p>
+  </section>
+
+  <section class="panel">
+    <h2>每周更新什么</h2>
+    <p>九个领域：类器官、AI 药物设计、肿瘤免疫、细胞治疗、疫苗、自身免疫疾病、小核酸与 LNP、动物模型、抗体工程。一篇文章常常同时属于好几个，所以标签是多选的，不硬塞进一个栏目。</p>
+    <p>每篇解读是一张机制图加一千字以内的评述。图自己画，把论文里散在好几个图里的逻辑拼成一张。评述分四节写，背景、发现、机制、意义和局限。末尾给作者单位和完整引文，方便你直接去查原文。</p>
+    <p>交易那边记五类：收购、授权、NewCo、临床进展、融资。金额按首付和里程碑分开写，有多少写多少，来源都挂链接。中国公司出海的授权这两年最多，这一类会盯得紧一些。</p>
+  </section>
+
+  <section class="panel">
+    <h2>做不到的</h2>
+    <p>不是全覆盖。一周能认真读完的就那么几篇，剩下的只能靠领域页的来源清单自己去翻。</p>
+    <p>不给投资建议。商业化动态只记发生了什么和出处，金额和条款都照原文抄，不替你判断值不值。</p>
+    <p>会有错。论文说了什么和我怎么理解，会分开写；只看到摘要或者新闻稿、没读到全文的，会在文里写明是二手。发现错了请告我，更正直接标在原文下面，不悄悄改。</p>
+    <p>站是刚开的。规划的二十七篇解读目前写完两篇，其余在排。</p>
+  </section>
+
+  <section class="panel">
+    <h2>广告和赞助</h2>
+    <p>正文两侧各有一组广告位，另有文字链位，正文流里一个赞助区块，每周邮件里也留了一个。想投放就写信来，位置和尺寸见<a href="#support">订阅与赞助</a>页。</p>
+    <p>赞助位都会标「赞助」，排版上跟正文分开，不会混在解读里面。赞助方不参与选题，也不改结论——这条不议。</p>
+    <div class="contact">
+      <div class="cc"><span>广告与赞助</span><a href="mailto:contact@therasik.com?subject=%E5%B9%BF%E5%91%8A%E4%B8%8E%E8%B5%9E%E5%8A%A9">contact@therasik.com</a></div>
+      <div class="cc"><span>纠错与建议</span><a href="mailto:contact@therasik.com?subject=%E7%BA%A0%E9%94%99%E4%B8%8E%E5%BB%BA%E8%AE%AE">同一邮箱，标题注明来意</a></div>
+      <div class="cc"><span>每周邮件</span><a href="#support">订阅入口</a></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>也接活</h2>
+    <p>这个站是自己做的，从排版到机制图到文案。顺手也接外面的活，主要四类。</p>
+    <p><b>做网页。</b>建站或者改版。你现在看到的这几页就是样品：九个栏目、商业化动态的筛选、手机和桌面两套排版、广告位，都是手写的单页，没有后台，扔到任何静态托管上就能跑，没有月费。要带后台和订阅系统的也能做。</p>
+    <p><b>写内容、做公众号。</b>选题、撰稿、机制图、把英文文献和公司公告整理成中文。这正是这个站每周在做的事，只是换成你的名字发。可以按篇结，也可以包月更新。公司新闻稿、融资材料里的科学部分、学术会议的会后整理，都做过类似的。</p>
+    <p><b>写商业计划书和融资材料。</b>生物医药初创的 BP、投资人问答、路演稿，以及尽调清单里要补的那些文档。我写的是技术和市场那部分：管线讲到什么程度、技术路线和竞品怎么摆、临床格局和在研同类药怎么说、适应症的选择理由、机制图和管线图怎么画。数据用你自己的，文献和同类交易我去查并注明出处。财务模型和估值不是我的活，那部分配合你的 CFO 或财务顾问来，我负责让技术故事和数字对得上、口径一致。中英文两版都能写。</p>
+    <p><b>写白皮书。</b>赛道研究、技术路线梳理、市场和竞争格局那一类。一份白皮书通常是：这条路线现在走到哪儿了（谁在做、到了几期、读出来的结论）、几种技术路径的优劣和各自卡在哪、已披露的交易和定价、监管端的口径变化、再给一个判断。文献和交易都标出处，哪一句是公开数据、哪一句是我的推断会分开写。配图自己画，不是网上找的截图。</p>
+    <p>白皮书有两种做法：署你们公司的名对外发，用来讲清自己所在的赛道；或者内部用，给董事会和投资人看。都做过类似的结构。</p>
+    <p>比较合适的是：刚起步、还没有专职科学编辑的 Biotech；想让技术内容说清楚一点的 CRO 和器械公司；需要有人把尽调材料里的机制讲明白的投资机构。不合适的也直说——纯流量型的营销号、要求结论先定好再找证据的，我不做。</p>
+    <p>报价看篇幅和交付周期，先聊清楚需求再给数。写信到 <a href="mailto:contact@therasik.com?subject=%E5%90%88%E4%BD%9C%E5%92%A8%E8%AF%A2">contact@therasik.com</a>，说清要做什么、什么时候要。</p>
+  </section>
+</div>
+
+<!-- ============ ARTICLE 1 ============ -->
+<div class="wrap view" id="v-a-invivocar" hidden>
+<a class="back" href="#fields">← 返回领域</a>
+<article>
+  <div class="ahead">
+    <div class="eyebrow">细胞治疗 · 2025 年 6 月 19 日</div>
+    <div class="zh-title">把脂质纳米颗粒打进体内，直接在病人体内造出 CAR-T 细胞</div>
+    <div class="en-title">In vivo CAR T cell generation to treat cancer and autoimmune disease</div>
+    <div class="tags">
+      <span class="tag" style="--tc:var(--c7)">主领域：细胞治疗</span>
+      <span class="tag" style="--tc:var(--c9)">小核酸与 LNP</span>
+      <span class="tag" style="--tc:var(--c4)">自身免疫疾病</span>
+      <span class="tag" style="--tc:var(--c3)">肿瘤免疫</span>
+      <span class="tag" style="--tc:var(--c5)">动物模型</span>
+    </div>
+  </div>
+  <div class="abody">
+    <aside class="meta">
+      <div><span class="k">文献出处</span><p><b>Science</b> 2025;388(6749):1311–1317<br>2025 年 6 月 19 日<br><a href="https://doi.org/10.1126/science.ads8473">doi:10.1126/science.ads8473</a></p></div>
+      <div><span class="k">第一作者</span><p>Theresa L. Hunter（Capstan Therapeutics，美国圣迭戈）</p></div>
+      <div><span class="k">末位通讯</span><p>Haig Aghajanian（Capstan 联合创始人，长期研究 mRNA-LNP 体内改造 T 细胞）</p></div>
+      <div><span class="k">共同作者</span><p>Carl H. June（宾夕法尼亚大学，CAR-T 领域奠基人之一）</p></div>
+      <div><span class="k">研究类型</span><p>临床前：人原代细胞、人源化小鼠、大鼠、食蟹猴</p></div>
+      <div><span class="k">相关管线</span><p>CPTX2309，Capstan 的体内 CAR-T 候选药</p></div>
+    </aside>
+    <div class="amain">
+      <div class="fig"><div class="fig-scroll">
+        <svg viewBox="0 0 760 320" role="img" aria-label="综合机制图：靶向脂质纳米颗粒静脉注射后被 CD8 阳性 T 细胞摄取，mRNA 翻译出抗 CD19 的 CAR，T 细胞随后清除 B 细胞">
+          <defs>
+            <radialGradient id="q1" cx="35%" cy="30%" r="75%"><stop offset="0%" stop-color="var(--c9)" stop-opacity=".40"/><stop offset="100%" stop-color="var(--c9)" stop-opacity=".12"/></radialGradient>
+            <radialGradient id="q2" cx="33%" cy="28%" r="78%"><stop offset="0%" stop-color="var(--c7)" stop-opacity=".40"/><stop offset="100%" stop-color="var(--c7)" stop-opacity=".11"/></radialGradient>
+            <radialGradient id="q3" cx="33%" cy="28%" r="78%"><stop offset="0%" stop-color="var(--c3)" stop-opacity=".38"/><stop offset="100%" stop-color="var(--c3)" stop-opacity=".10"/></radialGradient>
+            <radialGradient id="q4" cx="33%" cy="28%" r="78%"><stop offset="0%" stop-color="var(--c2)" stop-opacity=".38"/><stop offset="100%" stop-color="var(--c2)" stop-opacity=".10"/></radialGradient>
+            <radialGradient id="qn" cx="35%" cy="32%" r="75%"><stop offset="0%" stop-color="var(--fg)" stop-opacity=".18"/><stop offset="100%" stop-color="var(--fg)" stop-opacity=".06"/></radialGradient>
+            <marker id="m1" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M1 1L11 6L1 11z" fill="var(--accent)"/></marker>
+            <filter id="f1" x="-30%" y="-30%" width="170%" height="170%"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#0b1a17" flood-opacity=".16"/></filter>
+          </defs>
+          <g>
+            <circle cx="46" cy="22" r="11" fill="var(--c9)"/><text x="46" y="26" class="stepn" text-anchor="middle">1</text><text x="64" y="26" class="steph" fill="var(--c9)">静脉注射 tLNP</text>
+            <circle cx="238" cy="22" r="11" fill="var(--c7)"/><text x="238" y="26" class="stepn" text-anchor="middle">2</text><text x="256" y="26" class="steph" fill="var(--c7)">CD8 T 细胞摄取</text>
+            <circle cx="442" cy="22" r="11" fill="var(--c3)"/><text x="442" y="26" class="stepn" text-anchor="middle">3</text><text x="460" y="26" class="steph" fill="var(--c3)">翻译出 CAR</text>
+            <circle cx="630" cy="22" r="11" fill="var(--c2)"/><text x="630" y="26" class="stepn" text-anchor="middle">4</text><text x="648" y="26" class="steph" fill="var(--c2)">清除 B 细胞</text>
+          </g>
+          <g filter="url(#f1)"><circle cx="90" cy="140" r="46" fill="url(#q1)" stroke="var(--c9)" stroke-width="2.4"/></g>
+          <circle cx="90" cy="140" r="46" fill="none" stroke="var(--c9)" stroke-width="5" stroke-opacity=".25"/>
+          <g stroke="var(--c3)" stroke-width="2.2" fill="none" stroke-linecap="round"><path d="M68 129c8 7 15-6 23 0s11 10 19 3"/><path d="M68 151c8 7 15-6 23 0s11 10 19 3"/></g>
+          <g stroke="var(--c7)" stroke-width="2.2" fill="none" stroke-linecap="round">
+            <path d="M90 94v-12"/><path d="M90 82l-6-7"/><path d="M90 82l6-7"/>
+            <path d="M57 107l-8-8"/><path d="M49 99l-9 1"/><path d="M49 99l1-9"/>
+            <path d="M123 107l8-8"/><path d="M131 99l9 1"/><path d="M131 99l-1-9"/></g>
+          <text x="90" y="212" text-anchor="middle" class="lbl">靶向脂质纳米颗粒</text>
+          <text x="90" y="230" text-anchor="middle" class="sub">内载抗 CD19 CAR mRNA</text>
+          <text x="90" y="246" text-anchor="middle" class="sub" fill="var(--c7)">表面抗 CD8 抗体导航</text>
+          <path d="M146 140h36" stroke="var(--accent)" stroke-width="2.4" fill="none" marker-end="url(#m1)"/>
+          <g filter="url(#f1)"><path d="M238 88c30 0 53 23 53 52s-23 52-53 52-53-23-53-52 23-52 53-52z" fill="url(#q2)" stroke="var(--c7)" stroke-width="2.4"/></g>
+          <ellipse cx="226" cy="132" rx="19" ry="17" fill="url(#qn)" stroke="var(--fg)" stroke-opacity=".28" stroke-width="1.5"/>
+          <g stroke="var(--c7)" stroke-width="2.4" stroke-linecap="round"><path d="M238 88v-11"/><path d="M199 102l-7-8"/><path d="M277 102l7-8"/></g>
+          <circle cx="238" cy="74" r="4" fill="var(--c7)"/><circle cx="189" cy="91" r="4" fill="var(--c7)"/><circle cx="287" cy="91" r="4" fill="var(--c7)"/>
+          <text x="302" y="78" class="mol" fill="var(--c7)">CD8</text>
+          <circle cx="258" cy="160" r="12" fill="var(--c9)" fill-opacity=".30" stroke="var(--c9)" stroke-width="1.7"/>
+          <path d="M252 158c3 4 6-3 10 0" stroke="var(--c3)" stroke-width="1.7" fill="none" stroke-linecap="round"/>
+          <text x="238" y="212" text-anchor="middle" class="lbl">CD8 阳性 T 细胞</text>
+          <text x="238" y="230" text-anchor="middle" class="sub">体内直接改造</text>
+          <text x="238" y="246" text-anchor="middle" class="sub">无需体外扩增与清淋</text>
+          <path d="M297 140h36" stroke="var(--accent)" stroke-width="2.4" fill="none" marker-end="url(#m1)"/>
+          <g filter="url(#f1)"><path d="M442 88c30 0 53 23 53 52s-23 52-53 52-53-23-53-52 23-52 53-52z" fill="url(#q3)" stroke="var(--c3)" stroke-width="2.4"/></g>
+          <ellipse cx="430" cy="132" rx="19" ry="17" fill="url(#qn)" stroke="var(--fg)" stroke-opacity=".28" stroke-width="1.5"/>
+          <g stroke="var(--c3)" stroke-width="2.4" fill="none" stroke-linecap="round">
+            <path d="M442 88v-14"/><path d="M442 74l-7-8"/><path d="M442 74l7-8"/>
+            <path d="M403 100l-10-11"/><path d="M393 89l-10-2"/><path d="M393 89l-2-10"/>
+            <path d="M481 100l10-11"/><path d="M491 89l10-2"/><path d="M491 89l2-10"/></g>
+          <text x="508" y="78" class="mol" fill="var(--c3)">CAR</text>
+          <text x="442" y="212" text-anchor="middle" class="lbl">表达 CAR 的 T 细胞</text>
+          <text x="442" y="230" text-anchor="middle" class="sub">mRNA 瞬时表达</text>
+          <text x="442" y="246" text-anchor="middle" class="sub">不整合基因组，可重复给药</text>
+          <path d="M501 140h36" stroke="var(--accent)" stroke-width="2.4" fill="none" marker-end="url(#m1)"/>
+          <g filter="url(#f1)"><path d="M630 102c26 0 45 18 45 40s-19 40-45 40-45-18-45-40 19-40 45-40z" fill="url(#q4)" stroke="var(--c2)" stroke-width="2.4"/></g>
+          <ellipse cx="620" cy="136" rx="16" ry="14" fill="url(#qn)" stroke="var(--fg)" stroke-opacity=".28" stroke-width="1.4"/>
+          <g stroke="var(--c2)" stroke-width="2.2" fill="none" stroke-linecap="round"><path d="M630 102v-12"/><path d="M630 90l-6-7"/><path d="M630 90l6-7"/><path d="M596 114l-8-9"/><path d="M588 105l-9-2"/><path d="M588 105l-2-9"/></g>
+          <text x="563" y="88" class="mol" fill="var(--c2)" text-anchor="end">CD19</text>
+          <g fill="var(--c2)" fill-opacity=".30" stroke="var(--c2)" stroke-width="1.3" stroke-opacity=".55"><circle cx="684" cy="180" r="7"/><circle cx="697" cy="166" r="4.5"/><circle cx="676" cy="193" r="3.5"/></g>
+          <text x="630" y="212" text-anchor="middle" class="lbl">B 细胞被清除</text>
+          <text x="630" y="230" text-anchor="middle" class="sub">数小时内起效</text>
+          <text x="630" y="246" text-anchor="middle" class="sub">回升者以初始 B 细胞为主</text>
+          <rect x="34" y="272" width="692" height="34" rx="10" fill="var(--accent)" fill-opacity=".07" stroke="var(--accent)" stroke-opacity=".26" stroke-width="1.4"/>
+          <text x="380" y="294" text-anchor="middle" class="sub" font-size="11.5">验证层次：人原代 T 细胞（健康人与自身免疫病患者）→ 人源化小鼠肿瘤模型 → 大鼠 → 食蟹猴 B 细胞清除与重建</text>
+        </svg>
+      </div>
+      <p class="cap">图：抗 CD8 抗体让脂质纳米颗粒只进入 CD8 阳性 T 细胞，颗粒内的 mRNA 在细胞里翻译出抗 CD19 的 CAR，这些 T 细胞随即清除表达 CD19 的 B 细胞。全过程在体内完成，不需要抽血、体外扩增和清淋预处理。图为手写 SVG，依据原文摘要与公开报道绘制，不代表实际分子比例。</p>
+      </div>
+      <div class="sec"><h2>研究背景</h2><p>CAR-T 已经改变了 B 细胞肿瘤的治疗，近年也被用于狼疮等自身免疫病。但现行流程要先抽取患者 T 细胞、在体外用病毒载体改造并扩增数周，回输前还要用化疗清淋，成本高、周期长，能用上的患者有限。能否跳过体外制造、直接在体内把 T 细胞改造成 CAR-T，是这几年细胞治疗最受关注的方向之一。</p></div>
+      <div class="sec"><h2>核心发现</h2><p>作者做出一种靶向脂质纳米颗粒：表面偶联抗 CD8 抗体，内部装载编码抗 CD19 CAR 的 mRNA，静脉注射后主要被 CD8 阳性 T 细胞摄取，肝脏摄取明显减少。在健康人和自身免疫病患者的原代 T 细胞中都能有效表达 CAR，患者来源细胞的改造效率与健康人相当。在带人免疫系统的小鼠中，单次给药可在数小时内清除 B 细胞，作用持续约两周；白血病移植模型中重复给药使肿瘤几乎完全清除。在食蟹猴中给药后 B 细胞被快速深度清除，恢复后回升的以初始 B 细胞为主，作者认为提示免疫系统发生了重置。</p></div>
+      <div class="sec"><h2>机制解读</h2><p>关键在两处设计。一是靶向：常规 LNP 主要进肝，作者换用新的可电离脂质并偶联抗 CD8 抗体，把递送窗口移到 T 细胞。二是载荷形式：用 mRNA 而非病毒载体，CAR 只瞬时表达，不整合基因组。瞬时表达意味着作用时间可控、可重复给药，也避免长期基因改造的不确定性；代价是单次窗口有限，要靠给药方案维持疗效。B 细胞回升后以初始细胞为主，正是自免治疗追求的结果：清掉产生自身抗体的记忆 B 细胞和浆细胞前体，让免疫系统从新的库重建。</p></div>
+      <div class="sec"><h2>意义与局限</h2><p>若能在人体复现，体内 CAR-T 会把细胞治疗从定制化制造变成像常规生物药一样的现货给药，大幅降低成本并扩展到自免等更大的患者群体。需要注意：本研究全部为临床前数据，猴和小鼠的 B 细胞清除不等于人体疗效；mRNA 瞬时表达下的最佳剂量与间隔仍需临床确定；重复给药可能带来的抗药抗体和细胞因子反应、以及 CD8 靶向是否影响正常 T 细胞功能，都还没有长期数据。</p></div>
+      <div class="sec"><h2>出处与延伸</h2><p class="src"><b>原文</b>：Hunter TL, Bao Y, Zhang Y, …, June CH, Aghajanian H. In vivo CAR T cell generation to treat cancer and autoimmune disease. <i>Science</i> 2025;388(6749):1311–1317. <a href="https://doi.org/10.1126/science.ads8473">doi:10.1126/science.ads8473</a><br><b>相关动态</b>：这条技术路线对应的企业交易见<a href="#deals">商业化动态</a>页。</p></div>
+    </div>
+  </div>
+</article>
+</div>
+
+<!-- ============ ARTICLE 2 ============ -->
+<div class="wrap view" id="v-a-trap" hidden>
+<a class="back" href="#fields">← 返回领域</a>
+<article>
+  <div class="ahead">
+    <div class="eyebrow">肿瘤免疫 · 2026 年 10 月 1 日</div>
+    <div class="zh-title">用机器人批量组装 TCR，再让 AlphaFold3 预测它能不能认出抗原</div>
+    <div class="en-title">Functional evaluation of TCR-pMHC pairs at scale allows in silico TCR reactivity prediction</div>
+    <div class="tags">
+      <span class="tag" style="--tc:var(--c3)">主领域：肿瘤免疫</span>
+      <span class="tag" style="--tc:var(--c2)">AI 药物设计</span>
+      <span class="tag" style="--tc:var(--c7)">细胞治疗</span>
+      <span class="tag" style="--tc:var(--c8)">疫苗</span>
+    </div>
+  </div>
+  <div class="abody">
+    <aside class="meta">
+      <div><span class="k">文献出处</span><p><b>Immunity</b><br>2026 年 10 月 1 日在线<br><a href="https://doi.org/10.1016/j.immuni.2026.09.007">doi:10.1016/j.immuni.2026.09.007</a></p></div>
+      <div><span class="k">共同第一作者</span><p>Marius Messemaker、Benjamin P. Y. Kwee（荷兰癌症研究所 NKI）</p></div>
+      <div><span class="k">末位通讯</span><p>Ton N. Schumacher（NKI 与莱顿大学医学中心），肿瘤新抗原概念的主要奠基人之一</p></div>
+      <div><span class="k">共同通讯</span><p>Wouter Scheper（NKI）；结构部分由 Anastassis Perrakis 参与</p></div>
+      <div><span class="k">研究类型</span><p>方法学与计算，含大规模体外功能验证</p></div>
+      <div><span class="k">我是从哪看到的</span><p><a href="https://acir.org/weekly-digests/2026/october/t-rap-a-new-tool-for-predicting-tcr-pmhc-reactivity">ACIR 周报 2026 年 10 月</a></p></div>
+    </aside>
+    <div class="amain">
+      <div class="fig"><div class="fig-scroll">
+        <svg viewBox="0 0 860 330" role="img" aria-label="综合机制图：从 VDJdb 取 TCR 序列，机器人批量组装，导入无 TCR 的 Jurkat T 细胞与靶细胞共培养测反应性，数据用于 tcrdist3 和 AlphaFold3 预测">
+          <defs>
+            <radialGradient id="r1" cx="34%" cy="28%" r="78%"><stop offset="0%" stop-color="var(--c2)" stop-opacity=".36"/><stop offset="100%" stop-color="var(--c2)" stop-opacity=".10"/></radialGradient>
+            <radialGradient id="r2" cx="34%" cy="28%" r="78%"><stop offset="0%" stop-color="var(--c9)" stop-opacity=".36"/><stop offset="100%" stop-color="var(--c9)" stop-opacity=".10"/></radialGradient>
+            <radialGradient id="r3" cx="32%" cy="26%" r="80%"><stop offset="0%" stop-color="var(--c7)" stop-opacity=".38"/><stop offset="100%" stop-color="var(--c7)" stop-opacity=".11"/></radialGradient>
+            <radialGradient id="r4" cx="32%" cy="26%" r="80%"><stop offset="0%" stop-color="var(--c3)" stop-opacity=".36"/><stop offset="100%" stop-color="var(--c3)" stop-opacity=".10"/></radialGradient>
+            <radialGradient id="r5" cx="34%" cy="28%" r="78%"><stop offset="0%" stop-color="var(--c5)" stop-opacity=".34"/><stop offset="100%" stop-color="var(--c5)" stop-opacity=".10"/></radialGradient>
+            <radialGradient id="rn" cx="35%" cy="32%" r="75%"><stop offset="0%" stop-color="var(--fg)" stop-opacity=".16"/><stop offset="100%" stop-color="var(--fg)" stop-opacity=".06"/></radialGradient>
+            <marker id="m2" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M1 1L11 6L1 11z" fill="var(--accent)"/></marker>
+            <filter id="f2" x="-30%" y="-30%" width="170%" height="170%"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#0b1a17" flood-opacity=".16"/></filter>
+          </defs>
+          <g>
+            <circle cx="46" cy="22" r="11" fill="var(--c2)"/><text x="46" y="26" class="stepn" text-anchor="middle">1</text><text x="64" y="26" class="steph" fill="var(--c2)">重新注释公共数据库</text>
+            <circle cx="248" cy="22" r="11" fill="var(--c9)"/><text x="248" y="26" class="stepn" text-anchor="middle">2</text><text x="266" y="26" class="steph" fill="var(--c9)">机器人批量组装 TCR</text>
+            <circle cx="470" cy="22" r="11" fill="var(--c3)"/><text x="470" y="26" class="stepn" text-anchor="middle">3</text><text x="488" y="26" class="steph" fill="var(--c3)">功能验证反应性</text>
+            <circle cx="676" cy="22" r="11" fill="var(--c5)"/><text x="676" y="26" class="stepn" text-anchor="middle">4</text><text x="694" y="26" class="steph" fill="var(--c5)">计算模型预测</text>
+          </g>
+          <g filter="url(#f2)"><rect x="34" y="78" width="150" height="100" rx="10" fill="url(#r1)" stroke="var(--c2)" stroke-width="2.3"/></g>
+          <g stroke="var(--c2)" stroke-width="2" fill="none" stroke-linecap="round" stroke-opacity=".7"><path d="M52 104h114"/><path d="M52 120h96"/><path d="M52 136h114"/><path d="M52 152h80"/></g>
+          <text x="109" y="96" text-anchor="middle" class="mol" fill="var(--c2)">VDJdb</text>
+          <text x="109" y="204" text-anchor="middle" class="lbl">约 6300 条已知特异性 TCR</text>
+          <text x="109" y="222" text-anchor="middle" class="sub">取 10 个高覆盖抗原</text>
+          <text x="109" y="238" text-anchor="middle" class="sub">得 VDJdb-10，共 3693 条</text>
+          <path d="M194 128h34" stroke="var(--accent)" stroke-width="2.3" fill="none" marker-end="url(#m2)"/>
+          <g filter="url(#f2)"><rect x="238" y="78" width="160" height="100" rx="10" fill="url(#r2)" stroke="var(--c9)" stroke-width="2.3"/></g>
+          <g fill="var(--c9)" fill-opacity=".42">
+            <circle cx="262" cy="100" r="5.5"/><circle cx="286" cy="100" r="5.5"/><circle cx="310" cy="100" r="5.5"/><circle cx="334" cy="100" r="5.5"/><circle cx="358" cy="100" r="5.5"/><circle cx="378" cy="100" r="5.5"/>
+            <circle cx="262" cy="124" r="5.5"/><circle cx="286" cy="124" r="5.5"/><circle cx="310" cy="124" r="5.5"/><circle cx="334" cy="124" r="5.5"/><circle cx="358" cy="124" r="5.5"/><circle cx="378" cy="124" r="5.5"/>
+            <circle cx="262" cy="148" r="5.5"/><circle cx="286" cy="148" r="5.5"/><circle cx="310" cy="148" r="5.5"/><circle cx="334" cy="148" r="5.5"/><circle cx="358" cy="148" r="5.5"/><circle cx="378" cy="148" r="5.5"/>
+          </g>
+          <path d="M310 56v16" stroke="var(--c9)" stroke-width="2.3" stroke-linecap="round"/><path d="M304 72h12l-6 10z" fill="var(--c9)"/>
+          <text x="318" y="204" text-anchor="middle" class="lbl">T-RAP 组装平台</text>
+          <text x="318" y="222" text-anchor="middle" class="sub">只凭序列阵列化组装</text>
+          <text x="318" y="238" text-anchor="middle" class="sub">快速、低成本，可定制 TCR 库</text>
+          <path d="M408 128h34" stroke="var(--accent)" stroke-width="2.3" fill="none" marker-end="url(#m2)"/>
+          <g filter="url(#f2)"><path d="M494 86c29 0 51 19 51 42s-22 42-51 42-51-19-51-42 22-42 51-42z" fill="url(#r3)" stroke="var(--c7)" stroke-width="2.3"/></g>
+          <ellipse cx="482" cy="124" rx="18" ry="16" fill="url(#rn)" stroke="var(--fg)" stroke-opacity=".26" stroke-width="1.4"/>
+          <g stroke="var(--c7)" stroke-width="2.4" fill="none" stroke-linecap="round"><path d="M544 116h13"/><path d="M557 116l6-6"/><path d="M557 116l6 6"/><path d="M542 142h13"/><path d="M555 142l6-6"/><path d="M555 142l6 6"/></g>
+          <text x="566" y="98" class="mol" fill="var(--c7)">TCR</text>
+          <text x="494" y="204" text-anchor="middle" class="lbl">无 TCR 的 Jurkat T 细胞</text>
+          <text x="494" y="222" text-anchor="middle" class="sub">导入组装好的 TCR</text>
+          <text x="494" y="238" text-anchor="middle" class="sub">脱离克隆丰度与细胞状态干扰</text>
+          <g filter="url(#f2)"><path d="M620 86c27 0 47 19 47 42s-20 42-47 42-47-19-47-42 20-42 47-42z" fill="url(#r4)" stroke="var(--c3)" stroke-width="2.3"/></g>
+          <ellipse cx="632" cy="124" rx="16" ry="14" fill="url(#rn)" stroke="var(--fg)" stroke-opacity=".26" stroke-width="1.4"/>
+          <g stroke="var(--c3)" stroke-width="2.4" fill="none" stroke-linecap="round"><path d="M574 110c-8 0-12 5-12 9s4 9 12 9"/><path d="M574 134c-8 0-12 5-12 9s4 9 12 9"/></g>
+          <circle cx="559" cy="119" r="3.6" fill="var(--c3)"/><circle cx="557" cy="143" r="3.6" fill="var(--c3)"/>
+          <text x="556" y="176" text-anchor="middle" class="mol" fill="var(--c3)">pMHC</text>
+          <text x="620" y="204" text-anchor="middle" class="lbl">呈递抗原的靶细胞</text>
+          <text x="620" y="222" text-anchor="middle" class="sub">共培养后读出是否激活</text>
+          <path d="M678 128h34" stroke="var(--accent)" stroke-width="2.3" fill="none" marker-end="url(#m2)"/>
+          <g filter="url(#f2)"><rect x="726" y="78" width="112" height="100" rx="10" fill="url(#r5)" stroke="var(--c5)" stroke-width="2.3"/></g>
+          <g stroke="var(--c5)" stroke-width="1.7" fill="none" stroke-opacity=".8">
+            <circle cx="748" cy="100" r="5"/><circle cx="748" cy="128" r="5"/><circle cx="748" cy="156" r="5"/>
+            <circle cx="782" cy="114" r="5"/><circle cx="782" cy="142" r="5"/><circle cx="816" cy="128" r="5"/>
+            <path d="M753 100l24 12"/><path d="M753 128l24-13"/><path d="M753 128l24 13"/><path d="M753 156l24-12"/><path d="M787 114l24 12"/><path d="M787 142l24-12"/></g>
+          <text x="782" y="204" text-anchor="middle" class="lbl">tcrdist3 与 AlphaFold3</text>
+          <text x="782" y="222" text-anchor="middle" class="sub">序列相似度 / 界面 min-PAE</text>
+          <text x="782" y="238" text-anchor="middle" class="sub">无需任务特异训练</text>
+          <rect x="34" y="262" width="804" height="56" rx="10" fill="var(--accent)" fill-opacity=".07" stroke="var(--accent)" stroke-opacity=".26" stroke-width="1.4"/>
+          <g class="sub" font-size="11.5">
+            <text x="56" y="284">实测：平均只有 <tspan font-weight="700" fill="var(--fg)">56%</tspan> 的 TCR 真的具有数据库里标注的反应性</text>
+            <text x="56" y="304">AlphaFold3 以界面 min-PAE 配对同源 pMHC，AUROC <tspan font-weight="700" fill="var(--fg)">0.83–0.90</tspan> 至 <tspan font-weight="700" fill="var(--fg)">0.65–0.66</tspan>；tcrdist3 按序列相似度，表现随抗原波动</text>
+          </g>
+        </svg>
+      </div>
+      <p class="cap">图：T-RAP 的完整工作流。从公共数据库取 TCR 序列，机器人阵列化组装，导入无 TCR 的 Jurkat T 细胞，与呈递特定 pMHC 的靶细胞共培养读出激活，所得功能数据再用来评估 tcrdist3 和 AlphaFold3 的预测能力。图为手写 SVG，依据原文与 ACIR 摘要绘制，不代表实际分子比例。</p>
+      </div>
+      <div class="sec"><h2>研究背景</h2><p>要做新抗原疫苗或 TCR-T 疗法，先得知道哪条 TCR 能认出哪个抗原肽-MHC 复合物。这件事目前靠湿实验一条一条验证，慢且贵，所以大家都希望用计算预测。问题是训练和检验模型要靠数据，而现有公共数据库（如 VDJdb）里的配对多是从各种实验里汇总来的，标注质量参差，没人系统验证过。</p></div>
+      <div class="sec"><h2>核心发现</h2><p>作者先重新注释 VDJdb 里约 6300 条 TCR，挑出覆盖最密的 10 个抗原，得到 3693 条的 VDJdb-10 子集。随后搭建 T-RAP：基于机器人的高通量平台，只凭序列信息就能阵列化组装 TCR，速度快、成本低，且把反应性分析与克隆丰度、T 细胞状态、细胞功能障碍彻底分开。把组装好的 TCR 导入无内源 TCR 的 Jurkat CD8 T 细胞，再与呈递相应抗原的靶细胞共培养，逐条读出是否真的被激活。结果醒目：平均只有 56% 的 TCR 表现出数据库里标注的反应性。拿这批功能验证数据检验预测工具，tcrdist3 按序列相似度预测，不同抗原间波动较大；AlphaFold3 用 TCR-肽界面残基的最小预测对齐误差判断，配对同源 pMHC 的 AUROC 从 0.83 到 0.90，部分情形降到 0.65 左右。</p></div>
+      <div class="sec"><h2>机制解读</h2><p>价值有两层。方法上，T-RAP 把 TCR 的来源从“在病人样本里找到的克隆”变成“写下序列就能造出来”，于是可以主动设计标准化 TCR 库，而不是被动依赖样本里碰巧扩增出来的克隆。数据上，56% 这个数字说明公共数据库的噪声比想象的大——此前所有用 VDJdb 训练或评测的模型，近一半样本标签是错的，这直接解释了为什么各家模型在真实任务里常不如报告的好。AlphaFold3 尤其值得注意：它没有为这个任务做任何专门训练，纯靠结构预测的界面置信度就能区分真假配对，说明结构信息本身携带了足够的特异性线索。</p></div>
+      <div class="sec"><h2>意义与局限</h2><p>短期最实用的用法是筛选：从一批候选 TCR 里挑出最可能真的识别患者个体新抗原的几条，再送湿实验验证，省掉大部分无用功。局限同样清楚：VDJdb-10 只有 10 个抗原且多为常见病毒表位，肿瘤新抗原的多样性远超此；Jurkat 报告系统测的是 TCR 能否被激活，不等于原代 T 细胞在体内的杀伤能力；AUROC 0.65 这一档的场景下，预测还远达不到替代实验的程度。</p></div>
+      <div class="sec"><h2>出处与延伸</h2><p class="src"><b>原文</b>：Messemaker M, Kwee BPY, Moravec Ž, …, Scheper W, Schumacher TN. Functional evaluation of TCR-pMHC pairs at scale allows in silico TCR reactivity prediction. <i>Immunity</i> 2026 Oct 1. <a href="https://doi.org/10.1016/j.immuni.2026.09.007">doi:10.1016/j.immuni.2026.09.007</a><br><b>来源</b>：<a href="https://acir.org/weekly-digests/2026/october/t-rap-a-new-tool-for-predicting-tcr-pmhc-reactivity">ACIR 周报，2026 年 10 月</a></p></div>
+    </div>
+  </div>
+</article>
+</div>
+
+</div>
+<aside class="rail rail-r" aria-label="右侧广告位"><div class="railin"><div class="adbox ad-med"><b>R1</b><span>300×250</span></div><div class="adbox ad-tall"><b>R2</b><span>300×600</span></div><div class="adbox ad-med"><b>R3</b><span>300×250</span></div><div class="adtext"><b>文字链广告</b><span>推广链接位 1</span><span>推广链接位 2</span><span>推广链接位 3</span><span>推广链接位 4</span><span>推广链接位 5</span><span>推广链接位 6</span></div><div class="adbox ad-med"><b>R4</b><span>300×250</span></div><div class="adbox ad-med"><b>R5</b><span>300×250</span></div></div></aside>
+</div>
+
+<footer>
+  <div class="footshell"><div class="foot-in">
+    <div class="fbrand">
+      <b>前沿追踪</b>
+      <p>九个领域的前沿进展与商业化动态，中文整理。每篇解读注明作者、领域和文献出处。</p>
+    </div>
+    <div class="footnav">
+      <a href="#home">首页</a><a href="#fields">领域</a><a href="#deals">商业化动态</a><a href="#archive">存档</a><a href="#about">关于</a><a href="#support">订阅与赞助</a>
+    </div>
+    <p class="footmail">广告、赞助、纠错都写 <a href="mailto:contact@therasik.com">contact@therasik.com</a></p>
+    <p class="footnote">赞助内容会明确标注「由某方支持」，并与编辑内容分开排版。赞助方不参与选题和评述。</p>
+  </div></div>
+</footer>
+
+<script>
+const FIELDS=[
+ {k:'c1',n:'类器官',d:'疾病建模、药物筛选、器官芯片',arts:[
+   {t:'肿瘤类器官与免疫细胞共培养，预测免疫治疗响应',s:'soon'},
+   {t:'血管化类器官：解决中心坏死的几种思路',s:'soon'},
+   {t:'类器官能否部分替代动物实验：监管端的变化',s:'soon'}]},
+ {k:'c2',n:'AI 药物设计',d:'结构预测、生成式蛋白设计、药效预测',arts:[
+   {t:'用机器人批量组装 TCR，再让 AlphaFold3 预测它能不能认出抗原',s:'ok',id:'a-trap'},
+   {t:'生成式模型设计抗体：从序列生成到湿实验验证率',s:'soon'},
+   {t:'AI 发现的药物进入临床后，成功率到底如何',s:'soon'}]},
+ {k:'c3',n:'肿瘤免疫',d:'检查点、微环境、新抗原',arts:[
+   {t:'用机器人批量组装 TCR，再让 AlphaFold3 预测它能不能认出抗原',s:'ok',id:'a-trap'},
+   {t:'肿瘤微环境里的髓系细胞：从标志物到可成药靶点',s:'soon'},
+   {t:'双特异 T 细胞衔接器在实体瘤中的进展与毒性管理',s:'soon'}]},
+ {k:'c7',n:'细胞治疗',d:'CAR-T、TCR-T、CAR-NK、TIL',arts:[
+   {t:'把脂质纳米颗粒打进体内，直接在病人体内造出 CAR-T 细胞',s:'ok',id:'a-invivocar'},
+   {t:'通用型 CAR-T：异体细胞如何躲过宿主免疫',s:'soon'},
+   {t:'CAR-T 治疗狼疮的早期临床结果如何解读',s:'soon'}]},
+ {k:'c8',n:'疫苗',d:'mRNA 新抗原疫苗、佐剂、递送',arts:[
+   {t:'个体化 mRNA 新抗原疫苗联用 PD-1：最新随机数据',s:'soon'},
+   {t:'新抗原预测的瓶颈在哪：HLA 呈递还是 T 细胞识别',s:'soon'},
+   {t:'佐剂的作用机制：从经验配方到理性设计',s:'soon'}]},
+ {k:'c4',n:'自身免疫疾病',d:'狼疮、类风湿、多发性硬化',arts:[
+   {t:'把脂质纳米颗粒打进体内，直接在病人体内造出 CAR-T 细胞',s:'ok',id:'a-invivocar'},
+   {t:'清除自身反应性 B 细胞后，免疫系统如何重建',s:'soon'},
+   {t:'调节性 T 细胞疗法的现状与难点',s:'soon'}]},
+ {k:'c9',n:'小核酸与 LNP',d:'siRNA、ASO、脂质纳米颗粒递送',arts:[
+   {t:'把脂质纳米颗粒打进体内，直接在病人体内造出 CAR-T 细胞',s:'ok',id:'a-invivocar'},
+   {t:'肝外递送：肌肉、中枢和免疫细胞的几条路线',s:'soon'},
+   {t:'抗体-寡核苷酸偶联物（AOC）走到哪一步了',s:'soon'}]},
+ {k:'c5',n:'动物模型',d:'人源化小鼠、基因编辑、PDX',arts:[
+   {t:'把脂质纳米颗粒打进体内，直接在病人体内造出 CAR-T 细胞',s:'ok',id:'a-invivocar'},
+   {t:'人源化小鼠能回答和不能回答的免疫学问题',s:'soon'},
+   {t:'PDX 模型预测临床响应的真实准确率',s:'soon'}]},
+ {k:'c6',n:'抗体工程',d:'双抗、ADC、纳米抗体、Fc 改造',arts:[
+   {t:'ADC 的下一步：新载荷、新连接子还是新靶点',s:'soon'},
+   {t:'双抗的结构设计如何影响安全窗',s:'soon'},
+   {t:'AI 辅助抗体设计：从亲和力成熟到从头设计',s:'soon'}]}
+];
+
+// ---------- 固定图标：48×48 线性风格，每个领域/分类一个，尺寸统一、跟随配色 ----------
+const ICONS={
+  organoid:'<circle cx="18" cy="19" r="8"/><circle cx="31" cy="17" r="6"/><circle cx="28" cy="31" r="7"/><circle cx="16" cy="31" r="5"/>',
+  net:'<circle cx="11" cy="14" r="3"/><circle cx="11" cy="24" r="3"/><circle cx="11" cy="34" r="3"/><circle cx="24" cy="19" r="3"/><circle cx="24" cy="29" r="3"/><circle cx="37" cy="24" r="3.5"/><path d="M14 14l7 4M14 24l7-5M14 24l7 5M14 34l7-4M27 19l7 4M27 29l7-4"/>',
+  cell:'<circle cx="24" cy="26" r="12"/><circle cx="20" cy="23" r="4.5"/><path d="M24 14V8M24 8l-2.5-3M24 8l2.5-3M14 18l-4-4M10 14l-4 .5M10 14l.5-4M34 18l4-4M38 14l4 .5M38 14l-.5-4"/>',
+  antibody:'<path d="M24 40V22M24 22L13 10M24 22l11-12"/><circle cx="13" cy="8" r="3"/><circle cx="35" cy="8" r="3"/>',
+  lnp:'<circle cx="24" cy="24" r="14"/><path d="M16 20c3 3 5-2 8 0s4 3 7 1M16 29c3 3 5-2 8 0s4 3 7 1"/>',
+  vaccine:'<rect x="12" y="18" width="22" height="11" rx="2.5"/><path d="M34 23.5h7M41 23.5l4-3M12 23.5H7M9 19v9M18 18v11M24 18v11M30 18v11"/>',
+  model:'<ellipse cx="24" cy="30" rx="15" ry="6"/><path d="M24 24V15"/><path d="M11 16c4-5 9-5 13 0 4-5 9-5 13 0"/>',
+  acq:'<circle cx="18" cy="24" r="10"/><circle cx="30" cy="24" r="10"/>',
+  lic:'<rect x="6" y="16" width="14" height="16" rx="2.5"/><rect x="28" y="16" width="14" height="16" rx="2.5"/><path d="M21 21h6M25 18l3 3-3 3M27 28h-6M23 25l-3 3 3 3"/>',
+  newco:'<rect x="6" y="18" width="13" height="13" rx="2.5"/><circle cx="36" cy="17" r="5"/><circle cx="33" cy="32" r="4"/><path d="M20 22l10-3M20 27l10 4"/>',
+  clin:'<path d="M9 36h30"/><rect x="11" y="27" width="6" height="7" rx="1"/><rect x="20" y="21" width="6" height="13" rx="1"/><rect x="29" y="13" width="6" height="21" rx="1"/>',
+  inv:'<path d="M8 36h32"/><path d="M10 30l8-6 7 4 8-9 6-5"/><circle cx="10" cy="30" r="2"/><circle cx="18" cy="24" r="2"/><circle cx="25" cy="28" r="2"/><circle cx="33" cy="19" r="2"/>'
+};
+function cover(kind,cvar,img){
+  const c=`var(--${cvar})`;
+  const layer=img?`<img class="coverimg" src="${img}" alt="" loading="lazy" onerror="this.remove()">`:'';
+  return `<div class="cover" aria-hidden="true">${layer}<svg viewBox="0 0 300 150" preserveAspectRatio="xMidYMid slice">
+    <rect width="300" height="150" fill="${c}" opacity=".08"/>
+    <circle cx="266" cy="20" r="42" fill="${c}" opacity=".07"/>
+    <circle cx="30" cy="136" r="32" fill="${c}" opacity=".06"/>
+    <g transform="translate(150 75) scale(1.75) translate(-24 -24)" fill="none"
+       stroke="${c}" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+      ${ICONS[kind]||ICONS.cell}</g></svg></div>`;
+}
+function icon(kind,cvar,cls){
+  const c=`var(--${cvar})`;
+  return `<span class="ic ${cls||''}" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none"
+    stroke="${c}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="1.5" y="1.5" width="45" height="45" rx="11" fill="${c}" fill-opacity=".09" stroke="none"/>
+    ${ICONS[kind]||ICONS.cell}</svg></span>`;
+}
+// 九张领域固定图，放在 img/fields/ 下即自动生效；缺图时退回 SVG 图标
+const FIELD_IMG={c1:'organoid.jpg',c2:'ai-drug-design.jpg',c3:'tumor-immunology.jpg',
+  c4:'autoimmune.jpg',c5:'animal-model.jpg',c6:'antibody-engineering.jpg',
+  c7:'cell-therapy.jpg',c8:'vaccine.jpg',c9:'lnp-oligo.jpg'};
+function fieldThumb(k){
+  return `<span class="fthumb">${icon(FIELD_MOTIF[k],k)}<img src="img/fields/${FIELD_IMG[k]}" alt="" loading="lazy" onerror="this.remove()"></span>`;
+}
+const FIELD_MOTIF={c1:'organoid',c2:'net',c3:'cell',c4:'antibody',c5:'model',c6:'antibody',c7:'cell',c8:'vaccine',c9:'lnp'};
+const KIND_MOTIF={acq:'acq',lic:'lic',newco:'newco',clin:'clin',inv:'inv'};
+const KIND_CVAR={acq:'c3',lic:'c2',newco:'c7',clin:'c1',inv:'c5'};
+
+const ARTICLES=[
+ {id:'a-trap',d:'2026-10-01',src:'Immunity',f:'c3',fn:'肿瘤免疫',
+  t:'用机器人批量组装 TCR，再让 AlphaFold3 预测它能不能认出抗原',
+  motif:'net',tags:[['c3','肿瘤免疫'],['c2','AI 药物设计'],['c7','细胞治疗'],['c8','疫苗']],
+  sum:'功能验证后发现，公共数据库里平均只有 56% 的 TCR 真的具有标注的反应性。'},
+ {id:'a-invivocar',d:'2025-06-19',src:'Science',f:'c7',fn:'细胞治疗',
+  t:'把脂质纳米颗粒打进体内，直接在病人体内造出 CAR-T 细胞',
+  motif:'lnp',tags:[['c7','细胞治疗'],['c9','小核酸与 LNP'],['c4','自身免疫'],['c3','肿瘤免疫'],['c5','动物模型']],
+  sum:'抗 CD8 抗体导航的 tLNP 携带 CAR mRNA，在猴体内实现深度 B 细胞清除，回升的以初始 B 细胞为主。'}
+];
+const MONTH={'01':'1 月','02':'2 月','03':'3 月','04':'4 月','05':'5 月','06':'6 月','07':'7 月','08':'8 月','09':'9 月','10':'10 月','11':'11 月','12':'12 月'};
+function cnDate(d){const [y,m,dd]=d.split('-');return `${y} 年 ${+m} 月 ${+dd} 日`}
+function artCard(a){
+  return `<a class="card" style="--dc:var(--${a.f})" href="#${a.id}">
+    ${cover(a.motif||FIELD_MOTIF[a.f],a.f)}
+    <div class="cbody">
+      <h3>${a.t}</h3>
+      <div class="metarow">${a.tags.slice(0,2).map(([c,n])=>`<span class="tag" style="--tc:var(--${c})">${n}</span>`).join('')}<span class="date">${a.d.slice(0,4)}.${a.d.slice(5,7)} · ${a.src}</span></div>
+    </div></a>`;
+}
+function colsOf(el){return getComputedStyle(el).gridTemplateColumns.split(' ').filter(Boolean).length}
+function fitRows(el,html){ // 按列数截断，使卡片填满整行
+  const all=html; el.innerHTML=all;
+  const c=colsOf(el), n=el.children.length, keep=n-(n%c);
+  if(keep>0 && keep<n) el.innerHTML=[...el.children].slice(0,keep).map(x=>x.outerHTML).join('');
+}
+document.getElementById('latestgrid').innerHTML=
+  ARTICLES.map(artCard).join('')+
+  `<div class="card soon" style="--dc:var(--c1)">${cover('organoid','c1')}<div class="cbody">
+   <h3>肿瘤类器官与免疫细胞共培养，预测免疫治疗响应</h3>
+   <div class="metarow"><span class="tag" style="--tc:var(--c1)">类器官</span><span class="date">筹备中</span></div></div></div>`;
+
+// 存档：按月份倒序，时间为唯一主索引
+const byMonth={};
+ARTICLES.forEach(a=>{const k=a.d.slice(0,7);(byMonth[k]=byMonth[k]||[]).push(a)});
+function arcRow(a){
+  return `<a class="arow" style="--dc:var(--${a.f})" href="#${a.id}">
+    <span class="adate">${a.d.slice(0,4)}.${a.d.slice(5,7)}</span>
+    <span class="atitle">${a.t}</span>
+    <span class="atags">${a.tags.slice(0,2).map(([c,n])=>`<span class="tag" style="--tc:var(--${c})">${n}</span>`).join('')}</span>
+    <span class="asrc">${a.src}</span></a>`;
+}
+document.getElementById('archivelist').innerHTML=Object.keys(byMonth).sort().reverse().map(k=>{
+  const [y,m]=k.split('-');
+  return `<section style="margin-bottom:26px">
+    <div class="sechead"><h2>${y} 年 ${MONTH[m]}</h2><span>${byMonth[k].length} 篇</span></div>
+    <div class="arclist">${byMonth[k].map(arcRow).join('')}</div></section>`;
+}).join('');
+
+// 首页的两个标签页
+document.querySelectorAll('.tabs .chip').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.tabs .chip').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
+  document.getElementById('tab-latest').hidden = b.dataset.tab!=='latest';
+  document.getElementById('tab-byfield').hidden = b.dataset.tab!=='byfield';
+});
+
+const fl=document.getElementById('fieldlist');
+fl.innerHTML=FIELDS.map(f=>{
+  const done=f.arts.filter(a=>a.s==='ok').length;
+  return `<a class="fcard" style="--dc:var(--${f.k})" href="#fields">${fieldThumb(f.k)}<div class="cbody"><b>${f.n}</b><span>${f.d}</span><em>${done} 篇已完成 / 共 3 篇</em></div></a>`;
+}).join('');
+document.getElementById('fieldlist2').innerHTML=fl.innerHTML;
+
+document.getElementById('fieldsections').innerHTML=FIELDS.map(f=>`
+  <section style="margin-bottom:34px">
+    <div class="sechead"><h2 style="color:var(--${f.k})">${f.n}</h2><span>${f.d}</span></div>
+    <div class="grid">${f.arts.map(a=>a.s==='ok'
+      ? `<a class="card" style="--dc:var(--${f.k})" href="#${a.id}">${cover(FIELD_MOTIF[f.k],f.k)}<div class="cbody"><h3>${a.t}</h3><span class="date">已完成 · 读解读</span></div></a>`
+      : `<div class="card soon" style="--dc:var(--${f.k})">${cover(FIELD_MOTIF[f.k],f.k)}<div class="cbody"><h3>${a.t}</h3><span class="date">筹备中 · 选题已定</span></div></div>`).join('')}</div>
+  </section>`).join('');
+
+const KINDS={acq:['收购','var(--c3)'],lic:['授权交易','var(--c2)'],newco:['NewCo','var(--c7)'],clin:['临床进展','var(--c1)'],inv:['投资融资','var(--c5)']};
+const DEALS=[
+ {d:'2026-03',kinds:['acq','newco'],t:'吉利德收购 Ouro Medicines，拿下康诺亚 CM336 双抗海外权益',
+  m:'总额至多 21.75 亿美元',ms:'首付 16.75 亿 + 里程碑 5 亿',
+  why:'康诺亚 2024 年 11 月把 CM336 的海外权益装进新设的 Ouro Medicines，只收 1600 万美元首付，换 15% 股权。16 个月后吉利德把 Ouro 整体买走。按股权折算，康诺亚预计拿到约 2.5 亿美元首付加至多 7000 万里程碑，保留销售分成，股权交出。CM336 是 BCMA×CD3 双特异 T 细胞衔接器，报的适应症为轻链型淀粉样变和多发性骨髓瘤，已获 FDA 快速通道和孤儿药资格。NewCo 走完全程的例子不多，这是一个。',
+  src:'Bamboo Works',url:'https://thebambooworks.com/a-healthy-return-drug-spin-off-nets-keymed-up-to-320-million/'},
+ {d:'2025-12',kinds:['lic'],t:'泛 KRAS 抑制剂 JAB-23E73 对外授权',
+  m:'超 20 亿美元',ms:'',
+  why:'2025 年 12 月 21 日宣布。阿斯利康拿下中国以外独家权益，首付 1 亿美元，里程碑至多 19.15 亿，另有中国以外净销售额的阶梯提成；中国境内双方共同开发和商业化。JAB-23E73 针对多种 KRAS 突变亚型，中美两地一期在做，公司称已见早期抗肿瘤活性。此前获批的抑制剂只覆盖 G12C 一个亚型。按 DIA 统计，这是中国临床阶段抗肿瘤小分子最大的一笔合作。',
+  src:'DIA Global Forum',url:'https://globalforum.diaglobal.org/issue/march-2026/chinas-out-licensing-deals-bear-fruit-in-2025/'},
+ {d:'2025-10',kinds:['clin','lic'],t:'Izalontamab brengitecan（ADC）触发里程碑付款',
+  m:'2.5 亿美元',ms:'单笔里程碑',
+  why:'2025 年 10 月 13 日触发，付款方百时美施贵宝，2.5 亿美元，属 2023 年双方合作里约定的近期付款。触发条件是 IZABRIGHT-Breast01 研究（NCT06926868）首例患者给药，做的是不适合 PD-(L)1 的一线三阴性乳腺癌。药是 izalontamab brengitecan，EGFR×HER3 双靶点 ADC，拓扑异构酶 1 抑制剂载荷。按 DIA 统计这是中国出海 ADC 单笔最大里程碑；钱真到账了，不是合同上限。',
+  src:'DIA Global Forum',url:'https://globalforum.diaglobal.org/issue/march-2026/chinas-out-licensing-deals-bear-fruit-in-2025/'},
+ {d:'2025-10',kinds:['lic'],t:'IBI363（PD-1×IL-2α 双抗）及 ADC 资产对外授权',
+  m:'至多 114 亿美元',ms:'共同开发、共同商业化',
+  why:'2025 年 10 月下旬宣布，交易方武田。首付 12 亿美元，含 1 亿按 20% 溢价认购信达股份，里程碑约 102 亿，合计至多 114 亿。打包三个资产：IBI363（PD-1/IL-2α 偏向双抗，三期）、IBI343（CLDN18.2 ADC，三期）、IBI3001（EGFR/B7H3 ADC，一期，期权）。大中华区权益信达保留，IBI363 在美国共同开发与商业化，盈亏按武田六信达四分。',
+  src:'DIA Global Forum',url:'https://globalforum.diaglobal.org/issue/march-2026/chinas-out-licensing-deals-bear-fruit-in-2025/'},
+ {d:'2025-06',kinds:['acq','clin'],t:'艾伯维收购 Capstan Therapeutics，获得体内 CAR-T 平台',
+  m:'至多 21 亿美元现金',ms:'2025 年 6 月 30 日宣布',
+  why:'2025 年 6 月 30 日宣布，至多 21 亿美元现金。核心资产 CPTX2309 处在一期：靶向递送的脂质纳米颗粒把 CAR 的 mRNA 送进 CD8 阳性 T 细胞，在体内就地生成抗 CD19 的 CAR-T 清除自身反应性 B 细胞，不需清淋，也不用把细胞取出体外改造。本站解读的那篇 Science 论文走的是同一条路线。省掉住院和清淋，红斑狼疮、肌炎这类不致命的适应症才谈得上用 CAR-T。',
+  src:'BioPharmaTrend',url:'https://www.biopharmatrend.com/news/abbvie-acquires-capstan-therapeutics-for-21b-gaining-in-vivo-car-t-platform-targeting-autoimmune-diseases-1310/',
+  art:'a-invivocar',artt:'读相关解读'}
+];
+
+let filter='all';
+const chips=document.getElementById('chips'), feed=document.getElementById('feed'), dc=document.getElementById('dealcount');
+function renderChips(){
+  const all=[['all',['全部','var(--accent)']],...Object.entries(KINDS)];
+  chips.innerHTML=all.map(([k,[label]])=>{
+    const n=k==='all'?DEALS.length:DEALS.filter(x=>x.kinds.includes(k)).length;
+    return `<button class="chip" type="button" data-k="${k}" aria-pressed="${filter===k}">${label} ${n}</button>`;
+  }).join('');
+  chips.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{filter=b.dataset.k;renderChips();renderFeed()});
+}
+function dealCard(x,i){
+  const k0=x.kinds[0], kc=KINDS[k0][1];
+  const [y,mo]=x.d.split('-');
+  return `<div class="item" style="--kc:${kc}">
+    ${cover(KIND_MOTIF[k0],KIND_CVAR[k0],`img/kinds/${k0}.jpg`)}
+    <div class="cbody">
+      <h3>${x.t}</h3>
+      <div class="money">${x.m}</div>
+      <div class="metarow"><span class="idate">${y}.${String(+mo).padStart(2,'0')}</span>
+        ${x.kinds.map(k=>`<span class="kind" style="--kc:${KINDS[k][1]}">${KINDS[k][0]}</span>`).join('')}
+        <button class="expbtn" type="button" aria-expanded="false" data-exp="${i}">详情 ↓</button></div>
+      <div class="exp" id="exp-${i}" hidden>
+        ${x.ms?`<p class="msline">${x.ms}</p>`:''}
+        <p>${x.why}</p>
+        <div class="foot"><a href="${x.url}">出处：${x.src}</a>${x.art?`<a href="#${x.art}">${x.artt} →</a>`:''}</div>
+      </div>
+    </div></div>`;
+}
+function wireExpand(root){
+  root.querySelectorAll('.expbtn').forEach(b=>b.onclick=()=>{
+    const box=root.querySelector('#exp-'+b.dataset.exp);
+    const open=box.hidden;
+    box.hidden=!open;
+    b.setAttribute('aria-expanded',String(open));
+    b.textContent=open?'收起 ↑':'详情 ↓';
+  });
+}
+function renderFeed(){
+  const rows=DEALS.filter(x=>filter==='all'||x.kinds.includes(filter));
+  dc.textContent=filter==='all'?`共 ${rows.length} 条，按时间倒序`:`已筛选 ${rows.length} 条`;
+  if(!rows.length){feed.innerHTML='<div class="empty">这个分类暂无条目。只收录有公开披露金额或双方确认的交易，等到有确切条目时再补。</div>';return}
+  feed.innerHTML=rows.map((x,i)=>dealCard(x,'f'+i)).join('');
+  fillLastRow(feed);
+  wireExpand(feed);
+}
+// 条目数不是列数的整数倍时，把末行的条目改成整行宽卡，网格里不留空位
+function fillLastRow(el){
+  [...el.children].forEach(c=>c.classList.remove('wide'));
+  const c=colsOf(el), n=el.children.length, rem=n%c;
+  if(rem) [...el.children].slice(n-rem).forEach(x=>x.classList.add('wide'));
+}
+renderChips();renderFeed();
+const hf=document.getElementById('homefeed');
+const hfHtml=DEALS.slice(0,4).map((x,i)=>dealCard(x,'h'+i)).join('');
+const lg=document.getElementById('latestgrid');
+const lgHtml=lg.innerHTML;
+function refit(){ fitRows(lg,lgHtml); fitRows(hf,hfHtml); fillLastRow(hf); wireExpand(hf); }
+refit();
+let rt; addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{
+  if(!document.getElementById('v-home').hidden) refit();
+  if(!document.getElementById('v-deals').hidden) renderFeed();
+  ['fields','archive'].forEach(v=>{const el=document.getElementById('v-'+v);
+    if(el&&!el.hidden) el.querySelectorAll('.grid').forEach(fillLastRow)});
+},150)});
+
+const views=[...document.querySelectorAll('.view')];
+function route(){
+  const h=(location.hash||'#home').slice(1);
+  const id='v-'+h;
+  const target=document.getElementById(id)?h:'home';
+  views.forEach(v=>{v.hidden = v.id!=='v-'+target});
+  if(target==='deals') renderFeed();   // 隐藏时读不到网格列数，显示后重排末行
+  if(target==='home') refit();
+  if(target==='fields'||target==='archive')
+    document.querySelectorAll('#v-'+target+' .grid').forEach(fillLastRow);
+  document.querySelectorAll('.nav-in a').forEach(a=>a.classList.toggle('on',a.dataset.v===target));
+  window.scrollTo(0,0);
+}
+addEventListener('hashchange',route);
+route();
+</script>
+
+</body>
+</html>
