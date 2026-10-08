@@ -1015,6 +1015,7 @@ def number_in_text_as_word_boundary(number: str, text: str) -> bool:
     - "52% response rate" contains "52" as standalone data -> True
     - "CD8 T cells" does NOT contain "8" as standalone data -> False (it's part of CD8)
     - "36 patients" contains "36" as standalone data -> True
+    - "100mg" contains "100" as data with unit -> True (after normalize_unit_spacing)
     
     Prevents:
     - '500' from matching '5000' or '1500'
@@ -1032,17 +1033,23 @@ def number_in_text_as_word_boundary(number: str, text: str) -> bool:
     
     # Build pattern that requires the number to NOT be part of an identifier
     # Numbers should be bounded by non-alphanumeric characters AND not part of:
-    # - Identifiers (preceded/followed by letters)
+    # - Identifiers (preceded/followed by letters at letter-digit boundary)
     # - Larger numbers (preceded/followed by digits)
     # - Decimals (preceded/followed by decimal point + digit)
     # - Hyphenated identifiers like TAK-981 (preceded/followed by hyphen + alnum)
     #
-    # Pattern: number must be preceded and followed by appropriate boundaries
-    # Boundaries that ARE identifiers: letters, digits, hyphen+alnum, dot+digit
+    # BUT: Allow units immediately after (mg, kg, nM, etc.)
+    # These are valid data patterns: 100mg, 5nM, 12%
+    
+    # Known unit prefixes that make a number valid even without space
+    unit_pattern = r'(?:mg|kg|mL|µg|nM|pM|µM|mM|μg|μL|ng|pg|mmol|mol|g|L|%|％|倍|年|个月|天|周|小时|例|名)'
+    
+    # Pattern: number must be preceded by non-identifier chars,
+    # and followed by either non-identifier chars OR a known unit
     pattern = (
         r'(?<![a-zA-Z0-9])(?<![-.])'  # Not preceded by alnum, hyphen, or dot
         + re.escape(number_clean) +
-        r'(?![a-zA-Z0-9])(?![-.]?\d)'  # Not followed by alnum, or hyphen/dot+digit
+        r'(?:' + unit_pattern + r'|(?![a-zA-Z0-9])(?![-.]?\d))'  # Followed by unit OR non-identifier
     )
     return bool(re.search(pattern, text_clean))
 

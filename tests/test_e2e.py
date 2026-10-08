@@ -1004,44 +1004,49 @@ sources:
         assert invented_found, f"Pipeline failed to catch invented 50%: {all_problems}"
     
     def test_validate_real_article_passes(self):
-        """Test that a properly sourced article passes validation."""
+        """Test that a properly sourced article passes validation.
+        
+        Uses REAL published data from Nature Biotechnology R2 retrotransposon study
+        (pr5e/sample_brief_r2_REAL_PUBLISHED.json).
+        """
         from inlight_articles import validate_depth, validate_names
         
-        # Properly sourced article - all numbers from source
-        # Need to meet brief character count: 450-650 chars
+        # REAL published article: Nature Biotechnology R2 retrotransposon study
+        # All numbers match source material from the actual paper
         good_article = {
             "tier": "brief",
-            "title": "CAR-T细胞治疗客观缓解率52%",
-            "one_liner": "一项纳入36例难治性血液肿瘤患者的单臂I期研究显示，CAR-T细胞治疗的客观缓解率为52%，中位随访时间为12个月。",
+            "title": "159个鸟类R2逆转座子经工程化，人原代细胞位点特异整合最高达60%",
+            "one_liner": "研究者检索1,139个鸟类基因组，鉴定159个R2逆转座子，其工程化变体在人原代细胞中实现最高60%的位点特异基因整合。",
             "datacard": {
-                "study_type": "I期试验",
-                "n": "36例",
-                "control": "单臂无对照",
-                "intervention": "CAR-T细胞",
-                "followup": "12个月",
-                "primary_endpoint": "客观缓解率",
-                "primary_endpoint_result": "52%（19/36）",
+                "study_type": "计算检索加实验工程化研究（据摘要）",
+                "n": "检索1,139个鸟类基因组；鉴定159个鸟类R2逆转座子；人原代细胞样本量原文未给出",
+                "control": "原文未给出",
+                "intervention": "鸟类R2逆转座子工程化变体",
+                "followup": "原文未给出",
+                "primary_endpoint": "人原代细胞中的位点特异基因整合",
+                "primary_endpoint_result": "最高60%位点特异基因整合",
                 "statistics": "原文未报告统计学检验",
-                "safety": "三级以上不良事件28%",
+                "safety": "原文未给出",
             },
-            "background": "针对难治性血液肿瘤，传统化疗方案和靶向药物疗效有限，急需新型治疗方法改善预后。CAR-T细胞治疗是一种前沿免疫疗法。",
-            "design": "这是一项单中心单臂开放标签I期研究，连续纳入36例经标准治疗后复发或难治的患者，均接受CAR-T细胞治疗。",
-            "results": ["研究显示客观缓解率达到52%（19/36例），其中完全缓解率表现良好。中位随访12个月后大部分缓解患者仍维持缓解状态。安全性方面，三级及以上不良事件发生率为28%。"],
-            "mechanism": "",
-            "limitations": ["单臂设计缺乏对照组无法评估相对疗效"],
-            "significance": "这项研究表明CAR-T细胞治疗为难治性血液肿瘤患者提供了一个有前景的治疗选择。",
+            "background": "研究者为寻找可用于人类细胞基因组整合的未知逆转座子，以鸟类基因组为检索对象，目标是拓展全RNA介导的靶向DNA整合工具。",
+            "design": "计算检索加实验工程化研究：检索1,139个鸟类基因组，鉴定159个鸟类R2逆转座子，比较其蛋白与非翻译区元件的保守及非保守序列特征，并检测工程化变体在人原代细胞中的整合。",
+            "results": ["检索1,139个鸟类基因组后，共鉴定出159个鸟类R2逆转座子，并刻画了其蛋白和非翻译区元件中保守与非保守的序列特征。这些逆转座子的工程化变体在人原代细胞中实现了最高60%的位点特异基因整合。"],
+            "mechanism": "摘要未提供机制层面的实验细节。",
+            "limitations": ["本条仅依据摘要：最高60%对应的变体、细胞类型、靶位点、重复数及与既有系统的对比均原文未给出。"],
+            "significance": "若这些变体的整合效率和特异性在更多细胞类型与靶位点中得到重复，该资源可能为全RNA递送的基因组编辑提供更多可选工具。",
             "data_points": [
-                {"value": "52%", "meaning": "缓解率", "source_quote": "response rate was 52%"},
-                {"value": "36", "meaning": "患者数", "source_quote": "36 patients enrolled"},
-                {"value": "19/36", "meaning": "缓解人数", "source_quote": "response rate was 52% (19/36)"},
-                {"value": "12", "meaning": "随访月数", "source_quote": "Median follow-up was 12 months"},
-                {"value": "28%", "meaning": "AE比例", "source_quote": "Grade 3+ adverse events occurred in 28%"},
+                {"value": "1,139", "meaning": "检索的鸟类基因组数", "source_quote": "screened 1,139 avian genomes"},
+                {"value": "159", "meaning": "鉴定的R2逆转座子数", "source_quote": "identified 159 avian R2 retrotransposons"},
+                {"value": "60%", "meaning": "最高整合率", "source_quote": "up to 60% site-specific gene integration"},
             ],
         }
         
-        source = """In this study, 36 patients enrolled with refractory disease. 
-        The objective response rate was 52% (19/36). Median follow-up was 12 months. 
-        Grade 3+ adverse events occurred in 28% of patients."""
+        # Realistic abstract source text matching the REAL paper
+        source = """We screened 1,139 avian genomes and identified 159 avian R2 retrotransposons. 
+        We characterized the conserved and non-conserved sequence features in their proteins and 
+        untranslated region elements. Engineered variants achieved up to 60% site-specific gene 
+        integration in human primary cells. This work expands the avian R2 resource and provides 
+        additional tools for all-RNA-mediated genome editing."""
         
         problems = validate_depth(good_article, source)
         name_problems = validate_names(good_article, source)
