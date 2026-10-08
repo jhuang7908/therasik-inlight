@@ -1,0 +1,1355 @@
+{
+ "provenance": "pr5f/server_run_a/capture/anthropic_calls.jsonl — real Anthropic responses captured on the server (head 893bf3d). Thinking blocks are omitted (captures have no content/signature; production ignores them). tool_use inputs are verbatim.",
+ "calls": [
+  {
+   "i": 0,
+   "tool": "test_tool",
+   "url": null,
+   "model": "claude-sonnet-5-5",
+   "max_tokens": 50,
+   "stop_reason": "tool_use",
+   "usage": {
+    "input_tokens": 378,
+    "output_tokens": 49
+   },
+   "prompt_chars": 27,
+   "prompt_sha256": "1b03342ec5bc6ac05501d708f97e3147071cf02a27f669ac8f1ae97125db2f74",
+   "thinking_blocks_omitted": 0,
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "toolu_pr5f_runA_00",
+     "name": "test_tool",
+     "input": {
+      "ok": true
+     }
+    }
+   ]
+  },
+  {
+   "i": 1,
+   "tool": "submit_triage",
+   "url": null,
+   "model": "claude-sonnet-5-5",
+   "max_tokens": 2000,
+   "stop_reason": "tool_use",
+   "usage": {
+    "input_tokens": 10921,
+    "output_tokens": 1935
+   },
+   "prompt_chars": 25750,
+   "prompt_sha256": "bf89309d39b2cc5fecf1b732b615d24d5fe6ed7527bc5ba07c1352c28b20bfaa",
+   "thinking_blocks_omitted": 1,
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "toolu_pr5f_runA_01",
+     "name": "submit_triage",
+     "input": {
+      "selections": [
+       {
+        "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+        "tier": "deep",
+        "field": "c3",
+        "reason": "首次人体概念验证研究：抗CD6抗体itolizumab用于实体瘤，评估安全性、早期疗效和机制，有abstract级证据。"
+       },
+       {
+        "url": "https://www.nature.com/articles/s41587-026-03318-7",
+        "tier": "deep",
+        "field": "c7",
+        "reason": "平台级方法突破：shotgun genetic engineering可在单次实验中筛选数百万种组合设计，用于哺乳动物细胞代谢工程，并服务于细胞治疗。有abstract级证据。分类为c7只是近似归类。"
+       },
+       {
+        "url": "https://www.nature.com/articles/s41587-026-03315-w",
+        "tier": "brief",
+        "field": "c9",
+        "reason": "从1139个鸟类基因组中发现159个R2逆转座子，在人原代细胞中实现最高60%的位点特异性整合，属于全RNA介导的基因组编辑工具。归入c9是近似归类。"
+       },
+       {
+        "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755788v1?rss=1",
+        "tier": "brief",
+        "field": "c3",
+        "reason": "预印本：在MHC II阴性肿瘤中，人CD4 T细胞可通过间接抗原呈递协调抗肿瘤免疫，机制上有新意。"
+       },
+       {
+        "url": "https://pubmed.ncbi.nlm.nih.gov/42844089/",
+        "tier": "brief",
+        "field": "c4",
+        "reason": "有abstract的患者队列研究（CSU患者59例）：T细胞具备皮肤迁移能力，并存在内型特异性差异。"
+       },
+       {
+        "url": "https://www.biorxiv.org/content/10.64898/2026.10.01.756006v1?rss=1",
+        "tier": "brief",
+        "field": "c4",
+        "reason": "预印本：工程化益生菌和生物材料递送中康酸，在克罗恩病小鼠模型中减轻炎症。"
+       },
+       {
+        "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+        "tier": "brief",
+        "field": "c5",
+        "reason": "预印本：阻断CD14可减轻致心律失常性心肌病，属于免疫介导的疾病模型研究。"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "i": 2,
+   "tool": "submit_article",
+   "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+   "model": "claude-sonnet-5-5",
+   "max_tokens": 16000,
+   "stop_reason": "tool_use",
+   "usage": {
+    "input_tokens": 4164,
+    "output_tokens": 6922
+   },
+   "prompt_chars": 4612,
+   "prompt_sha256": "439bdfd73ec6ad6a6e8f27f8af604a05650443dc176f761abe5680f712cfcdde",
+   "thinking_blocks_omitted": 1,
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "toolu_pr5f_runA_02",
+     "name": "submit_article",
+     "input": {
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+      "tier": "deep",
+      "field": "c1",
+      "title": "Itolizumab用于晚期实体瘤：疾病控制率25%与20%，无相关严重不良事件",
+      "journal": "PubMed 收录（摘要未给出期刊名）",
+      "authors": "原文未给出",
+      "one_liner": "抗CD6抗体itolizumab在晚期实体瘤概念验证试验中未见相关严重不良事件，A、B组疾病控制率分别为25%和20%，1年生存率分别为26%和15%。",
+      "datacard": {
+       "study_type": "概念验证性人体试验（摘要称为首次人体评估）；是否随机、是否单臂，原文未给出",
+       "n": "原文未给出（仅知分A、B两个给药组）",
+       "control": "原文未给出（摘要未描述对照组）",
+       "intervention": "itolizumab。诱导期：A组100 mg每周一次共九次；B组200 mg每两周一次共五次。维持期：诱导结束21天后，100 mg每21天一次，最多六次。给药途径原文未给出",
+       "followup": "原文未给出（仅报告1年生存率）",
+       "primary_endpoint": "安全性",
+       "primary_endpoint_result": "无因安全性原因的治疗中止，无相关严重不良事件，无意外毒性；具体不良事件发生率原文未给出，无对照组数值",
+       "statistics": "原文未报告统计学检验",
+       "safety": "摘要称无安全相关的治疗中止、无相关严重不良事件、无意外毒性；≥3级不良事件和死亡的具体数据原文未给出"
+      },
+      "background": "CD6被认为是肿瘤免疫治疗中有前景的靶点，临床前证据支持其可调节免疫应答。作者指出，这提示有必要进一步研究现有的CD6靶向药物，它们可能带来新的抗肿瘤治疗。然而，靶向CD6在实体瘤中的临床效应此前尚未被探索。本研究针对这一空白，评估抗CD6单克隆抗体itolizumab在晚期、高度异质性实体瘤患者中的安全性与早期有效性，并同时检测外周血相关分子机制与生物标志物，以判断该抗体在肿瘤患者体内是否产生预期的免疫学变化。",
+      "design": "这是一项概念验证研究，摘要称其为抗CD6抗体itolizumab在晚期、高度异质性实体瘤患者中的首次人体评估（first in-human）。入组人群为重度预治疗、未按生物标志物筛选的患者。治疗分诱导期与维持期：诱导期A组每周100 mg，共九次；B组每两周200 mg，共五次。完成诱导后21天进入维持期，每21天给予100 mg，最多六次。主要终点为安全性；次要目标包括疾病控制、生存，以及探索性的分子机制和血液生物标志物。机制部分采用患者样本的离体分析，并用患者来源外周血单个核细胞做体外杀伤实验。给药途径、样本量、分组方式、疾病控制的判定标准和随访时间，摘要均未给出。",
+      "results": [
+       "安全性（主要终点）：摘要称itolizumab安全性良好，没有因安全性原因导致的治疗中止，没有相关严重不良事件，也没有意外毒性。该结论来自A组每周100 mg共九次、B组每两周200 mg共五次的诱导方案及随后的维持期。试验未设对照组，具体不良事件发生率、分级和例数原文未给出，原文未报告统计学检验，因此安全性结论只能理解为描述性的。",
+       "疾病控制（次要终点）：在重度预治疗且未按生物标志物筛选的人群中，A组疾病控制率为25%，B组为20%。摘要未给出两组的入组人数、完全或部分缓解的例数、疾病控制的具体定义，也未做两组比较的统计检验，因此无法判断25%与20%的差别是否有意义。",
+       "生存与探索性分析：1年生存率A组为26%，B组为15%，摘要未给出置信区间、中位生存期或随访时长。探索性分析方面，摘要报告itolizumab在离体条件下下调CD6，使可溶性CD6水平升高，并使CD8细胞和NK细胞呈现更偏细胞毒性的表型；患者来源的外周血单个核细胞对CD318阳性癌细胞的体外杀伤能力增强。此外，抗体还调节外周淋巴细胞的PD-1表达，表现为促进NK细胞活性、维持CD8阳性T细胞上的抑制信号，并减轻辅助性T细胞的过度活化。这些变化的幅度和样本数原文未给出。"
+      ],
+      "mechanism": "摘要中有直接数据支撑的内容，是来自患者样本的离体和体外观察：itolizumab使CD6表达下调，可溶性CD6水平升高；CD8细胞和NK细胞表现出细胞毒性表型；患者来源的外周血单个核细胞对CD318阳性癌细胞的杀伤能力增强，且这种增强是特异针对此类细胞的；抗体还影响外周淋巴细胞的PD-1表达，促进NK细胞活性，同时保持CD8阳性T细胞上的抑制信号，并减轻辅助性T细胞过度活化。这些发现之间的联系，摘要用“双重作用”来概括：一方面增强抗肿瘤反应，另一方面通过减少脱靶炎症，避免免疫检查点治疗常见的免疫相关不良事件。需要注意，“避免免疫相关不良事件”属于作者基于安全性观察和生物标志物结果做出的解释，摘要并未提供与检查点抑制剂的直接比较数据，也未说明哪项机制观察与哪位患者的疾病控制相关。同样，结论中提出该药“特别”适用于表达CD318的肿瘤，以及适合用于合理联合方案，是作者提出的方向性设想，摘要没有给出按CD318表达分层的临床疗效数据，也没有给出联合治疗的数据。因此，机制层面可以说外周免疫细胞出现了与抗肿瘤活性相符的变化，但这些变化是否是临床疾病控制的原因，原文未给出证据。",
+      "limitations": [
+       "外推性：摘要未给出样本量，也未描述对照组，A、B两组的疾病控制率（25%对20%）和1年生存率（26%对15%）无法做统计比较，不能据此判断哪种给药方案更好，也无法区分药物作用与疾病自然进程。",
+       "人群与终点：入组者为重度预治疗、高度异质性的晚期实体瘤，且未按生物标志物筛选，肿瘤类型构成原文未给出；疾病控制的判定标准、随访时长原文未给出，生存数据仅有1年生存率，缺少置信区间。",
+       "机制证据：机制结果来自离体分析和体外杀伤实验，样本数、效应幅度原文未给出；体外对CD318阳性癌细胞的杀伤增强，尚未显示与患者的临床获益相关，因此“特别适用于CD318阳性肿瘤”只能视为假设。",
+       "未报告项：不良事件的具体发生率和分级、给药途径、剂量选择依据、研究是否随机，摘要均未给出；关于避免免疫相关不良事件的论断，摘要未提供与检查点抑制剂的直接对照数据。"
+      ],
+      "significance": "如果后续研究在更大的样本中确认该安全性特征，itolizumab可能为晚期实体瘤提供一种免疫调节的新选择，尤其适合作为联合方案中的组成部分。如果CD318表达确实预测获益，未来试验就可以据此筛选人群，而不必像本研究这样不做生物标志物筛选。如果外周血中观察到的NK细胞和CD8细胞变化能与临床结局关联，这些指标有可能用作药效或患者分层的生物标志物。目前，摘要只能支持该药在这一人群中耐受性良好、早期疾病控制信号有限且无法与对照比较；剂量方案的优劣、联合用药的价值以及在特定肿瘤中的疗效，原文均未给出结论。",
+      "data_points": [
+       {
+        "value": "100 mg weekly for nine doses",
+        "meaning": "A组诱导期给药方案",
+        "source_quote": "In induction, group A received 100 mg weekly for nine doses; group B received 200 mg biweekly for five doses."
+       },
+       {
+        "value": "200 mg biweekly for five doses",
+        "meaning": "B组诱导期给药方案",
+        "source_quote": "In induction, group A received 100 mg weekly for nine doses; group B received 200 mg biweekly for five doses."
+       },
+       {
+        "value": "21 days; 100 mg every 21 days for up to six doses",
+        "meaning": "诱导结束后进入维持期的间隔及维持期方案",
+        "source_quote": "After completing induction, patients moved to maintenance 21 days later, receiving 100 mg every 21 days for up to six doses."
+       },
+       {
+        "value": "25%",
+        "meaning": "A组疾病控制率",
+        "source_quote": "disease control was achieved in 25% in group A and 20% in group B"
+       },
+       {
+        "value": "20%",
+        "meaning": "B组疾病控制率",
+        "source_quote": "disease control was achieved in 25% in group A and 20% in group B"
+       },
+       {
+        "value": "26%",
+        "meaning": "A组1年生存率",
+        "source_quote": "the 1-year survival rate was 26% in group A and 15% in group B"
+       },
+       {
+        "value": "15%",
+        "meaning": "B组1年生存率",
+        "source_quote": "the 1-year survival rate was 26% in group A and 15% in group B"
+       }
+      ],
+      "steps": [
+       "A组每周100 mg共九次",
+       "B组每两周200 mg共五次",
+       "21天后转入维持期",
+       "维持期100 mg每21天一次",
+       "评估安全性与离体机制"
+      ],
+      "unknowns": [
+       "原文未给出样本量及两组入组人数",
+       "原文未给出肿瘤类型构成与既往治疗线数",
+       "原文未给出给药途径",
+       "原文未给出是否随机及是否设对照",
+       "原文未给出疾病控制的判定标准",
+       "原文未给出中位随访时长、中位生存期及置信区间",
+       "原文未给出不良事件的具体发生率与分级",
+       "原文未给出机制实验的样本数与效应幅度",
+       "原文未给出作者姓名与期刊名（仅有摘要）",
+       "未读到全文的结果、图注与方法部分"
+      ],
+      "image_prompt": "科学插图：一个抗体分子结合在免疫细胞表面的CD6受体上，旁边NK细胞和CD8 T细胞靠近肿瘤细胞，简洁示意图风格，蓝灰配色，无文字"
+     }
+    }
+   ]
+  },
+  {
+   "i": 3,
+   "tool": "submit_article",
+   "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+   "model": "claude-sonnet-5-5",
+   "max_tokens": 16000,
+   "stop_reason": "tool_use",
+   "usage": {
+    "input_tokens": 4282,
+    "output_tokens": 6249
+   },
+   "prompt_chars": 4751,
+   "prompt_sha256": "3f1d386884425eab01ab057c3eedec074edf0e202c9eefb88ca01110503351ba",
+   "thinking_blocks_omitted": 1,
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "toolu_pr5f_runA_03",
+     "name": "submit_article",
+     "input": {
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+      "tier": "deep",
+      "field": "c1",
+      "title": "抗CD6抗体itolizumab用于晚期实体瘤：疾病控制率A组25%、B组20%，未见相关严重不良事件",
+      "journal": "原文未给出期刊名（来源：PubMed）",
+      "authors": "原文未给出",
+      "one_liner": "在重度经治的晚期实体瘤患者中给予抗CD6抗体itolizumab，疾病控制率A组25%、B组20%，1年生存率分别为26%和15%，未见相关严重不良事件。",
+      "datacard": {
+       "study_type": "概念验证研究，原文自述为抗CD6单抗itolizumab在晚期实体瘤患者中的首次人体评价（first in-human）",
+       "n": "原文未给出总样本量及各组人数；设A组、B组两个给药组",
+       "control": "原文未给出独立对照组；摘要仅描述A、B两个给药方案",
+       "intervention": "诱导期：A组100 mg每周一次，共九次；B组200 mg每两周一次，共五次。诱导结束后21天进入维持期，100 mg每21天一次，最多六次（给药途径原文未给出）",
+       "followup": "原文未给出中位随访时长；报告了1年生存率",
+       "primary_endpoint": "安全性；次要目标包括疾病控制、生存，以及探索性分子机制与血液生物标志物",
+       "primary_endpoint_result": "无因安全性原因的治疗中止，无相关严重不良事件，无非预期毒性（各类不良事件的具体发生率原文未给出）",
+       "statistics": "原文未报告统计学检验",
+       "safety": "摘要称无相关严重不良事件、无安全性相关停药、无非预期毒性；不良事件分级及例数原文未给出"
+      },
+      "background": "原文称，CD6是肿瘤免疫治疗中有前景的靶点，临床前证据支持其在调节免疫应答中的作用。这提示有必要进一步考察现有的CD6靶向治疗，并可能由此产生新的抗肿瘤疗法。然而，靶向CD6在实体瘤中的临床效应此前尚未被探索。itolizumab是一种抗CD6单克隆抗体。本研究以晚期、高度异质性的实体瘤患者为对象，试图回答三个问题：该药在重度经治、未按生物标志物筛选的人群中是否安全；是否出现疾病控制和生存方面的早期信号；以及它对外周血免疫细胞的作用方式是什么。需要说明的是，本文材料仅为摘要，因此对设计和结果的描述限于摘要所载内容。",
+      "design": "这是一项概念验证研究，原文自述为抗CD6单抗itolizumab在晚期、高度异质性实体瘤患者中安全性和早期有效性的首次人体评价。治疗分诱导期和维持期。诱导期内，A组每周给予100 mg，共九次；B组每两周给予200 mg，共五次。完成诱导后，患者在21天后进入维持期，每21天给予100 mg，最多六次。主要终点为安全性；次要目标包括疾病控制、生存，以及探索性的分子机制和血液生物标志物。机制部分包括患者样本的离体分析，以及用患者来源外周血单个核细胞在体外检测对CD318阳性癌细胞的杀伤能力。研究在RPCEC登记。样本量、入排标准、肿瘤类型构成、疾病控制的具体定义和随访时长，摘要均未提供。",
+      "results": [
+       "安全性（主要终点）：摘要称itolizumab安全性良好，没有因安全性相关原因中止治疗的病例，没有相关严重不良事件，也没有非预期毒性。该结论来自两种给药方案，即A组100 mg每周一次和B组200 mg每两周一次。摘要未给出不良事件的具体例数、分级和发生率，也未报告针对安全性的统计学检验，因此只能说明未观察到上述类别的事件，不能据此估算不良反应发生率。",
+       "疾病控制（次要终点）：在重度经治、未按生物标志物筛选的人群中，A组疾病控制率为25%，B组为20%。两组数值相近，但摘要未给出各组人数、疾病控制的判定标准，也未报告组间比较的统计学检验，故不能判断两种方案孰优孰劣。",
+       "生存（次要终点）：1年生存率A组为26%，B组为15%。摘要没有提供对照组数据，也没有给出置信区间或P值，无法判断这一差异是否超出随机波动，也无法与同类人群的历史数据比较。",
+       "机制性结果（探索性）：离体分析显示，itolizumab下调CD6，使可溶性CD6水平升高，并使CD8细胞和NK细胞呈现更偏细胞毒性的表型。患者来源的外周血单个核细胞对CD318阳性癌细胞的体外杀伤能力增强。该抗体还调节外周血淋巴细胞的PD-1表达：促进NK细胞活性，同时维持CD8阳性T细胞上的抑制信号，并减轻辅助性T细胞的过度活化。以上均为摘要的定性描述，未附效应量。"
+      ],
+      "mechanism": "摘要给出的机制链条可概括为：itolizumab结合CD6后使细胞表面CD6下调，可溶性CD6升高；CD8细胞和NK细胞向细胞毒性表型偏移；患者外周血单个核细胞对CD318阳性癌细胞的体外杀伤增强。这些是作者在患者样本上通过离体和体外实验报告的观察，属于原文直接给出的结果，但具体检测方法、样本数和效应量摘要均未说明。\n\n原文进一步报告该抗体调节外周血淋巴细胞的PD-1表达，表现为促进NK细胞活性，同时保持CD8阳性T细胞上的抑制信号，并降低辅助性T细胞的过度活化。作者据此认为这些发现支持该药的“双重作用”，即增强抗肿瘤应答，同时通过减少脱靶炎症、避免免疫检查点治疗常见的免疫相关不良反应来防止类自身免疫效应。这一部分属于作者的解释和推断：摘要并未给出与免疫检查点抑制剂直接对照的数据，因此“避免免疫相关不良反应”更适合理解为与安全性观察相一致的假说，而非已被证实的结论。\n\n此外，作者提出该药可能尤其适用于表达CD318的肿瘤，以及作为合理联合方案的一部分。这一提法的依据是体外对CD318阳性癌细胞的杀伤增强，而摘要并未报告患者临床获益是否按CD318表达水平分层，所以CD318与临床疗效之间的关联在摘要中尚属推测。同样，血液中的免疫表型变化与疾病控制或生存之间是否存在联系，摘要也未提供分析。",
+      "limitations": [
+       "外推性：研究对象为晚期、高度异质性、重度经治且未按生物标志物筛选的实体瘤患者，肿瘤类型混杂；摘要未给出样本量和各组人数，疾病控制率25%与20%、1年生存率26%与15%的精确度无法评估，也难以外推到具体瘤种。",
+       "对照与统计：摘要未描述独立对照组，也未报告统计学检验，A、B两组疾病控制率和1年生存率的差异无法判断是否有意义；两组剂量和给药次数不同，也不能据此推断哪种方案更优。",
+       "终点性质：主要终点为安全性，疗效属次要终点，研究也不是为检验疗效而设计的；机制结果为探索性，来自离体和体外实验，与临床获益的关联在摘要中没有被直接检验。",
+       "未报告项：不良事件的分级、例数和发生率，随访时长，疾病控制的定义，以及CD318表达与临床结局的关系，摘要均未提供，因此“特别适用于CD318阳性肿瘤”的结论仅建立在体外杀伤数据上。"
+      ],
+      "significance": "如果后续研究能在更大样本中确认该安全性特征，itolizumab可能为CD6这一新靶点提供一种与PD-1通路不同的免疫调节思路。若CD318表达确实预测获益，则未来试验可能考虑按该标志物富集人群，从而提高检出疗效信号的效率。若作者关于PD-1调节和减轻免疫相关不良反应的推测成立，该药或许适合作为与其他免疫治疗联合的候选。但就目前摘要而言，疾病控制率和1年生存率没有对照和统计检验支撑，只能视为早期探索性信号，不足以作为疗效证据或改变临床实践。",
+      "unknowns": [
+       "原文未给出总样本量及各组人数",
+       "原文未给出期刊名与作者名单",
+       "原文未给出随访时长与疾病控制的判定标准",
+       "原文未给出不良事件的分级与例数"
+      ],
+      "data_points": [
+       {
+        "value": "100 mg",
+        "meaning": "A组诱导期每周给药剂量",
+        "source_quote": "group A received 100 mg weekly for nine doses"
+       },
+       {
+        "value": "nine doses",
+        "meaning": "A组诱导期给药次数",
+        "source_quote": "group A received 100 mg weekly for nine doses"
+       },
+       {
+        "value": "200 mg",
+        "meaning": "B组诱导期每两周给药剂量",
+        "source_quote": "group B received 200 mg biweekly for five doses"
+       },
+       {
+        "value": "five doses",
+        "meaning": "B组诱导期给药次数",
+        "source_quote": "group B received 200 mg biweekly for five doses"
+       },
+       {
+        "value": "21 days",
+        "meaning": "诱导结束后进入维持期的间隔，及维持期给药间隔",
+        "source_quote": "After completing induction, patients moved to maintenance 21 days later, receiving 100 mg every 21 days for up to six doses."
+       },
+       {
+        "value": "six doses",
+        "meaning": "维持期最多给药次数",
+        "source_quote": "After completing induction, patients moved to maintenance 21 days later, receiving 100 mg every 21 days for up to six doses."
+       },
+       {
+        "value": "25%",
+        "meaning": "A组疾病控制率",
+        "source_quote": "disease control was achieved in 25% in group A and 20% in group B"
+       },
+       {
+        "value": "20%",
+        "meaning": "B组疾病控制率",
+        "source_quote": "disease control was achieved in 25% in group A and 20% in group B"
+       },
+       {
+        "value": "26%",
+        "meaning": "A组1年生存率",
+        "source_quote": "the 1-year survival rate was 26% in group A and 15% in group B"
+       },
+       {
+        "value": "15%",
+        "meaning": "B组1年生存率",
+        "source_quote": "the 1-year survival rate was 26% in group A and 15% in group B"
+       }
+      ],
+      "steps": [
+       "A组100 mg每周，九次诱导",
+       "B组200 mg每两周，五次诱导",
+       "21天后转维持期100 mg",
+       "评估安全性与疾病控制",
+       "离体分析CD6与免疫表型"
+      ],
+      "image_prompt": "科学插图：抗CD6抗体结合免疫细胞表面，NK细胞与CD8 T细胞靠近癌细胞，扁平蓝灰配色，无文字"
+     }
+    }
+   ]
+  },
+  {
+   "i": 4,
+   "tool": "submit_article",
+   "url": "https://www.nature.com/articles/s41587-026-03318-7",
+   "model": "claude-sonnet-5-5",
+   "max_tokens": 16000,
+   "stop_reason": "tool_use",
+   "usage": {
+    "input_tokens": 3700,
+    "output_tokens": 4498
+   },
+   "prompt_chars": 3403,
+   "prompt_sha256": "a11908d8aadd5bc0f35cd1495bc46c713ab9d995fe50c54e2ef3088ec52005ab",
+   "thinking_blocks_omitted": 1,
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "toolu_pr5f_runA_04",
+     "name": "submit_article",
+     "input": {
+      "url": "https://www.nature.com/articles/s41587-026-03318-7",
+      "tier": "deep",
+      "field": "c1",
+      "title": "散弹枪式基因工程筛选数百万种通路组合，CHO细胞无缬氨酸生长接近野生型",
+      "journal": "Nature Biotechnology",
+      "authors": "原文未给出（仅有摘要，未读到作者列表）",
+      "one_liner": "研究者建立散弹枪式基因工程（SGE），在CHO和Jurkat细胞中筛选数百万种合成通路组合，使CHO细胞实现近野生型的无缬氨酸生长，并实现无异亮氨酸生长。",
+      "datacard": {
+       "study_type": "体外细胞工程方法学研究（CHO细胞与Jurkat细胞），仅读到摘要",
+       "n": "原文未给出（摘要仅称筛选了数百万种通路组合）",
+       "control": "原文未给出（摘要仅提及“野生型”生长作为比较基准）",
+       "intervention": "将大量带条形码的小型DNA构建体递送入哺乳动物细胞，使每个细胞携带一条在基因组成、化学计量比和细胞器定位上各异的合成通路；具体载体、剂量与筛选条件原文未给出",
+       "followup": "原文未给出",
+       "primary_endpoint": "在缺失特定必需氨基酸（缬氨酸或异亮氨酸）条件下的细胞生长；通过对表现出目标表型的细胞测序条形码来识别功能通路",
+       "primary_endpoint_result": "CHO细胞无缬氨酸生长接近野生型；CHO细胞可无异亮氨酸生长；Jurkat细胞可无缬氨酸生长。具体生长数值与对照值原文未给出",
+       "statistics": "原文未报告统计学检验",
+       "safety": "不适用"
+      },
+      "background": "哺乳动物代谢工程服务于基础生物学、生物生产和细胞治疗。但随着通路复杂度上升，组合设计空间和所需DNA构建体的规模同步增大，使无偏筛选难以实施。当通路涉及多个基因时，基因组成、化学计量比和细胞器定位的可能组合数量迅速膨胀，若要把整条通路装入单个大型构建体，逐一构建与测试几乎不可行。本研究试图回答：能否绕开单个大构建体的限制，在哺乳动物细胞中对复杂多基因通路进行无偏、大规模的功能筛选？研究者以必需氨基酸生物合成这一复杂性状作为检验对象，考察该策略能否在细胞中重建缺失的代谢能力。",
+      "design": "研究者提出散弹枪式基因工程（shotgun genetic engineering，SGE）。其思路是向哺乳动物细胞递送大量带条形码的小型构建体，而不是一个大型构建体。每个细胞因此成为一个独立实验，携带一条合成通路，该通路在基因含量、化学计量比和细胞器定位三个维度上各不相同。筛选之后，研究者对表现出目标表型的细胞进行条形码测序，据此识别功能性通路。应用场景是必需氨基酸生物合成工程：在中国仓鼠卵巢（CHO）细胞中针对缬氨酸和异亮氨酸，在Jurkat细胞中针对缬氨酸。摘要称筛选规模达数百万种通路组合。摘要未给出所用基因的来源、载体与递送方法、筛选培养条件、重复次数和随访时长，这些信息在材料中均未读到。",
+      "results": [
+       "筛选规模：摘要称，研究者利用SGE筛选了数百万种通路组合，用于工程化必需氨基酸的生物合成。该规模被作者描述为超出常规筛选方法的范围。组合数的精确值、文库构成及各细胞系的实际覆盖度，原文摘要未给出。",
+       "CHO细胞缬氨酸终点：筛选获得的通路使CHO细胞在缺失缬氨酸时实现“近野生型”生长。摘要未给出倍增时间、生长速率等绝对数值，也未给出野生型对照的对应数值，且原文未报告统计学检验，因此无法判断与对照之间的差距大小或不确定性。",
+       "其他氨基酸与细胞系：摘要报告，该方法使CHO细胞实现无异亮氨酸生长，并使Jurkat细胞实现无缬氨酸生长。共涉及2种细胞系、2种氨基酸。摘要未说明异亮氨酸和Jurkat的生长恢复程度是否也接近野生型，相关数值未读到。",
+       "通路特征：功能性通路倾向于线粒体定位，且需要整合数十千碱基（tens of kilobases）的合成DNA，作者称这超出了常规筛选的规模。摘要还称所得数据集可支持机器学习引导的解码与工程化，但未给出模型类型、预测性能或验证结果。"
+      ],
+      "mechanism": "原文摘要直接陈述的内容有限。其一，SGE的设计逻辑是：递送许多带条形码的小构建体比递送单个大构建体更容易，所以每个细胞可随机获得不同的基因组合，并把表型与条形码对应起来。其二，作者报告功能性通路“倾向于”线粒体定位，并且需要整合数十千碱基的合成DNA。这是从筛选结果中读出的关联性观察。在摘要范围内，作者没有报告对线粒体定位作用的直接干预实验，也没有报告代谢流或中间产物测量，因此线粒体为什么有利仍属未解之问。可以作为推测的解释包括：线粒体可能提供了相关酶所需的底物、辅因子或反应环境，但这些均不是摘要所给出的结论，也未读到任何支持数据。其三，摘要称这些数据集可支持机器学习引导的解码和工程化，措辞为“支持”，意味着这是一种潜在用途，而不是已经证明的预测能力。材料中没有关于具体酶、基因来源、化学计量比最优区间的信息，因而无法在机制层面说明哪些组成成分起关键作用。",
+      "limitations": [
+       "外推性：材料仅涉及CHO和Jurkat两种细胞系以及缬氨酸、异亮氨酸两种氨基酸，摘要未报告其他细胞类型或其他通路。能否推广到更长的代谢通路，摘要没有给出数据。",
+       "终点与对照：核心表型是“近野生型”生长，但原文未给出生长速率的绝对数值、野生型对照数值和统计学检验，无法量化与对照的差距，也无法评估重复间的变异。",
+       "未报告项：原文未给出文库规模的精确数字、基因来源、递送方法、筛选时长和随访时长；功能通路的稳定性（长期传代后是否保持）同样未读到。",
+       "证据深度：本次仅有摘要，没有全文结果、图注或方法，机器学习解码的性能、线粒体偏好的统计强度均无法核实；摘要中的“数百万”“数十千碱基”为概括性表述，不是精确测量值。"
+      ],
+      "significance": "如果SGE的结果在更多通路和细胞系中可重复，它可能为多基因代谢工程提供一种不必构建单个大型构建体的筛选途径，用于细胞治疗中的代谢改造或生物生产中的细胞株设计。若CHO细胞的氨基酸自给能力可得到稳定保持，培养基中必需氨基酸的需求在原则上有可能降低，但摘要未评估成本、产量或工艺层面的影响。对基础研究而言，功能通路偏好线粒体定位的观察，可能为理解合成通路的区室化设计提供线索。这些应用均需要全文数据与独立验证才能确认，目前不能视为已被证明。",
+      "data_points": [
+       {
+        "value": "数百万",
+        "meaning": "筛选的通路组合数量（概数）",
+        "source_quote": "Using SGE, we screened millions of pathway combinations to engineer essential amino acid biosynthesis"
+       },
+       {
+        "value": "数十千碱基",
+        "meaning": "功能通路需要整合的合成DNA规模（概数）",
+        "source_quote": "Functional pathways favored mitochondrial localization and required the integration of tens of kilobases of synthetic DNA, beyond the scale of conventional screening."
+       },
+       {
+        "value": "2种细胞系",
+        "meaning": "研究涉及的细胞系数量（CHO与Jurkat）",
+        "source_quote": "enabling isoleucine-free growth in Chinese hamster ovary cells, as well as valine-free growth in Jurkat cells"
+       }
+      ],
+      "steps": [
+       "递送带条形码的小构建体",
+       "每个细胞携带独立合成通路",
+       "在缺失氨基酸条件下筛选",
+       "测序表型细胞的条形码",
+       "识别功能性通路"
+      ],
+      "unknowns": [
+       "原文未给出作者列表",
+       "原文未给出具体样本量与文库规模的精确数值",
+       "原文未给出生长速率等绝对数值及野生型对照数值",
+       "原文未报告统计学检验",
+       "原文未给出基因来源、载体与递送方法",
+       "原文未给出筛选培养条件与时长、随访时长",
+       "原文未给出机器学习模型类型与预测性能"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "i": 5,
+   "tool": "submit_article",
+   "url": "https://www.nature.com/articles/s41587-026-03318-7",
+   "model": "claude-sonnet-5-5",
+   "max_tokens": 16000,
+   "stop_reason": "tool_use",
+   "usage": {
+    "input_tokens": 3849,
+    "output_tokens": 6113
+   },
+   "prompt_chars": 3595,
+   "prompt_sha256": "8c60d534c3ba509fdfd19426e5d1f3a2dc6c116ac3dc580807d021d657e13595",
+   "thinking_blocks_omitted": 1,
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "toolu_pr5f_runA_05",
+     "name": "submit_article",
+     "input": {
+      "url": "https://www.nature.com/articles/s41587-026-03318-7",
+      "tier": "deep",
+      "field": "c9",
+      "title": "霰弹枪式基因工程筛选数百万种通路组合，使CHO细胞在无缬氨酸条件下接近野生型生长",
+      "journal": "Nature Biotechnology",
+      "authors": "原文未给出（仅有摘要，未列作者）",
+      "one_liner": "研究者用带条形码的小构建体混合递送建立“霰弹枪式基因工程”，在CHO与Jurkat细胞中筛选数百万种通路组合，获得无缬氨酸近野生型生长及无异亮氨酸生长。",
+      "datacard": {
+       "study_type": "方法学/细胞工程筛选研究（来源仅为摘要）",
+       "n": "原文未给出具体细胞数或文库规模；摘要仅称筛选了数百万种通路组合",
+       "control": "摘要未写明对照设置，仅提到“野生型生长”作为参照水平",
+       "intervention": "带条形码的多个小型基因构建体混合递送入哺乳动物细胞，每个细胞携带一条合成通路，覆盖基因组成、化学计量比与细胞器定位",
+       "followup": "原文未给出",
+       "primary_endpoint": "在缺失必需氨基酸（缬氨酸或异亮氨酸）的条件下细胞生长，通过测序高表型细胞的条形码识别功能通路",
+       "primary_endpoint_result": "CHO细胞在无缬氨酸条件下达到接近野生型的生长，并实现无异亮氨酸生长；Jurkat细胞实现无缬氨酸生长；具体数值原文未给出",
+       "statistics": "原文未报告统计学检验",
+       "safety": "不适用"
+      },
+      "background": "哺乳动物代谢工程支撑着基础生物学研究、生物生产和细胞治疗。但随着目标通路变得复杂，组合设计空间和所需DNA构建体的规模同步增大，使无偏倚的筛选难以进行。传统思路是把整条通路装进单个大型构建体，一旦同时要探索基因组成、化学计量比和细胞器定位，需要构建和检验的组合数量就会迅速膨胀。作者以必需氨基酸生物合成作为复杂代谢性状的检验对象，其中包括缬氨酸和异亮氨酸。本研究要回答的问题是：能否改变递送方式，把“一个大构建体”换成“许多带条形码的小构建体”，让每个细胞各自充当一次独立实验，从而在哺乳动物细胞中无偏倚地检验数百万种通路组合，并从中找出真正有功能的方案。",
+      "design": "本文为方法学研究，材料仅为摘要。作者建立了“霰弹枪式基因工程”（shotgun genetic engineering，SGE）：利用向哺乳动物细胞递送大量带条形码小构建体比递送单个大构建体更容易这一特点，让每个细胞携带一条合成通路，该通路在基因组成、化学计量比和细胞器定位三个维度上各不相同，因此每个细胞相当于一次独立实验。筛选读出为表型：将细胞置于缺乏特定必需氨基酸的条件下，对表现出目标表型（即能够生长）的细胞进行条形码测序，据此识别功能通路。应用对象是必需氨基酸生物合成，涉及缬氨酸和异亮氨酸，细胞系为中国仓鼠卵巢（CHO）细胞和Jurkat细胞。摘要称筛选规模达数百万种通路组合。分组方式、剂量、培养基具体配方、重复数和统计方法在摘要中均没有描述。",
+      "results": [
+       "筛选规模与主要终点：摘要称，作者用SGE筛选了数百万种通路组合（millions of pathway combinations），用于改造必需氨基酸生物合成。主要表型是细胞在缺乏目标氨基酸时的生长。在CHO细胞中，筛选获得了在无缬氨酸条件下近野生型生长（near-wild-type growth）的细胞。摘要没有给出生长速率、倍增时间等绝对数值，也没有给出对照组数值，更没有报告统计学检验，所以“接近”只能按原文的定性表述理解。",
+       "第二个氨基酸：除缬氨酸外，作者在CHO细胞中实现了无异亮氨酸生长（isoleucine-free growth）。摘要使用的措辞是“enabling”，没有写明该表型与野生型相比的接近程度，也没有量化该性状的稳定性或生长速度。仅就摘要而言，这一结果说明同一筛选框架可用于不止一种必需氨基酸，但不同氨基酸之间的效果差异无法比较。",
+       "第二种细胞系：作者还在Jurkat细胞中实现了无缬氨酸生长（valine-free growth）。Jurkat是一种与CHO来源不同的细胞系，这一结果提示SGE并不局限于单一宿主背景。摘要未写明Jurkat细胞的生长水平是否也达到近野生型，因此不能把CHO的“近野生型”表述推广到Jurkat。",
+       "通路特征：对功能通路的分析显示，它们倾向于线粒体定位（favored mitochondrial localization），并且需要整合数十千碱基（tens of kilobases）的合成DNA，摘要称这超出了常规筛选的规模。摘要没有给出线粒体定位通路所占的具体比例，也没有说明所需DNA的确切长度。这些结果产生的数据集，被作者认为可支持机器学习引导的复杂生物合成性状的解码与工程化。"
+      ],
+      "mechanism": "原文（摘要）直接支持的内容包括：其一，SGE把一个大构建体拆成许多带条形码的小构建体，使每个细胞带有一条不同的合成通路，细胞表型可通过条形码测序回溯到通路组成；其二，在筛选得到的功能通路中，线粒体定位占优势，且这些通路合计整合了数十千碱基的合成DNA。这说明，至少在这一筛选体系中，成功的通路并非只靠少量基因就能实现，它们需要较大规模的遗传内容，并受细胞器定位影响。\\n\\n摘要没有证明的部分，只能作为推测来看待。例如，线粒体偏好可能与线粒体内已有的代谢环境有关，如底物、辅因子或相关酶的可用性，但摘要没有给出任何机制实验来验证这一点。同样，通路为何需要如此多的DNA，是因为需要多个酶，还是因为需要特定的表达量或化学计量比，摘要也没有交代。摘要还没有说明各细胞中的通路在多大程度上由多个小构建体共同组成，以及共递送比例如何控制。\\n\\n另一点是机器学习。摘要只称所得数据集“支持”机器学习引导的解码和工程化，并未报告模型的预测性能，因此该部分应理解为数据用途的展望，而不是已经验证的结果。总体上，原文展示的是一种筛选策略的可行性及其所得通路的整体特征，具体的分子机制尚未在摘要中得到阐明。",
+      "limitations": [
+       "外推性：摘要只涉及CHO和Jurkat两种细胞系，缬氨酸和异亮氨酸两种氨基酸；其他必需氨基酸、原代细胞或体内环境下是否同样适用，摘要没有提供数据，不能直接推论。",
+       "终点定义较粗：“近野生型生长”是定性表述，摘要没有给出生长速率、倍增时间或对照组数值，也没有统计检验，因此无法判断改造细胞与野生型的差距，也无法比较CHO无缬氨酸、CHO无异亮氨酸与Jurkat无缬氨酸三项结果的强弱。",
+       "筛选读出依赖生长表型：只有能在缺氨基酸条件下增殖的细胞才会被测序，通路在不同培养规模、长期传代或生物生产场景下是否稳定，摘要没有交代。",
+       "关键参数缺失：文库的精确规模、每个细胞携带的构建体数量、重复实验次数和验证方式，摘要均没有说明，复现难度难以评估。",
+       "功能通路偏向线粒体定位、需要数十千碱基DNA，这些只是对筛选结果的描述；它们是否因果性地决定了功能，摘要没有用后续实验证明。"
+      ],
+      "significance": "如果摘要所述结果在全文中得到重复验证，SGE可能为复杂哺乳动物代谢通路的无偏倚筛选提供一种替代“单个大构建体”的做法，尤其适用于需要同时探索基因组成、化学计量比和细胞器定位的工程项目。若功能通路确实普遍需要线粒体定位和大规模合成DNA，那么后续的细胞治疗或生物生产设计可能需要在构建体规模和定位设计上预留更大的空间。若数据集能够训练出有预测力的模型，筛选成本可能随之下降，但这一点摘要仅作为展望提出，尚无性能数据。对CHO细胞而言，无缬氨酸或无异亮氨酸生长的株系是否能降低培养基成本或带来工艺优势，摘要没有评估，应待全文数据确认后再讨论。",
+      "data_points": [
+       {
+        "value": "millions",
+        "meaning": "筛选的通路组合规模（原文为数量级表述，无具体数字）",
+        "source_quote": "Using SGE, we screened millions of pathway combinations to engineer essential amino acid biosynthesis"
+       },
+       {
+        "value": "tens of kilobases",
+        "meaning": "功能通路所需整合的合成DNA规模（原文为数量级表述）",
+        "source_quote": "Functional pathways favored mitochondrial localization and required the integration of tens of kilobases of synthetic DNA, beyond the scale of conventional screening."
+       }
+      ],
+      "steps": [
+       "递送带条形码的小构建体",
+       "每个细胞携带一条合成通路",
+       "缺氨基酸条件下筛选生长",
+       "测序高表型细胞条形码",
+       "识别功能通路并建模"
+      ],
+      "unknowns": [
+       "摘要未写明作者名单、文库具体规模、重复次数",
+       "摘要未写明生长速率等定量终点及对照数值",
+       "摘要未提供机器学习模型的性能数据"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "i": 6,
+   "tool": "submit_article",
+   "url": "https://www.nature.com/articles/s41587-026-03315-w",
+   "model": "claude-sonnet-5-5",
+   "max_tokens": 8000,
+   "stop_reason": "tool_use",
+   "usage": {
+    "input_tokens": 3468,
+    "output_tokens": 2661
+   },
+   "prompt_chars": 2697,
+   "prompt_sha256": "5a32daf50c3c990040d2b53f4651957b2b49fe8b9d06250b56ec99609a573c26",
+   "thinking_blocks_omitted": 1,
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "toolu_pr5f_runA_06",
+     "name": "submit_article",
+     "input": {
+      "url": "https://www.nature.com/articles/s41587-026-03315-w",
+      "tier": "brief",
+      "field": "c1",
+      "title": "检索1,139个鸟类基因组得159个R2逆转录转座子，工程化变体整合率最高60%",
+      "journal": "Nature Biotechnology",
+      "authors": "原文未给出",
+      "one_liner": "研究检索1,139个鸟类基因组，鉴定159个R2逆转录转座子，其工程化变体在人类原代细胞中实现最高60%的位点特异性基因整合。",
+      "datacard": {
+       "study_type": "计算挖掘加工程改造研究（仅据摘要判断）",
+       "n": "检索1,139个鸟类基因组，鉴定159个鸟类R2逆转录转座子；细胞样本量原文未给出",
+       "control": "原文未给出",
+       "intervention": "鸟类R2逆转录转座子的工程化变体，用于全RNA介导的靶向DNA整合；剂量/途径/频次原文未给出",
+       "followup": "原文未给出",
+       "primary_endpoint": "人类原代细胞中的位点特异性基因整合效率（摘要表述）",
+       "primary_endpoint_result": "最高达60%；对照值原文未给出",
+       "statistics": "原文未报告统计学检验",
+       "safety": "原文未给出"
+      },
+      "background": "人类细胞基因组整合可用的逆转录转座子工具有限，作者希望从鸟类基因组中寻找此前未知的R2逆转录转座子，用于全RNA介导的靶向DNA整合。",
+      "design": "这是一项计算挖掘加工程改造研究：作者检索1,139个鸟类基因组，鉴定159个鸟类R2逆转录转座子，并在人类原代细胞中检测其工程化变体的整合效率。",
+      "results": [
+       "作者检索了1,139个鸟类基因组，鉴定出159个鸟类R2逆转录转座子，并刻画了其蛋白和非翻译区元件中保守与非保守的序列特征。这些逆转录转座子的工程化变体在人类原代细胞中实现了最高达60%的位点特异性基因整合。摘要称这项工作扩充了鸟类R2资源，并为全RNA介导的基因组编辑提供了更多工具。摘要未给出对照组、具体细胞类型、靶位点和统计检验。"
+      ],
+      "mechanism": "未读到该部分",
+      "limitations": [
+       "本条仅依据摘要，未读全文。摘要未给出60%对应的具体变体、细胞类型、靶位点、重复数、脱靶情况或统计检验，且“最高”指峰值，不代表平均水平。"
+      ],
+      "significance": "若该整合效率在更多靶位点和细胞类型中可重复，这些鸟类R2变体或可为全RNA递送的靶向基因插入提供候选工具；其实际价值需以全文数据核实。",
+      "unknowns": [
+       "原文未给出作者名单",
+       "原文未给出60%对应的具体变体、细胞类型与靶位点",
+       "原文未给出对照组与样本重复数",
+       "原文未给出脱靶或安全性数据",
+       "原文未报告统计学检验",
+       "原文未给出随访时长"
+      ],
+      "data_points": [
+       {
+        "value": "1,139",
+        "meaning": "检索的鸟类基因组数量",
+        "source_quote": "we searched 1,139 avian genomes, identified 159 avian R2 retrotransposons"
+       },
+       {
+        "value": "159",
+        "meaning": "鉴定出的鸟类R2逆转录转座子数量",
+        "source_quote": "we searched 1,139 avian genomes, identified 159 avian R2 retrotransposons"
+       },
+       {
+        "value": "60%",
+        "meaning": "工程化变体在人类原代细胞中位点特异性基因整合的最高效率",
+        "source_quote": "Engineered variants of these retrotransposons achieved up to 60% site-specific gene integration across human primary cells."
+       }
+      ],
+      "image_prompt": "示意图：鸟类基因组检索、R2逆转录转座子筛选并导入人类细胞实现位点特异性整合，简洁科学插画风格",
+      "steps": [
+       "检索1,139个鸟类基因组",
+       "鉴定159个R2逆转录转座子",
+       "刻画蛋白与UTR序列特征",
+       "工程化改造变体",
+       "人原代细胞测整合率"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "i": 7,
+   "tool": "submit_article",
+   "url": "https://www.nature.com/articles/s41587-026-03315-w",
+   "model": "claude-sonnet-5-5",
+   "max_tokens": 8000,
+   "stop_reason": "tool_use",
+   "usage": {
+    "input_tokens": 3517,
+    "output_tokens": 3256
+   },
+   "prompt_chars": 2748,
+   "prompt_sha256": "f8e3d70640d99905aa8e580602eb3d158f8017134bf9cc722ca25e5f2e7ca1c8",
+   "thinking_blocks_omitted": 1,
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "toolu_pr5f_runA_07",
+     "name": "submit_article",
+     "input": {
+      "url": "https://www.nature.com/articles/s41587-026-03315-w",
+      "tier": "brief",
+      "field": "c2",
+      "title": "159个鸟类R2逆转录转座子经工程化，在人原代细胞中位点特异整合最高达60%",
+      "journal": "Nature Biotechnology",
+      "authors": "原文未给出",
+      "one_liner": "检索1,139个鸟类基因组，鉴定159个R2逆转录转座子，其工程化变体在人原代细胞中实现最高60%的位点特异性基因整合。",
+      "datacard": {
+       "study_type": "基因组挖掘加工程化改造的临床前研究（仅依据摘要）",
+       "n": "检索1,139个鸟类基因组，鉴定159个鸟类R2逆转录转座子；人原代细胞样本数原文未给出",
+       "control": "原文未给出",
+       "intervention": "鸟类R2逆转录转座子的工程化变体，用于全RNA介导的靶向DNA整合；剂量与递送方式摘要未涉及",
+       "followup": "原文未给出",
+       "primary_endpoint": "人原代细胞中的位点特异性基因整合效率",
+       "primary_endpoint_result": "最高达60%；对照值原文未给出",
+       "statistics": "原文未报告统计学检验",
+       "safety": "不适用"
+      },
+      "background": "为在人类细胞中实现基因组整合，研究者希望发现尚未被认识的逆转录转座子，并以鸟类R2逆转录转座子作为候选来源进行系统挖掘。",
+      "design": "这是一项基因组挖掘加工程化改造的临床前研究：检索1,139个鸟类基因组，鉴定159个R2逆转录转座子，并在人原代细胞中测试其工程化变体的整合效果。",
+      "results": [
+       "Kojima 等与本研究无关，此处不引用。作者检索了1,139个鸟类基因组，鉴定出159个鸟类R2逆转录转座子，并对其蛋白质及非翻译区元件中保守与非保守的序列特征进行了表征。这一步扩充了可供利用的鸟类R2元件资源。",
+       "这些逆转录转座子的工程化变体在人原代细胞中实现了最高60%的位点特异性基因整合。需要注意，60%是摘要给出的“最高”值，代表表现最好的情形，不等同于所有变体或所有细胞类型的平均效率。作者据此认为，这项工作扩充了鸟类R2资源，并为全RNA介导的基因组编辑提供了更多工具。"
+      ],
+      "mechanism": "摘要未展开机制。",
+      "limitations": [
+       "本条依据摘要撰写：60%为“最高”值，对应的细胞类型、靶位点、变体数量、脱靶情况以及对照与统计检验均未在摘要中呈现，整合效率的普遍性无法判断。"
+      ],
+      "significance": "若这些变体的整合效率与特异性在更多靶位点和细胞类型中得到确认，扩充后的鸟类R2资源或可为全RNA介导的基因组编辑提供更多可选工具。",
+      "data_points": [
+       {
+        "value": "1,139",
+        "meaning": "检索的鸟类基因组数量",
+        "source_quote": "we searched 1,139 avian genomes, identified 159 avian R2 retrotransposons"
+       },
+       {
+        "value": "159",
+        "meaning": "鉴定出的鸟类R2逆转录转座子数量",
+        "source_quote": "we searched 1,139 avian genomes, identified 159 avian R2 retrotransposons"
+       },
+       {
+        "value": "60%",
+        "meaning": "工程化变体在人原代细胞中位点特异性基因整合的最高效率",
+        "source_quote": "Engineered variants of these retrotransposons achieved up to 60% site-specific gene integration across human primary cells."
+       }
+      ],
+      "steps": [
+       "检索1,139个鸟类基因组",
+       "鉴定159个R2逆转录转座子",
+       "表征蛋白与UTR序列特征",
+       "工程化改造变体",
+       "人原代细胞中测整合效率"
+      ],
+      "unknowns": [
+       "具体靶位点与细胞类型",
+       "对照设置与脱靶评估",
+       "作者名单"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "i": 8,
+   "tool": "submit_article",
+   "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755788v1?rss=1",
+   "model": "claude-sonnet-5-5",
+   "max_tokens": 8000,
+   "stop_reason": "tool_use",
+   "usage": {
+    "input_tokens": 3726,
+    "output_tokens": 3333
+   },
+   "prompt_chars": 3323,
+   "prompt_sha256": "69aa1d0b35d3dc204d2438187ee45771358018bac4006d918eb2571805d3db19",
+   "thinking_blocks_omitted": 1,
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "toolu_pr5f_runA_08",
+     "name": "submit_article",
+     "input": {
+      "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755788v1?rss=1",
+      "tier": "brief",
+      "field": "c2",
+      "title": "人源CD4 T细胞经抗原呈递细胞间接识别，使HLA-DP阴性肿瘤在人源化小鼠中消退",
+      "journal": "bioRxiv（预印本，免疫学）",
+      "authors": "原文未给出",
+      "one_liner": "在人源化小鼠中转移NY-ESO特异CD4 T细胞，可使HLA-DP阴性肿瘤消退，且需要HLA匹配的人源抗原呈递细胞；摘要未给出定量结果。",
+      "datacard": {
+       "study_type": "临床前研究：体外共培养、人源化小鼠模型，并结合患者肿瘤转录组相关性分析（预印本，仅读到摘要）",
+       "n": "原文未给出",
+       "control": "原文未给出",
+       "intervention": "转移表达患者来源NY-ESO特异、HLA-DP04限制性TCR的人CD4 T细胞；剂量、途径、频次原文未给出",
+       "followup": "原文未给出",
+       "primary_endpoint": "原文未给出明确主要终点；摘要描述的观察指标为肿瘤生长抑制/消退、内源性CD8 T细胞增殖和髓系活化",
+       "primary_endpoint_result": "原文未给出",
+       "statistics": "原文未报告统计学检验",
+       "safety": "不适用"
+      },
+      "background": "MHC II类分子阴性的肿瘤中，人肿瘤特异性CD4 T细胞能否驱动抗肿瘤免疫，此前尚未确立。该研究关注CD4 T细胞是否可不直接识别肿瘤细胞，而经抗原呈递细胞（APC）间接发挥作用。",
+      "design": "Walker等未在摘要中署名，作者信息原文未给出。研究为临床前研究，n原文未给出：先分析MHC II阴性黑色素瘤和乳腺癌患者数据，再用患者来源NY-ESO特异、HLA-DP04限制性TCR，开展体外实验和人源化小鼠实验。",
+      "results": [
+       "在MHC II阴性的黑色素瘤和乳腺癌中，带有肿瘤特异性转录特征的CD4 T细胞与髓系细胞及CD8 T细胞活化相关。体外实验中，CD4 T细胞通过识别APC上的肿瘤来源抗原，抑制了HLA-DP阴性黑色素瘤的生长。",
+       "在人源化小鼠中，转移CD4 T细胞诱导了HLA-DP阴性肿瘤消退，肿瘤控制需要HLA匹配的人源APC。CD4 T细胞转移还诱导内源性CD8 T细胞增殖和髓系活化，其模式与患者中相关免疫程序相似。摘要未给出肿瘤体积、消退比例、样本量或统计检验。"
+      ],
+      "mechanism": "摘要提示的机制为：CD4 T细胞识别APC上呈递的肿瘤来源抗原，继而促进CD8 T细胞增殖和髓系活化，不依赖肿瘤细胞自身表达MHC II。",
+      "limitations": [
+       "本条仅依据摘要写成，未读到全文、图注和方法；样本量、动物数、随访时间、统计检验原文均未给出。",
+       "患者数据部分为相关性分析，不能单独确立因果；小鼠实验使用单一患者来源TCR，能否推及其他抗原和TCR原文未给出。"
+      ],
+      "significance": "若这一间接呈递机制在更多TCR和肿瘤模型中得到验证，CD4 T细胞疗法对MHC II阴性肿瘤可能具有治疗价值。摘要仅报告临床前模型和患者数据相关性，原文未报告人体治疗数据。",
+      "unknowns": [
+       "原文未给出样本量与动物分组",
+       "原文未给出肿瘤消退的定量结果与统计检验",
+       "原文未给出作者名单",
+       "原文未给出随访时长与安全性数据"
+      ],
+      "data_points": [
+       {
+        "value": "原文未给出数值",
+        "meaning": "摘要未报告定量结果，仅有定性描述：人源化小鼠中肿瘤消退",
+        "source_quote": "In humanized mice, CD4 T cell transfer induced regression of HLA-DP-negative tumors, and control required HLA-matched human APCs."
+       }
+      ],
+      "steps": [
+       "分析患者肿瘤转录组相关性",
+       "体外检测CD4 T细胞抑瘤",
+       "人源化小鼠转移CD4 T细胞",
+       "检查HLA匹配APC的必要性",
+       "观察CD8与髓系活化"
+      ],
+      "image_prompt": "示意图：CD4 T细胞识别抗原呈递细胞上的肿瘤抗原，进而激活CD8 T细胞与髓系细胞，攻击不表达MHC II的肿瘤细胞，扁平科学插画风格"
+     }
+    }
+   ]
+  },
+  {
+   "i": 9,
+   "tool": "submit_article",
+   "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755788v1?rss=1",
+   "model": "claude-sonnet-5-5",
+   "max_tokens": 8000,
+   "stop_reason": "tool_use",
+   "usage": {
+    "input_tokens": 3823,
+    "output_tokens": 2656
+   },
+   "prompt_chars": 3437,
+   "prompt_sha256": "7ca930b878ee4833671a13e69859dd2d97886650d0bfeb41b8a1112466ba2f6b",
+   "thinking_blocks_omitted": 1,
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "toolu_pr5f_runA_09",
+     "name": "submit_article",
+     "input": {
+      "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755788v1?rss=1",
+      "tier": "brief",
+      "field": "c2",
+      "title": "人源CD4 T细胞经抗原提呈细胞间接识别，在MHC II类阴性肿瘤小鼠模型中诱导消退",
+      "journal": "bioRxiv（预印本，未经同行评议）",
+      "authors": "原文未给出",
+      "one_liner": "在人源化小鼠中转移NY-ESO特异性TCR的人CD4 T细胞，可使HLA-DP阴性肿瘤消退，且依赖HLA匹配的人APC；摘要未给出具体数值。",
+      "datacard": {
+       "study_type": "临床前研究：患者样本转录组相关性分析＋体外实验＋人源化小鼠模型（预印本，仅读到摘要）",
+       "n": "原文未给出",
+       "control": "原文未给出",
+       "intervention": "表达患者来源NY-ESO特异性、HLA-DP04限制性TCR的人CD4 T细胞（体外共培养；人源化小鼠中过继转移）；剂量、途径、频次、疗程原文未给出",
+       "followup": "原文未给出",
+       "primary_endpoint": "原文未明确设定主要终点；摘要报告的观察指标包括体外肿瘤生长抑制、人源化小鼠肿瘤消退、内源性CD8 T细胞增殖与髓系细胞活化",
+       "primary_endpoint_result": "原文未给出具体数值；摘要称CD4 T细胞转移诱导HLA-DP阴性肿瘤消退",
+       "statistics": "原文未报告统计学检验",
+       "safety": "原文未给出"
+      },
+      "background": "肿瘤细胞不表达MHC II类分子时，人肿瘤特异性CD4 T细胞能否推动抗肿瘤免疫，此前尚未确立。作者围绕这一问题，检验CD4 T细胞是否可通过抗原提呈细胞（APC）的间接提呈发挥作用。",
+      "design": "这是一项临床前研究，包含患者数据的转录组相关分析、体外实验和人源化小鼠实验。研究使用患者来源的NY-ESO特异性、HLA-DP04限制性TCR，样本量原文未给出。",
+      "results": [
+       "在MHC II类阴性的黑色素瘤和乳腺癌这两种肿瘤中，带有肿瘤特异性转录特征的CD4 T细胞与髓系细胞及CD8 T细胞的活化相关。体外实验中，CD4 T细胞通过识别APC上的肿瘤来源抗原，抑制了HLA-DP阴性黑色素瘤的生长。在人源化小鼠中，转移CD4 T细胞诱导了HLA-DP阴性肿瘤的消退，而控制肿瘤需要HLA匹配的人APC。CD4 T细胞转移还诱导内源性CD8 T细胞增殖和髓系活化，其免疫程序与患者数据中的相关性相似。摘要未给出消退幅度、动物数或统计检验结果。"
+      ],
+      "mechanism": "原文未读到该部分",
+      "limitations": [
+       "本条未读原文，仅读到bioRxiv摘要；样本量、对照设置、消退幅度、随访时长和统计检验均未能核实，结论仅来自人源化小鼠和体外模型，且为未经同行评议的预印本。"
+      ],
+      "significance": "若这些结果在更多TCR和肿瘤类型中得到重复，提示CD4 T细胞疗法或许可用于缺乏MHC II类表达的肿瘤。作者在摘要中称其支持CD4 T细胞在此类肿瘤中的治疗相关性，但目前原文未报告人体治疗数据。",
+      "data_points": [
+       {
+        "value": "2",
+        "meaning": "摘要中分析的MHC II类阴性肿瘤类型数量（黑色素瘤、乳腺癌）",
+        "source_quote": "In MHC class II-negative melanoma and breast cancer, CD4 T cells with a transcriptional signature of tumor specificity correlated with myeloid and CD8 T cell activation."
+       }
+      ],
+      "steps": [
+       "分析患者肿瘤转录组相关性",
+       "体外共培养检验间接识别",
+       "人源化小鼠转移CD4 T细胞",
+       "检测CD8增殖与髓系活化"
+      ],
+      "unknowns": [
+       "作者名单",
+       "样本量与动物分组",
+       "对照组设置",
+       "CD4 T细胞剂量与给药方案",
+       "肿瘤消退幅度与统计检验",
+       "随访时长",
+       "安全性数据"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "i": 10,
+   "tool": "submit_article",
+   "url": "https://pubmed.ncbi.nlm.nih.gov/42844089/",
+   "model": "claude-sonnet-5-5",
+   "max_tokens": 8000,
+   "stop_reason": "tool_use",
+   "usage": {
+    "input_tokens": 3975,
+    "output_tokens": 3065
+   },
+   "prompt_chars": 3880,
+   "prompt_sha256": "15baa98c2593bb324c72f1dd4465ef6d68f58bef1751fdf8b2d5c899a2505d1a",
+   "thinking_blocks_omitted": 1,
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "toolu_pr5f_runA_10",
+     "name": "submit_article",
+     "input": {
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42844089/",
+      "tier": "brief",
+      "field": "c1",
+      "title": "59例CSU患者外周血T细胞皮肤归巢增强，Th2与Th17/Th1随内型而异",
+      "journal": "原文未给出期刊名（来源：PubMed）",
+      "authors": "原文未给出",
+      "one_liner": "对59例慢性自发性荨麻疹患者与18名健康对照的外周血T细胞做流式和ELISpot分析，患者CD4+ T细胞CLA表达显著升高，Th2与Th17/Th1按内型分布不同。",
+      "datacard": {
+       "study_type": "观察性研究（摘要未注明具体设计类型），患者与健康对照比较",
+       "n": "CSU患者59例；健康对照18名",
+       "control": "健康对照（HC）",
+       "intervention": "不适用（未报告干预）",
+       "followup": "原文未给出",
+       "primary_endpoint": "原文未设定明确的主要终点；摘要描述了T细胞亚群分布、皮肤归巢标志物（CLA、CCR10、CCR8）表达及细胞因子分泌",
+       "primary_endpoint_result": "原文未给出具体数值；摘要称CSU患者CD4+ T细胞CLA表达显著更高",
+       "statistics": "摘要仅称“significantly”，未给出HR/OR/95%CI/P值",
+       "safety": "不适用"
+      },
+      "background": "慢性自发性荨麻疹（CSU）以反复发作的瘙痒性风团为特征。皮损浸润中可见CD4+ T细胞，影响T细胞功能的治疗有效，提示T细胞可能参与发病，但其确切作用仍不清楚。",
+      "design": "观察性研究（摘要未注明设计类型）：纳入59例CSU患者和18名健康对照，用流式细胞术和ELISpot检测T细胞亚群、皮肤归巢标志物（CLA、CCR10、CCR8）及细胞因子分泌，并依据抗TPO抗体、抗IL-24 IgE和嗜碱性粒细胞活化试验，将患者分为自身变态反应型与自身免疫型。",
+      "results": [
+       "摘要报告，循环辅助性T细胞、滤泡辅助性T细胞和调节性T细胞在CSU患者与健康对照间分布相当。CSU患者CD4+ T细胞的CLA表达显著更高，CLA+CD4+记忆T细胞中Th2和Th17细胞频率增加。按内型分层，自身变态反应型CSU以Th2细胞为主，自身免疫型CSU以Th17和Th1细胞为主。此外，CSU患者外周血中分泌IL-17、IFNγ和IL-10的T细胞显著减少。摘要未给出具体效应量、P值或置信区间。"
+      ],
+      "mechanism": "本条为简报，未展开机制。",
+      "limitations": [
+       "仅有摘要，未读到全文；原文未给出各内型的患者例数、效应量与P值。样本为外周血，摘要未报告皮损组织中T细胞的直接测量，皮肤归巢能力由CLA等标志物推断。"
+      ],
+      "significance": "若该结果在更独立的队列中得到重复，CLA+的Th2与Th17/Th1亚群或可作为按内型分层的候选靶点。作者称这些发现可能提示新的治疗靶点，但摘要未报告干预数据。",
+      "data_points": [
+       {
+        "value": "59",
+        "meaning": "CSU患者例数",
+        "source_quote": "T cell subsets in CSU patients (n = 59) and healthy controls (HC; n = 18)"
+       },
+       {
+        "value": "18",
+        "meaning": "健康对照人数",
+        "source_quote": "T cell subsets in CSU patients (n = 59) and healthy controls (HC; n = 18)"
+       }
+      ],
+      "steps": [
+       "采集CSU患者与健康对照外周血",
+       "流式与ELISpot检测T细胞亚群",
+       "检测CLA、CCR10、CCR8归巢标志物",
+       "按血清学分为两种CSU内型",
+       "比较各内型T细胞亚群差异"
+      ],
+      "unknowns": [
+       "原文未给出期刊名和作者",
+       "未读到全文，各内型患者例数未给出",
+       "原文未给出效应量、P值、置信区间",
+       "原文未给出患者疾病活动度、既往治疗及入组标准",
+       "原文未给出CCR10、CCR8的具体结果"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "i": 11,
+   "tool": "submit_article",
+   "url": "https://pubmed.ncbi.nlm.nih.gov/42844089/",
+   "model": "claude-sonnet-5-5",
+   "max_tokens": 8000,
+   "stop_reason": "tool_use",
+   "usage": {
+    "input_tokens": 4012,
+    "output_tokens": 2593
+   },
+   "prompt_chars": 3921,
+   "prompt_sha256": "bdb39422c7d8ac346af0067df0b0481a683d11eddfb5721d3aa26f2050c7a685",
+   "thinking_blocks_omitted": 1,
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "toolu_pr5f_runA_11",
+     "name": "submit_article",
+     "input": {
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42844089/",
+      "tier": "brief",
+      "field": "c5",
+      "title": "慢性自发性荨麻疹59例患者外周血T细胞皮肤归巢能力增强，亚型随内型而异",
+      "journal": "PubMed 收录（摘要未注明期刊名）",
+      "authors": "原文未给出",
+      "one_liner": "对59例慢性自发性荨麻疹患者与18名健康对照比较，患者CD4+ T细胞的皮肤归巢标志CLA表达显著升高，自身变态反应型以Th2为主，自身免疫型以Th17和Th1为主。",
+      "datacard": {
+       "study_type": "观察性比较研究（患者与健康对照的外周血免疫表型分析）；摘要未明确设计类型",
+       "n": "慢性自发性荨麻疹患者59例；健康对照18名",
+       "control": "健康对照（HC）",
+       "intervention": "不适用（未给予干预）",
+       "followup": "原文未给出",
+       "primary_endpoint": "原文未设定主要终点；摘要描述的是T细胞亚群分布、皮肤归巢标志（CLA、CCR10、CCR8）表达及细胞因子分泌",
+       "primary_endpoint_result": "原文未给出具体数值；摘要称患者CD4+ T细胞CLA表达显著更高",
+       "statistics": "摘要仅使用“significantly”描述差异，未给出P值、效应量或置信区间",
+       "safety": "不适用"
+      },
+      "background": "慢性自发性荨麻疹（CSU）以反复瘙痒性风团为特征。皮损浸润中可见CD4+ T细胞，影响T细胞功能的治疗有效，提示T细胞可能参与发病，但其具体作用尚不清楚。",
+      "design": "研究比较了59例CSU患者与18名健康对照的外周血T细胞亚群，用流式细胞术和ELISpot检测表面标志及IL-17、IL-5、IFNγ、IL-10、IL-31分泌，并检测CLA、CCR10、CCR8。患者按血清抗TPO抗体、抗IL-24 IgE及嗜碱性粒细胞活化试验分为自身变态反应型和自身免疫型。",
+      "results": [
+       "循环辅助性T细胞、滤泡辅助性T细胞和调节性T细胞在59例CSU患者与18名健康对照之间分布相当。但患者CD4+ T细胞的CLA表达显著更高，且CLA+CD4+记忆T细胞中Th2和Th17细胞比例增加。",
+       "按内型分层，Th2细胞在自身变态反应型CSU中占优势，Th17和Th1细胞在自身免疫型CSU中占优势。患者外周血中分泌IL-17、IFNγ和IL-10的T细胞显著减少。摘要未给出这些差异的具体数值、各内型人数及P值。"
+      ],
+      "mechanism": "原文未读到该部分。",
+      "limitations": [
+       "本条仅基于摘要：未给出各内型亚组人数、具体百分比、P值或效应量，差异大小无法判断；外周血数据也未直接显示皮损内T细胞的情况。"
+      ],
+      "significance": "若这一结果在更大样本中得到重复，CSU的T细胞特征可能可用于区分自身变态反应型与自身免疫型，并为针对Th2或Th17/Th1通路的治疗提供线索。作者认为这些发现可能提示潜在治疗靶点。",
+      "unknowns": [
+       "原文未给出作者姓名与期刊名",
+       "原文未给出自身变态反应型与自身免疫型各自的患者人数",
+       "原文未给出各项差异的具体数值、P值或效应量",
+       "原文未给出患者的入组标准、既往治疗和疾病活动度",
+       "原文未给出随访信息"
+      ],
+      "data_points": [
+       {
+        "value": "59",
+        "meaning": "CSU患者例数",
+        "source_quote": "T cell subsets in CSU patients (n = 59) and healthy controls (HC; n = 18) were characterized by expression of surface markers and secretion of cytokines"
+       },
+       {
+        "value": "18",
+        "meaning": "健康对照例数",
+        "source_quote": "T cell subsets in CSU patients (n = 59) and healthy controls (HC; n = 18) were characterized by expression of surface markers and secretion of cytokines"
+       }
+      ],
+      "steps": [
+       "采集CSU患者与健康对照外周血",
+       "流式与ELISpot检测T细胞亚群",
+       "检测CLA、CCR10、CCR8归巢标志",
+       "按抗体与BAT分为两种内型",
+       "比较各亚群与内型差异"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "i": 12,
+   "tool": "submit_article",
+   "url": "https://www.biorxiv.org/content/10.64898/2026.10.01.756006v1?rss=1",
+   "model": "claude-sonnet-5-5",
+   "max_tokens": 8000,
+   "stop_reason": "tool_use",
+   "usage": {
+    "input_tokens": 3847,
+    "output_tokens": 3309
+   },
+   "prompt_chars": 3524,
+   "prompt_sha256": "df6089eefcb37cae1d8c9e60a19cd7ce4ca865d5a0f12a282ee9650cf4be8c5a",
+   "thinking_blocks_omitted": 1,
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "toolu_pr5f_runA_12",
+     "name": "submit_article",
+     "input": {
+      "url": "https://www.biorxiv.org/content/10.64898/2026.10.01.756006v1?rss=1",
+      "tier": "brief",
+      "field": "c5",
+      "title": "梅萨康酸锌制剂使克罗恩病小鼠模型髓过氧化物酶较对照降低1000倍",
+      "journal": "bioRxiv（预印本，免疫学）",
+      "authors": "原文未给出",
+      "one_liner": "在克罗恩病小鼠模型中，锌-梅萨康酸交联制剂MES+Zn使MPO较对照降低1000倍，工程益生菌EcN-CAD也降低肠通透性和炎症。",
+      "datacard": {
+       "study_type": "临床前小鼠研究（预印本，仅读到摘要）",
+       "n": "原文未给出",
+       "control": "摘要仅称“对照”，具体对照设置原文未给出",
+       "intervention": "EcN-CAD（工程益生菌大肠杆菌Nissle 1917，过表达顺乌头酸脱羧酶）；MES+Zn（锌-梅萨康酸离子交联制剂）；剂量/途径/频次/疗程原文未给出",
+       "followup": "原文未给出",
+       "primary_endpoint": "原文未明确指定主要终点；摘要报告肠通透性、MPO（炎症标志物）和T细胞RORγt表达",
+       "primary_endpoint_result": "MES+Zn使MPO较对照降低1000倍；肠通透性绝对值与对照值原文未给出",
+       "statistics": "摘要称肠通透性“显著”降低，但P值、置信区间原文未给出",
+       "safety": "原文未给出"
+      },
+      "background": "梅萨康酸（MES）是一种免疫抑制性代谢物，在克罗恩病患者粪便中升高，但低于治疗水平；结肠中MES吸收快，难以维持浓度，限制了其治疗潜力。",
+      "design": "这是一项临床前小鼠研究的预印本，样本量原文未给出。作者构建了过表达顺乌头酸脱羧酶的工程益生菌EcN-CAD和锌与MES离子交联的MES+Zn制剂，在SAMP1/YitFC地塞米松撤药模型、预防性模型及TNFDARE模型中检验。",
+      "results": [
+       "MES+Zn在SAMP1/YitFC地塞米松撤药模型和TNFDARE模型中，与对照相比显著降低肠通透性，并使髓过氧化物酶（MPO，炎症标志物）较对照降低1000倍。",
+       "EcN-CAD降低了CD4+和CD8+ T细胞中的RORγt表达，并降低预防性SAMP1/YitFC模型和地塞米松撤药模型的肠通透性与炎症。机制方面，作者报告MES通过下调糖酵解和线粒体活性、降低RORγt表达来调节T细胞功能。摘要未给出通透性与炎症指标的具体数值、P值和对照组数值。"
+      ],
+      "mechanism": "未写",
+      "limitations": [
+       "仅读到摘要：各组样本量、通透性与MPO的绝对值、统计检验、给药剂量疗程及随访时长原文均未给出；结果来自小鼠模型，原文未报告人体数据；预印本未经同行评审。"
+      ],
+      "significance": "若全文数据和独立实验能确认这些结果，提高结肠MES水平的材料或工程菌策略或可成为克罗恩病等肠道炎症性疾病的候选思路。其安全性、剂量和长期效果需核查全文后才能判断。",
+      "unknowns": [
+       "原文未给出各组样本量",
+       "原文未给出作者信息",
+       "原文未给出给药剂量、途径、频次与疗程",
+       "原文未给出随访时长",
+       "原文未给出肠通透性的具体数值与P值",
+       "原文未给出安全性数据"
+      ],
+      "data_points": [
+       {
+        "value": "1000-fold",
+        "meaning": "MES+Zn组MPO较对照的降低倍数",
+        "source_quote": "MES+Zn decreased gut permeability significantly compared to controls and reduced myeloperoxidase (MPO, an inflammatory marker) 1000-fold compared to controls."
+       },
+       {
+        "value": "两种",
+        "meaning": "作者开发的提高MES水平的策略数量",
+        "source_quote": "Herein, we developed two strategies that elevate MES level and suppress inflammation"
+       }
+      ],
+      "steps": [
+       "构建EcN-CAD益生菌",
+       "制备锌-MES交联制剂",
+       "小鼠模型给药",
+       "检测通透性、MPO、RORγt"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "i": 13,
+   "tool": "submit_article",
+   "url": "https://www.biorxiv.org/content/10.64898/2026.10.01.756006v1?rss=1",
+   "model": "claude-sonnet-5-5",
+   "max_tokens": 8000,
+   "stop_reason": "tool_use",
+   "usage": {
+    "input_tokens": 3914,
+    "output_tokens": 2663
+   },
+   "prompt_chars": 3607,
+   "prompt_sha256": "72569ce484fae39688687465acd21a97c8501427e464c6393bd0b37f5e175660",
+   "thinking_blocks_omitted": 1,
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "toolu_pr5f_runA_13",
+     "name": "submit_article",
+     "input": {
+      "url": "https://www.biorxiv.org/content/10.64898/2026.10.01.756006v1?rss=1",
+      "tier": "brief",
+      "field": "c4",
+      "title": "锌-中康酸制剂在克罗恩病小鼠模型中使MPO较对照降低1000倍",
+      "journal": "bioRxiv（预印本，免疫学）",
+      "authors": "原文未给出",
+      "one_liner": "在克罗恩病小鼠模型中，锌-中康酸交联制剂使肠道髓过氧化物酶较对照降低1000倍，工程化益生菌EcN-CAD也降低了T细胞RORγt表达与肠道炎症。",
+      "datacard": {
+       "study_type": "小鼠临床前研究（预印本，仅读到摘要）",
+       "n": "原文未给出",
+       "control": "摘要仅称“对照”，具体设置原文未给出",
+       "intervention": "MES+Zn（锌-中康酸离子交联制剂）；EcN-CAD（过表达顺乌头酸脱羧酶的工程化大肠杆菌Nissle 1917）；剂量、途径、频次、疗程原文未给出",
+       "followup": "原文未给出",
+       "primary_endpoint": "肠道通透性与髓过氧化物酶（MPO，炎症标志物）；摘要未明确指定主要终点",
+       "primary_endpoint_result": "MES+Zn组MPO较对照降低1000倍；肠道通透性较对照显著降低",
+       "statistics": "原文未报告统计学检验的具体数值",
+       "safety": "不适用"
+      },
+      "background": "克罗恩病患者粪便中的中康酸（MES，一种免疫抑制性代谢物）升高，但水平低于治疗所需；结肠内MES吸收快、难以维持，限制了其治疗潜力。",
+      "design": "这是一项小鼠临床前研究（bioRxiv预印本），样本量摘要未提供。研究者在SAMP1/YitFC地塞米松撤药模型、TNFDARE模型和SAMP1/YitFC预防模型中，测试MES+Zn与EcN-CAD益生菌。",
+      "results": [
+       "MES+Zn在SAMP1/YitFC地塞米松撤药模型和TNFDARE模型中，较对照显著降低肠道通透性，并使髓过氧化物酶（MPO，炎症标志物）较对照降低1000倍。EcN-CAD在预防性SAMP1/YitFC模型和地塞米松撤药模型中，降低了CD4+和CD8+ T细胞的RORγt表达、肠道通透性及炎症。机制方面，摘要称MES下调T细胞糖酵解和线粒体活性并降低RORγt表达；作者据此认为MES重塑了T细胞反应，提升MES水平的技术可能对肠道相关炎症性疾病有效。"
+      ],
+      "mechanism": "摘要称MES通过下调T细胞糖酵解和线粒体活性、降低RORγt表达来调节T细胞功能。",
+      "limitations": [
+       "本条依据仅为预印本摘要，未读到全文；动物数量、对照设置、给药方案和统计检验数值均无法核对，1000倍的结果也无法评估其变异度。"
+      ],
+      "significance": "若这些结果在全文及独立实验中得到确认，局部递送MES或经益生菌原位产生MES，可能为克罗恩病提供减少全身用药的思路；原文未报告人体数据，其临床价值尚无法判断。",
+      "data_points": [
+       {
+        "value": "1000-fold",
+        "meaning": "MES+Zn组MPO较对照的降低倍数",
+        "source_quote": "reduced myeloperoxidase (MPO, an inflammatory marker) 1000-fold compared to controls"
+       }
+      ],
+      "steps": [
+       "设计MES+Zn与EcN-CAD",
+       "在三种小鼠模型中给药",
+       "检测通透性、MPO与RORγt"
+      ],
+      "unknowns": [
+       "作者名单",
+       "各组样本量",
+       "给药剂量与疗程",
+       "具体P值与置信区间"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "i": 14,
+   "tool": "submit_article",
+   "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+   "model": "claude-sonnet-5-5",
+   "max_tokens": 8000,
+   "stop_reason": "tool_use",
+   "usage": {
+    "input_tokens": 3971,
+    "output_tokens": 2776
+   },
+   "prompt_chars": 3938,
+   "prompt_sha256": "db5a924701b533eb9a4acbd33a529095d752fdaeeda1eb2dccba4eb7d0a90166",
+   "thinking_blocks_omitted": 1,
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "toolu_pr5f_runA_14",
+     "name": "submit_article",
+     "input": {
+      "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+      "tier": "brief",
+      "field": "c1",
+      "title": "抗CD14抗体每周给药4或8周，减轻Dsg2突变小鼠心律失常性心肌病表型",
+      "journal": "bioRxiv（预印本，未经同行评议）",
+      "authors": "原文未给出",
+      "one_liner": "在Dsg2突变的心律失常性心肌病小鼠中，每周给予抗CD14抗体4或8周，摘要称疾病表型减轻，炎性巨噬细胞与促纤维化成纤维细胞群体明显减少。",
+      "datacard": {
+       "study_type": "临床前动物实验（预印本，仅读到摘要）",
+       "n": "原文未给出",
+       "control": "同型对照抗体（isotype control）；另设野生型（WT）小鼠",
+       "intervention": "抗CD14抗体，每周一次，疗程4周或8周；具体剂量与给药途径原文未给出",
+       "followup": "治疗期结束时评估；治疗期为4周或8周，其他随访原文未给出",
+       "primary_endpoint": "原文未明确指定主要终点；评估项目包括超声心动图、心电图、组织学、免疫荧光、PET成像和单细胞转录组",
+       "primary_endpoint_result": "原文未给出",
+       "statistics": "原文未报告统计学检验",
+       "safety": "原文未给出"
+      },
+      "background": "致心律失常性心肌病（ACM）多由PKP2、DSP、DSG2等桥粒基因突变引起，表现为心肌细胞丢失、免疫细胞浸润和纤维脂肪替代，猝死风险增加。作者此前报告NFκB与CCR2+心脏巨噬细胞介导的炎症参与发病。",
+      "design": "这是一项小鼠临床前研究，样本量原文未给出。野生型或Dsg2mut/mut小鼠每周接受同型对照抗体或抗CD14抗体，疗程4周或8周，结束时用超声心动图、心电图、组织学、免疫荧光、PET和单细胞转录组评估疾病特征。",
+      "results": [
+       "摘要称，中和CD14信号（炎性巨噬细胞活化的重要介导环节）在体内减轻了ACM疾病表现，治疗疗程为4周或8周。摘要未给出各评估指标的具体数值、对照组数值或统计检验结果。",
+       "单细胞转录组分析显示，抗CD14抗体治疗后，炎性巨噬细胞和促纤维化成纤维细胞群体出现明显减少，其他细胞类型的转录状态也有改变。作者推测，抗CD14可能通过抑制巨噬细胞介导的活化与炎症起效，但摘要未提供机制验证数据。"
+      ],
+      "mechanism": "原文摘要提示，抗CD14可能通过抑制巨噬细胞介导的活化和炎症发挥作用，同时改变其他重要细胞类型的转录状态；这些属于作者推测，摘要未给出验证实验。",
+      "limitations": [
+       "本条仅依据bioRxiv预印本摘要，未读到全文、图注和方法；样本量、剂量、各终点数值及统计检验原文均未给出，疗效大小无法评估。",
+       "研究对象为Dsg2突变小鼠，原文未报告人体数据，结论向患者的外推性不明。"
+      ],
+      "significance": "若该结果在全文数据中得到支持，CD14可能成为ACM抗炎治疗的候选靶点。作者提出应在早期临床研究中探索，但目前仅有小鼠摘要信息，不足以判断疗效或安全性。",
+      "unknowns": [
+       "原文未给出样本量与分组",
+       "原文未给出抗体剂量与给药途径",
+       "原文未给出各终点的具体数值与统计检验",
+       "原文未给出安全性数据",
+       "原文未给出作者名单"
+      ],
+      "data_points": [
+       {
+        "value": "4或8周",
+        "meaning": "小鼠抗CD14或同型对照抗体的治疗疗程",
+        "source_quote": "WT or Dsg2mut/mut mice were treated with either isotype control or anti-CD14 antibody once a week for the described treatment period (4 or 8 weeks)."
+       }
+      ],
+      "steps": [
+       "Dsg2突变或野生型小鼠分组",
+       "每周注射抗CD14或同型对照",
+       "治疗4周或8周",
+       "超声、心电图、PET评估",
+       "组织学与单细胞转录组分析"
+      ],
+      "image_prompt": "示意图：小鼠心脏横截面，巨噬细胞表面CD14受体被抗体阻断，炎症与纤维化减弱，简洁科学插画风格"
+     }
+    }
+   ]
+  },
+  {
+   "i": 15,
+   "tool": "submit_article",
+   "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+   "model": "claude-sonnet-5-5",
+   "max_tokens": 8000,
+   "stop_reason": "tool_use",
+   "usage": {
+    "input_tokens": 4046,
+    "output_tokens": 3233
+   },
+   "prompt_chars": 4017,
+   "prompt_sha256": "017ebfec0b76f1e02fea8a0271f6f3adaf4ce7a511fe7fee95cd676cc958f720",
+   "thinking_blocks_omitted": 1,
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "toolu_pr5f_runA_15",
+     "name": "submit_article",
+     "input": {
+      "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+      "tier": "brief",
+      "field": "c1",
+      "title": "抗CD14抗体治疗4周或8周，减轻Dsg2突变小鼠心律失常性心肌病表型",
+      "journal": "bioRxiv（预印本，免疫学）",
+      "authors": "原文摘要未列出作者",
+      "one_liner": "在Dsg2突变小鼠中，每周给予抗CD14抗体4周或8周，减轻了心律失常性心肌病表型，并使炎症性巨噬细胞和促纤维化成纤维细胞明显减少。",
+      "datacard": {
+       "study_type": "临床前动物实验（Dsg2mut/mut小鼠，预印本，仅有摘要）",
+       "n": "原文未给出",
+       "control": "同型对照抗体（isotype control）；另设野生型（WT）小鼠",
+       "intervention": "抗CD14抗体，每周给药；疗程4周或8周；剂量与给药途径摘要未提及",
+       "followup": "治疗期结束时评估（4周或8周）",
+       "primary_endpoint": "摘要未指定主要终点；评估手段包括超声心动图、心电图、组织学、免疫荧光、PET成像和单细胞转录组",
+       "primary_endpoint_result": "原文未给出具体数值；摘要称抗CD14可减轻ACM疾病表现",
+       "statistics": "原文未报告统计学检验",
+       "safety": "原文未报告安全性数据"
+      },
+      "background": "致心律失常性心肌病（ACM）以心肌细胞进行性丢失、免疫细胞浸润和心室肌纤维脂肪替代为特征，并增加心源性猝死风险，主要由PKP2、DSP、DSG2等桥粒基因突变引起。作者此前报道NFκB和CCR2阳性心脏巨噬细胞介导的炎症参与ACM发病。",
+      "design": "研究者在临床前小鼠模型中比较了野生型或Dsg2mut/mut小鼠接受同型对照抗体或抗CD14抗体的效果，抗体每周给药，疗程4周或8周。治疗结束后，通过超声心动图、心电图、组织学、免疫荧光、PET成像和单细胞转录组评估疾病特征。各组样本量摘要未提供。",
+      "results": [
+       "摘要称，中和CD14信号（炎症性巨噬细胞活化的重要介导环节）在体内减轻了ACM疾病表现，治疗疗程为4周或8周。具体的心功能、心律失常、纤维化或PET指标数值，摘要没有列出。",
+       "单细胞转录组分析显示，抗CD14抗体处理后，炎症性巨噬细胞和促纤维化成纤维细胞群体出现明显减少（摘要用词为substantial reductions），其他细胞类型的转录状态也发生改变。作者认为抗体可能通过抑制巨噬细胞活化和炎症起效。"
+      ],
+      "mechanism": "摘要提示，CD14是炎症性巨噬细胞活化的重要介导分子。抗CD14处理后，炎症性巨噬细胞和促纤维化成纤维细胞减少，属于该研究的观察结果。作者推测，抗体可能通过抑制巨噬细胞活化与炎症起效，同时改变其他重要细胞类型的转录状态。巨噬细胞减少与成纤维细胞变化之间是否存在因果关系，摘要没有说明。",
+      "limitations": [
+       "本条依据预印本摘要撰写，未读到全文。结果为小鼠模型数据，样本量、剂量和各项指标的效应大小均无法核对，也没有统计检验信息。",
+       "研究只在一种Dsg2突变小鼠模型中进行，治疗疗程为4周或8周，长期疗效和停药后的情况无法判断。",
+       "作者的机制解释使用了“可能”的表述，摘要没有给出巨噬细胞清除或阻断CD14的因果实验。"
+      ],
+      "significance": "如果在更多模型和全文数据中得到重复，CD14可能成为针对ACM炎症环节的候选靶点。作者提出应在早期临床研究中探索CD14抑制。就目前材料而言，原文未报告人体数据，尚不能据此判断对患者的疗效或安全性。",
+      "data_points": [
+       {
+        "value": "4周",
+        "meaning": "抗CD14或对照抗体的较短治疗疗程",
+        "source_quote": "WT or Dsg2mut/mut mice were treated with either isotype control or anti-CD14 antibody once a week for the described treatment period (4 or 8 weeks)."
+       },
+       {
+        "value": "8周",
+        "meaning": "抗CD14或对照抗体的较长治疗疗程",
+        "source_quote": "WT or Dsg2mut/mut mice were treated with either isotype control or anti-CD14 antibody once a week for the described treatment period (4 or 8 weeks)."
+       }
+      ],
+      "unknowns": [
+       "样本量、抗体剂量与给药途径、各终点的具体数值和统计检验、安全性数据，摘要均未提供"
+      ],
+      "steps": [
+       "Dsg2突变或野生型小鼠分组",
+       "每周给予抗CD14或同型对照",
+       "治疗4周或8周",
+       "多模态评估并做单细胞转录组"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "i": 16,
+   "tool": "submit_weekly_digest",
+   "url": null,
+   "model": "claude-sonnet-5-5",
+   "max_tokens": 8000,
+   "stop_reason": "tool_use",
+   "usage": {
+    "input_tokens": 10990,
+    "output_tokens": 1607
+   },
+   "prompt_chars": 21226,
+   "prompt_sha256": "c9285bd00ce5b7f7536e45f0574c51435ac15f8190b784a63ed2b4a1740c444b",
+   "thinking_blocks_omitted": 1,
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "toolu_pr5f_runA_16",
+     "name": "submit_weekly_digest",
+     "input": {
+      "articles": [],
+      "deals": [
+       {
+        "url": "https://endpoints.news/roche-does-fourth-china-deal-since-august-teaming-with-defand-on-degraders/",
+        "title": "罗氏与杭州生物技术公司 Defand 就降解剂达成合作，为8月以来第四笔中国交易",
+        "kinds": [
+         "lic"
+        ],
+        "money": "约 10 亿美元",
+        "structure": "据知情人士，若所有里程碑均达成，交易总额略低于 10 亿美元；合作方为一家知名度较低的杭州生物技术公司，方向为降解剂。",
+        "source_name": "Endpoints News",
+        "why": "罗氏自 8 月以来已连续与中国公司达成第四笔交易，显示跨国药企持续从中国引入早期项目。"
+       },
+       {
+        "url": "https://endpoints.news/zuckerbergs-biohub-expands-virtual-cell-effort-to-1-8b-with-meta-google/",
+        "title": "扎克伯格的 Biohub 将虚拟细胞项目扩至 18 亿美元，Meta、谷歌参与",
+        "kinds": [
+         "inv"
+        ],
+        "money": "18 亿美元",
+        "structure": "科技巨头与美国政府机构共同出资，由 Mark Zuckerberg 和 Priscilla Chan 的非营利机构 Biohub 牵头，构建预测细胞行为及更广泛生物学的 AI 模型。",
+        "source_name": "Endpoints News",
+        "why": "大规模资金投向 AI 细胞模型，可能影响 AI 药物发现的基础数据与模型生态。"
+       },
+       {
+        "url": "https://www.biopharmadive.com/news/forbion-venture-capital-growth-fund-fundraise/832254/",
+        "title": "生物技术投资机构 Forbion 为两只风险基金募资 26 亿美元",
+        "kinds": [
+         "inv"
+        ],
+        "money": "26 亿美元",
+        "structure": "为一对风险基金募资，是该机构迄今最大规模的募资。",
+        "source_name": "BioPharma Dive",
+        "why": "为落后于美国和中国的欧洲生物技术产业提供资金支持。"
+       },
+       {
+        "url": "https://endpoints.news/ultragenyx-sells-prv-for-210m-and-still-has-another-to-monetize/",
+        "title": "Ultragenyx 以 2.1 亿美元出售优先审评券，手中还有一张待变现",
+        "kinds": [
+         "inv"
+        ],
+        "money": "2.1 亿美元",
+        "structure": "向未披露买家出售一张优先审评券（PRV），为今年迄今价格最高的 PRV 交易之一；公司仍持有另一张可变现。",
+        "source_name": "Endpoints News",
+        "why": "PRV 售价处于高位，为公司带来非稀释性资金。"
+       }
+      ]
+     }
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,103 @@
+# ACCEPTANCE FIXTURE: production sources.yaml (identical on main and PR #5) with window_days widened to 3650.
+# 每周抓取的固定来源。改名单只改这个文件，不要改 Python。
+# kind: academic 学术 / industry 行业
+# type: rss 或 pubmed 或 manual (manual 不自动抓)
+# feed 或 query 必填。url 是给人看的站点首页。
+# needs_browser_ua: true 表示需要用浏览器 User-Agent 抓取
+
+window_days: 3650
+max_per_source: 6
+max_academic: 6
+max_industry: 4
+
+sources:
+  # ACIR 没有 RSS，需要人工录入或专门爬虫
+  - name: ACIR 周报
+    kind: academic
+    type: manual
+    url: https://acir.org/weekly-digests
+    note: "ACIR has no RSS feed. Check weekly-digests page manually or scrape."
+
+  - name: Nature
+    kind: academic
+    type: rss
+    url: https://www.nature.com
+    feed: https://www.nature.com/nature.rss
+
+  - name: Nature Medicine
+    kind: academic
+    type: rss
+    url: https://www.nature.com/nm
+    feed: https://www.nature.com/nm.rss
+
+  - name: Nature Biotechnology
+    kind: academic
+    type: rss
+    url: https://www.nature.com/nbt
+    feed: https://www.nature.com/nbt.rss
+
+  - name: Science
+    kind: academic
+    type: rss
+    url: https://www.science.org
+    feed: https://www.science.org/rss/news_current.xml
+
+  - name: Cell
+    kind: academic
+    type: rss
+    url: https://www.cell.com
+    feed: https://www.cell.com/cell/current.rss
+    window_days: 3650  # acceptance fixture: widened so recorded 2026-10 dates stay inside every window
+
+  - name: bioRxiv 免疫学
+    kind: academic
+    type: rss
+    url: https://www.biorxiv.org/collection/immunology
+    feed: https://connect.biorxiv.org/biorxiv_xml.php?subject=immunology
+    needs_browser_ua: true
+    biorxiv_category: immunology  # For API fallback when RSS fails
+
+  - name: PubMed
+    kind: academic
+    type: pubmed
+    url: https://pubmed.ncbi.nlm.nih.gov/
+    query: organoid OR "CAR-T" OR "lipid nanoparticle" OR "mRNA vaccine" OR "autoimmune"
+
+  - name: Endpoints News
+    kind: industry
+    type: rss
+    url: https://endpts.com
+    feed: https://endpts.com/feed/
+    needs_browser_ua: true
+
+  - name: Fierce Biotech
+    kind: industry
+    type: rss
+    url: https://news.google.com
+    feed: https://news.google.com/rss/search?q=site:fiercebiotech.com+when:7d&hl=en-US&gl=US&ceid=US:en
+    note: "Fierce Biotech blocks server IPs. Using Google News RSS as proxy."
+
+  - name: BioPharma Dive
+    kind: industry
+    type: rss
+    url: https://www.biopharmadive.com
+    feed: https://www.biopharmadive.com/feeds/news/
+
+  - name: STAT News
+    kind: industry
+    type: rss
+    url: https://www.statnews.com
+    feed: https://www.statnews.com/feed/
+
+  - name: FDA 公告
+    kind: industry
+    type: rss
+    url: https://www.federalregister.gov
+    feed: https://www.federalregister.gov/api/v1/documents.rss?conditions%5Bagencies%5D%5B%5D=food-and-drug-administration
+    note: "FDA direct feeds blocked. Using Federal Register API."
+
+  - name: EMA
+    kind: industry
+    type: rss
+    url: https://www.ema.europa.eu/en/news
+    feed: https://www.ema.europa.eu/en/news.xml

@@ -1,0 +1,188 @@
+{
+ "provenance": "articles: pr7e/server/dryrun/anthropic_calls.jsonl call 9 (REAL main-branch legacy submit_weekly_digest, same week); deals: pr5f/server_run_a call 16 (REAL). Only documented mutation: bioRxiv article URLs gained the \"?rss=1\" suffix that the RSS feed carries: https://www.biorxiv.org/content/10.64898/2026.09.30.755788v1 -> https://www.biorxiv.org/content/10.64898/2026.09.30.755788v1?rss=1; https://www.biorxiv.org/content/10.64898/2026.10.01.756006v1 -> https://www.biorxiv.org/content/10.64898/2026.10.01.756006v1?rss=1; https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1 -> https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1; https://www.biorxiv.org/content/10.64898/2026.10.01.756027v1 -> https://www.biorxiv.org/content/10.64898/2026.10.01.756027v1?rss=1",
+ "stop_reason": "tool_use",
+ "usage": {
+  "input_tokens": 10844,
+  "output_tokens": 6097
+ },
+ "content": [
+  {
+   "type": "tool_use",
+   "id": "toolu_legacy_digest",
+   "name": "submit_weekly_digest",
+   "input": {
+    "articles": [
+     {
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+      "field": "c3",
+      "n": "1",
+      "title": "靶向CD6治疗实体瘤:itolizumab概念验证试验的安全性、早期疗效与机制",
+      "authors": "González Muñoz C, Ruiz-Lorente R, Blanco-Pita O, Lara-Fernández N, Salomón EE, Alvárez Lobaina A",
+      "journal": "Journal for immunotherapy of cancer",
+      "study_type": "首次人体概念验证临床试验",
+      "evidence_level": "abstract",
+      "lead": "这是抗CD6单抗itolizumab在晚期实体瘤中的首次人体评估。结果提示它可能是一种安全性较好的免疫调节策略,也许能避开检查点抑制剂常见的免疫相关不良反应。",
+      "body": "研究纳入多线治疗后的晚期异质性实体瘤患者,未按生物标志物筛选。A组每周100 mg共9次,B组每两周200 mg共5次,之后进入维持期。主要终点是安全性。结果显示无因安全问题停药、无相关严重不良事件,也没有出现意外毒性。疾病控制率A组25%、B组20%,1年生存率分别为26%和15%。离体分析显示,itolizumab使CD6下调、可溶性CD6升高,并使CD8 T细胞和NK细胞呈现更偏细胞毒性的表型。患者来源的外周血单个核细胞对CD318阳性癌细胞的体外杀伤能力增强。该抗体还调节外周淋巴细胞的PD-1表达,促进NK细胞活性,同时保留CD8 T细胞上的抑制信号,并减轻辅助性T细胞过度活化。作者认为这一机制支持其在CD318表达肿瘤及联合方案中继续开发。",
+      "discuss": "这是无对照的小样本早期研究,人群高度异质,疾病控制率和生存率不能解读为疗效证据。两个剂量组的结果也不宜直接比较。机制数据来自离体和体外分析,与临床获益的因果关系尚未建立。CD318作为预测标志物的价值需要前瞻性验证。",
+      "steps": [
+       "晚期实体瘤患者入组,不筛选标志物",
+       "分两种剂量给药:诱导期加维持期",
+       "主要评估安全性,次要看疾病控制与生存",
+       "离体分析CD8、NK表型及对CD318+肿瘤的杀伤",
+       "结论支持联合方案与进一步开发"
+      ],
+      "image_prompt": "Abstract composition of small circular shapes in teal and amber clustering around a larger irregular coral-colored mass, with thin glowing arcs linking them, soft gradient navy background, minimalist scientific illustration, no text, no labels"
+     },
+     {
+      "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755788v1?rss=1",
+      "field": "c3",
+      "n": "2",
+      "title": "人类CD4 T细胞通过间接抗原呈递协调抗肿瘤免疫",
+      "authors": "Roy G, Ruterbusch M, Bakhtiari J, Shasha C, Lee SM, Moshiri AS, Wood C, Hopwo K, Witkowski M, Szeto J, Singhi N, Iuliano M, Guenette S, McKenna KM, Newell E, Rongvaux A, Veatch JR",
+      "journal": "bioRxiv(预印本)",
+      "study_type": "体外实验加人源化小鼠研究(预印本)",
+      "evidence_level": "abstract",
+      "lead": "许多肿瘤不表达MHC II类分子。这项研究提示,肿瘤特异性CD4 T细胞即便不直接识别肿瘤细胞,也能通过抗原呈递细胞调动免疫反应,这为这类肿瘤的治疗提供了新思路。",
+      "body": "在MHC II阴性的黑色素瘤和乳腺癌中,带有肿瘤特异性转录特征的CD4 T细胞与髓系细胞及CD8 T细胞的活化相关。研究者使用患者来源的NY-ESO特异性、HLA-DP04限制性TCR进行验证。体外实验中,CD4 T细胞通过识别抗原呈递细胞上的肿瘤来源抗原,抑制了HLA-DP阴性黑色素瘤的生长。在人源化小鼠中,转移CD4 T细胞可使HLA-DP阴性肿瘤消退,而且需要HLA匹配的人源抗原呈递细胞。该过程伴随内源性CD8 T细胞增殖和髓系细胞活化,与患者数据中的免疫程序一致。",
+      "discuss": "这是尚未经同行评审的预印本。证据主要来自单一TCR(NY-ESO、HLA-DP04)和人源化小鼠模型,能否推广到其他抗原和肿瘤尚不清楚。人源化小鼠的免疫系统并不完整。临床相关性主要依靠患者转录组相关性,这类分析不能证明因果。",
+      "steps": [
+       "分析患者数据:CD4特征与CD8、髓系活化相关",
+       "用NY-ESO特异TCR构建CD4 T细胞",
+       "体外验证:经APC间接识别抗原抑制肿瘤",
+       "人源化小鼠中转移后肿瘤消退,需HLA匹配APC"
+      ],
+      "image_prompt": "Abstract scene of a central star-shaped form in violet passing glowing orange particles to branching rounded shapes, which in turn energize small circular shapes targeting a distant dull grey mass, flowing curves, dark teal background, no text, no labels"
+     },
+     {
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42844089/",
+      "field": "c4",
+      "n": "3",
+      "title": "慢性自发性荨麻疹患者的T细胞具有皮肤迁移能力,并存在内型特异性差异",
+      "authors": "Hermann Lang SC, Seidel J, Sachsenberg S, Rauber-Ellinghaus MM, Kurz J, Xiang YK",
+      "journal": "Allergology international",
+      "study_type": "患者与健康对照的横断面免疫表型研究",
+      "evidence_level": "abstract",
+      "lead": "慢性自发性荨麻疹(CSU)中T细胞的作用一直不够清楚。这项研究显示,外周血T细胞带有更强的皮肤归巢特征,且在自身变态反应型和自身免疫型两种内型中构成不同。",
+      "body": "研究纳入59例CSU患者和18名健康对照,用流式细胞术和ELISpot检测T细胞亚群、皮肤归巢标志物(CLA、CCR10、CCR8)及细胞因子分泌。患者按抗TPO抗体、抗IL-24 IgE和嗜碱性粒细胞活化试验分为自身变态反应型和自身免疫型。Th、Tfh和调节性T细胞在患者与对照间分布相近。但患者CD4 T细胞的CLA表达明显更高,CLA+记忆CD4 T细胞中Th2和Th17细胞比例增加。自身变态反应型以Th2为主,自身免疫型以Th17和Th1为主。同时,患者外周血中分泌IL-17、IFNγ和IL-10的T细胞更少。",
+      "discuss": "这是横断面研究,不能确定因果和时间顺序。外周血表型不一定等同于皮损中的T细胞,外周血分泌细胞减少可能反映细胞已向组织迁移,但这只是推测。内型分型依赖替代性标志物。作为潜在治疗靶点的提示,还需要功能和干预研究验证。",
+      "steps": [
+       "招募CSU患者与健康对照",
+       "流式及ELISpot检测T细胞亚群与细胞因子",
+       "检测CLA、CCR10、CCR8等皮肤归巢标志",
+       "按血清学分为自身变态反应型与自身免疫型",
+       "比较两种内型的T细胞构成差异"
+      ],
+      "image_prompt": "Abstract layered translucent bands in soft pink and blue, with small rounded shapes in two color families drifting from a central channel toward a textured upper surface, gentle gradient, no text, no labels"
+     },
+     {
+      "url": "https://www.biorxiv.org/content/10.64898/2026.10.01.756006v1?rss=1",
+      "field": "c4",
+      "n": "4",
+      "title": "通过生物材料和工程化益生菌向肠道递送中康酸,减轻克罗恩病小鼠模型的炎症",
+      "authors": "Qian H, Singh D, Chen Z, Zhao W, Zhang B, Knodaei T, Thumsi A, Pathak S, Suresh A, Menghini P, Schiek J, Rabara V, Salvo CD, Baskaran H, Aso Y, Jaggarapu MMCS, Basson AR, Acharya AP",
+      "journal": "bioRxiv(预印本)",
+      "study_type": "临床前小鼠研究(预印本)",
+      "evidence_level": "abstract",
+      "lead": "克罗恩病患者粪便中的中康酸升高,但低于治疗水平,而肠道又很容易吸收它。这项研究用两种递送策略维持结肠中的中康酸水平,并在小鼠模型中减轻了炎症。",
+      "body": "研究者构建了两种方案:一是过表达顺乌头酸脱羧酶(CAD)的工程化益生菌EcN-CAD,产生衣康酸并转化为中康酸;二是锌与中康酸离子交联的制剂MES+Zn。机制上,中康酸下调T细胞的糖酵解和线粒体活性,并降低RORγt表达。在SAMP1/YitFc地塞米松撤药模型和TNFΔARE模型中,MES+Zn显著降低肠道通透性,并使髓过氧化物酶(MPO)比对照降低约1000倍。EcN-CAD在预防性SAMP1/YitFc模型和撤药模型中,降低了CD4+和CD8+ T细胞的RORγt表达、肠道通透性和炎症。",
+      "discuss": "这是尚未经同行评审的预印本,仅在小鼠模型中验证。MPO降低1000倍是摘要中的描述,其统计和生物学意义要看全文。工程化益生菌的安全性、定植稳定性和剂量控制未知。小鼠的结果能否转化到人类克罗恩病,尚无证据。",
+      "steps": [
+       "设计两种递送:工程益生菌与锌-中康酸制剂",
+       "分析中康酸对T细胞代谢与RORγt的影响",
+       "在SAMP1/YitFc和TNFΔARE模型中测试",
+       "评估肠道通透性、MPO及T细胞表型"
+      ],
+      "image_prompt": "Abstract tubular winding form in warm beige with glowing green granules and small rounded capsule shapes releasing calming blue ripples along its inner wall, soft lighting, minimalist, no text, no labels"
+     },
+     {
+      "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+      "field": "c5",
+      "n": "5",
+      "title": "CD14阻断减轻致心律失常性心肌病",
+      "authors": "Penna VR, Ehle E, Farra W, Cannon EN, Landim-Vieira M, Centner AM, Owen MC, Venkatesan R, Heo GS, Das A, Liu Y, Appleby MW, Crowe D, Ziegelaar BW, Redlich GL, Saffitz JE, Chelko SP, Lavine KJ",
+      "journal": "bioRxiv(预印本)",
+      "study_type": "小鼠疾病模型干预研究(预印本)",
+      "evidence_level": "abstract",
+      "lead": "致心律失常性心肌病(ACM)与炎症性巨噬细胞活化有关,目前缺少针对性治疗。这项研究在小鼠模型中显示,中和CD14可以减轻疾病表型。",
+      "body": "研究使用野生型和Dsg2突变(Dsg2mut/mut)小鼠,每周给予同型对照或抗CD14抗体,持续4周或8周。研究者通过超声心动图、心电图、组织学、免疫荧光、PET成像和单细胞转录组评估疾病特征。结果显示,中和CD14信号可减轻ACM表型。单细胞分析发现,炎症性巨噬细胞和促纤维化成纤维细胞群体明显减少。作者认为CD14阻断可能通过抑制巨噬细胞活化与炎症、并改变其他细胞的转录状态而起作用,建议开展早期临床研究。",
+      "discuss": "这是预印本,仅在一种小鼠模型(Dsg2突变)中验证,尚无其他desmosome基因模型的结果。摘要未给出效应量。抗体的长期安全性,以及对感染防御的影响不清楚。是否改善猝死风险等终点也未知。转化到人类还需要更多证据。",
+      "steps": [
+       "使用Dsg2突变小鼠与野生型对照",
+       "每周给予抗CD14抗体或同型对照,持续4或8周",
+       "超声、心电图、PET和组织学评估疾病",
+       "单细胞转录组分析细胞群变化",
+       "发现炎症巨噬细胞和促纤维化成纤维细胞减少"
+      ],
+      "image_prompt": "Abstract heart-like soft crimson mass with fibrous texture on one side, a translucent cyan shield shape intercepting jagged orange sparks coming from small round shapes, calmer smooth region on the other side, dark background, no text, no labels"
+     },
+     {
+      "url": "https://www.biorxiv.org/content/10.64898/2026.10.01.756027v1?rss=1",
+      "field": "c6",
+      "n": "6",
+      "title": "不同I型干扰素及干扰素诱导剂对Fc受体格局与髓系细胞功能的差异性影响",
+      "authors": "Bru R, Paris O, Bossis G, Boireau S, Naranjo-Gomez M, Pelegrin M",
+      "journal": "bioRxiv(预印本)",
+      "study_type": "人原代细胞体外研究(预印本)",
+      "evidence_level": "abstract",
+      "lead": "抗病毒单抗依赖Fc受体发挥效应功能,而I型干扰素常被考虑与抗体联用。这项研究描绘了干扰素及其诱导剂如何改变单核细胞和树突状细胞上的Fc受体。",
+      "body": "研究者比较了IFN-α2、IFN-β和SUMO化抑制剂TAK-981(一种干扰素诱导剂)对人单核细胞亚群和单核细胞来源树突状细胞(moDC)的影响。通过流式细胞术和成像,他们检测了活化型FcγR(CD64、CD32A、CD16A)和新生儿Fc受体(FcRn)。I型干扰素选择性下调经典单核细胞的CD16A,而保留其他Fc受体。TAK-981降低经典单核细胞的FcRn,但不影响CD16A。IFN-β和TAK-981(IFN-α2无此作用)选择性提高moDC的FcγRI表达。IFN-β比IFN-α2诱导更强的成熟和功能活化,TAK-981在很大程度上重现了IFN-β的表型和分泌谱。此外,IFN-β和TAK-981还导致FcγR的空间分布发生不同的重分布。",
+      "discuss": "这是预印本,仅为体外人原代细胞研究,没有体内抗体治疗效果的数据。其对抗体介导的杀伤或吞噬功能的影响,摘要并未直接证明。供体数量和变异在摘要中没有说明。摘要提到可保留FcRn依赖的抗体持久性,但TAK-981降低了经典单核细胞的FcRn,这一结论需要谨慎看待。",
+      "steps": [
+       "分离人单核细胞亚群并分化出moDC",
+       "用IFN-α2、IFN-β或TAK-981刺激",
+       "流式及成像检测FcγR与FcRn的表达和分布",
+       "比较成熟、活化及分泌功能的差异"
+      ],
+      "image_prompt": "Abstract round shapes in muted green and gold with small Y-free radial spikes on their surface changing density under different swirling colored currents of magenta, cyan and amber, soft depth-of-field, no text, no labels"
+     }
+    ],
+    "deals": [
+     {
+      "url": "https://endpoints.news/roche-does-fourth-china-deal-since-august-teaming-with-defand-on-degraders/",
+      "title": "罗氏与杭州生物技术公司 Defand 就降解剂达成合作，为8月以来第四笔中国交易",
+      "kinds": [
+       "lic"
+      ],
+      "money": "约 10 亿美元",
+      "structure": "据知情人士，若所有里程碑均达成，交易总额略低于 10 亿美元；合作方为一家知名度较低的杭州生物技术公司，方向为降解剂。",
+      "source_name": "Endpoints News",
+      "why": "罗氏自 8 月以来已连续与中国公司达成第四笔交易，显示跨国药企持续从中国引入早期项目。"
+     },
+     {
+      "url": "https://endpoints.news/zuckerbergs-biohub-expands-virtual-cell-effort-to-1-8b-with-meta-google/",
+      "title": "扎克伯格的 Biohub 将虚拟细胞项目扩至 18 亿美元，Meta、谷歌参与",
+      "kinds": [
+       "inv"
+      ],
+      "money": "18 亿美元",
+      "structure": "科技巨头与美国政府机构共同出资，由 Mark Zuckerberg 和 Priscilla Chan 的非营利机构 Biohub 牵头，构建预测细胞行为及更广泛生物学的 AI 模型。",
+      "source_name": "Endpoints News",
+      "why": "大规模资金投向 AI 细胞模型，可能影响 AI 药物发现的基础数据与模型生态。"
+     },
+     {
+      "url": "https://www.biopharmadive.com/news/forbion-venture-capital-growth-fund-fundraise/832254/",
+      "title": "生物技术投资机构 Forbion 为两只风险基金募资 26 亿美元",
+      "kinds": [
+       "inv"
+      ],
+      "money": "26 亿美元",
+      "structure": "为一对风险基金募资，是该机构迄今最大规模的募资。",
+      "source_name": "BioPharma Dive",
+      "why": "为落后于美国和中国的欧洲生物技术产业提供资金支持。"
+     },
+     {
+      "url": "https://endpoints.news/ultragenyx-sells-prv-for-210m-and-still-has-another-to-monetize/",
+      "title": "Ultragenyx 以 2.1 亿美元出售优先审评券，手中还有一张待变现",
+      "kinds": [
+       "inv"
+      ],
+      "money": "2.1 亿美元",
+      "structure": "向未披露买家出售一张优先审评券（PRV），为今年迄今价格最高的 PRV 交易之一；公司仍持有另一张可变现。",
+      "source_name": "Endpoints News",
+      "why": "PRV 售价处于高位，为公司带来非稀释性资金。"
+     }
+    ]
+   }
+  }
+ ]
+}

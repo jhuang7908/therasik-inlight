@@ -1,0 +1,1440 @@
+{
+ "provenance": "pr5f/server_run_a/capture items_in.jsonl + enriched.jsonl (real server run at head 893bf3d)",
+ "items": [
+  {
+   "row": {
+    "source": "Nature",
+    "kind": "academic",
+    "title": "Woody ‘blankets’ deployed on Arctic permafrost to reduce carbon emissions",
+    "url": "https://www.nature.com/articles/d41586-026-03045-8",
+    "date": "2026-10-08",
+    "summary": "Nature, Published online: 08 October 2026; doi:10.1038/d41586-026-03045-8 A start-up company is testing whether stabilizing areas of rapidly eroding permafrost can prevent greenhouse-gas emissions."
+   },
+   "enriched_capture": {
+    "abstract_sha256": "068e146bd9664e9052dc1443d9a00b09c91ccacd35d0c9c703a715b20d7d69a0",
+    "journal": "",
+    "evidence_level": "press",
+    "source_trace": [
+     "RSS: 197 chars",
+     "Fallback to RSS summary"
+    ],
+    "pmid": "",
+    "pmcid": "",
+    "doi": ""
+   }
+  },
+  {
+   "row": {
+    "source": "Nature",
+    "kind": "academic",
+    "title": "A guide to Nature Index tables",
+    "url": "https://www.nature.com/articles/d41586-026-02999-z",
+    "date": "2026-10-07",
+    "summary": "Nature, Published online: 07 October 2026; doi:10.1038/d41586-026-02999-z Information on the methodology used in the ranking for the 2026 Nature Spotlight: Infectious diseases."
+   },
+   "enriched_capture": {
+    "abstract_sha256": "6ec18b6080030815b38e58d5f3762d8d982a37575454d11e1733649588d366c3",
+    "journal": "",
+    "evidence_level": "press",
+    "source_trace": [
+     "RSS: 176 chars",
+     "Fallback to RSS summary"
+    ],
+    "pmid": "",
+    "pmcid": "",
+    "doi": ""
+   }
+  },
+  {
+   "row": {
+    "source": "Nature",
+    "kind": "academic",
+    "title": "Nobel prizes 2026: brain switches, ‘ghost’ particle hunter, and ‘the chemistry of life’",
+    "url": "https://www.nature.com/articles/d41586-026-03208-7",
+    "date": "2026-10-07",
+    "summary": "Nature, Published online: 07 October 2026; doi:10.1038/d41586-026-03208-7 Nature rounds up the Nobel prizes for science — plus, hints of the ancestral human gut microbiome."
+   },
+   "enriched_capture": {
+    "abstract_sha256": "8df04c4ed391b0bbde956d890777bf705cac01add8a58081345635ca326f7840",
+    "journal": "",
+    "evidence_level": "press",
+    "source_trace": [
+     "RSS: 172 chars",
+     "Fallback to RSS summary"
+    ],
+    "pmid": "",
+    "pmcid": "",
+    "doi": ""
+   }
+  },
+  {
+   "row": {
+    "source": "Nature",
+    "kind": "academic",
+    "title": "NASA releases trove of Moon data from historic Artemis II flight",
+    "url": "https://www.nature.com/articles/d41586-026-03197-7",
+    "date": "2026-10-07",
+    "summary": "Nature, Published online: 07 October 2026; doi:10.1038/d41586-026-03197-7 Annotated images and more collected by the four astronauts could inform missions to the lunar surface."
+   },
+   "enriched_capture": {
+    "abstract_sha256": "987ae3be3db312e24a74e5f8f2a0cc3db40681f8394321bf741219abe1a608df",
+    "journal": "",
+    "evidence_level": "press",
+    "source_trace": [
+     "RSS: 176 chars",
+     "Fallback to RSS summary"
+    ],
+    "pmid": "",
+    "pmcid": "",
+    "doi": ""
+   }
+  },
+  {
+   "row": {
+    "source": "Nature",
+    "kind": "academic",
+    "title": "How we ditched presentations and embraced silence in our lab meetings",
+    "url": "https://www.nature.com/articles/d41586-026-02836-3",
+    "date": "2026-10-07",
+    "summary": "Nature, Published online: 07 October 2026; doi:10.1038/d41586-026-02836-3 Swapping to a system in which lab members read memos quietly before team discussions helped to create an open culture."
+   },
+   "enriched_capture": {
+    "abstract_sha256": "562c8d4d58a412d3a503ac94dea3bc3441d5c5bf70bf3d70db4b8b5eefa39adc",
+    "journal": "",
+    "evidence_level": "press",
+    "source_trace": [
+     "RSS: 192 chars",
+     "Fallback to RSS summary"
+    ],
+    "pmid": "",
+    "pmcid": "",
+    "doi": ""
+   }
+  },
+  {
+   "row": {
+    "source": "Nature",
+    "kind": "academic",
+    "title": "Blend",
+    "url": "https://www.nature.com/articles/d41586-026-02864-z",
+    "date": "2026-10-07",
+    "summary": "Nature, Published online: 07 October 2026; doi:10.1038/d41586-026-02864-z Identity crisis."
+   },
+   "enriched_capture": {
+    "abstract_sha256": "32e0646e53448c14a8b48286d1c60ffd7b30aacb3b430f49a596239f759b16bc",
+    "journal": "",
+    "evidence_level": "press",
+    "source_trace": [
+     "RSS: 90 chars",
+     "Fallback to RSS summary"
+    ],
+    "pmid": "",
+    "pmcid": "",
+    "doi": ""
+   }
+  },
+  {
+   "row": {
+    "source": "Nature Medicine",
+    "kind": "academic",
+    "title": "MAGIC: an international network for evaluating generative artificial intelligence in global health",
+    "url": "https://www.nature.com/articles/s41591-026-04706-x",
+    "date": "2026-10-06",
+    "summary": "Nature Medicine, Published online: 06 October 2026; doi:10.1038/s41591-026-04706-x MAGIC: an international network for evaluating generative artificial intelligence in global health"
+   },
+   "enriched_capture": {
+    "abstract_sha256": "d0f9e29c2dd1d58f6ca60a13d90137942b6556e51bd4abc0ead073a33d36b82a",
+    "journal": "",
+    "evidence_level": "press",
+    "source_trace": [
+     "RSS: 181 chars",
+     "Fallback to RSS summary"
+    ],
+    "pmid": "",
+    "pmcid": "",
+    "doi": "10.1038/s41591-026-04706-x"
+   }
+  },
+  {
+   "row": {
+    "source": "Nature Medicine",
+    "kind": "academic",
+    "title": "An open vision-language model for diverse medical applications",
+    "url": "https://www.nature.com/articles/s41591-026-04626-w",
+    "date": "2026-10-06",
+    "summary": "Nature Medicine, Published online: 06 October 2026; doi:10.1038/s41591-026-04626-w MedGemma, a collection of medical vision-language foundation models based on Gemma 3, demonstrates advanced medical understanding and reasoning across images and text and multiple medical imaging domains, exceeding the performance of similarly sized generative models while maintaining the general capabilities of the Gemma base models."
+   },
+   "enriched_capture": {
+    "abstract_sha256": "3b44330b18faa8ab5cbae78806f33d7d75af338bcb4b325d646e6e16ff91cc01",
+    "journal": "",
+    "evidence_level": "abstract",
+    "source_trace": [
+     "RSS: 419 chars",
+     "Nature abstract: 1618 chars"
+    ],
+    "pmid": "",
+    "pmcid": "",
+    "doi": "10.1038/s41591-026-04626-w"
+   },
+   "nature_abstract": "Artificial intelligence has high potential for impact in healthcare applications, but its training and deployment are challenging due to diverse data, a complex spectrum of possible tasks and important privacy needs. High-performing foundation models that enable data-efficient fine-tuning for diverse downstream tasks can meaningfully accelerate development in this domain. We introduce MedGemma, a collection of medical vision-language foundation models based on Gemma 3. MedGemma demonstrates advanced medical understanding and reasoning across images and text and multiple medical imaging domains, exceeding the performance of similarly sized generative models while maintaining the general capabilities of the Gemma base models. For out-of-distribution tasks, MedGemma achieves improvements of 2.6–10% in medical image question answering, 15.5–18.1% in chest X-ray finding classification and 10.8% in agentic evaluations compared with the base models. Our results show that fine-tuning MedGemma can be more effective than fine-tuning the base Gemma 3 model for medical tasks, particularly in the setting of limited training data. We additionally introduce MedSigLIP, a medically tuned vision encoder derived from SigLIP. MedSigLIP powers the visual understanding capabilities of MedGemma and, as an encoder, achieves performance comparable to or better than that of many specialized medical image encoders. Taken together, the MedGemma collection provides a strong foundation of medical image and text capabilities, with the potential to accelerate medical research and the development of downstream applications."
+  },
+  {
+   "row": {
+    "source": "Nature Medicine",
+    "kind": "academic",
+    "title": "Global and regional reference curves for pain across the lifespan in 6.1 million individuals in 118 countries",
+    "url": "https://www.nature.com/articles/s41591-026-04696-w",
+    "date": "2026-10-05",
+    "summary": "Nature Medicine, Published online: 05 October 2026; doi:10.1038/s41591-026-04696-w Global age- and sex-specific reference curves for 11 pain sites, from 6.1 million people in 118 countries, found higher late-life pain in the lowest Human Development Index (HDI) countries and provide a tool for benchmarking pain assessments in other cohorts."
+   },
+   "enriched_capture": {
+    "abstract_sha256": "e222cd1cde5fa835271b39f5760ebcaf98f01fe93c18758d36e125166f0ec0e2",
+    "journal": "",
+    "evidence_level": "abstract",
+    "source_trace": [
+     "RSS: 342 chars",
+     "Nature abstract: 1685 chars"
+    ],
+    "pmid": "",
+    "pmcid": "",
+    "doi": "10.1038/s41591-026-04696-w"
+   },
+   "nature_abstract": "Pain is the leading cause of disability worldwide, yet no harmonized self-reported reference framework exists to characterize how its burden is distributed across the lifespan and world regions. In this study, we harmonized individual-level self-reported pain data from 6,125,459 participants across 902 population-based data sources in 118 countries to establish global reference trajectories of pain. We implemented these trajectories in an open-access benchmarking platform for positioning external datasets against global pain norms. Pain prevalence ranged from roughly 2% for facial pain to 40% for back pain, was consistently higher in women across all 11 anatomical sites (risk ratio range: 1.08−1.83) and increased most steeply before age 55 years. Contrary to existing estimates that generally project higher prevalence of pain conditions in higher Human Development Index (HDI) regions, we found that individuals in the lowest HDI countries experienced a substantially higher late-life prevalence of any bodily pain than those in the highest (risk difference: 30.6 percentage points (95% confidence interval: 26.9−34.3)), with low back pain approaching twice the prevalence at the oldest ages. Globally, 18.3% of pain burden across anatomical sites was attributable to three modifiable risk factors (smoking, obesity and low income), but this varied from 12.6% in sub-Saharan Africa to 27.1% in eastern Europe, indicating that the factors underlying pain in lower-HDI settings remain poorly characterized. Together, these reference trajectories provide a common framework for defining and comparing pain burden and informing more equitable global surveillance and prevention."
+  },
+  {
+   "row": {
+    "source": "Nature Medicine",
+    "kind": "academic",
+    "title": "Oral small-molecule GLP-1RA safiglipron versus dapagliflozin in type 2 diabetes: a randomized, double-blind, active-comparator-controlled phase 3 trial",
+    "url": "https://www.nature.com/articles/s41591-026-04713-y",
+    "date": "2026-10-05",
+    "summary": "Nature Medicine, Published online: 05 October 2026; doi:10.1038/s41591-026-04713-y Once-daily oral safiglipron is non-inferior to dapagliflozin for HbA1c reduction at all tested doses and superior at 90 mg, with greater improvements in glycemic control, similar modest weight loss and an acceptable safety profile in adults with type 2 diabetes."
+   },
+   "enriched_capture": {
+    "abstract_sha256": "f7f51ae1673fdf47687a4e14909dd74467215a975d96a39256907c8253a91177",
+    "journal": "",
+    "evidence_level": "abstract",
+    "source_trace": [
+     "RSS: 345 chars",
+     "Nature abstract: 2325 chars"
+    ],
+    "pmid": "",
+    "pmcid": "",
+    "doi": "10.1038/s41591-026-04713-y"
+   },
+   "nature_abstract": "Safiglipron is an oral small-molecule glucagon-like peptide-1 (GLP-1) receptor agonist administered without fasting or dietary restrictions. We evaluated its efficacy and safety versus dapagliflozin in OUTSTAND-2, a phase 3, multicenter, randomized, double-blind, double-dummy, active-comparator-controlled trial conducted at 98 sites in China. We randomized 810 adults (mean hemoglobin A1C (HbA1c) 8.60%, median diabetes duration 5.0 years, 35.7% women) to safiglipron 30 mg ( n = 202), safiglipron 60 mg ( n = 203), safiglipron 90 mg ( n = 203) or dapagliflozin 10 mg ( n = 202) for 32 weeks, followed by a 20-week active-treatment extension. For the primary endpoint, treatment differences versus dapagliflozin in change from baseline in HbA1c at week 32 under the primary non-inferiority estimand were −0.30% (95% confidence interval (CI): −0.51 to −0.09), −0.22% (−0.44 to −0.01) and −0.40% (−0.62 to −0.19) for safiglipron 30 mg, 60 mg and 90 mg, respectively, establishing non-inferiority for all three doses (all P < 0.0001; non-inferiority margin 0.4%). Under the treatment policy estimand, 90 mg met the prespecified statistical criterion for superiority (difference −0.25%; 95% CI: −0.45 to −0.05; one-sided P = 0.0067), whereas 60 mg did not ( P = 0.0789), after which fixed-sequence testing stopped. HbA1c target attainment rates with safiglipron versus dapagliflozin were 54.9−63.5% versus 36.5% for HbA1c <7.0% and 38.9−48.6% versus 16.1% for HbA1c ≤6.5%. Mean body weight changes were −2.35%, −3.55%, −4.17% and −3.60% for safiglipron 30 mg, safiglipron 60 mg, safiglipron 90 mg and dapagliflozin, respectively. Fasting plasma glucose, seven-point self-monitored blood glucose profiles, waist circumference, HOMA-β, HOMA-IR and changes in treatment satisfaction showed varying degrees of improvement from baseline with both safiglipron and dapagliflozin. Rescue therapy was used by 0.5−1.5% versus 0% of participants, respectively. Gastrointestinal adverse events were more frequent with safiglipron and mostly mild or moderate; adverse events led to treatment discontinuation in 4.0%, 4.0%, 3.9% and 1.5% of participants, respectively. Safiglipron provides an effective oral treatment option for adults with type 2 diabetes inadequately controlled with metformin. ClinicalTrials.gov identifier: NCT06589765 ."
+  },
+  {
+   "row": {
+    "source": "Nature Medicine",
+    "kind": "academic",
+    "title": "The missing links in agentic AI autonomy",
+    "url": "https://www.nature.com/articles/s41591-026-04658-2",
+    "date": "2026-10-02",
+    "summary": "Nature Medicine, Published online: 02 October 2026; doi:10.1038/s41591-026-04658-2 A new study tackles issues around operational and decisional trust of agentic artificial intelligence (AI), using locally deployed, on-premise agents and consistency-based gating to refer uncertain cases — but what happens after referral remains untested."
+   },
+   "enriched_capture": {
+    "abstract_sha256": "14092b2dd98d659544cd9332fc085473c0399209c19659a56d2a3208352cba24",
+    "journal": "Nature medicine",
+    "evidence_level": "press",
+    "source_trace": [
+     "RSS: 338 chars",
+     "Fallback to RSS summary"
+    ],
+    "pmid": "42827130",
+    "pmcid": "",
+    "doi": "10.1038/s41591-026-04658-2"
+   },
+   "epmc_hit": {
+    "id": "10.1038/s41591-026-04658-2",
+    "source": "MED",
+    "doi": "10.1038/s41591-026-04658-2",
+    "title": "The missing links in agentic AI autonomy",
+    "isOpenAccess": "N",
+    "pmid": "42827130",
+    "journalTitle": "Nature medicine"
+   }
+  },
+  {
+   "row": {
+    "source": "Nature Biotechnology",
+    "kind": "academic",
+    "title": "Shotgun engineering fires up mammalian metabolic design",
+    "url": "https://www.nature.com/articles/s41587-026-03329-4",
+    "date": "2026-10-06",
+    "summary": "Nature Biotechnology, Published online: 06 October 2026; doi:10.1038/s41587-026-03329-4 By testing random combinations of genes at scale, shotgun genetic engineering enables discovery of new productive metabolic pathways in mammalian cells, including solutions for synthesizing two essential amino acids."
+   },
+   "enriched_capture": {
+    "abstract_sha256": "6516b237fc4bcd0d5b326db25cf9b9d3a59a5745607ca2fa29c09b0d9f31625f",
+    "journal": "",
+    "evidence_level": "press",
+    "source_trace": [
+     "RSS: 304 chars",
+     "Fallback to RSS summary"
+    ],
+    "pmid": "",
+    "pmcid": "",
+    "doi": "10.1038/s41587-026-03329-4"
+   }
+  },
+  {
+   "row": {
+    "source": "Nature Biotechnology",
+    "kind": "academic",
+    "title": "High-throughput metabolic engineering in mammalian cells",
+    "url": "https://www.nature.com/articles/s41587-026-03317-8",
+    "date": "2026-10-06",
+    "summary": "Nature Biotechnology, Published online: 06 October 2026; doi:10.1038/s41587-026-03317-8 Engineering complex phenotypes into mammalian cells holds profound potential but remains a largely intractable engineering challenge. We developed shotgun genetic engineering (SGE), a multiplexed strategy that screens millions of combinatorial solutions in a single experiment. This approach uses selection strategies that reveal effective designs, facilitating rapid engineering of complex biological functions."
+   },
+   "enriched_capture": {
+    "abstract_sha256": "bfb2f653268022879955223874202550bf7cc54a332ad62df6a7175ea2f1190e",
+    "journal": "",
+    "evidence_level": "press",
+    "source_trace": [
+     "RSS: 500 chars",
+     "Fallback to RSS summary"
+    ],
+    "pmid": "",
+    "pmcid": "",
+    "doi": "10.1038/s41587-026-03317-8"
+   }
+  },
+  {
+   "row": {
+    "source": "Nature Biotechnology",
+    "kind": "academic",
+    "title": "Decoding systemic vascular health and hypertensive disorders in pregnancy through retinal imaging and Visionary AI",
+    "url": "https://www.nature.com/articles/s41587-026-03303-0",
+    "date": "2026-10-06",
+    "summary": "Nature Biotechnology, Published online: 06 October 2026; doi:10.1038/s41587-026-03303-0 An interpretable artificial intelligence framework predicts hypertensive disorders of pregnancy using retinal images and vascular modeling."
+   },
+   "enriched_capture": {
+    "abstract_sha256": "30ba25ad89d9f581dd8ca130d0e326e15ce0402e21b0598908af8ef4a54b6a78",
+    "journal": "",
+    "evidence_level": "abstract",
+    "source_trace": [
+     "RSS: 227 chars",
+     "Nature abstract: 1347 chars"
+    ],
+    "pmid": "",
+    "pmcid": "",
+    "doi": "10.1038/s41587-026-03303-0"
+   },
+   "nature_abstract": "Hypertensive disorders of pregnancy arise from early placental and systemic vascular dysfunction, yet current first-trimester screening remains imprecise, biologically opaque and logistically challenging. Here we present Visionary AI, an interpretable platform that integrates retinal imaging with graph-based vascular modeling to predict hypertensive disorders before clinical onset. Visionary AI converts retinal images into topological and geometric representations of microvascular structure, enabling risk prediction from biologically grounded vascular features rather than generic image embeddings or clinical variables. In a prospective development cohort of 1,267 pregnancies, Visionary AI achieved strong performance for preeclampsia across population-wide control settings (area under the curve (AUC) = 0.91, average precision (AP) = 0.81). A stability-optimized model transferred without retraining to an independent external validation cohort, achieving AUC = 0.81 and AP = 0.68 and outperforming clinical and deep learning benchmarks. Recurrent features involving retinal vascular topology, geometry, network complexity and hierarchical organization position the maternal retina as a minimally invasive biosensor of systemic vascular health and Visionary AI as a biologically interpretable framework for pregnancy risk stratification."
+  },
+  {
+   "row": {
+    "source": "Nature Biotechnology",
+    "kind": "academic",
+    "title": "Highly multiplexed mammalian metabolic engineering with a shotgun approach",
+    "url": "https://www.nature.com/articles/s41587-026-03318-7",
+    "date": "2026-10-06",
+    "summary": "Nature Biotechnology, Published online: 06 October 2026; doi:10.1038/s41587-026-03318-7 Metabolic engineering of mammalian cells is simplified and scaled by screening ‘shotgun’ modifications."
+   },
+   "enriched_capture": {
+    "abstract_sha256": "d23fd6238669761e9362d3d0ad0509a0a1edb6811d52633ec9e6b3ae5e3bedfd",
+    "journal": "",
+    "evidence_level": "abstract",
+    "source_trace": [
+     "RSS: 191 chars",
+     "Nature abstract: 1240 chars"
+    ],
+    "pmid": "",
+    "pmcid": "",
+    "doi": "10.1038/s41587-026-03318-7"
+   },
+   "nature_abstract": "Mammalian metabolic engineering advances basic biology, bioproduction and cell therapy. However, as pathway complexity increases, so does the size of the combinatorial design space and required DNA constructs, rendering unbiased screens intractable. Here, we developed shotgun genetic engineering (SGE), which exploits the ease of delivering many barcoded small constructs—rather than a single large one—into mammalian cells. Each cell serves as an independent experiment, carrying a synthetic pathway that explores gene content, stoichiometry and organellar localization. Functional pathways are identified by sequencing barcodes from cells exhibiting the desired phenotype. Using SGE, we screened millions of pathway combinations to engineer essential amino acid biosynthesis, achieving near-wild-type growth without valine and enabling isoleucine-free growth in Chinese hamster ovary cells, as well as valine-free growth in Jurkat cells. Functional pathways favored mitochondrial localization and required the integration of tens of kilobases of synthetic DNA, beyond the scale of conventional screening. The resulting datasets support machine-learning-guided decoding and engineering of complex biosynthetic traits in mammalian systems."
+  },
+  {
+   "row": {
+    "source": "Nature Biotechnology",
+    "kind": "academic",
+    "title": "Behind (cell) walls",
+    "url": "https://www.nature.com/articles/s41587-026-03356-1",
+    "date": "2026-10-05",
+    "summary": "Nature Biotechnology, Published online: 05 October 2026; doi:10.1038/s41587-026-03356-1 While mammalian delivery technologies are advancing to translation at an exceptional rate, delivery to plant tissues faces challenges, limiting their practical applications."
+   },
+   "enriched_capture": {
+    "abstract_sha256": "9336854ffc843259a4025e69951f2adad2d69464bf9c450aaeb0cc9a8874c991",
+    "journal": "",
+    "evidence_level": "press",
+    "source_trace": [
+     "RSS: 261 chars",
+     "Fallback to RSS summary"
+    ],
+    "pmid": "",
+    "pmcid": "",
+    "doi": "10.1038/s41587-026-03356-1"
+   }
+  },
+  {
+   "row": {
+    "source": "Nature Biotechnology",
+    "kind": "academic",
+    "title": "Discovery and engineering of avian R2 retrotransposons for all-RNA-mediated targeted DNA integration in human cells",
+    "url": "https://www.nature.com/articles/s41587-026-03315-w",
+    "date": "2026-10-05",
+    "summary": "Nature Biotechnology, Published online: 05 October 2026; doi:10.1038/s41587-026-03315-w Engineered retrotransposons enable site-specific DNA integration into human cells."
+   },
+   "enriched_capture": {
+    "abstract_sha256": "1471135a7a70b222a19e4849dd1b84159ef6473f3653c42eed180c45356b1b60",
+    "journal": "",
+    "evidence_level": "abstract",
+    "source_trace": [
+     "RSS: 170 chars",
+     "Nature abstract: 492 chars"
+    ],
+    "pmid": "",
+    "pmcid": "",
+    "doi": "10.1038/s41587-026-03315-w"
+   },
+   "nature_abstract": "To discover unknown retrotransposons for genomic integration in human cells, we searched 1,139 avian genomes, identified 159 avian R2 retrotransposons and characterized conserved/nonconserved sequence features in their proteins and untranslated region elements. Engineered variants of these retrotransposons achieved up to 60% site-specific gene integration across human primary cells. This work expands the avian R2 resource and provides additional tools for all-RNA-mediated genome editing."
+  },
+  {
+   "row": {
+    "source": "Science",
+    "kind": "academic",
+    "title": "Watch: What’s the deal with OpenAI’s massive dump of math papers?",
+    "url": "https://www.science.org/content/article/watch-what-s-deal-openai-s-massive-dump-math-papers",
+    "date": "2026-10-07",
+    "summary": "The landmark release of 722 papers targeting 372 unsolved problems draws amazement—and criticism"
+   },
+   "enriched_capture": {
+    "abstract_sha256": "dc0635f5d67cdd104f1a1fa96b7a71369f252b1651e453a6b9f061d46b14aea8",
+    "journal": "",
+    "evidence_level": "press",
+    "source_trace": [
+     "RSS: 96 chars",
+     "Fallback to RSS summary"
+    ],
+    "pmid": "",
+    "pmcid": "",
+    "doi": ""
+   }
+  },
+  {
+   "row": {
+    "source": "Science",
+    "kind": "academic",
+    "title": "‘The anti-Fauci’? Lab-leak proponent listed in NIH directory but denies being hired",
+    "url": "https://www.science.org/content/article/anti-fauci-lab-leak-proponent-listed-nih-directory-denies-being-hired",
+    "date": "2026-10-07",
+    "summary": "Biotech executive Steven Quay may be in contention for leadership role in infectious disease institute"
+   },
+   "enriched_capture": {
+    "abstract_sha256": "47c98f14310c28985af859d90274e68dcc3613c7da9a86bea8cc6ae36aa971ac",
+    "journal": "",
+    "evidence_level": "press",
+    "source_trace": [
+     "RSS: 102 chars",
+     "Fallback to RSS summary"
+    ],
+    "pmid": "",
+    "pmcid": "",
+    "doi": ""
+   }
+  },
+  {
+   "row": {
+    "source": "Science",
+    "kind": "academic",
+    "title": "Neanderthals were skilled woodworkers, first-of-its-kind tool trove reveals",
+    "url": "https://www.science.org/content/article/neanderthals-were-skilled-woodworkers-first-its-kind-tool-trove-reveals",
+    "date": "2026-10-07",
+    "summary": "Find in Spanish cave provides rare window into the domestic lives of our closest relatives"
+   },
+   "enriched_capture": {
+    "abstract_sha256": "745430d60bb004783790bed0af088358f71bb89f18b70952a314aca1230b2ec8",
+    "journal": "",
+    "evidence_level": "press",
+    "source_trace": [
+     "RSS: 90 chars",
+     "Fallback to RSS summary"
+    ],
+    "pmid": "",
+    "pmcid": "",
+    "doi": ""
+   }
+  },
+  {
+   "row": {
+    "source": "Science",
+    "kind": "academic",
+    "title": "As AI triggers a tsunami of submissions, computer science conferences impose caps",
+    "url": "https://www.science.org/content/article/ai-triggers-tsunami-submissions-computer-science-conferences-impose-caps",
+    "date": "2026-10-07",
+    "summary": "New controls could limit papers by early-career researchers"
+   },
+   "enriched_capture": {
+    "abstract_sha256": "dd27fb3507b372f5953536e0b887ab4e97dcb3a10643506187a337ce2ce73772",
+    "journal": "",
+    "evidence_level": "press",
+    "source_trace": [
+     "RSS: 59 chars",
+     "Fallback to RSS summary"
+    ],
+    "pmid": "",
+    "pmcid": "",
+    "doi": ""
+   }
+  },
+  {
+   "row": {
+    "source": "Science",
+    "kind": "academic",
+    "title": "World’s once-largest penguin colony is in perilous decline",
+    "url": "https://www.science.org/content/article/world-s-once-largest-penguin-colony-perilous-decline",
+    "date": "2026-10-07",
+    "summary": "Climate change appears to have made food scarce for chinstrap penguins, which had numbered more than 1 million on a remote South Atlantic island"
+   },
+   "enriched_capture": {
+    "abstract_sha256": "815aa47d079bc4d3844007da3cdc519042007c7d21050aa794b14c59ff8bda86",
+    "journal": "",
+    "evidence_level": "press",
+    "source_trace": [
+     "RSS: 144 chars",
+     "Fallback to RSS summary"
+    ],
+    "pmid": "",
+    "pmcid": "",
+    "doi": ""
+   }
+  },
+  {
+   "row": {
+    "source": "Science",
+    "kind": "academic",
+    "title": "Was this odd animal the world’s first milk suckler?",
+    "url": "https://www.science.org/content/article/was-odd-animal-world-s-first-milk-suckler",
+    "date": "2026-10-07",
+    "summary": "Ancient swimming creature provides clues to when nursing evolved"
+   },
+   "enriched_capture": {
+    "abstract_sha256": "4b29394e8b2f0e311c0c84bf7a4bc9baae4cae0b470eccedb40a5551d07bc271",
+    "journal": "",
+    "evidence_level": "press",
+    "source_trace": [
+     "RSS: 64 chars",
+     "Fallback to RSS summary"
+    ],
+    "pmid": "",
+    "pmcid": "",
+    "doi": ""
+   }
+  },
+  {
+   "row": {
+    "source": "Cell",
+    "kind": "academic",
+    "title": "Glioma margins gain a third dimension before surgery ends",
+    "url": "https://www.cell.com/cell/fulltext/S0092-8674(26)01071-8?rss=yes",
+    "date": "2026-10-01",
+    "summary": "In this issue of Cell, Liu et al. introduce ULTRA, which combines rapid tissue clearing, single-channel stimulated Raman scattering, and AI to generate cell-resolved three-dimensional virtual histology of intact glioma specimens in about 30 minutes—fast enough to expose depth-dependent infiltration before surgery ends."
+   },
+   "enriched_capture": {
+    "abstract_sha256": "a36315c681cc1481f2f0f60afe0c2e0cb929b2fa346aab58be98d2cd324ef5e7",
+    "journal": "",
+    "evidence_level": "press",
+    "source_trace": [
+     "RSS: 320 chars",
+     "Fallback to RSS summary"
+    ],
+    "pmid": "",
+    "pmcid": "",
+    "doi": ""
+   }
+  },
+  {
+   "row": {
+    "source": "Cell",
+    "kind": "academic",
+    "title": "Taking the heat: Breaking the temperature limits of eukaryotic life",
+    "url": "https://www.cell.com/cell/fulltext/S0092-8674(26)01075-5?rss=yes",
+    "date": "2026-10-01",
+    "summary": "What’s the highest temperature at which complex life can grow? It’s an old question. Here, Rappaport and colleagues describe a thermophilic amoeba that breaks the previous record, which was set at ∼60°C, and suggest the beginnings of an answer to what innovations enable this organism to take the heat."
+   },
+   "enriched_capture": {
+    "abstract_sha256": "8b5519750511ec6bf5fda7830e9d41a97af81cf91c830e2182057d3a42f2c3ef",
+    "journal": "",
+    "evidence_level": "press",
+    "source_trace": [
+     "RSS: 302 chars",
+     "Fallback to RSS summary"
+    ],
+    "pmid": "",
+    "pmcid": "",
+    "doi": ""
+   }
+  },
+  {
+   "row": {
+    "source": "Cell",
+    "kind": "academic",
+    "title": "Mitochondria before we knew them",
+    "url": "https://www.cell.com/cell/fulltext/S0092-8674(26)01072-X?rss=yes",
+    "date": "2026-10-01",
+    "summary": "In this issue of Cell, Chen et al. chart mitochondrial proteome diversity across eukaryotes, revealing an unexpectedly complex ancestral proteome alongside extensive lineage-specific innovation. Their broad phylogenetic reconstruction provides new insights into the mitochondrial proteome of the last eukaryotic common ancestor while unearthing a wealth of unexplored mitochondrial biology outside of traditional model systems."
+   },
+   "enriched_capture": {
+    "abstract_sha256": "bb53c1cbc77546b9202419fd92b58e8c4389d19f5622e9893cfb2d45dcafc191",
+    "journal": "",
+    "evidence_level": "press",
+    "source_trace": [
+     "RSS: 427 chars",
+     "Fallback to RSS summary"
+    ],
+    "pmid": "",
+    "pmcid": "",
+    "doi": ""
+   }
+  },
+  {
+   "row": {
+    "source": "Cell",
+    "kind": "academic",
+    "title": "Decoding mitochondrial proteomes of diverse eukaryotes",
+    "url": "https://www.cell.com/cell/fulltext/S0092-8674(26)01076-7?rss=yes",
+    "date": "2026-10-01",
+    "summary": "Our textbook view of mitochondria, which has been shaped by studies in animals and yeast, fails to do justice to the organelle’s broader eukaryotic diversity. While most mitochondria retain a tiny genome, the overwhelming majority of their proteins are nuclear-encoded and vary extensively across lineages. To map this diversity, the MitoCarta Tree of Life Consortium developed experimental and computational workflows to generate high-accuracy mitochondrial proteomes across diverse eukaryotes—helping to lay a foundation for comparative mitochondrial biology with broad implications for physiology, evolution, and disease."
+   },
+   "enriched_capture": {
+    "abstract_sha256": "998449d4dddc7247a641607090688a4fbe45fe2d83f9504ac916dddb349b0cf9",
+    "journal": "",
+    "evidence_level": "press",
+    "source_trace": [
+     "RSS: 624 chars",
+     "Fallback to RSS summary"
+    ],
+    "pmid": "",
+    "pmcid": "",
+    "doi": ""
+   }
+  },
+  {
+   "row": {
+    "source": "Cell",
+    "kind": "academic",
+    "title": "Mitochondrial proteome of Acanthamoeba delineates aerobic and anaerobic pathways dynamically regulated by oxygen",
+    "url": "https://www.cell.com/cell/fulltext/S0092-8674(26)01067-6?rss=yes",
+    "date": "2026-10-01",
+    "summary": "The complete mitochondrial proteome of Acanthamoeba castellanii—an infectious amoeba that causes blindness—catalogs 1,122 proteins, with over a third having no human or yeast counterpart, including potential drug candidates. Oxygen levels rewire this organism’s bioenergetic machinery, switching on an anaerobic pathway that produces H2 gas via a mitochondrial hydrogenase."
+   },
+   "enriched_capture": {
+    "abstract_sha256": "9f68cc317dad801cc4fe1424578321d6a7629e2f476802455984cd18c3b296a9",
+    "journal": "",
+    "evidence_level": "press",
+    "source_trace": [
+     "RSS: 373 chars",
+     "Fallback to RSS summary"
+    ],
+    "pmid": "",
+    "pmcid": "",
+    "doi": ""
+   }
+  },
+  {
+   "row": {
+    "source": "Cell",
+    "kind": "academic",
+    "title": "A high-confidence plant mitochondrial proteome via protein correlation profiling",
+    "url": "https://www.cell.com/cell/fulltext/S0092-8674(26)01000-7?rss=yes",
+    "date": "2026-10-01",
+    "summary": "A high-confidence mitochondrial proteome inventory of Arabidopsis thaliana (AtMitoCarta) is defined using serial enrichment of mitochondria, mass spectrometry, and protein correlation profiling."
+   },
+   "enriched_capture": {
+    "abstract_sha256": "e08d9346552ccbf34cf33df611d5705cc430cc460dea4fea14f4956458084adb",
+    "journal": "",
+    "evidence_level": "press",
+    "source_trace": [
+     "RSS: 194 chars",
+     "Fallback to RSS summary"
+    ],
+    "pmid": "",
+    "pmcid": "",
+    "doi": ""
+   }
+  },
+  {
+   "row": {
+    "source": "bioRxiv 免疫学",
+    "kind": "academic",
+    "title": "CD14 Blockade Attenuates Arrhythmogenic Cardiomyopathy",
+    "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+    "date": "2026-10-07",
+    "summary": "Background: Arrhythmogenic cardiomyopathy (ACM) is a genetic and phenotypically heterogeneous myocardial disorder characterized by progressive cardiomyocyte loss, immune cell infiltration, and fibro-fatty replacement of the ventricular myocardium, with an increased risk of sudden cardiac death (SCD), predominantly caused by mutations in cardiac desmosomal genes including PKP2, DSP, and DSG2. We previously described the pivotal role of NF{kappa}B and CCR2+ cardiac macrophage-triggered inflammation in ACM pathogenesis. Methods: WT or Dsg2mut/mut mice were treated with either isotype control or anti-CD14 antibody once a week for the described treatment period (4 or 8 weeks). At the end of the treatment period, disease characteristics were assessed by echocardiography, electrocardiography, histology, immunofluorescence, positron emission tomography (PET) imaging and single-cell transcriptomics. Results: Here, we demonstrate the efficacy of neutralizing CD14 signaling, an important mediator of inflammatory macrophage activation, in attenuating ACM disease in vivo. Additionally, we elucidate shifts in the cellular and transcriptomic landscapes that occur following anti-CD14 antibody treatment in a well-established mouse model of ACM and identify substantial reductions in inflammatory macrophage and pro-fibrotic fibroblast populations. Conclusion: This study provides evidence that blockade of CD14 can attenuate the ACM disease phenotype. It may do so by inhibiting macrophage-based activation and inflammation, while also altering the transcriptional state of other important cell types. Collectively, these findings suggest that CD14 inhibition may be an effective option for ACM, which should be explored in early-phase clinical studies."
+   },
+   "enriched_capture": {
+    "abstract_sha256": "1d952a07f09e6eff9e25aad8492320fe2fe4cd2bb3f3e3b7118225e77094d782",
+    "journal": "",
+    "evidence_level": "preprint",
+    "source_trace": [
+     "RSS: 1756 chars",
+     "EPMC abstract: 1787 chars"
+    ],
+    "pmid": "",
+    "pmcid": "",
+    "doi": "10.64898/2026.09.30.755828"
+   },
+   "epmc_hit": {
+    "id": "10.64898/2026.09.30.755828",
+    "source": "PPR",
+    "doi": "10.64898/2026.09.30.755828",
+    "title": "CD14 Blockade Attenuates Arrhythmogenic Cardiomyopathy",
+    "abstractText": "<h4>Background: </h4> Arrhythmogenic cardiomyopathy (ACM) is a genetic and phenotypically heterogeneous myocardial disorder characterized by progressive cardiomyocyte loss, immune cell infiltration, and fibro-fatty replacement of the ventricular myocardium, with an increased risk of sudden cardiac death (SCD), predominantly caused by mutations in cardiac desmosomal genes including PKP2, DSP, and DSG2. We previously described the pivotal role of NFκB and CCR2+ cardiac macrophage-triggered inflammation in ACM pathogenesis. <h4>Methods:</h4> WT or Dsg2mut/mut mice were treated with either isotype control or anti-CD14 antibody once a week for the described treatment period (4 or 8 weeks). At the end of the treatment period, disease characteristics were assessed by echocardiography, electrocardiography, histology, immunofluorescence, positron emission tomography (PET) imaging and single-cell transcriptomics. <h4>Results:</h4> Here, we demonstrate the efficacy of neutralizing CD14 signaling, an important mediator of inflammatory macrophage activation, in attenuating ACM disease in vivo. Additionally, we elucidate shifts in the cellular and transcriptomic landscapes that occur following anti-CD14 antibody treatment in a well-established mouse model of ACM and identify substantial reductions in inflammatory macrophage and pro-fibrotic fibroblast populations. <h4>Conclusion:</h4> This study provides evidence that blockade of CD14 can attenuate the ACM disease phenotype. It may do so by inhibiting macrophage-based activation and inflammation, while also altering the transcriptional state of other important cell types. Collectively, these findings suggest that CD14 inhibition may be an effective option for ACM, which should be explored in early-phase clinical studies.",
+    "isOpenAccess": "N"
+   }
+  },
+  {
+   "row": {
+    "source": "bioRxiv 免疫学",
+    "kind": "academic",
+    "title": "C3a receptor signalling in ObRb-expressing neurons promotes leptin resistance and obesity-associated cardiac remodelling",
+    "url": "https://www.biorxiv.org/content/10.64898/2026.10.05.756676v1?rss=1",
+    "date": "2026-10-07",
+    "summary": "Obesity is associated with hypothalamic inflammation, leptin resistance and increased cardiometabolic risk, but the neuroimmune signals linking nutrient excess to these outcomes remain incompletely defined. Here we show that diet-induced obesity is accompanied by local complement activation in the mouse hypothalamus, leading to C3a generation that signals through C3a receptor (C3aR) on leptin receptor (ObRb)-expressing neurons and blunts leptin signaling. Deletion of C3aR in ObRb-expressing neurons preserves leptin responsiveness, reduces food intake and weight gain, and improves glucose homeostasis during dietary challenge. Systemic pharmacological C3aR targeting induces weight loss and improves leptin responsiveness in established obesity. Genetic or pharmacological C3aR targeting also attenuates obesity-associated diastolic dysfunction and myocardial fibrosis; pair-feeding experiments reveal an additional component of cardiac protection beyond reduced weight gain, associated with lower cardiac sympathetic innervation. In humans, circulating complement activation markers are elevated in obesity and decline after bariatric surgery. Together, our findings identify C3aR signaling in ObRb-expressing neurons as a neuroimmune pathway contributing to hypothalamic leptin resistance and obesity-associated cardiac remodeling, highlighting complement signaling as a potential therapeutic target in cardiometabolic disease."
+   },
+   "enriched_capture": {
+    "abstract_sha256": "d061d3d94ff8549b9f38cd086844e3f91efe286bc9c7b9e7890c9fe908f4d656",
+    "journal": "",
+    "evidence_level": "preprint",
+    "source_trace": [
+     "RSS: 1435 chars",
+     "EPMC abstract: 1435 chars"
+    ],
+    "pmid": "",
+    "pmcid": "",
+    "doi": "10.64898/2026.10.05.756676"
+   },
+   "epmc_hit": {
+    "id": "10.64898/2026.10.05.756676",
+    "source": "PPR",
+    "doi": "10.64898/2026.10.05.756676",
+    "title": "C3a receptor signalling in ObRb-expressing neurons promotes leptin resistance and obesity-associated cardiac remodelling",
+    "abstractText": "Obesity is associated with hypothalamic inflammation, leptin resistance and increased cardiometabolic risk, but the neuroimmune signals linking nutrient excess to these outcomes remain incompletely defined. Here we show that diet-induced obesity is accompanied by local complement activation in the mouse hypothalamus, leading to C3a generation that signals through C3a receptor (C3aR) on leptin receptor (ObRb)-expressing neurons and blunts leptin signaling. Deletion of C3aR in ObRb-expressing neurons preserves leptin responsiveness, reduces food intake and weight gain, and improves glucose homeostasis during dietary challenge. Systemic pharmacological C3aR targeting induces weight loss and improves leptin responsiveness in established obesity. Genetic or pharmacological C3aR targeting also attenuates obesity-associated diastolic dysfunction and myocardial fibrosis; pair-feeding experiments reveal an additional component of cardiac protection beyond reduced weight gain, associated with lower cardiac sympathetic innervation. In humans, circulating complement activation markers are elevated in obesity and decline after bariatric surgery. Together, our findings identify C3aR signaling in ObRb-expressing neurons as a neuroimmune pathway contributing to hypothalamic leptin resistance and obesity-associated cardiac remodeling, highlighting complement signaling as a potential therapeutic target in cardiometabolic disease.",
+    "isOpenAccess": "N"
+   }
+  },
+  {
+   "row": {
+    "source": "bioRxiv 免疫学",
+    "kind": "academic",
+    "title": "Mesaconic acid delivery via biomaterials and engineered probiotics to the gut reduces inflammation in Crohn's Diseases mouse models",
+    "url": "https://www.biorxiv.org/content/10.64898/2026.10.01.756006v1?rss=1",
+    "date": "2026-10-07",
+    "summary": "Mesaconate (MES, an immunosuppressive metabolite) but not itaconate is upregulated in stool of Crohns Disease (CD) patients, albeit below therapeutic levels.. However, colonic MES level is difficult to maintain because of its high absorption rate, limiting its therapeutic potential for CD. Herein, we developed two strategies that elevate MES level and suppress inflammation: EcN-CAD, an engineered probiotic Escherichia coli Nissle 1917 (EcN) that overexpresses cis-aconitate decarboxylase (CAD, produces itaconic acid that is converted to MES); and MES+Zn, a Zinc-MES ionically crosslinked formulation. Mechanistically, MES modulates T cell function by downregulating glycolytic and mitochondrial activity and decrease ROR{gamma}t expression. In preclinical SAMP1/YitFC dexamethasone-withdrawal model and TNFDARE model, MES+Zn decreased gut permeability significantly compared to controls and reduced myeloperoxidase (MPO, an inflammatory marker) 1000-fold compared to controls. EcN-CAD probiotics decreased ROR{gamma}t expression in CD4+ and CD8+ T cells, gut permeability and inflammation in preventive SAMP1/YitFC model, and SAMP1/YitFC dexamethasone-withdrawal model. Overall, MES rewires T cell responses and technologies that enhance MES levels can be effective in gut-related inflammatory diseases."
+   },
+   "enriched_capture": {
+    "abstract_sha256": "db6f98fa3bdae0d08d2ddbc711eed03893e0a079019edcdc02db5eea727ff7b9",
+    "journal": "",
+    "evidence_level": "preprint",
+    "source_trace": [
+     "RSS: 1308 chars",
+     "EPMC abstract: 1296 chars"
+    ],
+    "pmid": "",
+    "pmcid": "",
+    "doi": "10.64898/2026.10.01.756006"
+   },
+   "epmc_hit": {
+    "id": "10.64898/2026.10.01.756006",
+    "source": "PPR",
+    "doi": "10.64898/2026.10.01.756006",
+    "title": "Mesaconic acid delivery via biomaterials and engineered probiotics to the gut reduces inflammation in Crohn's Diseases mouse models",
+    "abstractText": "Mesaconate (MES, an immunosuppressive metabolite) but not itaconate is upregulated in stool of Crohns Disease (CD) patients, albeit below therapeutic levels.. However, colonic MES level is difficult to maintain because of its high absorption rate, limiting its therapeutic potential for CD. Herein, we developed two strategies that elevate MES level and suppress inflammation: EcN-CAD, an engineered probiotic Escherichia coli Nissle 1917 (EcN) that overexpresses cis-aconitate decarboxylase (CAD, produces itaconic acid that is converted to MES); and MES+Zn, a Zinc-MES ionically crosslinked formulation. Mechanistically, MES modulates T cell function by downregulating glycolytic and mitochondrial activity and decrease RORγt expression. In preclinical SAMP1/YitFC dexamethasone-withdrawal model and TNFDARE model, MES+Zn decreased gut permeability significantly compared to controls and reduced myeloperoxidase (MPO, an inflammatory marker) 1000-fold compared to controls. EcN-CAD probiotics decreased RORγt expression in CD4+ and CD8+ T cells, gut permeability and inflammation in preventive SAMP1/YitFC model, and SAMP1/YitFC dexamethasone-withdrawal model. Overall, MES rewires T cell responses and technologies that enhance MES levels can be effective in gut-related inflammatory diseases.",
+    "isOpenAccess": "N"
+   }
+  },
+  {
+   "row": {
+    "source": "bioRxiv 免疫学",
+    "kind": "academic",
+    "title": "Human CD4 T cells coordinate antitumor immunity through indirect antigen presentation",
+    "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755788v1?rss=1",
+    "date": "2026-10-07",
+    "summary": "Whether human tumor-specific CD4 T cells can drive antitumor immunity in cancers lacking tumor-cell MHC class II expression has not been established. In MHC class II-negative melanoma and breast cancer, CD4 T cells with a transcriptional signature of tumor specificity correlated with myeloid and CD8 T cell activation. Using a patient-derived NY-ESO-specific, HLA-DP04-restricted TCR, we tested whether human CD4 T cells could control tumors through indirect antigen presentation. In vitro, CD4 T cells inhibited HLA-DP-negative melanoma growth through recognition of tumor-derived antigen on antigen presenting cells (APC). In humanized mice, CD4 T cell transfer induced regression of HLA-DP-negative tumors, and control required HLA-matched human APCs. CD4 T cell transfer induced endogenous CD8 T cell proliferation and myeloid activation that mirrored immune programs correlated with the presence of these cells in patients. These findings establish that human tumor-specific CD4 T cells coordinate antitumor immunity through APC without direct tumor recognition, supporting their therapeutic relevance in MHC class II-negative cancers."
+   },
+   "enriched_capture": {
+    "abstract_sha256": "c964e0562803e1ed93403ccdf4896ef55df43ca98650dfc5b2d82865caf87162",
+    "journal": "",
+    "evidence_level": "preprint",
+    "source_trace": [
+     "RSS: 1141 chars",
+     "EPMC abstract: 1141 chars"
+    ],
+    "pmid": "",
+    "pmcid": "",
+    "doi": "10.64898/2026.09.30.755788"
+   },
+   "epmc_hit": {
+    "id": "10.64898/2026.09.30.755788",
+    "source": "PPR",
+    "doi": "10.64898/2026.09.30.755788",
+    "title": "Human CD4 T cells coordinate antitumor immunity through indirect antigen presentation",
+    "abstractText": "Whether human tumor-specific CD4 T cells can drive antitumor immunity in cancers lacking tumor-cell MHC class II expression has not been established. In MHC class II-negative melanoma and breast cancer, CD4 T cells with a transcriptional signature of tumor specificity correlated with myeloid and CD8 T cell activation. Using a patient-derived NY-ESO-specific, HLA-DP04-restricted TCR, we tested whether human CD4 T cells could control tumors through indirect antigen presentation. In vitro, CD4 T cells inhibited HLA-DP-negative melanoma growth through recognition of tumor-derived antigen on antigen presenting cells (APC). In humanized mice, CD4 T cell transfer induced regression of HLA-DP-negative tumors, and control required HLA-matched human APCs. CD4 T cell transfer induced endogenous CD8 T cell proliferation and myeloid activation that mirrored immune programs correlated with the presence of these cells in patients. These findings establish that human tumor-specific CD4 T cells coordinate antitumor immunity through APC without direct tumor recognition, supporting their therapeutic relevance in MHC class II-negative cancers.",
+    "isOpenAccess": "N"
+   }
+  },
+  {
+   "row": {
+    "source": "bioRxiv 免疫学",
+    "kind": "academic",
+    "title": "Crystal structure of activated MAPKAPK2 kinase reveals a C-lobe allosteric pocket for furan-2-carboxamide inhibitors",
+    "url": "https://www.biorxiv.org/content/10.64898/2026.10.01.755332v1?rss=1",
+    "date": "2026-10-07",
+    "summary": "MAPK-activated protein kinase 2 (MAPKAPK2, MK2) is a downstream substrate of p38 MAPK that regulates inflammatory signaling and cytokine synthesis, making it an attractive therapeutic target. Although several crystal structures of MAPKAPK2 with ATP-competitive inhibitors have supported drug discovery, structural elucidation of selective non-ATP-competitive inhibitors has remained challenging. MK-25 is a non-ATP-competitive furan-2-carboxamide MAPKAPK2 inhibitor developed at Merck to overcome the selectivity and cellular-efficacy limitations of ATP-competitive chemotypes. Here, we show through isothermal titration calorimetry that MK-25 binds the activated MAPKAPK2, consistent with state-dependent allosteric binding. To determine the binding mode of MK-25, we solved a 2.8 A resolution crystal structure of an activated MAPKAPK2 construct in ternary complex with the ATP-site inhibitor PF-3644022 and a bromo-analogue of MK-25. The ligand occupies a pocket in the C-lobe overlapping the protein-substrate recognition region and formed through rearrangements of D and G helices and the activation segment. These interactions are consistent with the structure-activity relationships reported for the furan-2-carboxamide chemotype and identify a ligandable allosteric pocket that may facilitate future structure-guided design of selective, non-ATP-competitive MAPKAPK2 inhibitors."
+   },
+   "enriched_capture": {
+    "abstract_sha256": "eb2008c2813b8321442f56cc6fbc8f411588c6170d59f6aa8767c9fec82b5b81",
+    "journal": "",
+    "evidence_level": "preprint",
+    "source_trace": [
+     "RSS: 1386 chars",
+     "EPMC abstract: 1388 chars"
+    ],
+    "pmid": "",
+    "pmcid": "",
+    "doi": "10.64898/2026.10.01.755332"
+   },
+   "epmc_hit": {
+    "id": "10.64898/2026.10.01.755332",
+    "source": "PPR",
+    "doi": "10.64898/2026.10.01.755332",
+    "title": "Crystal structure of activated MAPKAPK2 kinase reveals a C-lobe allosteric pocket for furan-2-carboxamide inhibitors",
+    "abstractText": "MAPK-activated protein kinase 2 (MAPKAPK2, MK2) is a downstream substrate of p38 MAPK that regulates inflammatory signaling and cytokine synthesis, making it an attractive therapeutic target. Although several crystal structures of MAPKAPK2 with ATP-competitive inhibitors have supported drug discovery, structural elucidation of selective non-ATP-competitive inhibitors has remained challenging. MK-25 is a non-ATP-competitive furan-2-carboxamide MAPKAPK2 inhibitor developed at Merck to overcome the selectivity and cellular-efficacy limitations of ATP-competitive chemotypes. Here, we show through isothermal titration calorimetry that MK-25 binds the activated MAPKAPK2, consistent with state-dependent allosteric binding. To determine the binding mode of MK-25, we solved a 2.8 A resolution crystal structure of an activated MAPKAPK2 construct in ternary complex with the ATP-site inhibitor PF-3644022 and a bromo-analogue of MK-25. The ligand occupies a pocket in the C-lobe overlapping the protein-substrate recognition region and formed through rearrangements of αD and αG helices and the activation segment. These interactions are consistent with the structure-activity relationships reported for the furan-2-carboxamide chemotype and identify a ligandable allosteric pocket that may facilitate future structure-guided design of selective, non-ATP-competitive MAPKAPK2 inhibitors.",
+    "isOpenAccess": "N"
+   }
+  },
+  {
+   "row": {
+    "source": "bioRxiv 免疫学",
+    "kind": "academic",
+    "title": "Differential Effects of Distinct Type I Interferons and IFN Inducers on Fc Receptor landscape and myeloid cell function",
+    "url": "https://www.biorxiv.org/content/10.64898/2026.10.01.756027v1?rss=1",
+    "date": "2026-10-07",
+    "summary": "Antiviral monoclonal antibodies (mAbs) rely on Fc-mediated effector functions, which depend on interactions with Fc receptors (FcRs) expressed on immune cells such as monocytes and dendritic cells (DCs). While combinations of antiviral mAbs with type I interferons (IFN-I) or IFN inducers are being explored to enhance therapeutic efficacy, the impact of these immunomodulators on FcR expression remains poorly understood. In this study, we investigated the effects of IFN-2, IFN-{beta}, and the IFN-inducer TAK-981 (a SUMOylation inhibitor) on FcR modulation and functional activation in human monocyte subsets and monocyte-derived DCs (moDCs). Using flow cytometry and imaging techniques, we mapped the expression of activating Fc{gamma}Rs (CD64, CD32A, CD16A) and neonatal FcR (FcRn) under steady-state and stimulated conditions. We found that IFN-I selectively downregulates CD16A expression in classical monocytes while preserving other FcRs, whereas TAK-981 reduces FcRn expression in classical monocytes without affecting CD16A. Additionally, IFN-{beta} and TAK-981 but not IFN-2, selectively enhanced Fc{gamma}RI expression in moDC. IFN-{beta} also induced a stronger maturation and functional activation program in monocytes and moDCs compared with IFN-2, whereas TAK-981 largely reproduced the IFN-{beta}-driven phenotype and secretory profile. Furthermore, we demonstrated that IFN-I signaling alters the spatial distribution of FcRs, with IFN-{beta} and TAK-981 promoting distinct redistribution patterns of Fc{gamma}Rs in monocytes and moDCs. These findings reveal a novel layer of FcR regulation, highlighting that IFN-I and IFN inducers differentially modulate FcR expression, localization, and functional activation in a cell-type- and stimulus-specific manner. Overall, this work provides a framework for understanding how IFN-I-based immunotherapies may influence Fc-mediated immune functions while preserving FcRn-dependent antibody persistence."
+   },
+   "enriched_capture": {
+    "abstract_sha256": "fb9602b9a675983fe63746bf248e4d760d0c4be378abb8c787f5ea4d840958fe",
+    "journal": "",
+    "evidence_level": "preprint",
+    "source_trace": [
+     "RSS: 1964 chars",
+     "EPMC abstract: 1924 chars"
+    ],
+    "pmid": "",
+    "pmcid": "",
+    "doi": "10.64898/2026.10.01.756027"
+   },
+   "epmc_hit": {
+    "id": "10.64898/2026.10.01.756027",
+    "source": "PPR",
+    "doi": "10.64898/2026.10.01.756027",
+    "title": "Differential Effects of Distinct Type I Interferons and IFN Inducers on Fc Receptor landscape and myeloid cell function",
+    "abstractText": "Antiviral monoclonal antibodies (mAbs) rely on Fc-mediated effector functions, which depend on interactions with Fc receptors (FcRs) expressed on immune cells such as monocytes and dendritic cells (DCs). While combinations of antiviral mAbs with type I interferons (IFN-I) or IFN inducers are being explored to enhance therapeutic efficacy, the impact of these immunomodulators on FcR expression remains poorly understood. In this study, we investigated the effects of IFN-α2, IFN-β, and the IFN-inducer TAK-981 (a SUMOylation inhibitor) on FcR modulation and functional activation in human monocyte subsets and monocyte-derived DCs (moDCs). Using flow cytometry and imaging techniques, we mapped the expression of activating FcγRs (CD64, CD32A, CD16A) and neonatal FcR (FcRn) under steady-state and stimulated conditions. We found that IFN-I selectively downregulates CD16A expression in classical monocytes while preserving other FcRs, whereas TAK-981 reduces FcRn expression in classical monocytes without affecting CD16A. Additionally, IFN-β and TAK-981 but not IFN-α2, selectively enhanced FcγRI expression in moDC. IFN-β also induced a stronger maturation and functional activation program in monocytes and moDCs compared with IFN-α2, whereas TAK-981 largely reproduced the IFN-β-driven phenotype and secretory profile. Furthermore, we demonstrated that IFN-I signaling alters the spatial distribution of FcRs, with IFN-β and TAK-981 promoting distinct redistribution patterns of FcγRs in monocytes and moDCs. These findings reveal a novel layer of FcR regulation, highlighting that IFN-I and IFN inducers differentially modulate FcR expression, localization, and functional activation in a cell-type- and stimulus-specific manner. Overall, this work provides a framework for understanding how IFN-I-based immunotherapies may influence Fc-mediated immune functions while preserving FcRn-dependent antibody persistence.",
+    "isOpenAccess": "N"
+   }
+  },
+  {
+   "row": {
+    "source": "PubMed",
+    "kind": "academic",
+    "title": "T cells in chronic spontaneous urticaria show skin-migratory capacity and endotype-specific differences.",
+    "url": "https://pubmed.ncbi.nlm.nih.gov/42844089/",
+    "date": "2026-10-07",
+    "summary": "Allergology international : official journal of the Japanese Society of Allergology. Hermann Lang SC, Seidel J, Sachsenberg S, Rauber-Ellinghaus MM, Kurz J, Xiang YK"
+   },
+   "esummary": {
+    "uid": "42844089",
+    "title": "T cells in chronic spontaneous urticaria show skin-migratory capacity and endotype-specific differences.",
+    "fulljournalname": "Allergology international : official journal of the Japanese Society of Allergology",
+    "source": "Allergology international : official journal of the Japanese Society of Allergology",
+    "authors": [
+     {
+      "name": "Hermann Lang SC",
+      "authtype": "Author"
+     },
+     {
+      "name": "Seidel J",
+      "authtype": "Author"
+     },
+     {
+      "name": "Sachsenberg S",
+      "authtype": "Author"
+     },
+     {
+      "name": "Rauber-Ellinghaus MM",
+      "authtype": "Author"
+     },
+     {
+      "name": "Kurz J",
+      "authtype": "Author"
+     },
+     {
+      "name": "Xiang YK",
+      "authtype": "Author"
+     }
+    ],
+    "sortpubdate": "2026/10/07 00:00"
+   },
+   "enriched_capture": {
+    "abstract_sha256": "11820e71742dcef1556f6bc507490e9eebf9e0935aea31986ad79b9b9fcbee82",
+    "journal": "Allergology international : official journal of the Japanese Society of Allergology",
+    "evidence_level": "abstract",
+    "source_trace": [
+     "RSS: 165 chars",
+     "PubMed efetch: 1709 chars"
+    ],
+    "pmid": "42844089",
+    "pmcid": "",
+    "doi": ""
+   },
+   "efetch_parts": [
+    {
+     "label": "BACKGROUND",
+     "text": "Chronic spontaneous urticaria (CSU) is characterized by recurrent itchy wheals. As CD4+ T cells are observed in lesional infiltrates and treatments compromising T-cellular functions are effective, they might play an important role in the pathogenesis of CSU. However, their exact impact remains unclear."
+    },
+    {
+     "label": "METHODS",
+     "text": "T cell subsets in CSU patients (n = 59) and healthy controls (HC; n = 18) were characterized by expression of surface markers and secretion of cytokines (IL-17, IL-5, IFNγ, IL-10, IL-31) utilizing flow cytometry and ELISpot analysis. The skin-migratory capacity of T cell subsets was assessed by analyzing the expression of skin-homing markers (CLA, CCR10, CCR8) by flow cytometry. CSU endotypes of patients were classified into autoallergic and autoimmune by measuring serum levels of anti-TPO-antibodies and anti-IL-24-IgE by ELISA, and serum autoreactivity by basophil activation test."
+    },
+    {
+     "label": "RESULTS",
+     "text": "Circulating Th, follicular Th, and regulatory T cells were equally distributed among CSU patients and HC. However, CD4+ T cells of CSU patients showed significantly higher expression of CLA, with an increased frequency of Th2 and Th17 cells among CLA+CD4+ memory T cells. While Th2 cells prevailed in autoallergic CSU, Th17 and Th1 cells predominated in autoimmune CSU. Moreover, significantly fewer IL-17-, IFNγ-, and IL-10-secreting T cells were observed in peripheral blood of CSU patients."
+    },
+    {
+     "label": "CONCLUSIONS",
+     "text": "Peripheral blood T cells of CSU patients exhibit an enhanced skin-migratory capacity, with Th2 and Th17/Th1 subsets differentially involved according to the endotype of either autoallergic or autoimmune CSU. These findings could indicate potential targets for novel therapeutic applications."
+    }
+   ]
+  },
+  {
+   "row": {
+    "source": "PubMed",
+    "kind": "academic",
+    "title": "From environmental to endogenous airway exposures: Rethinking gastroesophageal reflux as more than an asthma comorbidity.",
+    "url": "https://pubmed.ncbi.nlm.nih.gov/42843947/",
+    "date": "2026-10-01",
+    "summary": "The journal of allergy and clinical immunology. In practice. Aitella E, Astarita C, Azzellino G, De Martinis M, Ginaldi L"
+   },
+   "esummary": {
+    "uid": "42843947",
+    "title": "From environmental to endogenous airway exposures: Rethinking gastroesophageal reflux as more than an asthma comorbidity.",
+    "fulljournalname": "The journal of allergy and clinical immunology. In practice",
+    "source": "The journal of allergy and clinical immunology. In practice",
+    "authors": [
+     {
+      "name": "Aitella E",
+      "authtype": "Author"
+     },
+     {
+      "name": "Astarita C",
+      "authtype": "Author"
+     },
+     {
+      "name": "Azzellino G",
+      "authtype": "Author"
+     },
+     {
+      "name": "De Martinis M",
+      "authtype": "Author"
+     },
+     {
+      "name": "Ginaldi L",
+      "authtype": "Author"
+     }
+    ],
+    "sortpubdate": "2026/10/01 00:00"
+   },
+   "enriched_capture": {
+    "abstract_sha256": "8a160019279e85d71d31312edc07d59fc245109065fa23809607ecadf5843f79",
+    "journal": "The journal of allergy and clinical immunology. In practice",
+    "evidence_level": "press",
+    "source_trace": [
+     "RSS: 121 chars",
+     "Fallback to RSS summary"
+    ],
+    "pmid": "42843947",
+    "pmcid": "",
+    "doi": ""
+   }
+  },
+  {
+   "row": {
+    "source": "PubMed",
+    "kind": "academic",
+    "title": "Targeting CD6 in solid tumors: safety, early efficacy, and mechanistic insights from a proof-of-concept trial of itolizumab.",
+    "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+    "date": "2026-10-07",
+    "summary": "Journal for immunotherapy of cancer. González Muñoz C, Ruiz-Lorente R, Blanco-Pita O, Lara-Fernández N, Salomón EE, Alvárez Lobaina A"
+   },
+   "esummary": {
+    "uid": "42843925",
+    "title": "Targeting CD6 in solid tumors: safety, early efficacy, and mechanistic insights from a proof-of-concept trial of itolizumab.",
+    "fulljournalname": "Journal for immunotherapy of cancer",
+    "source": "Journal for immunotherapy of cancer",
+    "authors": [
+     {
+      "name": "González Muñoz C",
+      "authtype": "Author"
+     },
+     {
+      "name": "Ruiz-Lorente R",
+      "authtype": "Author"
+     },
+     {
+      "name": "Blanco-Pita O",
+      "authtype": "Author"
+     },
+     {
+      "name": "Lara-Fernández N",
+      "authtype": "Author"
+     },
+     {
+      "name": "Salomón EE",
+      "authtype": "Author"
+     },
+     {
+      "name": "Alvárez Lobaina A",
+      "authtype": "Author"
+     }
+    ],
+    "sortpubdate": "2026/10/07 00:00"
+   },
+   "enriched_capture": {
+    "abstract_sha256": "97a97c63b3551e65496dc8612345adbc4721c64d3375aef70624efdafe42e6f7",
+    "journal": "Journal for immunotherapy of cancer",
+    "evidence_level": "abstract",
+    "source_trace": [
+     "RSS: 133 chars",
+     "PubMed efetch: 2422 chars"
+    ],
+    "pmid": "42843925",
+    "pmcid": "",
+    "doi": ""
+   },
+   "efetch_parts": [
+    {
+     "label": "BACKGROUND",
+     "text": "CD6 is a promising target in cancer immunotherapy, with preclinical evidence supporting its role in modulating immune responses. This warrants further investigation into current CD6-targeting treatments, which could lead to new anti-tumor therapies. However, the clinical effects of targeting CD6 in solid tumors remain unexplored."
+    },
+    {
+     "label": "METHODS",
+     "text": "This proof-of-concept study is the first in-human evaluation of the safety and early effectiveness of anti-CD6 monoclonal antibody itolizumab in patients with advanced, highly heterogeneous solid tumors. Treatment had two phases: induction and maintenance. In induction, group A received 100 mg weekly for nine doses; group B received 200 mg biweekly for five doses. After completing induction, patients moved to maintenance 21 days later, receiving 100 mg every 21 days for up to six doses. The primary endpoint was safety; secondary objectives included disease control, survival, and exploratory molecular mechanisms and blood biomarkers."
+    },
+    {
+     "label": "RESULTS",
+     "text": "Itolizumab demonstrated a favorable safety profile, with no safety-related treatment discontinuations, no related serious adverse events, and no unexpected toxicities. In this heavily treated, non-biomarker-selected population, disease control was achieved in 25% in group A and 20% in group B, and the 1-year survival rate was 26% in group A and 15% in group B. Mechanistically, ex vivo analysis demonstrated that itolizumab downregulates CD6, increasing soluble CD6 levels and promoting a cytotoxic phenotype on CD8 and NK cells. Additionally, patient-derived peripheral blood mononuclear cells demonstrated boosted in vitro killing capacity specifically against CD318+ cancer cells. The antibody also modulates PD-1 expression in peripheral lymphocytes, promoting NK cell activity while maintaining inhibitory signals on CD8+ T cells and decreasing T helper overactivation. These findings support the dual role of itolizumab, enhancing anti-tumor responses while preventing autoimmune-like effects by reducing off-target inflammation and avoiding immune-related adverse effects associated with immune checkpoint therapies."
+    },
+    {
+     "label": "CONCLUSIONS",
+     "text": "Overall, these findings support further development of itolizumab as a rational immunomodulatory strategy with a favorable safety profile for advanced solid tumors, particularly in CD318-expressing tumors and as part of rational combination regimens."
+    },
+    {
+     "label": "BACKGROUND",
+     "text": "TRIAL"
+    },
+    {
+     "label": "BACKGROUND",
+     "text": "REGISTRATION"
+    },
+    {
+     "label": "NUMBER",
+     "text": "RPCEC00000444."
+    }
+   ]
+  },
+  {
+   "row": {
+    "source": "PubMed",
+    "kind": "academic",
+    "title": "Fregoli syndrome in an adolescent with Moyamoya disease.",
+    "url": "https://pubmed.ncbi.nlm.nih.gov/42843920/",
+    "date": "2026-10-07",
+    "summary": "BMJ case reports. Rajan N, Asokan K, Karthik V, Karunakar P"
+   },
+   "esummary": {
+    "uid": "42843920",
+    "title": "Fregoli syndrome in an adolescent with Moyamoya disease.",
+    "fulljournalname": "BMJ case reports",
+    "source": "BMJ case reports",
+    "authors": [
+     {
+      "name": "Rajan N",
+      "authtype": "Author"
+     },
+     {
+      "name": "Asokan K",
+      "authtype": "Author"
+     },
+     {
+      "name": "Karthik V",
+      "authtype": "Author"
+     },
+     {
+      "name": "Karunakar P",
+      "authtype": "Author"
+     }
+    ],
+    "sortpubdate": "2026/10/07 00:00"
+   },
+   "enriched_capture": {
+    "abstract_sha256": "a7e7cf513c1516ae9a17102d1c18cc3e0e80c46344df010a18a5a1ccb9ea04c6",
+    "journal": "BMJ case reports",
+    "evidence_level": "abstract",
+    "source_trace": [
+     "RSS: 59 chars",
+     "PubMed efetch: 1153 chars"
+    ],
+    "pmid": "42843920",
+    "pmcid": "",
+    "doi": ""
+   },
+   "efetch_parts": [
+    {
+     "label": "",
+     "text": "Moyamoya disease (MMD) is a progressive cerebrovascular disorder characterised by distal internal carotid artery (ICA) stenosis and compensatory collateral vessel formation. Psychiatric manifestations are rare, particularly in children. We report the case of an early adolescent with previously diagnosed MMD who developed acute-onset psychosis following a febrile illness associated with headache and vomiting. Symptoms included auditory hallucinations, persecutory delusions, emotional lability and Fregoli syndrome, a rare condition in which different strangers are believed to be a familiar person in disguise. Neuroimaging revealed bilateral ICA narrowing with extensive collateral networks. Infectious, autoimmune and metabolic evaluations were unremarkable. The patient underwent superior temporal artery-middle cerebral artery bypass with encephalo-duro-arterio-myo-synangiosis. Psychotic symptoms resolved after surgery, and he returned to baseline functioning within 1 month. This case highlights the importance of considering cerebrovascular aetiologies in abrupt-onset childhood psychosis, even in the absence of major neurological deficits."
+    }
+   ]
+  },
+  {
+   "row": {
+    "source": "Endpoints News",
+    "kind": "industry",
+    "title": "Roche does fourth China deal since August, teaming with Defand on degraders",
+    "url": "https://endpoints.news/roche-does-fourth-china-deal-since-august-teaming-with-defand-on-degraders/",
+    "date": "2026-10-08",
+    "summary": "Roche is teaming up with a relatively unknown Chinese biotech in a deal worth a tad shy of $1 billion, if all milestones are achieved, according to a source familiar with the terms. The Hangzhou ..."
+   }
+  },
+  {
+   "row": {
+    "source": "Endpoints News",
+    "kind": "industry",
+    "title": "PhRMA sues Trump administration over GLOBE drug pricing demo program",
+    "url": "https://endpoints.news/phrma-sues-trump-administration-over-globe-drug-pricing-demo-program/",
+    "date": "2026-10-07",
+    "summary": "The pharma industry is yet again taking the government to court over its latest effort to control US drug prices. Last week, the Trump administration finalized a demonstration program, called GLOBE, that was meant to ..."
+   }
+  },
+  {
+   "row": {
+    "source": "Endpoints News",
+    "kind": "industry",
+    "title": "Ultragenyx sells PRV for $210M and still has another to monetize",
+    "url": "https://endpoints.news/ultragenyx-sells-prv-for-210m-and-still-has-another-to-monetize/",
+    "date": "2026-10-07",
+    "summary": "Ultragenyx Pharmaceutical is selling a priority review voucher to an undisclosed buyer for $210 million, marking one of the richest sales of the speedy-approval tool so far this year. The California ..."
+   }
+  },
+  {
+   "row": {
+    "source": "Endpoints News",
+    "kind": "industry",
+    "title": "Dutch court blocks subcutaneous Keytruda in eight European countries",
+    "url": "https://endpoints.news/dutch-court-blocks-subcutaneous-keytruda-in-eight-european-countries/",
+    "date": "2026-10-07",
+    "summary": "A Dutch court has ordered Merck to stop manufacturing and selling its injectable formulation of Keytruda in eight European countries. The court ruled that Merck infringed one of Halozyme's patents and"
+   }
+  },
+  {
+   "row": {
+    "source": "Endpoints News",
+    "kind": "industry",
+    "title": "Zuckerberg's Biohub expands virtual cell effort to $1.8B, with Meta, Google",
+    "url": "https://endpoints.news/zuckerbergs-biohub-expands-virtual-cell-effort-to-1-8b-with-meta-google/",
+    "date": "2026-10-07",
+    "summary": "Tech giants and US government agencies are funding an ambitious effort to build AI models to predict cellular behavior and broader biology. With $1.8 billion in backing, Mark Zuckerberg and Priscilla Chan's nonprofit Biohub"
+   }
+  },
+  {
+   "row": {
+    "source": "Endpoints News",
+    "kind": "industry",
+    "title": "WHO advises against obesity drugs for younger children",
+    "url": "https://endpoints.news/who-advises-against-obesity-drugs-for-younger-children/",
+    "date": "2026-10-07",
+    "summary": "The World Health Organization on Wednesday recommended against GLP-1 drugs for children under 10 with obesity and said adolescents ages 10 to 19 should receive them only after a supervised lifestyle program fails, as drugmakers ..."
+   }
+  },
+  {
+   "row": {
+    "source": "Fierce Biotech",
+    "kind": "industry",
+    "title": "Foghorn lays off 40% of employees as Lilly cancer collab collapses over poor data - Fierce Biotech",
+    "url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxNQ2VNeHVEbnRtazV1SnE5bHFlVmVHak4tT2NUYVZuMDZnNWFLN2JfcF9BT25TUVBlUmdmM01DTFlfYW90NHUxUFZ2ZnhBYlM3N0lvdkhfbWlGUjFWZjZ6cl9nZ0YzQVcycHdBLWtRQlZKdzRBQm9VOTExb2FKWGtPTldERm1OR2xtZnF3VUJZdFVvek9FV0lZT05DeDdwOTF5TFlzaEwyMDhfblB1QVNjNFVyUlYzRkNJ?oc=5",
+    "date": "2026-10-01",
+    "summary": "Foghorn lays off 40% of employees as Lilly cancer collab collapses over poor data &nbsp;&nbsp; Fierce Biotech"
+   }
+  },
+  {
+   "row": {
+    "source": "Fierce Biotech",
+    "kind": "industry",
+    "title": "ArriVent’s phase 3 lung cancer trial flops, sinking stock - Fierce Biotech",
+    "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxQNHNJek5wNEZVRjBwc3VIUFBhSVdOeXJGMm9tcnBhZk8yWG9abzJMeTdpSXkyRWgzcDJZNWoxVG55WU11R1FNUmN3RlVhTUxVa3J2TDIxX3QyOTEyOWE4ME9pYl9NZlE1aXdKQkN5c3YzYVZ2Q2RNRXJucjdETlRmVVAzWEJBTFFmakxUbFRGY0YyVW1ERER2Sw?oc=5",
+    "date": "2026-10-06",
+    "summary": "ArriVent’s phase 3 lung cancer trial flops, sinking stock &nbsp;&nbsp; Fierce Biotech"
+   }
+  },
+  {
+   "row": {
+    "source": "Fierce Biotech",
+    "kind": "industry",
+    "title": "Cerevance rescues its Parkinson's drug with phase 3 win - Fierce Biotech",
+    "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxQcXpwNFdITlJlWmJNQ3NHcDVWWTdCMkxvZHRlT19yZFB5TWN3NWltWFRrclU4Q3RURTdDM3VxRFJBRDZvZUxtZWUwMkF4dngzTWhlVVRlakxncXp0Q2s3aUNsOFhHQ0RGV09nMGpROGxCcWZyWTJfWExmOVNBTkhZcDZSRDRfTVBsSllPRFBUQVo?oc=5",
+    "date": "2026-10-07",
+    "summary": "Cerevance rescues its Parkinson's drug with phase 3 win &nbsp;&nbsp; Fierce Biotech"
+   }
+  },
+  {
+   "row": {
+    "source": "Fierce Biotech",
+    "kind": "industry",
+    "title": "TRex Bio stomps toward $111M IPO, as Retension and Lycia also gear up to go public - Fierce Biotech",
+    "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxQY3JRV2p1QVVCSkkyams3aGl4b1owVWloR3lpY2s4SXB3WVdFS0hTS3U1c3Y2ck1MOW5YOHVVd2xSMk95ZjJxNHBoZXZpb1ltZ1haaUpJSmtUamlrZ3dhVHptZ3p4cG03R3lUUmt4dnRiOHNXUjlqWTR6VGhMc25adzV0YUllY3dHREp2Z0FobkR4ZF9NZmNLTUZjdlpOTTJuN05IN1FTcjRsaS1jb0E?oc=5",
+    "date": "2026-10-06",
+    "summary": "TRex Bio stomps toward $111M IPO, as Retension and Lycia also gear up to go public &nbsp;&nbsp; Fierce Biotech"
+   }
+  },
+  {
+   "row": {
+    "source": "Fierce Biotech",
+    "kind": "industry",
+    "title": "Introducing Fierce Biotech's 2026 Fierce 15 - Fierce Biotech",
+    "url": "https://news.google.com/rss/articles/CBMihwFBVV95cUxNLXUtSkQxTkxwR2NxcWFKcEItTzN2QldpLWhqSTdMdWQ3aG1ZREtycXJVWjIzYXQzb0ppcXRtWTczS3dnMnlMeTFiWVkwdlF3al85RjV0R1R1dnlLbmhSWG5CZDB5bG9ENVctX2RzdHpvaVFGaURwN1dWQ29oVWU2SldCY1hDQW8?oc=5",
+    "date": "2026-10-05",
+    "summary": "Introducing Fierce Biotech's 2026 Fierce 15 &nbsp;&nbsp; Fierce Biotech"
+   }
+  },
+  {
+   "row": {
+    "source": "Fierce Biotech",
+    "kind": "industry",
+    "title": "AstraZeneca hopes to ‘achieve amazing things’ with new Kendall Square R&D center - Fierce Biotech",
+    "url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxQY1Nybkd4Y090TmRJMU42Sk5hSEtNNU40VmJZU3d0WmxjVVA2Ui1LbUI1Yjd0c1BqQWcxMHJpVU1iZVdtWGVBRXdiYTkxbHl5OWRDc3VaTEJIRXZrd2tWV3dqQ3RkR3hiLWd3Z3BiMFJSaDFDODNGeUF5aFdldkhCNk1kME9WQ1hrazBYc3I2N3c0UC1UNUZpRDBTVkpGei1Gc19IcVhDMlQtdDg?oc=5",
+    "date": "2026-10-06",
+    "summary": "AstraZeneca hopes to ‘achieve amazing things’ with new Kendall Square R&amp;D center &nbsp;&nbsp; Fierce Biotech"
+   }
+  },
+  {
+   "row": {
+    "source": "BioPharma Dive",
+    "kind": "industry",
+    "title": "Caribou to halt CAR-T work, lay off staff amid ‘challenging’ funding climate",
+    "url": "https://www.biopharmadive.com/news/caribou-layoffs-strategic-alternatives-allogeneic-cell-therapy-vispacel/832343/",
+    "date": "2026-10-07",
+    "summary": "Despite having an allogeneic cell therapy prospect that&rsquo;s ready for late-stage testing in lymphoma, Caribou couldn&rsquo;t secure funding to support the effort and will now pursue &ldquo;strategic alternatives&rdquo; instead."
+   }
+  },
+  {
+   "row": {
+    "source": "BioPharma Dive",
+    "kind": "industry",
+    "title": "Halozyme prevails in patent fight with Merck; Enliven readies anticipated leukemia trial",
+    "url": "https://www.biopharmadive.com/news/halozyme-merck-europe-enliven-insmed-rougetx-kymathera/832282/",
+    "date": "2026-10-07",
+    "summary": "A Dutch court barred Merck from selling subcutaneous Keytruda in several European countries. Elsewhere, an Insmed executive ended a seven-year run and two startups secured venture cash."
+   }
+  },
+  {
+   "row": {
+    "source": "BioPharma Dive",
+    "kind": "industry",
+    "title": "A Takeda spinout builds case for its Parkinson’s drug",
+    "url": "https://www.biopharmadive.com/news/cerevance-solengepras-parkinsons-study-results/832324/",
+    "date": "2026-10-07",
+    "summary": "Cerevance plans to meet with the FDA to &ldquo;determine next steps&rdquo; for a new kind of medicine known as solengepras, now that it has Phase 3 data in hand."
+   }
+  },
+  {
+   "row": {
+    "source": "BioPharma Dive",
+    "kind": "industry",
+    "title": "Forbion, a prominent biotech investor, raises $2.6B for a pair of venture funds",
+    "url": "https://www.biopharmadive.com/news/forbion-venture-capital-growth-fund-fundraise/832254/",
+    "date": "2026-10-06",
+    "summary": "The fundraise is the firm&rsquo;s largest to date, providing a lift for a European biotech industry that&rsquo;s fallen further behind its counterparts in the U.S. and China."
+   }
+  },
+  {
+   "row": {
+    "source": "BioPharma Dive",
+    "kind": "industry",
+    "title": "ArriVent collapses on disappointing lung cancer data",
+    "url": "https://www.biopharmadive.com/news/arrivent-furmonertinib-egfr-lung-cancer-study-results/832220/",
+    "date": "2026-10-06",
+    "summary": "More than half of the company&rsquo;s value was wiped out by findings that appear to erase a chance to battle Johnson &amp; Johnson and others for market share.&nbsp;"
+   }
+  },
+  {
+   "row": {
+    "source": "BioPharma Dive",
+    "kind": "industry",
+    "title": "Dual-acting drug from AbbVie, Genmab scores in frontline lymphoma trial",
+    "url": "https://www.biopharmadive.com/news/abbvie-genmab-epkinly-dlbcl-epcore-study-results/832241/",
+    "date": "2026-10-06",
+    "summary": "The better-than-expected results could make Epkinly the new &ldquo;undisputed&rdquo;&nbsp;treatment standard in newly diagnosed DLBCL, according to one analyst."
+   }
+  },
+  {
+   "row": {
+    "source": "STAT News",
+    "kind": "industry",
+    "title": "STAT+: Biotech companies are struggling to navigate Trump’s new tariffs",
+    "url": "https://www.statnews.com/2026/10/08/trump-tariffs-section-232-imported-prescription-drugs-challenge-biotech-companies/?utm_campaign=rss",
+    "date": "2026-10-08",
+    "summary": "Smaller biotech firms are trying to figure out how to win exemptions from Trump's import taxes."
+   }
+  },
+  {
+   "row": {
+    "source": "STAT News",
+    "kind": "industry",
+    "title": "STAT+: Dozens of Democrats vie for slots on key House health committees",
+    "url": "https://www.statnews.com/2026/10/08/midterm-election-democrats-vie-for-roles-house-health-care-committees/?utm_campaign=rss",
+    "date": "2026-10-08",
+    "summary": "Power House health committees could get a lot of new members after the midterms."
+   }
+  },
+  {
+   "row": {
+    "source": "STAT News",
+    "kind": "industry",
+    "title": "Opinion: How CMS plans to fix a major flaw in the 340B drug discount program",
+    "url": "https://www.statnews.com/2026/10/08/340b-drug-discount-program-cms-reform-proposal/?utm_campaign=rss",
+    "date": "2026-10-08",
+    "summary": "“A small, well-intended discount for safety net hospitals became a large institutional subsidy with expensive unintended consequences,” writes an HHS leader."
+   }
+  },
+  {
+   "row": {
+    "source": "STAT News",
+    "kind": "industry",
+    "title": "Opinion: England and other nations are on the path toward eliminating hepatitis C. Why not the U.S.?",
+    "url": "https://www.statnews.com/2026/10/08/us-hepatitis-c-cure-medication-cost-elimination/?utm_campaign=rss",
+    "date": "2026-10-08",
+    "summary": "Eliminating hepatitis C is achievable — if the U.S. seriously invests in it, experts write."
+   }
+  },
+  {
+   "row": {
+    "source": "STAT News",
+    "kind": "industry",
+    "title": "STAT+: Why this startup is taking its AI to predict breast cancer risk directly to patients",
+    "url": "https://www.statnews.com/2026/10/08/why-clairity-took-breast-cancer-risk-prediction-ai-directly-to-patients/?utm_campaign=rss",
+    "date": "2026-10-08",
+    "summary": "A startup didn't want to wait for doctors and insurers to get behind its breast-cancer risk prediction AI. So it's going directly to patients."
+   }
+  },
+  {
+   "row": {
+    "source": "STAT News",
+    "kind": "industry",
+    "title": "Breast cancer can behave differently in older women. This physician is making more tailored treatments a reality",
+    "url": "https://www.statnews.com/2026/10/08/breast-cancer-research-older-women-neil-carleton-stat-wunderkind/?utm_campaign=rss",
+    "date": "2026-10-08",
+    "summary": "There’s increasing evidence that older women with breast cancer could benefit from more tailored treatments. STAT Wunderkind Neil Carleton is working to make that a reality."
+   }
+  },
+  {
+   "row": {
+    "source": "FDA 公告",
+    "kind": "industry",
+    "title": "Agency Information Collection Activities; Proposed Collection; Comment Request; Channels of Trade Policy for Commodities With Residues of Pesticide Chemicals, for Which Tolerances Have Been Revoked, Suspended, or Modified by the Environmental Protection Agency Pursuant to Dietary Risk Considerations",
+    "url": "https://www.federalregister.gov/documents/2026/10/08/2026-20663/agency-information-collection-activities-proposed-collection-comment-request-channels-of-trade",
+    "date": "2026-10-08",
+    "summary": "The Food and Drug Administration (FDA or Agency) is announcing an opportunity for public comment on the proposed collection of certain information by the Agency. Under the Paperwork Reduction Act of 1995 (PRA), Federal Agencies are required to publish notice in the Federal Register concerning each proposed collection of information, including each proposed extension of an existing collection of information, and to allow 60 days for public comment in response to the notice. This notice solicits comments on the information collection provisions of FDA's guidance for industry entitled &quot;Channels of Trade Policy for Commodities With Residues of Pesticide Chemicals, for Which Tolerances Have Been Revoked, Suspended, or Modified by the Environmental Protection Agency Pursuant to Dietary Risk Considerations.&quot;"
+   }
+  },
+  {
+   "row": {
+    "source": "FDA 公告",
+    "kind": "industry",
+    "title": "Agency Information Collection Activities; Submission for Office of Management and Budget Review; Comment Request; Adverse Event Program for Medical Devices: (Medical Product Safety Network (MedSun))",
+    "url": "https://www.federalregister.gov/documents/2026/10/08/2026-20661/agency-information-collection-activities-submission-for-office-of-management-and-budget-review",
+    "date": "2026-10-08",
+    "summary": "The Food and Drug Administration (FDA) is announcing that a proposed collection of information has been submitted to the Office of Management and Budget (OMB) for review and clearance under the Paperwork Reduction Act of 1995."
+   }
+  },
+  {
+   "row": {
+    "source": "FDA 公告",
+    "kind": "industry",
+    "title": "Determination That Oxandrin (Oxandrolone) Tablets, 2.5 Milligrams and 10 Milligrams, Were Withdrawn From Sale for Reasons of Safety or Effectiveness; Correction",
+    "url": "https://www.federalregister.gov/documents/2026/10/07/2026-20503/determination-that-oxandrin-oxandrolone-tablets-25-milligrams-and-10-milligrams-were-withdrawn-from",
+    "date": "2026-10-07",
+    "summary": "The Food and Drug Administration (FDA) is correcting a notice that appeared in the Federal Register of September 13, 2023 (88 FR 62799). The notice announced the determination that Oxandrin (oxandrolone) tablets, 2.5 milligrams (mg) and 10 mg, were withdrawn from sale for reasons of safety or effectiveness. The notice did not include the determination that the abbreviated new drug applications (ANDAs) referencing Oxandrin (oxandrolone) tablets, 2.5 mg and 10 mg, were also determined to be withdrawn from sale for reasons of safety or effectiveness and that these ANDAs would be removed from &quot;Approved Drug Products With Therapeutic Equivalence Evaluations,&quot; which is known generally as the &quot;Orange Book.&quot; This notice corrects that error."
+   }
+  },
+  {
+   "row": {
+    "source": "FDA 公告",
+    "kind": "industry",
+    "title": "Teva Pharmaceuticals USA, Inc., et al.; Withdrawal of Approval of 15 Abbreviated New Drug Applications; Correction",
+    "url": "https://www.federalregister.gov/documents/2026/10/06/2026-20460/teva-pharmaceuticals-usa-inc-et-al-withdrawal-of-approval-of-15-abbreviated-new-drug-applications",
+    "date": "2026-10-06",
+    "summary": "The Food and Drug Administration (FDA) is correcting a notice that appeared in the Federal Register on May 7, 2026. The document announced the withdrawal of approval of 15 abbreviated new drug applications (ANDAs) from multiple applicants, withdrawn as of June 8, 2026. The document indicated that FDA was withdrawing approval of ANDA 210285 for dimethyl fumarate delayed-release capsule, 120 milligrams (mg) and 240 mg, held by Upsher-Smith Laboratories, LLC., U.S. Agent for Sawai USA, Inc., 6701 Evenstad Dr. N, Suite 300, Maple Grove, MN 55369. Before FDA withdrew the approval of this ANDA, Upsher-Smith Laboratories, LLC., U.S. Agent for Sawai USA, Inc., informed FDA that they did not want the approval of the ANDA withdrawn. Because Upsher- Smith Laboratories, LLC., U.S. Agent for Sawai USA, Inc., timely requested that approval of the ANDA not be withdrawn, the approval is still in effect. This notice removes the entry for ANDA 210285."
+   }
+  },
+  {
+   "row": {
+    "source": "FDA 公告",
+    "kind": "industry",
+    "title": "Medical Devices; Exemptions From Premarket Notification: Class II Devices; Certain Clinical Toxicology Test Systems",
+    "url": "https://www.federalregister.gov/documents/2026/10/06/2026-20448/medical-devices-exemptions-from-premarket-notification-class-ii-devices-certain-clinical-toxicology",
+    "date": "2026-10-06",
+    "summary": "The Food and Drug Administration (FDA) is publishing an order setting forth its final determination to exempt certain class II clinical toxicology test systems from premarket notification (510(k)) requirements, subject to certain limitations. This exemption from 510(k) requirements, subject to certain limitations, is immediately in effect for such devices. This exemption will decrease regulatory burdens on the medical device industry and will eliminate private costs and expenditures required to comply with certain Federal regulations. FDA is amending the classification language within the Code of Federal Regulations (CFR) for certain class II clinical toxicology test systems to reflect this final determination. FDA is publishing this order in accordance with the Federal Food, Drug, and Cosmetic Act (FD&amp;C Act)."
+   }
+  },
+  {
+   "row": {
+    "source": "FDA 公告",
+    "kind": "industry",
+    "title": "Medical Devices; Immunology and Microbiology Devices; Classification of the High Throughput DNA Sequencing for Hereditary Cancer Predisposition Assessment Test System",
+    "url": "https://www.federalregister.gov/documents/2026/10/06/2026-20443/medical-devices-immunology-and-microbiology-devices-classification-of-the-high-throughput-dna",
+    "date": "2026-10-06",
+    "summary": "The Food and Drug Administration (FDA) is classifying the high throughput DNA sequencing for hereditary cancer predisposition assessment test system into class II (special controls). The special controls that apply to the device type are identified in this order and will be part of the codified language for classification of the high throughput DNA sequencing for hereditary cancer predisposition assessment test system. We are taking this action because we have determined that classifying the device into class II will provide a reasonable assurance of the safety and effectiveness of the device. We believe this action will also enhance patients' access to beneficial innovative devices, in part by reducing regulatory burdens."
+   }
+  },
+  {
+   "row": {
+    "source": "EMA",
+    "kind": "industry",
+    "title": "Meeting highlights from the Pharmacovigilance Risk Assessment Committee (PRAC) 28 September - 1 October",
+    "url": "https://www.ema.europa.eu/en/news/meeting-highlights-pharmacovigilance-risk-assessment-committee-prac-28-september-1-october",
+    "date": "2026-10-02",
+    "summary": "At its monthly meeting, EMA’s safety committee (PRAC) carried out its broad range of responsibilities to manage the safety of medicines, including the assessment of&nbsp;safety…, Agenda Agenda of the PRAC meeting 28 September - 1 October 2026Draft Reference Number: EMA/PRAC/204838/2026…, PRAC statistics: October 2026 Monthly figures for PRAC outcomes based on the draft agenda. © European Medicines Agency, PRAC statistics:…, Ongoing referrals Procedure: Parenteral iron-containing medicinal products - referral, Glossary Safety signal assessments. A safety signal is information which suggests a new potentially causal association, or a new aspect of a known association between…"
+   }
+  },
+  {
+   "row": {
+    "source": "EMA",
+    "kind": "industry",
+    "title": "Advice on ‘end-of-year’ submission dates for type I variations in 2026",
+    "url": "https://www.ema.europa.eu/en/news/advice-end-year-submission-dates-type-i-variations-2026",
+    "date": "2026-10-01",
+    "summary": "Marketing authorisation holders wishing to receive an outcome in 2026 should submit type IA annual updates, individual type IA and type IAIN variations,&nbsp;and super-groupings…"
+   }
+  },
+  {
+   "row": {
+    "source": "EMA",
+    "kind": "industry",
+    "title": "EMA Management Board: highlights of September 2026 meeting",
+    "url": "https://www.ema.europa.eu/en/news/ema-management-board-highlights-september-2026-meeting",
+    "date": "2026-10-01",
+    "summary": "Mid-year report 2026 from the Executive DirectorEMA presented results and achievements of its operations for the first half of 2026 to the Management Board. Between January and…"
+   }
+  },
+  {
+   "row": {
+    "source": "EMA",
+    "kind": "industry",
+    "title": "Global regulators call for advancing alternatives to animal testing across the medicine lifecycle",
+    "url": "https://www.ema.europa.eu/en/news/global-regulators-call-advancing-alternatives-animal-testing-across-medicine-lifecycle",
+    "date": "2026-10-01",
+    "summary": "EMA has endorsed a joint statement from the International Coalition of Medicines Regulatory Authorities (ICMRA) calling on medicine developers, manufacturers, regulators and…"
+   }
+  }
+ ]
+}

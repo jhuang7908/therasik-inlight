@@ -1,0 +1,142 @@
+{
+ "provenance": "pr5e/server_run1_crash/capture/anthropic_calls.jsonl — real Anthropic responses captured on the server (head 36c31af). Thinking blocks are omitted (captures have no content/signature; production ignores them). tool_use inputs are verbatim.",
+ "calls": [
+  {
+   "i": 0,
+   "tool": "test_tool",
+   "url": null,
+   "model": "claude-sonnet-5-5",
+   "max_tokens": 50,
+   "stop_reason": "tool_use",
+   "usage": {
+    "input_tokens": 378,
+    "output_tokens": 49
+   },
+   "prompt_chars": 27,
+   "prompt_sha256": "1b03342ec5bc6ac05501d708f97e3147071cf02a27f669ac8f1ae97125db2f74",
+   "thinking_blocks_omitted": 0,
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "toolu_pr5e_crash_00",
+     "name": "test_tool",
+     "input": {
+      "ok": true
+     }
+    }
+   ]
+  },
+  {
+   "i": 1,
+   "tool": "submit_triage",
+   "url": null,
+   "model": "claude-sonnet-5-5",
+   "max_tokens": 2000,
+   "stop_reason": "tool_use",
+   "usage": {
+    "input_tokens": 10922,
+    "output_tokens": 1838
+   },
+   "prompt_chars": 25750,
+   "prompt_sha256": "d6445f0fa67d0e0f3817dd76099f5a3d1ea8db4131354a20f0d60148d24446ec",
+   "thinking_blocks_omitted": 1,
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "toolu_pr5e_crash_01",
+     "name": "submit_triage",
+     "input": {
+      "selections": [
+       {
+        "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+        "tier": "deep",
+        "field": "c3",
+        "reason": "首次人体概念验证试验：抗 CD6 抗体 itolizumab 用于实体瘤，有摘要级证据，涵盖安全性、早期疗效和机制。"
+       },
+       {
+        "url": "https://www.nature.com/articles/s41587-026-03315-w",
+        "tier": "deep",
+        "field": "c9",
+        "reason": "平台级方法突破：在 1,139 个鸟类基因组中发现 159 个 R2 逆转录转座子，经工程改造后在人原代细胞中位点特异整合率达 60%，可实现全 RNA 介导的靶向 DNA 整合。有摘要级证据。归入 c9 是勉强的，因为 c1–c9 中没有基因编辑类别，这里取与 RNA 递送最接近的一类。"
+       },
+       {
+        "url": "https://www.nature.com/articles/s41587-026-03318-7",
+        "tier": "brief",
+        "field": "c7",
+        "reason": "平台级方法：霰弹枪式基因工程（SGE）可在哺乳动物细胞中一次筛选数百万种组合通路，用于代谢工程，应用方向包括细胞治疗。有摘要级证据。c7 是最接近的类别，但并不完全对应。另外两条同主题的条目只有 press 级证据，已不再重复选入。"
+       },
+       {
+        "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755788v1?rss=1",
+        "tier": "brief",
+        "field": "c3",
+        "reason": "预印本：在 MHC II 阴性肿瘤中，人 CD4 T 细胞可通过间接抗原呈递协调抗肿瘤免疫，对 TCR-T 与肿瘤免疫策略有启发。"
+       },
+       {
+        "url": "https://pubmed.ncbi.nlm.nih.gov/42844089/",
+        "tier": "brief",
+        "field": "c4",
+        "reason": "慢性自发性荨麻疹患者（n=59）T 细胞具有皮肤迁移能力，并存在内型特异差异。摘要级人体数据。"
+       },
+       {
+        "url": "https://www.biorxiv.org/content/10.64898/2026.10.01.756006v1?rss=1",
+        "tier": "brief",
+        "field": "c4",
+        "reason": "预印本：通过生物材料和工程益生菌向肠道递送中康酸，可降低克罗恩病小鼠模型的炎症。"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "i": 2,
+   "tool": "submit_article",
+   "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+   "model": "claude-sonnet-5-5",
+   "max_tokens": 16000,
+   "stop_reason": "tool_use",
+   "usage": {
+    "input_tokens": 4164,
+    "output_tokens": 5566
+   },
+   "prompt_chars": 4612,
+   "prompt_sha256": "439bdfd73ec6ad6a6e8f27f8af604a05650443dc176f761abe5680f712cfcdde",
+   "thinking_blocks_omitted": 1,
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "toolu_pr5e_crash_02",
+     "name": "submit_article",
+     "input": {
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+      "tier": "deep",
+      "field": "c1",
+      "title": "itolizumab用于晚期实体瘤：疾病控制率25%与20%，无相关严重不良事件",
+      "journal": "原文未给出（来源：PubMed，材料未提供期刊名）",
+      "authors": "原文未给出",
+      "one_liner": "在重度预治疗的晚期实体瘤患者中，抗CD6抗体itolizumab分两种方案给药，未见相关严重不良事件，疾病控制率A组25%、B组20%，1年生存率26%与15%。",
+      "datacard": "\n<parameter name=\"study_type\">概念验证研究（摘要称为抗CD6抗体itolizumab在晚期实体瘤患者中的首次人体评价）；是否随机、是否设对照，摘要未说明",
+      "n": "原文未给出（摘要仅提到A、B两组，未给出各组人数）",
+      "control": "原文未给出（摘要未提及对照组）",
+      "intervention": "itolizumab。诱导期：A组100 mg每周一次，共9剂；B组200 mg每两周一次，共5剂。诱导结束21天后进入维持期：100 mg每21天一次，最多6剂。给药途径原文未给出。",
+      "followup": "原文未给出（仅报告了1年生存率）",
+      "primary_endpoint": "安全性（摘要未给出具体不良事件分级标准与定义）",
+      "primary_endpoint_result": "无安全相关的治疗中止、无相关严重不良事件、无意外毒性；具体发生率及对照值原文未给出",
+      "statistics": "原文未报告统计学检验",
+      "safety": "摘要称无与安全相关的治疗中止、无相关严重不良事件、无意外毒性；≥3级不良事件的具体例数及死亡情况原文未给出",
+      "background": "摘要指出，CD6被认为是肿瘤免疫治疗中有前景的靶点，临床前证据支持其可调节免疫应答。这提示有必要进一步研究现有的CD6靶向药物，它们可能带来新的抗肿瘤疗法。然而，靶向CD6在实体瘤中的临床效应此前尚未被探索。itolizumab是一种抗CD6单克隆抗体。本研究要回答的问题包括：在晚期、高度异质的实体瘤患者中，itolizumab的安全性如何；是否出现早期的疾病控制与生存信号；以及它对外周血免疫细胞和血液生物标志物产生了怎样的分子层面的影响。研究人群为重度预治疗患者，且未按生物标志物筛选。",
+      "design": "这是一项概念验证研究，摘要称其为itolizumab在晚期、高度异质实体瘤患者中安全性和早期有效性的首次人体评价（first in-human）。治疗分诱导期和维持期两个阶段。诱导期：A组每周给予100 mg，共9剂；B组每两周给予200 mg，共5剂。完成诱导后，患者在21天后进入维持期，每21天给予100 mg，最多6剂。主要终点为安全性；次要目标包括疾病控制、生存，以及探索性的分子机制和血液生物标志物。机制部分采用患者来源的外周血样本进行体外（ex vivo）分析和体外杀伤实验。摘要未说明样本量、是否随机分组、是否设对照、给药途径、疾病控制的判定标准和随访时长，这些信息在材料中均未读到。",
+      "results": "\n<parameter name=\"__placeholder__\">",
+      "mechanism": "摘要中由数据直接支持的观察包括：体外分析显示itolizumab使CD6表达下调，可溶性CD6水平升高，并使CD8细胞和NK细胞呈现细胞毒性表型；患者来源的外周血单个核细胞在体外对CD318阳性癌细胞的杀伤能力增强；该抗体还调节外周淋巴细胞的PD-1表达。摘要的描述是，这种调节在促进NK细胞活性的同时，维持对CD8阳性T细胞的抑制信号，并减轻辅助性T细胞的过度活化。以上均为外周血层面的观察，摘要未给出具体数值，也未报告肿瘤组织内的变化。作者据此提出，itolizumab可能具有“双重作用”：增强抗肿瘤反应，同时通过减少脱靶炎症来避免类似自身免疫的效应，并避免免疫检查点治疗相关的免疫相关不良事件。这一解释属于作者的归纳与推测：摘要未报告与检查点抑制剂的直接对照，也未提供免疫相关不良事件的比较数据，因此“避免免疫相关不良事件”尚不能视为已被证明。同样，摘要中“尤其在表达CD318的肿瘤中”的结论，主要依据是体外杀伤实验，未见CD318表达与临床疾病控制关系的数据。",
+      "limitations": "\n<parameter name=\"__placeholder__\">",
+      "significance": "如果更大样本、设有对照的研究能够重复这一安全性特征，itolizumab可能为免疫检查点治疗之外的患者提供一种新的免疫调节选择。若CD318表达确实能预测获益，后续试验或可据此筛选人群，而不是像本研究这样不按生物标志物入组。如果疾病控制和生存信号在联合方案中得到保持，则摘要所说的“合理联合方案”可能成为下一阶段的设计方向，例如与现有免疫治疗联用。但在目前摘要所提供的信息下，疗效数据缺少样本量和对照，尚不足以支持剂量选择或适应症判断；现阶段更适合将其视为安全性与机制层面的初步线索。",
+      "data_points": "\n<parameter name=\"__placeholder__\">",
+      "steps": "\n<parameter name=\"__placeholder__\">",
+      "image_prompt": "科学插画：一条抗体分子结合淋巴细胞表面的CD6受体，旁边是NK细胞与CD8 T细胞攻击肿瘤细胞的示意图，冷色调，扁平风格，无文字。",
+      "unknowns": "\n<parameter name=\"__placeholder__\">"
+     }
+    }
+   ]
+  }
+ ]
+}

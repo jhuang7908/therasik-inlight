@@ -1,0 +1,3957 @@
+{
+ "note": "NON-NEGOTIABLE expectations. Fix production code, never this file.",
+ "triage_meta": {
+  "https://pubmed.ncbi.nlm.nih.gov/42843925/": {
+   "field": "c3",
+   "reason": "首次人体概念验证试验：抗 CD6 抗体 itolizumab 用于实体瘤，有摘要级证据，涉及安全性、早期疗效与机制。",
+   "from": "pr5f_runB call 1"
+  },
+  "https://www.nature.com/articles/s41587-026-03315-w": {
+   "field": "c9",
+   "reason": "平台级方法突破：在 1,139 个鸟类基因组中发现 159 个 R2 逆转座子，改造后在人原代细胞中实现最高 60% 的位点特异性整合，属全 RNA 介导的基因组编辑。有摘要证据。归入 c9 是因为没有更合适的基因编辑类别，RNA 介导是最接近的点。",
+   "from": "pr5f_runB call 1"
+  },
+  "https://www.nature.com/articles/s41587-026-03318-7": {
+   "field": "c7",
+   "reason": "平台级方法：shotgun genetic engineering 用条形码小片段在哺乳动物细胞中筛选组合代谢通路，可用于细胞治疗。有摘要级证据，同主题的两条 press 版本已剔除。",
+   "from": "pr5f_runB call 1"
+  },
+  "https://www.biorxiv.org/content/10.64898/2026.09.30.755788v1?rss=1": {
+   "field": "c3",
+   "reason": "预印本：人 CD4 T 细胞通过间接抗原呈递协调 MHC II 阴性肿瘤的抗肿瘤免疫，有 TCR 功能验证。",
+   "from": "pr5f_runB call 1"
+  },
+  "https://pubmed.ncbi.nlm.nih.gov/42844089/": {
+   "field": "c4",
+   "reason": "慢性自发性荨麻疹患者（n=59）T 细胞亚群具有皮肤迁移能力，且存在内型特异性差异，有摘要证据。",
+   "from": "pr5f_runB call 1"
+  },
+  "https://www.biorxiv.org/content/10.64898/2026.10.01.756006v1?rss=1": {
+   "field": "c4",
+   "reason": "预印本：用生物材料和工程益生菌递送中康酸，在克罗恩病小鼠模型中减轻炎症。",
+   "from": "pr5f_runB call 1"
+  },
+  "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1": {
+   "field": "c5",
+   "reason": "预印本：阻断 CD14 可减轻致心律失常性心肌病模型的病变，属于动物模型研究。",
+   "from": "pr5f_runB call 1"
+  },
+  "https://www.biorxiv.org/content/10.64898/2026.10.01.755332v1?rss=1": {
+   "field": "c2",
+   "reason": "预印本：激活态 MAPKAPK2 的晶体结构揭示 C 叶变构口袋，对结构导向的变构抑制剂设计有参考价值。",
+   "from": "pr5f_runB call 1"
+  }
+ },
+ "cases": [
+  {
+   "id": "crash_real_pr5e_string_fields",
+   "group": "crash",
+   "why": "REAL pr5e malformed reply: datacard/results/limitations/data_points are strings with XML-like tags. The run must complete (exit 0), CD6 must still publish from the valid real retry, the companion must publish.",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5e_crash",
+       "i": 2
+      },
+      {
+       "rec": "pr5f_runA",
+       "i": 2
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "25%",
+       "20%"
+      ],
+      "forbidden": [],
+      "tier": "deep"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "crash_results_list_of_dicts",
+   "group": "crash",
+   "why": "results is a list of dicts. The run must complete (exit 0), CD6 must still publish from the valid real retry, the companion must publish.",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2,
+       "mut": [
+        {
+         "op": "set",
+         "path": [
+          "results"
+         ],
+         "value": [
+          {
+           "text": "安全性（主要终点）：摘要称itolizumab安全性良好，没有因安全性原因导致的治疗中止，没有相关严重不良事件，也没有意外毒性。该结论来自A组每周100 mg共九次、B组每两周200 mg共五次的诱导方案及随后的维持期。试验未设对照组，具体不良事件发生率、分级和例数原文未给出，原文未报告统计学检验，因此安全性结论只能理解为描述性的。"
+          },
+          {
+           "text": "疾病控制（次要终点）：在重度预治疗且未按生物标志物筛选的人群中，A组疾病控制率为25%，B组为20%。摘要未给出两组的入组人数、完全或部分缓解的例数、疾病控制的具体定义，也未做两组比较的统计检验，因此无法判断25%与20%的差别是否有意义。"
+          },
+          {
+           "text": "生存与探索性分析：1年生存率A组为26%，B组为15%，摘要未给出置信区间、中位生存期或随访时长。探索性分析方面，摘要报告itolizumab在离体条件下下调CD6，使可溶性CD6水平升高，并使CD8细胞和NK细胞呈现更偏细胞毒性的表型；患者来源的外周血单个核细胞对CD318阳性癌细胞的体外杀伤能力增强。此外，抗体还调节外周淋巴细胞的PD-1表达，表现为促进NK细胞活性、维持CD8阳性T细胞上的抑制信号，并减轻辅助性T细胞的过度活化。这些变化的幅度和样本数原文未给出。"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "rec": "pr5f_runA",
+       "i": 2
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "25%",
+       "20%"
+      ],
+      "forbidden": [],
+      "tier": "deep"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "crash_limitations_ints",
+   "group": "crash",
+   "why": "limitations is a list of ints. The run must complete (exit 0), CD6 must still publish from the valid real retry, the companion must publish.",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2,
+       "mut": [
+        {
+         "op": "set",
+         "path": [
+          "limitations"
+         ],
+         "value": [
+          1,
+          2,
+          3
+         ]
+        }
+       ]
+      },
+      {
+       "rec": "pr5f_runA",
+       "i": 2
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "25%",
+       "20%"
+      ],
+      "forbidden": [],
+      "tier": "deep"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "crash_data_point_value_int",
+   "group": "crash",
+   "why": "a data_point value is an int. The run must complete (exit 0), CD6 must still publish from the valid real retry, the companion must publish.",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2,
+       "mut": [
+        {
+         "op": "set",
+         "path": [
+          "data_points",
+          3,
+          "value"
+         ],
+         "value": 25
+        }
+       ]
+      },
+      {
+       "rec": "pr5f_runA",
+       "i": 2
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "25%",
+       "20%"
+      ],
+      "forbidden": [],
+      "tier": "deep"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "crash_background_list",
+   "group": "crash",
+   "why": "background is a list. The run must complete (exit 0), CD6 must still publish from the valid real retry, the companion must publish.",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2,
+       "mut": [
+        {
+         "op": "set",
+         "path": [
+          "background"
+         ],
+         "value": [
+          "CD6被认为是肿瘤免疫治疗中有前景的靶点，临床前证据支持其可调节免疫应答。作者指出，这提示有必要进一步研究现有的CD6靶向药物，它们可能带来新的抗肿瘤治疗。然而，靶向CD6在实体瘤中的临床效应此前尚未被探索。本研究针对这一空白，评估抗CD6单克隆抗体itolizumab在晚期、高度异质性实体瘤患者中的安全性与早期有效性，并同时检测外周血相关分子机制与生物标志物，以判断该抗体在肿瘤患者体内是否产生预期的免疫学变化。"
+         ]
+        }
+       ]
+      },
+      {
+       "rec": "pr5f_runA",
+       "i": 2
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "25%",
+       "20%"
+      ],
+      "forbidden": [],
+      "tier": "deep"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "crash_title_none",
+   "group": "crash",
+   "why": "title is null. The run must complete (exit 0), CD6 must still publish from the valid real retry, the companion must publish.",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2,
+       "mut": [
+        {
+         "op": "set",
+         "path": [
+          "title"
+         ],
+         "value": null
+        }
+       ]
+      },
+      {
+       "rec": "pr5f_runA",
+       "i": 2
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "25%",
+       "20%"
+      ],
+      "forbidden": [],
+      "tier": "deep"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "crash_title_missing",
+   "group": "crash",
+   "why": "title key missing. The run must complete (exit 0), CD6 must still publish from the valid real retry, the companion must publish.",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2,
+       "mut": [
+        {
+         "op": "delete",
+         "path": [
+          "title"
+         ]
+        }
+       ]
+      },
+      {
+       "rec": "pr5f_runA",
+       "i": 2
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "25%",
+       "20%"
+      ],
+      "forbidden": [],
+      "tier": "deep"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "crash_one_liner_dict",
+   "group": "crash",
+   "why": "one_liner is a dict. The run must complete (exit 0), CD6 must still publish from the valid real retry, the companion must publish.",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2,
+       "mut": [
+        {
+         "op": "set",
+         "path": [
+          "one_liner"
+         ],
+         "value": {
+          "text": "抗CD6抗体itolizumab在晚期实体瘤概念验证试验中未见相关严重不良事件，A、B组疾病控制率分别为25%和20%，1年生存率分别为26%和15%。"
+         }
+        }
+       ]
+      },
+      {
+       "rec": "pr5f_runA",
+       "i": 2
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "25%",
+       "20%"
+      ],
+      "forbidden": [],
+      "tier": "deep"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "crash_significance_none",
+   "group": "crash",
+   "why": "significance is null. The run must complete (exit 0), CD6 must still publish from the valid real retry, the companion must publish.",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2,
+       "mut": [
+        {
+         "op": "set",
+         "path": [
+          "significance"
+         ],
+         "value": null
+        }
+       ]
+      },
+      {
+       "rec": "pr5f_runA",
+       "i": 2
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "25%",
+       "20%"
+      ],
+      "forbidden": [],
+      "tier": "deep"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "crash_image_prompt_list",
+   "group": "crash",
+   "why": "image_prompt is a list. The run must complete (exit 0), CD6 must still publish from the valid real retry, the companion must publish.",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2,
+       "mut": [
+        {
+         "op": "set",
+         "path": [
+          "image_prompt"
+         ],
+         "value": [
+          "科学插图：一个抗体分子结合在免疫细胞表面的CD6受体上，旁边NK细胞和CD8 T细胞靠近肿瘤细胞，简洁示意图风格，蓝灰配色，无文字"
+         ]
+        }
+       ]
+      },
+      {
+       "rec": "pr5f_runA",
+       "i": 2
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "25%",
+       "20%"
+      ],
+      "forbidden": [],
+      "tier": "deep"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "crash_datacard_non_json_string",
+   "group": "crash",
+   "why": "datacard is a non-JSON string. The run must complete (exit 0), CD6 must still publish from the valid real retry, the companion must publish.",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2,
+       "mut": [
+        {
+         "op": "set",
+         "path": [
+          "datacard"
+         ],
+         "value": "study_type: 概念验证; n: 原文未给出"
+        }
+       ]
+      },
+      {
+       "rec": "pr5f_runA",
+       "i": 2
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "25%",
+       "20%"
+      ],
+      "forbidden": [],
+      "tier": "deep"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "crash_datacard_list",
+   "group": "crash",
+   "why": "datacard is a list. The run must complete (exit 0), CD6 must still publish from the valid real retry, the companion must publish.",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2,
+       "mut": [
+        {
+         "op": "set",
+         "path": [
+          "datacard"
+         ],
+         "value": [
+          "概念验证性人体试验（摘要称为首次人体评估）；是否随机、是否单臂，原文未给出"
+         ]
+        }
+       ]
+      },
+      {
+       "rec": "pr5f_runA",
+       "i": 2
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "25%",
+       "20%"
+      ],
+      "forbidden": [],
+      "tier": "deep"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "crash_data_points_dict",
+   "group": "crash",
+   "why": "data_points is a dict. The run must complete (exit 0), CD6 must still publish from the valid real retry, the companion must publish.",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2,
+       "mut": [
+        {
+         "op": "set",
+         "path": [
+          "data_points"
+         ],
+         "value": {
+          "value": "25%",
+          "meaning": "A组疾病控制率",
+          "source_quote": "disease control was achieved in 25% in group A and 20% in group B"
+         }
+        }
+       ]
+      },
+      {
+       "rec": "pr5f_runA",
+       "i": 2
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "25%",
+       "20%"
+      ],
+      "forbidden": [],
+      "tier": "deep"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "crash_data_points_strings",
+   "group": "crash",
+   "why": "data_points is a list of strings. The run must complete (exit 0), CD6 must still publish from the valid real retry, the companion must publish.",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2,
+       "mut": [
+        {
+         "op": "set",
+         "path": [
+          "data_points"
+         ],
+         "value": [
+          "25%",
+          "20%"
+         ]
+        }
+       ]
+      },
+      {
+       "rec": "pr5f_runA",
+       "i": 2
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "25%",
+       "20%"
+      ],
+      "forbidden": [],
+      "tier": "deep"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "crash_results_none",
+   "group": "crash",
+   "why": "results is null. The run must complete (exit 0), CD6 must still publish from the valid real retry, the companion must publish.",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2,
+       "mut": [
+        {
+         "op": "set",
+         "path": [
+          "results"
+         ],
+         "value": null
+        }
+       ]
+      },
+      {
+       "rec": "pr5f_runA",
+       "i": 2
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "25%",
+       "20%"
+      ],
+      "forbidden": [],
+      "tier": "deep"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "crash_results_plain_string",
+   "group": "crash",
+   "why": "results is a plain (non-JSON) string. The run must complete (exit 0), CD6 must still publish from the valid real retry, the companion must publish.",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2,
+       "mut": [
+        {
+         "op": "set",
+         "path": [
+          "results"
+         ],
+         "value": "疾病控制（次要终点）：在重度预治疗且未按生物标志物筛选的人群中，A组疾病控制率为25%，B组为20%。摘要未给出两组的入组人数、完全或部分缓解的例数、疾病控制的具体定义，也未做两组比较的统计检验，因此无法判断25%与20%的差别是否有意义。"
+        }
+       ]
+      },
+      {
+       "rec": "pr5f_runA",
+       "i": 2
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "25%",
+       "20%"
+      ],
+      "forbidden": [],
+      "tier": "deep"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "crash_steps_plain_string",
+   "group": "crash",
+   "why": "steps is a plain string. The run must complete (exit 0), CD6 must still publish from the valid real retry, the companion must publish.",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2,
+       "mut": [
+        {
+         "op": "set",
+         "path": [
+          "steps"
+         ],
+         "value": "入组，给药，评估"
+        }
+       ]
+      },
+      {
+       "rec": "pr5f_runA",
+       "i": 2
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "25%",
+       "20%"
+      ],
+      "forbidden": [],
+      "tier": "deep"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "crash_empty_input",
+   "group": "crash",
+   "why": "tool_use input is {}. The run must complete (exit 0), CD6 must still publish from the valid real retry, the companion must publish.",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2,
+       "mut": [
+        {
+         "op": "set_input",
+         "value": {}
+        }
+       ]
+      },
+      {
+       "rec": "pr5f_runA",
+       "i": 2
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "25%",
+       "20%"
+      ],
+      "forbidden": [],
+      "tier": "deep"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "crash_text_only_reply",
+   "group": "crash",
+   "why": "reply has no tool_use block (text only, end_turn). The run must complete (exit 0), CD6 must still publish from the valid real retry, the companion must publish.",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2,
+       "mut": [
+        {
+         "op": "text_only",
+         "text": "我无法完成这个请求。"
+        }
+       ]
+      },
+      {
+       "rec": "pr5f_runA",
+       "i": 2
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "25%",
+       "20%"
+      ],
+      "forbidden": [],
+      "tier": "deep"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "crash_truncated_max_tokens",
+   "group": "crash",
+   "why": "stop_reason=max_tokens with a partial input. The run must complete (exit 0), CD6 must still publish from the valid real retry, the companion must publish.",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2,
+       "mut": [
+        {
+         "op": "set_input",
+         "value": {
+          "title": "Itolizumab用于晚期实体瘤：疾病控制率25%与20%，无相关严重不良事件"
+         }
+        },
+        {
+         "op": "stop_reason",
+         "value": "max_tokens"
+        }
+       ]
+      },
+      {
+       "rec": "pr5f_runA",
+       "i": 2
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "25%",
+       "20%"
+      ],
+      "forbidden": [],
+      "tier": "deep"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "inv_il6_literal",
+   "group": "invented_number",
+   "why": "IL-6 never appears in the CD6 source; \"6例死亡\" is invented (6 only exists as \"six doses\"/CD6)",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2,
+       "mut": [
+        {
+         "op": "append",
+         "path": [
+          "results",
+          2
+         ],
+         "text": "此外，IL-6水平较高的患者中有6例死亡。"
+        }
+       ]
+      }
+     ],
+     "expect": {
+      "outcome": "drop",
+      "required": [],
+      "forbidden": [
+       "6例死亡"
+      ],
+      "reason": "invented_number"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "inv_pd1_hyphen",
+   "group": "invented_number",
+   "why": "PD-1 is real, but \"1例\" is not a source number",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2,
+       "mut": [
+        {
+         "op": "append",
+         "path": [
+          "results",
+          2
+         ],
+         "text": "此外，PD-1高表达患者中有1例出现疾病进展。"
+        }
+       ]
+      }
+     ],
+     "expect": {
+      "outcome": "drop",
+      "required": [],
+      "forbidden": [
+       "1例出现疾病进展"
+      ],
+      "reason": "invented_number"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "inv_decimal_3_2",
+   "group": "invented_number",
+   "why": "\"3.2\" appears nowhere in the source",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2,
+       "mut": [
+        {
+         "op": "append",
+         "path": [
+          "results",
+          2
+         ],
+         "text": "可溶性CD6水平较基线升高3.2倍。"
+        }
+       ]
+      }
+     ],
+     "expect": {
+      "outcome": "drop",
+      "required": [],
+      "forbidden": [
+       "3.2倍"
+      ],
+      "reason": "invented_number"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "inv_cd19_literal",
+   "group": "invented_number",
+   "why": "CD19 / 19% are not in the source",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2,
+       "mut": [
+        {
+         "op": "append",
+         "path": [
+          "results",
+          2
+         ],
+         "text": "此外，CD19阳性B细胞比例下降19%。"
+        }
+       ]
+      }
+     ],
+     "expect": {
+      "outcome": "drop",
+      "required": [],
+      "forbidden": [
+       "19%"
+      ],
+      "reason": "invented_number"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "inv_nct_literal",
+   "group": "invented_number",
+   "why": "NCT04512345 is invented (the real registration is RPCEC00000444)",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2,
+       "mut": [
+        {
+         "op": "append",
+         "path": [
+          "results",
+          2
+         ],
+         "text": "该试验同时登记为NCT04512345。"
+        }
+       ]
+      }
+     ],
+     "expect": {
+      "outcome": "drop",
+      "required": [],
+      "forbidden": [
+       "NCT04512345"
+      ],
+      "reason": "invented_number"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "inv_cd318_count",
+   "group": "invented_number",
+   "why": "CD318 is real; \"318例\" is an invented count",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2,
+       "mut": [
+        {
+         "op": "append",
+         "path": [
+          "results",
+          2
+         ],
+         "text": "本研究共纳入CD318阳性肿瘤患者318例。"
+        }
+       ]
+      }
+     ],
+     "expect": {
+      "outcome": "drop",
+      "required": [],
+      "forbidden": [
+       "318例"
+      ],
+      "reason": "invented_number"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "inv_cd318_31",
+   "group": "invented_number",
+   "why": "the exact pr5f hole: \"CD318阳性患者共31例\"",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2,
+       "mut": [
+        {
+         "op": "append",
+         "path": [
+          "results",
+          2
+         ],
+         "text": "CD318阳性患者共31例。"
+        }
+       ]
+      }
+     ],
+     "expect": {
+      "outcome": "drop",
+      "required": [],
+      "forbidden": [
+       "共31例"
+      ],
+      "reason": "invented_number"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "inv_cd8_percent",
+   "group": "invented_number",
+   "why": "CD8 is real; \"升高8%\" is invented",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2,
+       "mut": [
+        {
+         "op": "append",
+         "path": [
+          "results",
+          2
+         ],
+         "text": "治疗后CD8阳性T细胞比例升高8%。"
+        }
+       ]
+      }
+     ],
+     "expect": {
+      "outcome": "drop",
+      "required": [],
+      "forbidden": [
+       "升高8%"
+      ],
+      "reason": "invented_number"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "inv_rpcec_444",
+   "group": "invented_number",
+   "why": "RPCEC00000444 is real; \"444例\" is invented",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2,
+       "mut": [
+        {
+         "op": "append",
+         "path": [
+          "results",
+          2
+         ],
+         "text": "该试验（RPCEC00000444）共入组444例患者。"
+        }
+       ]
+      }
+     ],
+     "expect": {
+      "outcome": "drop",
+      "required": [],
+      "forbidden": [
+       "444例"
+      ],
+      "reason": "invented_number"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "inv_cd6_six",
+   "group": "invented_number",
+   "why": "CD6/\"six doses\" are real; \"共6例\" is an invented count",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2,
+       "mut": [
+        {
+         "op": "append",
+         "path": [
+          "results",
+          2
+         ],
+         "text": "可溶性CD6升高的患者共6例。"
+        }
+       ]
+      }
+     ],
+     "expect": {
+      "outcome": "drop",
+      "required": [],
+      "forbidden": [
+       "共6例"
+      ],
+      "reason": "invented_number"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "inv_mk2_decimal_8",
+   "group": "invented_number",
+   "why": "\"2.8 A\" is real; \"降低8倍\" is invented (8 only inside 2.8)",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.10.01.755332v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runB",
+       "i": 18,
+       "mut": [
+        {
+         "op": "replace",
+         "path": [
+          "datacard",
+          "n"
+         ],
+         "old": "原文未给出生物学重复数；报告1个三元复合物晶体结构",
+         "new": "原文未给出生物学重复数",
+         "why": "remove the derived count \"1个\" that 893bf3d (rightly or not) treats as hard; keeps the base clean"
+        },
+        {
+         "op": "append",
+         "path": [
+          "results",
+          1
+         ],
+         "text": "MK-25使激酶活性降低8倍。"
+        }
+       ]
+      }
+     ],
+     "expect": {
+      "outcome": "drop",
+      "required": [],
+      "forbidden": [
+       "降低8倍"
+      ],
+      "reason": "invented_number"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "inv_mk25_25",
+   "group": "invented_number",
+   "why": "\"MK-25\" is a compound name; \"降低25%\" is invented",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.10.01.755332v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runB",
+       "i": 18,
+       "mut": [
+        {
+         "op": "replace",
+         "path": [
+          "datacard",
+          "n"
+         ],
+         "old": "原文未给出生物学重复数；报告1个三元复合物晶体结构",
+         "new": "原文未给出生物学重复数",
+         "why": "remove the derived count \"1个\" that 893bf3d (rightly or not) treats as hard; keeps the base clean"
+        },
+        {
+         "op": "append",
+         "path": [
+          "results",
+          1
+         ],
+         "text": "MK-25使底物磷酸化降低25%。"
+        }
+       ]
+      }
+     ],
+     "expect": {
+      "outcome": "drop",
+      "required": [],
+      "forbidden": [
+       "降低25%"
+      ],
+      "reason": "invented_number"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "mean_dcr_vs_death",
+   "group": "meaning",
+   "why": "25% is the A-arm disease-control rate, not a death rate",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2,
+       "mut": [
+        {
+         "op": "append",
+         "path": [
+          "results",
+          2
+         ],
+         "text": "A组死亡率为25%。"
+        }
+       ]
+      }
+     ],
+     "expect": {
+      "outcome": "drop",
+      "required": [],
+      "forbidden": [
+       "死亡率为25%"
+      ],
+      "reason": "meaning"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "mean_cr28_death28",
+   "group": "meaning",
+   "why": "the user-specified pair 完全缓解率28%/死亡率28% (28 is not in the source at all)",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2,
+       "mut": [
+        {
+         "op": "append",
+         "path": [
+          "results",
+          2
+         ],
+         "text": "A组完全缓解率28%，死亡率28%。"
+        }
+       ]
+      }
+     ],
+     "expect": {
+      "outcome": "drop",
+      "required": [],
+      "forbidden": [
+       "完全缓解率28%",
+       "死亡率28%"
+      ],
+      "reason": "meaning_or_invented"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "mean_28_died",
+   "group": "meaning",
+   "why": "the user-specified \"28%的患者死亡\"",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2,
+       "mut": [
+        {
+         "op": "append",
+         "path": [
+          "results",
+          2
+         ],
+         "text": "28%的患者死亡。"
+        }
+       ]
+      }
+     ],
+     "expect": {
+      "outcome": "drop",
+      "required": [],
+      "forbidden": [
+       "28%的患者死亡"
+      ],
+      "reason": "meaning_or_invented"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "mean_25_died",
+   "group": "meaning",
+   "why": "25% = disease control in group A, not deaths",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2,
+       "mut": [
+        {
+         "op": "append",
+         "path": [
+          "results",
+          2
+         ],
+         "text": "A组25%的患者死亡。"
+        }
+       ]
+      }
+     ],
+     "expect": {
+      "outcome": "drop",
+      "required": [],
+      "forbidden": [
+       "25%的患者死亡"
+      ],
+      "reason": "meaning"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "mean_os_vs_pfs",
+   "group": "meaning",
+   "why": "26% is 1-year (overall) survival, not progression-free survival",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2,
+       "mut": [
+        {
+         "op": "append",
+         "path": [
+          "results",
+          2
+         ],
+         "text": "A组1年无进展生存率为26%。"
+        }
+       ]
+      }
+     ],
+     "expect": {
+      "outcome": "drop",
+      "required": [],
+      "forbidden": [
+       "无进展生存率为26%"
+      ],
+      "reason": "meaning"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "mean_count_vs_percent_25",
+   "group": "meaning",
+   "why": "25% (a rate) rewritten as 25例 (a count) — the 64例 vs 64% pattern on a real number",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2,
+       "mut": [
+        {
+         "op": "append",
+         "path": [
+          "results",
+          2
+         ],
+         "text": "A组共25例患者达到疾病控制。"
+        }
+       ]
+      }
+     ],
+     "expect": {
+      "outcome": "drop",
+      "required": [],
+      "forbidden": [
+       "25例"
+      ],
+      "reason": "meaning"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "mean_count_vs_percent_20",
+   "group": "meaning",
+   "why": "20% rewritten as 20例",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2,
+       "mut": [
+        {
+         "op": "append",
+         "path": [
+          "results",
+          2
+         ],
+         "text": "B组20例患者达到疾病控制。"
+        }
+       ]
+      }
+     ],
+     "expect": {
+      "outcome": "drop",
+      "required": [],
+      "forbidden": [
+       "20例"
+      ],
+      "reason": "meaning"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "name_wang_invented_author",
+   "group": "names",
+   "why": "\"王等报告\": no author named Wang in the source",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2,
+       "mut": [
+        {
+         "op": "append",
+         "path": [
+          "results",
+          2
+         ],
+         "text": "王等报告，该抗体在CD318阳性肿瘤中耐受性良好。"
+        }
+       ]
+      }
+     ],
+     "expect": {
+      "outcome": "drop",
+      "required": [],
+      "forbidden": [
+       "王等"
+      ],
+      "reason": "name"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "name_real_institution_merck",
+   "group": "names",
+   "why": "Merck is named in the source (\"developed at Merck\"): must NOT be flagged",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.10.01.755332v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runB",
+       "i": 18,
+       "mut": [
+        {
+         "op": "replace",
+         "path": [
+          "datacard",
+          "n"
+         ],
+         "old": "原文未给出生物学重复数；报告1个三元复合物晶体结构",
+         "new": "原文未给出生物学重复数",
+         "why": "remove the derived count \"1个\" that 893bf3d (rightly or not) treats as hard; keeps the base clean"
+        },
+        {
+         "op": "append",
+         "path": [
+          "background"
+         ],
+         "text": "MK-25是Merck开发的非ATP竞争性抑制剂。"
+        }
+       ]
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "Merck"
+      ],
+      "forbidden": [],
+      "tier": "brief"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "name_mesaconate_zhongkangsuan",
+   "group": "names",
+   "why": "real run-B mesaconate brief: 中康酸 and \"Nissle 1917\" verbatim must publish (1917 is a strain name, not an invented number)",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.10.01.756006v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runB",
+       "i": 14
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "中康酸",
+       "Nissle 1917"
+      ],
+      "forbidden": [],
+      "tier": "brief"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "name_meikangsuan_redraft",
+   "group": "names",
+   "why": "real pr5e draft says 美康酸 (wrong); the redraft (real runB i14) says 中康酸",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.10.01.756006v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5e_run2",
+       "i": 8
+      },
+      {
+       "rec": "pr5f_runB",
+       "i": 14
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "中康酸"
+      ],
+      "forbidden": [
+       "美康酸"
+      ],
+      "tier": "brief"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "name_meisakangsuan_redraft",
+   "group": "names",
+   "why": "real run-A draft says 梅萨康酸 (wrong); the redraft (real runB i14) says 中康酸",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.10.01.756006v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 12
+      },
+      {
+       "rec": "pr5f_runB",
+       "i": 14
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "中康酸"
+      ],
+      "forbidden": [
+       "梅萨康酸"
+      ],
+      "tier": "brief"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "fp_cd6_real_published_pr5e",
+   "group": "false_positive",
+   "why": "the REAL CD6 deep draft that pr5e published (contains ≥3级, 每周一次, literal \\n and 28x 未给出)",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5e_run2",
+       "i": 2
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "itolizumab",
+       "25%",
+       "20%",
+       "26%",
+       "15%"
+      ],
+      "forbidden": [],
+      "tier": "deep"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "fp_cd6_runA_ge3_once_dcr",
+   "group": "false_positive",
+   "why": "real run-A CD6 draft: ≥3级, 每周一次 and 疾病控制率 data points must not be flagged",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "25%",
+       "20%",
+       "26%",
+       "15%",
+       "一次"
+      ],
+      "forbidden": [],
+      "tier": "deep"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "fp_cd6_runB_ge3",
+   "group": "false_positive",
+   "why": "real run-B CD6 draft that 893bf3d dropped over \"≥3级…原文未给出\"",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runB",
+       "i": 2
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "25%",
+       "20%"
+      ],
+      "forbidden": [],
+      "tier": "deep"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "fp_ge3_explicit",
+   "group": "false_positive",
+   "why": "\"≥3级不良事件\" in a kept sentence (the schema itself asks for ≥3级AE)",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2,
+       "mut": [
+        {
+         "op": "list_append",
+         "path": [
+          "limitations"
+         ],
+         "value": "摘要未报告≥3级不良事件的发生率。"
+        }
+       ]
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "≥3级"
+      ],
+      "forbidden": [],
+      "tier": "deep"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "fp_95ci",
+   "group": "false_positive",
+   "why": "\"95%CI\" is a statistic name, not an invented 95%",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runB",
+       "i": 16,
+       "mut": [
+        {
+         "op": "list_append",
+         "path": [
+          "limitations"
+         ],
+         "value": "摘要未报告95%CI或P值等统计量。"
+        }
+       ]
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "95%CI"
+      ],
+      "forbidden": [],
+      "tier": "brief"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.10.01.756006v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runB",
+       "i": 14
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "中康酸",
+       "Nissle 1917"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "fp_p38_exact",
+   "group": "false_positive",
+   "why": "\"p38\" copied exactly from the source (\"substrate of p38 MAPK\"); also \"2.8 Å\" for \"2.8 A\"",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.10.01.755332v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runB",
+       "i": 18,
+       "mut": [
+        {
+         "op": "replace",
+         "path": [
+          "datacard",
+          "n"
+         ],
+         "old": "原文未给出生物学重复数；报告1个三元复合物晶体结构",
+         "new": "原文未给出生物学重复数",
+         "why": "remove the derived count \"1个\" that 893bf3d (rightly or not) treats as hard; keeps the base clean"
+        },
+        {
+         "op": "replace",
+         "path": [
+          "background"
+         ],
+         "old": "是MAPK通路下游底物",
+         "new": "是p38 MAPK通路下游底物",
+         "why": "source says \"a downstream substrate of p38 MAPK\"; wording copied from the real runB i17 draft"
+        }
+       ]
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "p38",
+       "2.8"
+      ],
+      "forbidden": [],
+      "tier": "brief"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "fp_unit_spacing_100mg",
+   "group": "false_positive",
+   "why": "\"100mg\" vs source \"100 mg\" (the 12 nM vs 12nM pattern; no nM in any real source)",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2,
+       "mut": [
+        {
+         "op": "replace_everywhere",
+         "old": "100 mg",
+         "new": "100mg"
+        },
+        {
+         "op": "replace_everywhere",
+         "old": "200 mg",
+         "new": "200mg"
+        }
+       ]
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "100mg"
+      ],
+      "forbidden": [],
+      "tier": "deep"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "fp_once_a_week_cd14",
+   "group": "false_positive",
+   "why": "real CD14 first draft: \"once a week\" written as 每周一次",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 14
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "4周"
+      ],
+      "forbidden": [],
+      "tier": "brief"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.10.01.756006v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runB",
+       "i": 14
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "中康酸",
+       "Nissle 1917"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "fp_honest_unit_conversion",
+   "group": "false_positive",
+   "why": "\"every 21 days\" -> 每3周 and \"1-year\" -> 12个月: honest conversions",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2,
+       "mut": [
+        {
+         "op": "replace_everywhere",
+         "old": "每21天",
+         "new": "每3周"
+        },
+        {
+         "op": "replace",
+         "path": [
+          "one_liner"
+         ],
+         "old": "1年生存率",
+         "new": "12个月生存率"
+        }
+       ]
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "每3周",
+       "12个月生存率"
+      ],
+      "forbidden": [],
+      "tier": "deep"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "fp_roman_numeral_mhc_ii",
+   "group": "false_positive",
+   "why": "\"MHC II类\" (Roman numeral from \"MHC class II\"); stands in for I/II期, which no real source contains",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755788v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runB",
+       "i": 10
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "II类"
+      ],
+      "forbidden": [],
+      "tier": "brief"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "dp_nine_doses_runB",
+   "group": "data_points",
+   "why": "real runB i3 has data_points \"nine\"/\"five\"/\"six\" -> rejected; the real runB i2 must be the published draft",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runB",
+       "i": 3
+      },
+      {
+       "rec": "pr5f_runB",
+       "i": 2
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "Itolizumab晚期实体瘤试验"
+      ],
+      "forbidden": [
+       "抗CD6抗体itolizumab治疗晚期实体瘤：疾病控制率25%与20%"
+      ],
+      "tier": "deep"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "dp_nine_doses_runA",
+   "group": "data_points",
+   "why": "real runA i3 has data_points \"100 mg weekly for nine doses\" -> rejected; real runA i2 must be published",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 3
+      },
+      {
+       "rec": "pr5f_runA",
+       "i": 2
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "Itolizumab用于晚期实体瘤"
+      ],
+      "forbidden": [
+       "疾病控制率A组25%、B组20%，未见相关严重不良事件"
+      ],
+      "tier": "deep"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "dp_millions",
+   "group": "data_points",
+   "why": "real runB i7 has data_points \"millions\"/\"tens of kilobases\" -> rejected; real runB i8 must be published",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://www.nature.com/articles/s41587-026-03318-7",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runB",
+       "i": 7
+      },
+      {
+       "rec": "pr5f_runB",
+       "i": 8
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "散弹枪式"
+      ],
+      "forbidden": [
+       "霰弹枪式"
+      ],
+      "tier": "deep"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "q_brief_under_450_r2",
+   "group": "quality",
+   "why": "real R2 brief with 422 Han -> never published",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://www.nature.com/articles/s41587-026-03315-w",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 6
+      }
+     ],
+     "expect": {
+      "outcome": "drop",
+      "required": [],
+      "forbidden": [],
+      "reason": "length"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "q_brief_under_450_csu",
+   "group": "quality",
+   "why": "real CSU brief with 433 Han -> never published",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42844089/",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5e_run2",
+       "i": 7
+      }
+     ],
+     "expect": {
+      "outcome": "drop",
+      "required": [],
+      "forbidden": [],
+      "reason": "length"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "q_brief_under_450_redraft",
+   "group": "quality",
+   "why": "real mesaconate brief with 438 Han, then the real 461-Han redraft -> the redraft is published",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.10.01.756006v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 13
+      },
+      {
+       "rec": "pr5f_runB",
+       "i": 14
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "中康酸锌制剂"
+      ],
+      "forbidden": [
+       "锌-中康酸制剂在克罗恩病小鼠模型中"
+      ],
+      "tier": "brief"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "q_deep_over_cap_redraft",
+   "group": "quality",
+   "why": "real SGE deep with 2044 Han (> 1900 cap) then the real 1860-Han redraft -> the redraft is published as deep",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://www.nature.com/articles/s41587-026-03318-7",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 5
+      },
+      {
+       "rec": "pr5f_runB",
+       "i": 8
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "散弹枪式"
+      ],
+      "forbidden": [
+       "霰弹枪式"
+      ],
+      "tier": "deep"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "q_deep_over_cap_drop",
+   "group": "quality",
+   "why": "only the 2044-Han SGE deep draft is ever returned -> never published",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://www.nature.com/articles/s41587-026-03318-7",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 5
+      }
+     ],
+     "expect": {
+      "outcome": "drop",
+      "required": [],
+      "forbidden": [],
+      "reason": "length"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "q_results_without_number",
+   "group": "quality",
+   "why": "results stripped of the source numbers (4/8 weeks) must fail; the real draft is published",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15,
+       "mut": [
+        {
+         "op": "replace",
+         "path": [
+          "results",
+          0
+         ],
+         "old": "治疗疗程为4周或8周",
+         "new": "治疗持续数周"
+        }
+       ]
+      },
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [],
+      "forbidden": [],
+      "tier": "brief",
+      "required_in_results": [
+       "4周"
+      ]
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.10.01.756006v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runB",
+       "i": 14
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "中康酸",
+       "Nissle 1917"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "journal_from_pubmed_rss",
+   "group": "journal",
+   "why": "PubMed journal comes from the RSS/esummary item, not \"原文未给出期刊名\"",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+     "tier": "deep",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "25%"
+      ],
+      "forbidden": [],
+      "tier": "deep",
+      "journal": "Journal for immunotherapy of cancer"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "dedup_abstract_once",
+   "group": "dedup",
+   "why": "bioRxiv RSS summary == EPMC abstract: the article prompt must carry it once",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.10.01.756006v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runB",
+       "i": 14
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "中康酸"
+      ],
+      "forbidden": [],
+      "tier": "brief"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "4周"
+      ],
+      "forbidden": []
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755788v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runB",
+       "i": 10
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "II类"
+      ],
+      "forbidden": []
+     }
+    }
+   ],
+   "dedup": true
+  },
+  {
+   "id": "retry_keeps_better_draft",
+   "group": "retry",
+   "why": "first draft is the real CD14 brief; the retry adds an invented number -> the first draft must be published",
+   "week": "pr5f",
+   "items": [
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      },
+      {
+       "rec": "pr5f_runA",
+       "i": 15,
+       "mut": [
+        {
+         "op": "append",
+         "path": [
+          "results",
+          1
+         ],
+         "text": "研究共纳入12只小鼠。"
+        }
+       ]
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "required": [
+       "substantial reductions"
+      ],
+      "forbidden": [
+       "12只"
+      ],
+      "tier": "brief"
+     }
+    },
+    {
+     "url": "https://www.biorxiv.org/content/10.64898/2026.10.01.756006v1?rss=1",
+     "tier": "brief",
+     "queue": [
+      {
+       "rec": "pr5f_runB",
+       "i": 14
+      }
+     ],
+     "expect": {
+      "outcome": "publish",
+      "tier": "brief",
+      "required": [
+       "中康酸",
+       "Nissle 1917"
+      ],
+      "forbidden": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "replay_pr5f_runA",
+   "group": "replay",
+   "why": "whole real run A (893bf3d) replayed through main()",
+   "week": "pr5f",
+   "replay": {
+    "rec": "pr5f_runA",
+    "triage_i": 1,
+    "digest_i": 16,
+    "queues": {
+     "https://pubmed.ncbi.nlm.nih.gov/42843925/": [
+      {
+       "rec": "pr5f_runA",
+       "i": 2
+      },
+      {
+       "rec": "pr5f_runA",
+       "i": 3
+      }
+     ],
+     "https://www.nature.com/articles/s41587-026-03318-7": [
+      {
+       "rec": "pr5f_runA",
+       "i": 4
+      },
+      {
+       "rec": "pr5f_runA",
+       "i": 5
+      }
+     ],
+     "https://www.nature.com/articles/s41587-026-03315-w": [
+      {
+       "rec": "pr5f_runA",
+       "i": 6
+      },
+      {
+       "rec": "pr5f_runA",
+       "i": 7
+      }
+     ],
+     "https://www.biorxiv.org/content/10.64898/2026.09.30.755788v1?rss=1": [
+      {
+       "rec": "pr5f_runA",
+       "i": 8
+      },
+      {
+       "rec": "pr5f_runA",
+       "i": 9
+      }
+     ],
+     "https://pubmed.ncbi.nlm.nih.gov/42844089/": [
+      {
+       "rec": "pr5f_runA",
+       "i": 10
+      },
+      {
+       "rec": "pr5f_runA",
+       "i": 11
+      }
+     ],
+     "https://www.biorxiv.org/content/10.64898/2026.10.01.756006v1?rss=1": [
+      {
+       "rec": "pr5f_runA",
+       "i": 12
+      },
+      {
+       "rec": "pr5f_runA",
+       "i": 13
+      }
+     ],
+     "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1": [
+      {
+       "rec": "pr5f_runA",
+       "i": 14
+      },
+      {
+       "rec": "pr5f_runA",
+       "i": 15
+      }
+     ]
+    }
+   },
+   "expect_replay": {
+    "deals": 4,
+    "articles": [
+     {
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+      "outcome": "publish",
+      "tier": "deep",
+      "required": [
+       "25%",
+       "20%",
+       "26%",
+       "15%"
+      ],
+      "journal": "Journal for immunotherapy of cancer"
+     }
+    ]
+   }
+  },
+  {
+   "id": "replay_pr5f_runB",
+   "group": "replay",
+   "why": "whole real run B (893bf3d) replayed through main()",
+   "week": "pr5f",
+   "replay": {
+    "rec": "pr5f_runB",
+    "triage_i": 1,
+    "digest_i": 19,
+    "queues": {
+     "https://pubmed.ncbi.nlm.nih.gov/42843925/": [
+      {
+       "rec": "pr5f_runB",
+       "i": 2
+      },
+      {
+       "rec": "pr5f_runB",
+       "i": 3
+      },
+      {
+       "rec": "pr5f_runB",
+       "i": 4
+      }
+     ],
+     "https://www.nature.com/articles/s41587-026-03315-w": [
+      {
+       "rec": "pr5f_runB",
+       "i": 5
+      },
+      {
+       "rec": "pr5f_runB",
+       "i": 6
+      }
+     ],
+     "https://www.nature.com/articles/s41587-026-03318-7": [
+      {
+       "rec": "pr5f_runB",
+       "i": 7
+      },
+      {
+       "rec": "pr5f_runB",
+       "i": 8
+      }
+     ],
+     "https://www.biorxiv.org/content/10.64898/2026.09.30.755788v1?rss=1": [
+      {
+       "rec": "pr5f_runB",
+       "i": 9
+      },
+      {
+       "rec": "pr5f_runB",
+       "i": 10
+      }
+     ],
+     "https://pubmed.ncbi.nlm.nih.gov/42844089/": [
+      {
+       "rec": "pr5f_runB",
+       "i": 11
+      },
+      {
+       "rec": "pr5f_runB",
+       "i": 12
+      }
+     ],
+     "https://www.biorxiv.org/content/10.64898/2026.10.01.756006v1?rss=1": [
+      {
+       "rec": "pr5f_runB",
+       "i": 13
+      },
+      {
+       "rec": "pr5f_runB",
+       "i": 14
+      }
+     ],
+     "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1": [
+      {
+       "rec": "pr5f_runB",
+       "i": 15
+      },
+      {
+       "rec": "pr5f_runB",
+       "i": 16
+      }
+     ],
+     "https://www.biorxiv.org/content/10.64898/2026.10.01.755332v1?rss=1": [
+      {
+       "rec": "pr5f_runB",
+       "i": 17
+      },
+      {
+       "rec": "pr5f_runB",
+       "i": 18
+      }
+     ]
+    }
+   },
+   "expect_replay": {
+    "deals": 4,
+    "articles": [
+     {
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+      "outcome": "publish",
+      "tier": "deep",
+      "required": [
+       "25%",
+       "20%",
+       "26%",
+       "15%"
+      ],
+      "journal": "Journal for immunotherapy of cancer"
+     }
+    ]
+   }
+  },
+  {
+   "id": "replay_pr5e_crash_then_run2",
+   "group": "replay",
+   "why": "real pr5e week: CD6 first gets the REAL malformed reply, then the real run-2 replies",
+   "week": "pr5e",
+   "replay": {
+    "rec": "pr5e_run2",
+    "triage_i": 1,
+    "digest_i": 11,
+    "queues": {
+     "https://pubmed.ncbi.nlm.nih.gov/42843925/": [
+      {
+       "rec": "pr5e_crash",
+       "i": 2
+      },
+      {
+       "rec": "pr5e_run2",
+       "i": 2
+      }
+     ],
+     "https://www.nature.com/articles/s41587-026-03318-7": [
+      {
+       "rec": "pr5e_run2",
+       "i": 3
+      }
+     ],
+     "https://www.nature.com/articles/s41587-026-03315-w": [
+      {
+       "rec": "pr5e_run2",
+       "i": 4
+      }
+     ],
+     "https://www.biorxiv.org/content/10.64898/2026.09.30.755788v1?rss=1": [
+      {
+       "rec": "pr5e_run2",
+       "i": 5
+      },
+      {
+       "rec": "pr5e_run2",
+       "i": 6
+      }
+     ],
+     "https://pubmed.ncbi.nlm.nih.gov/42844089/": [
+      {
+       "rec": "pr5e_run2",
+       "i": 7
+      }
+     ],
+     "https://www.biorxiv.org/content/10.64898/2026.10.01.756006v1?rss=1": [
+      {
+       "rec": "pr5e_run2",
+       "i": 8
+      }
+     ],
+     "https://www.biorxiv.org/content/10.64898/2026.09.30.755828v1?rss=1": [
+      {
+       "rec": "pr5e_run2",
+       "i": 9
+      },
+      {
+       "rec": "pr5e_run2",
+       "i": 10
+      }
+     ]
+    }
+   },
+   "expect_replay": {
+    "deals": 4,
+    "articles": [
+     {
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+      "outcome": "publish",
+      "tier": "deep",
+      "required": [
+       "25%",
+       "20%",
+       "26%",
+       "15%"
+      ],
+      "journal": "Journal for immunotherapy of cancer"
+     }
+    ]
+   }
+  }
+ ]
+}
