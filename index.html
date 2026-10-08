@@ -179,18 +179,16 @@ svg text{font-family:var(--body)}
 .metarow .expbtn{margin-left:auto;flex-shrink:0;min-width:32px;padding:4px 6px}
 .metarow .jname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1 1 0;min-width:0}
 .metarow .tagrow{display:flex;gap:4px;overflow:hidden;flex-shrink:1;min-width:0}
-.metarow .tagrow .kind{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:80px}
+.metarow .tagrow .kind{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:80px;flex-shrink:1;min-width:0}
 .feed .metarow .tagrow .kind:nth-child(n+2){display:none}
 .metarow .kind{flex-shrink:0}
 .thumb{display:block;width:100%;aspect-ratio:5/3;max-width:100%}
 .thumb svg{display:block;width:100%;height:100%}
 .fcard .thumb{aspect-ratio:16/6}
-.exp{display:grid;gap:6px}
 .msline{font-size:12px;color:var(--fg);font-weight:700}
 .jname{font-size:11px;color:var(--muted);font-weight:700;overflow-wrap:anywhere}
 .vnote{font-size:11.5px;color:var(--muted);background:var(--raise);border-radius:7px;padding:7px 9px;line-height:1.6}
 .tagrow{display:flex;gap:5px;flex-wrap:wrap}
-.exp p{font-size:13.5px;color:var(--muted);max-width:none}
 .expbtn{font-size:12.5px;font-weight:700;color:var(--accent);background:none;border:0;padding:4px 0;min-height:32px;cursor:pointer;font-family:inherit;text-align:left;justify-self:start;display:inline-flex;align-items:center}
 .expbtn:hover{text-decoration:underline}
 /* 八格追踪器：4×2 */
@@ -314,13 +312,18 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 .feed{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;align-items:stretch}
 @media (max-width:1023px){.feed{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (max-width:768px){.feed{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.feed .item.expanded{grid-column:1/-1;align-self:start}
+/* Details panel inserted after the row containing the expanded card */
+.feed-details-panel{grid-column:1/-1;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:grid;gap:8px}
+.feed-details-panel .panel-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px}
+.feed-details-panel .msline{font-size:13px;color:var(--fg);font-weight:700}
+.feed-details-panel p{font-size:14px;color:var(--muted);max-width:none;line-height:1.6}
+.feed-details-panel .foot{display:flex;gap:12px;flex-wrap:wrap;font-size:13px}
+.feed-details-panel .close-btn{font-size:12.5px;font-weight:700;color:var(--accent);background:none;border:0;padding:4px 8px;min-height:32px;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;margin-left:auto}
 
 .item{background:var(--surface);border:1px solid var(--line);border-radius:14px;display:grid;grid-template-rows:auto 1fr;overflow:hidden}
 .item .cbody{padding:8px 10px 9px;display:flex;flex-direction:column;gap:4px}
 .item .cbody h3{flex:0 0 auto}
 .item .cbody .metarow{margin-top:auto}
-.item.expanded{align-self:start}
 .item h3{font-size:13.5px;line-height:1.45;font-family:var(--display);font-weight:800;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
   min-height:calc(2 * 1.45 * 13.5px)}
@@ -1080,25 +1083,63 @@ function dealCard(x,i){
       <div class="metarow"><span class="idate">${y}.${String(+mo).padStart(2,'0')}</span>
         <span class="tagrow">${tags}</span>
         <button class="expbtn" type="button" aria-expanded="false" data-exp="${i}">详情 ↓</button></div>
-      <div class="exp" id="exp-${i}" hidden>
-        ${x.ms?`<p class="msline">${x.ms}</p>`:''}
-        <p>${x.why}</p>
-        <div class="foot"><a href="${x.url}" target="_blank" rel="noopener">出处：${x.src}</a>${x.art?`<a href="#${x.art}">${x.artt} →</a>`:''}</div>
-      </div>
     </div></div>`;
 }
-function wireExpand(){}
+let activePanel=null, activeCard=null, activeBtn=null;
+function getGridCols(grid){
+  const cols=getComputedStyle(grid).gridTemplateColumns.split(' ').filter(Boolean);
+  return cols.length;
+}
+function getCardIndex(card,grid){
+  return [...grid.children].filter(c=>!c.classList.contains('feed-details-panel')).indexOf(card);
+}
+function insertDetailsPanel(card,grid,dealData){
+  const cols=getGridCols(grid);
+  const idx=getCardIndex(card,grid);
+  const rowEnd=Math.ceil((idx+1)/cols)*cols;
+  const cards=[...grid.children].filter(c=>!c.classList.contains('feed-details-panel'));
+  const insertAfter=cards[Math.min(rowEnd-1,cards.length-1)];
+  const tags=dealData.kinds.map(k=>`<span class="kind" style="--kc:${KINDS[k][1]}">${KINDS[k][0]}</span>`).join('');
+  const panel=document.createElement('div');
+  panel.className='feed-details-panel';
+  panel.innerHTML=`<div class="panel-tags">${tags}</div>
+    ${dealData.ms?`<p class="msline">${dealData.ms}</p>`:''}
+    <p>${dealData.why}</p>
+    <div class="foot"><a href="${dealData.url}" target="_blank" rel="noopener">出处：${dealData.src}</a>${dealData.art?`<a href="#${dealData.art}">${dealData.artt} →</a>`:''}<button class="close-btn" type="button">收起 ↑</button></div>`;
+  insertAfter.after(panel);
+  return panel;
+}
+function closeDetailsPanel(){
+  if(activePanel){activePanel.remove();activePanel=null;}
+  if(activeCard){activeCard.classList.remove('expanded');activeCard=null;}
+  if(activeBtn){activeBtn.setAttribute('aria-expanded','false');activeBtn.textContent='详情 ↓';activeBtn=null;}
+}
+function getDealData(idx,feedId){
+  if(feedId==='homefeed') return DEALS[idx];
+  const rows=DEALS.filter(x=>filter==='all'||x.kinds.includes(filter));
+  return rows[idx];
+}
 document.addEventListener('click',e=>{
+  const closeBtn=e.target.closest&&e.target.closest('.close-btn');
+  if(closeBtn){closeDetailsPanel();return;}
   const b=e.target.closest&&e.target.closest('.expbtn');
   if(!b) return;
   const item=b.closest('.item');
-  const box=item&&item.querySelector('.exp');
-  if(!box) return;
-  const open=box.hidden;
-  box.hidden=!open;
-  item.classList.toggle('expanded',open);
-  b.setAttribute('aria-expanded',String(open));
-  b.textContent=open?'收起 ↑':'详情 ↓';
+  const grid=item.closest('.feed');
+  if(!grid) return;
+  const expIdx=parseInt(b.dataset.exp.replace(/[^0-9]/g,''),10);
+  const feedId=grid.id;
+  const isOpen=item.classList.contains('expanded');
+  closeDetailsPanel();
+  if(isOpen) return;
+  const dealData=getDealData(expIdx,feedId);
+  if(!dealData) return;
+  activeCard=item;
+  activeBtn=b;
+  item.classList.add('expanded');
+  b.setAttribute('aria-expanded','true');
+  b.textContent='收起 ↑';
+  activePanel=insertDetailsPanel(item,grid,dealData);
 });
 function repaintCatalog(){
   document.getElementById('latestgrid').innerHTML=CAT.slice(0,8).map((a,i)=>catCard(a,'l'+i)).join('');
@@ -1139,18 +1180,27 @@ function renderFeed(){
   dc.textContent=filter==='all'?`共 ${rows.length} 条，按时间倒序`:`已筛选 ${rows.length} 条`;
   if(!rows.length){feed.innerHTML='<div class="empty">这个分类暂无条目。只收录有公开披露金额或双方确认的交易，等到有确切条目时再补。</div>';return}
   feed.innerHTML=rows.map((x,i)=>dealCard(x,'f'+i)).join('');
-  wireExpand(feed);
 }
 renderChips();renderFeed();
 const hf=document.getElementById('homefeed');
 const hfHtml=DEALS.slice(0,4).map((x,i)=>dealCard(x,'h'+i)).join('');
 const lg=document.getElementById('latestgrid');
 let lgHtml='';
-function refit(){ setHtml(lg,lgHtml); setHtml(hf,hfHtml); wireExpand(hf); }
-let rt; addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{
-  if(!document.getElementById('v-home').hidden) refit();
-  if(!document.getElementById('v-deals').hidden) renderFeed();
-  /* Grid columns now controlled purely by CSS */
+function refit(){ setHtml(lg,lgHtml); setHtml(hf,hfHtml); }
+let rt,lastCols=0;
+addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{
+  if(!activePanel||!activeCard) return;
+  const grid=activeCard.closest('.feed');
+  if(!grid) return;
+  const cols=getGridCols(grid);
+  if(cols!==lastCols){
+    const dealIdx=parseInt(activeBtn.dataset.exp.replace(/[^0-9]/g,''),10);
+    const feedId=grid.id;
+    const dealData=getDealData(dealIdx,feedId);
+    activePanel.remove();
+    activePanel=insertDetailsPanel(activeCard,grid,dealData);
+    lastCols=cols;
+  }
 },150)});
 
 const views=[...document.querySelectorAll('.view')];
