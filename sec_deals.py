@@ -3111,19 +3111,33 @@ def extract_numbers_from_text(text: str) -> set[str]:
         except ValueError:
             pass
 
+    def _after_decimal_point(start: int) -> bool:
+        prefix = text[max(0, start - 8):start]
+        return bool(re.search(r'点[零一二三四五六七八九十\d]*$', prefix))
+
+    def _fmt_num(parsed: float) -> str:
+        if parsed == int(parsed):
+            return str(int(parsed))
+        return str(parsed)
+
     def _record_chinese(cn_num: str) -> None:
         parsed = chinese_to_number(cn_num)
         if parsed is None:
             return
-        if parsed == int(parsed):
-            numbers.add(str(int(parsed)))
-        else:
-            numbers.add(str(parsed))
+        numbers.add(_fmt_num(parsed))
         numbers.add(cn_num)
         # Keep the coefficient of a trailing 万/亿 so "三亿美元" still
         # records 三 (used when matching Chinese source text).
         if cn_num.endswith(('亿', '万')) and len(cn_num) > 1:
             numbers.add(cn_num[:-1])
+        # 十二亿 = 1.2e9 = 12 亿. Record the 亿-scale token so
+        # $1.2 billion (12亿) matches by value.
+        if '亿' in cn_num and parsed >= 1e6:
+            yi = parsed / 1e8
+            numbers.add(f"{_fmt_num(yi)}亿")
+        elif parsed >= 1e8:
+            yi = parsed / 1e8
+            numbers.add(f"{_fmt_num(yi)}亿")
 
     # Patient / person counts: 一百二十名 = 120, 三十五名 = 35
     cn_patient_count_pattern = r'([零一二三四五六七八九十百千两〇]+)\s*(?:名|例|位|人)(?:\s*(?:患者|受试者|病人|对照))?'
@@ -3166,22 +3180,137 @@ def extract_numbers_from_text(text: str) -> set[str]:
         cn_num = m.group(1)
         if cn_num in '亿万百千':
             continue
+        if _after_decimal_point(m.start()):
+            continue
         _record_chinese(cn_num)
 
     # Large standalone Chinese numbers (市场规模两百亿, 十二亿, 两千万).
     # Do not take a prefix of a longer numeral: 一百 inside 一百二十 is not 100.
+    # Do not take 五亿 out of 一点五亿.
     cn_large_pattern = (
         r'([零一二三四五六七八九十两〇][零一二三四五六七八九十百千万亿两〇]*[百千万亿])'
         r'(?![零一二三四五六七八九十百千万亿两〇])'
     )
     for m in re.finditer(cn_large_pattern, text):
+        if _after_decimal_point(m.start()):
+            continue
         _record_chinese(m.group(1))
+
+    # Counts with 个 (七个国家). Skip 一个 — idiomatic "a/an".
+    cn_ge_pattern = r'([二三四五六七八九十百千两〇][零一二三四五六七八九十百千两〇]*)\s*个'
+    for m in re.finditer(cn_ge_pattern, text):
+        _record_chinese(m.group(1))
+
+    # Fractions: N分之M (三分之二 = 2/3). Record both parts and the ratio.
+    # Do not treat 百分之N as a fraction.
+    cn_fraction_pattern = (
+        r'(?!百分之)([零一二三四五六七八九十千两〇\d]+)\s*分之\s*'
+        r'([零一二三四五六七八九十百千两〇\d]+)'
+    )
+    for m in re.finditer(cn_fraction_pattern, text):
+        denom = chinese_to_number(m.group(1))
+        numer = chinese_to_number(m.group(2))
+        if denom is None:
+            try:
+                denom = float(m.group(1))
+            except ValueError:
+                denom = None
+        if numer is None:
+            try:
+                numer = float(m.group(2))
+            except ValueError:
+                numer = None
+        if denom is not None:
+            numbers.add(_fmt_num(denom))
+        if numer is not None:
+            numbers.add(_fmt_num(numer))
+        if denom and numer is not None:
+            numbers.add(f"{_fmt_num(numer)}/{_fmt_num(denom)}")
+
+    # 百分之N → N%
+    cn_percent_pattern = (
+        r'百分之\s*([零一二三四五六七八九十百千两〇\d]+(?:点[零一二三四五六七八九十]+)?)'
+    )
+    for m in re.finditer(cn_percent_pattern, text):
+        parsed = chinese_to_number(m.group(1))
+        if parsed is None:
+            try:
+                parsed = float(m.group(1))
+            except ValueError:
+                continue
+        numbers.add(f"{_fmt_num(parsed)}%")
+        numbers.add(_fmt_num(parsed))
+
+    # Ordinals with a unit: 第N周 / 第N天. Bare 第一 is idiomatic and skipped.
+    cn_ordinal_pattern = (
+        r'第\s*([零一二三四五六七八九十百千两〇\d]+)\s*'
+        r'(?:周|天|日|期|轮|年|个月|月)'
+    )
+    for m in re.finditer(cn_ordinal_pattern, text):
+        parsed = chinese_to_number(m.group(1))
+        if parsed is None:
+            try:
+                parsed = float(m.group(1))
+            except ValueError:
+                continue
+        numbers.add(_fmt_num(parsed))
     
     # Percentages
     for m in re.finditer(r'\d+(?:\.\d+)?%', text):
         numbers.add(m.group())
+
+    # English fractions 2/3
+    for m in re.finditer(r'(\d+)\s*/\s*(\d+)', text):
+        numbers.add(f"{m.group(1)}/{m.group(2)}")
+        _add_exact(m.group(1))
+        _add_exact(m.group(2))
     
     return numbers
+
+
+def _as_plain_number(token: str) -> float | None:
+    if not token:
+        return None
+    try:
+        return float(token.replace(',', '').replace('%', ''))
+    except ValueError:
+        return chinese_to_number(token)
+
+
+def _quantity_value(token: str) -> float | None:
+    """Numeric magnitude of a token. 十二亿 and 12亿 are 1.2e9; 30% is 30."""
+    if not token:
+        return None
+    if token.endswith('%'):
+        return _as_plain_number(token[:-1])
+    if '/' in token and not token.startswith('/'):
+        parts = token.split('/', 1)
+        try:
+            return float(parts[0]) / float(parts[1])
+        except (ValueError, ZeroDivisionError):
+            return None
+    if token.endswith('亿'):
+        coeff = _as_plain_number(token[:-1])
+        return None if coeff is None else coeff * 1e8
+    if token.endswith('万'):
+        coeff = _as_plain_number(token[:-1])
+        return None if coeff is None else coeff * 1e4
+    return _as_plain_number(token)
+
+
+def _is_yi_scale_token(token: str) -> bool:
+    """True for 亿-denominated amounts or raw values >= 1e8 (e.g. 1200000000)."""
+    if not token:
+        return False
+    if '亿' in token:
+        return True
+    val = _as_plain_number(token)
+    return val is not None and val >= 1e8
+
+
+def _values_equal(a: float, b: float) -> bool:
+    scale = max(abs(a), abs(b), 1.0)
+    return abs(a - b) / scale < 1e-6
 
 
 def strip_unverified_numbers_from_text(
@@ -3210,15 +3339,38 @@ def strip_unverified_numbers_from_text(
         一百二十 (120) is honest when the English source has 120 patients.
         四家 is invented when the source has no 4. Never treat a truncated
         scale (11 for 11.7) as a match — that token is simply absent.
+        亿 amounts compare by VALUE: 十二亿美元 == $1.2B, 一点五亿美元 == $150M.
         """
         if token in source_numbers:
             return True
-        parsed = chinese_to_number(token)
-        if parsed is None:
+        token_val = _quantity_value(token)
+        if token_val is None:
+            parsed = chinese_to_number(token)
+            if parsed is None:
+                return False
+            if parsed == int(parsed):
+                return str(int(parsed)) in source_numbers
+            return str(parsed) in source_numbers
+        if _is_yi_scale_token(token):
+            for src in source_numbers:
+                if not _is_yi_scale_token(src):
+                    continue
+                src_val = _quantity_value(src)
+                if src_val is not None and _values_equal(token_val, src_val):
+                    return True
             return False
-        if parsed == int(parsed):
-            return str(int(parsed)) in source_numbers
-        return str(parsed) in source_numbers
+        if str(int(token_val)) == str(token_val) or token_val == int(token_val):
+            if str(int(token_val)) in source_numbers:
+                return True
+        if str(token_val) in source_numbers:
+            return True
+        parsed = chinese_to_number(token)
+        if parsed is not None:
+            if parsed == int(parsed) and str(int(parsed)) in source_numbers:
+                return True
+            if str(parsed) in source_numbers:
+                return True
+        return False
 
     kept_sentences = []
     

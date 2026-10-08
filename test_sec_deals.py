@@ -800,6 +800,51 @@ class TestNumberStripping:
         numbers = sec_deals.extract_numbers_from_text("收购金额为三亿美元。")
         assert "三" in numbers or "三亿" in numbers, "三亿 should be extracted as quantity"
 
+    def test_ge_count_extracted_and_invented_stripped(self):
+        numbers = sec_deals.extract_numbers_from_text("覆盖七个国家。")
+        assert "七" in numbers
+        kept = sec_deals.strip_unverified_numbers_from_text(
+            "该研究覆盖七个国家。",
+            "The study enrolled 120 patients.",
+        )
+        assert "七" not in kept
+        honest = sec_deals.strip_unverified_numbers_from_text(
+            "该研究覆盖七个国家。",
+            "The study covers 7 countries.",
+        )
+        assert "七个国家" in honest
+
+    def test_fraction_and_percent_and_ordinal(self):
+        numbers = sec_deals.extract_numbers_from_text("约三分之二的患者在第4周达到百分之五十缓解。")
+        assert "2" in numbers or "2/3" in numbers
+        assert "50%" in numbers or "50" in numbers
+        assert "4" in numbers
+        invented = sec_deals.strip_unverified_numbers_from_text(
+            "约三分之二的患者在第七周达到百分之八十缓解。",
+            "About half of patients responded by week 2.",
+        )
+        assert invented == "" or ("三分之二" not in invented and "第七周" not in invented and "百分之八十" not in invented)
+        honest = sec_deals.strip_unverified_numbers_from_text(
+            "约三分之二的患者在第4周达到百分之五十缓解。",
+            "About 2/3 of patients reached a 50% response by week 4.",
+        )
+        assert "三分之二" in honest
+        assert "第4周" in honest
+        assert "百分之五十" in honest
+
+    def test_yi_amounts_match_by_value(self):
+        """十二亿美元 == $1.2B and 一点五亿美元 == $150M must be kept."""
+        twelve = sec_deals.strip_unverified_numbers_from_text(
+            "交易对价为十二亿美元。",
+            "The purchase price is $1.2 billion.",
+        )
+        assert "十二亿美元" in twelve
+        one_point_five = sec_deals.strip_unverified_numbers_from_text(
+            "预付款为一点五亿美元。",
+            "The Company will receive a $150 million upfront payment.",
+        )
+        assert "一点五亿美元" in one_point_five
+
 
 # =============================================================================
 # END-TO-END MAIN() TESTS (Task 4)
