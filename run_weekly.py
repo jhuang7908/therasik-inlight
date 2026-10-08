@@ -135,7 +135,9 @@ def _test_integration_deal_pipeline():
     and verifies the full pipeline processes it correctly via sec_deals.
     """
     import sec_deals
-    
+    os.environ[sec_deals.LLM_DENY_GATE_TEST_SKIP_ENV] = "1"
+    sec_deals.LLM_DENY_GATE_REQUIRED = False
+
     # Simulate real Alector/Genentech filing text
     filing_text = """
     UNITED STATES SECURITIES AND EXCHANGE COMMISSION
@@ -2464,6 +2466,9 @@ def main() -> None:
         sec_deals.VERIFIER_ENABLED = False
     
     if args.test:
+        import sec_deals
+        os.environ[sec_deals.LLM_DENY_GATE_TEST_SKIP_ENV] = "1"
+        sec_deals.LLM_DENY_GATE_REQUIRED = False
         print("Running unit tests...\n")
         all_passed = True
         # Core functionality tests
