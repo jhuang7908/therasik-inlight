@@ -1468,6 +1468,17 @@ def chinese_numeral_to_arabic(text: str) -> str:
     return result
 
 
+def is_bibliographic_number(num: str, context: str) -> bool:
+    """Dates, years and DOI fragments are not study data."""
+    ctx = (context or "").lower()
+    if _BIBLIOGRAPHIC_CTX_RE.search(ctx):
+        return True
+    core = extract_number_core(num) or ""
+    if re.fullmatch(r'(?:19|20)\d{2}', core):
+        return True
+    return False
+
+
 def extract_number_core(text: str) -> str:
     """Extract the core numeric value from a number string for comparison.
     
@@ -1788,6 +1799,18 @@ _QUALITATIVE_COUNT_RE = re.compile(
     r')'
 )
 
+# Vague magnitude words: 数以百万计 / 数百万 / millions of. Not numeric claims.
+_QUALITATIVE_SCALE_RE = re.compile(
+    r'(?i)数以[零一二三四五六七八九十百千万亿两]+计|'
+    r'数[百千万亿]+|'
+    r'\b(?:tens|hundreds|thousands|millions|billions)\s+of\b'
+)
+
+_BIBLIOGRAPHIC_CTX_RE = re.compile(
+    r'(?i)doi|published\s*online|volume|pages?|issn|pmcid|pmid|'
+    r'核对记录|pmc\d+|10\.\d{4,}|/s\d{5}|\bs\d{5}\b'
+)
+
 # English number words that cannot stand in as a data_point value
 _ENGLISH_NUMERAL_VALUE_RE = re.compile(
     r'(?i)\b(?:zero|once|one|twice|two|three|four|five|six|seven|eight|nine|ten|'
@@ -1840,6 +1863,8 @@ def normalize_for_match(text: str, *, convert_english_words: bool = False) -> st
     )
     # Split a leading dash from a number (—184973) but keep 4-1BB / TAK-981 intact.
     t = re.sub(r'(?<![A-Za-z0-9])-(?=\d)', "- ", t)
+    # 1-year / 2-week → 1 year / 2 week, matching CJK-split 1年 / 2周.
+    t = re.sub(r'(?<=\d)-(?=[A-Za-z])', " ", t)
     t = re.sub(r'(?<=[\u4e00-\u9fff])(?=\d)', " ", t)
     t = re.sub(r'(?<=\d)(?=[\u4e00-\u9fff])', " ", t)
     t = re.sub(
@@ -2156,7 +2181,7 @@ def _source_has_once_or_one(num_core: str, context: str, source: str) -> bool:
         return False
     ctx = context.lower()
     src = source.lower()
-    if re.search(r'一次', ctx) and re.search(
+    if re.search(r'一次|1\s*次', ctx) and re.search(
         r'\bonce\b|\bevery\s+\d+|\bone\s+time|\ba\s+time', src
     ):
         return True
@@ -2353,7 +2378,7 @@ EXEMPT_NUMBER_PATTERNS = [
     r'\d\s*次\s*[/／每]\s*(周|天|月|日)',
     r'once\s+a\s+(week|day|month)',
     r'twice\s+(weekly|daily|a\s+week)',
-    r'每\s*(周|天|日|月)\s*[一二三四五六七八九十\d]+\s*次',
+    r'每\s*[两一二三四五六七八九十\d]*\s*(周|天|日|月)\s*[一二三四五六七八九十\d]+\s*次',
     r'每\s*\d+\s*(天|日|周|月)\s*一次',
     r'every\s+\d+\s+(?:days?|weeks?|months?)',
     r'cycle\s*\d+',
@@ -2387,8 +2412,8 @@ def is_exempt_number_context(context: str, number: str) -> bool:
     Returns True if the number is part of standard grading, clinical phases,
     statistical terms, or other terminology that shouldn't be flagged as invented.
     """
-    if _QUALITATIVE_COUNT_RE.search(context or ""):
-        # 「六种」「6类」「six kinds」 are taxonomy labels, not numeric claims.
+    if _QUALITATIVE_COUNT_RE.search(context or "") or _QUALITATIVE_SCALE_RE.search(context or ""):
+        # 「六种」「6类」「six kinds」 / 数以百万计 are not numeric claims.
         return True
     # First, check if the context contains any exempt patterns
     for pattern in EXEMPT_NUMBER_RE:
@@ -2457,6 +2482,7 @@ METRIC_CLASS_KEYWORDS: list[tuple[str, str]] = [
     ("os", "1 year survival"),
     ("os", "一年生存"),
     ("os", "1年生存"),
+    ("os", "个月生存"),
     ("os", "总生存"),
     ("os", "os"),
     ("dor", "duration of response"),
@@ -2684,6 +2710,45 @@ def _source_number_spans(num_core: str, source: str) -> list[re.Match]:
     return spans
 
 
+def _original_meaning_windows(token: str, original: str) -> list[str]:
+    """Local original-text windows for a claimed number.
+
+    Prefer the surface token (一次, 26%, 184,973) so a Chinese numeral is
+    not expanded to every digit 1 in the article. Fall back to a
+    word-bounded core only when the surface form is gone.
+    """
+    if not token or not original:
+        return []
+    core = extract_number_core(chinese_numeral_to_arabic(token))
+    needles = []
+    if token in original:
+        needles.append(token)
+    if core and core != token:
+        needles.append(core)
+    windows: list[str] = []
+    seen: set[tuple[int, int]] = set()
+    for needle in needles:
+        found = False
+        for m in re.finditer(re.escape(needle), original):
+            if needle == core:
+                prev = original[m.start() - 1] if m.start() else ""
+                if prev.isalnum() or prev == ".":
+                    continue
+                nxt = original[m.end():m.end() + 1]
+                nxt2 = original[m.end() + 1:m.end() + 2] if m.end() + 1 < len(original) else ""
+                if nxt.isdigit() or (nxt == "." and nxt2.isdigit()):
+                    continue
+            key = (m.start(), m.end())
+            if key in seen:
+                continue
+            seen.add(key)
+            windows.append(original[max(0, m.start() - 48):m.end() + 48])
+            found = True
+        if found:
+            break
+    return windows
+
+
 def _clause_has_sens_and_spec(text: str, pos: int) -> bool:
     """True when sensitivity and specificity both appear in the same clause."""
     start, end = _clause_around(text, pos)
@@ -2707,48 +2772,53 @@ def number_meaning_matches_source(num_str: str, output_context: str, source_text
         return True, ""
 
     id_spans = identifier_spans(output_context)
-    claimed_match = None
-    for num_match in re.finditer(re.escape(num_core), output_context):
-        if span_covers(num_match.start(), num_match.end(), id_spans):
-            continue
-        claimed_match = num_match
-        break
-    if not claimed_match:
+    claimed_matches = [
+        num_match
+        for num_match in re.finditer(re.escape(num_core), output_context)
+        if not span_covers(num_match.start(), num_match.end(), id_spans)
+    ]
+    if not claimed_matches:
         return True, ""
 
-    out_unit = classify_unit_after(output_context, claimed_match.end())
     source_norm = source_text.lower()
     src_matches = _source_number_spans(num_core, source_norm)
-    if out_unit in (UNIT_COUNT, UNIT_RATE) and src_matches:
-        src_units = [classify_unit_after(source_norm, m.end()) for m in src_matches]
-        src_units = [u for u in src_units if u is not None]
-        if src_units:
-            if out_unit == UNIT_COUNT and UNIT_RATE in src_units and UNIT_COUNT not in src_units:
-                return False, f"数字 '{num_str}' 含义不匹配：单位不匹配，输出为人数（例/名），原文为百分比（%）"
-            if out_unit == UNIT_RATE and UNIT_COUNT in src_units and UNIT_RATE not in src_units:
-                return False, f"数字 '{num_str}' 含义不匹配：单位不匹配，输出为百分比（%），原文为人数（例/名）"
-
-    out_class = closest_metric_class(output_context, claimed_match.start())
-    if out_class and src_matches:
+    src_units = []
+    if src_matches:
+        src_units = [u for u in (
+            classify_unit_after(source_norm, m.end()) for m in src_matches
+        ) if u is not None]
+    src_classes = set()
+    if src_matches:
         src_classes = {
             closest_metric_class(source_norm, m.start())
             for m in src_matches
         }
         src_classes.discard(None)
-        # Complementary sensitivity/specificity in one sentence are not an
-        # exclusive swap unless "respectively" already paired them.
-        if (
-            out_class in {"sensitivity", "specificity"}
-            and src_classes <= {"sensitivity", "specificity"}
-            and any(_clause_has_sens_and_spec(source_norm, m.start()) for m in src_matches)
-            and _clause_has_sens_and_spec(output_context, claimed_match.start())
-        ):
-            return True, ""
-        if src_classes and out_class not in src_classes:
-            return False, (
-                f"数字 '{num_str}' 含义不匹配："
-                f"输出用于{out_class}类指标，原文用于{'/'.join(sorted(src_classes))}类指标"
-            )
+
+    for claimed_match in claimed_matches:
+        out_unit = classify_unit_after(output_context, claimed_match.end())
+        if out_unit in (UNIT_COUNT, UNIT_RATE) and src_units:
+            if out_unit == UNIT_COUNT and UNIT_RATE in src_units and UNIT_COUNT not in src_units:
+                return False, f"数字 '{num_str}' 含义不匹配：单位不匹配，输出为人数（例/名），原文为百分比（%）"
+            if out_unit == UNIT_RATE and UNIT_COUNT in src_units and UNIT_RATE not in src_units:
+                return False, f"数字 '{num_str}' 含义不匹配：单位不匹配，输出为百分比（%），原文为人数（例/名）"
+
+        out_class = closest_metric_class(output_context, claimed_match.start())
+        if out_class and src_classes:
+            # Complementary sensitivity/specificity in one sentence are not an
+            # exclusive swap unless "respectively" already paired them.
+            if (
+                out_class in {"sensitivity", "specificity"}
+                and src_classes <= {"sensitivity", "specificity"}
+                and any(_clause_has_sens_and_spec(source_norm, m.start()) for m in src_matches)
+                and _clause_has_sens_and_spec(output_context, claimed_match.start())
+            ):
+                continue
+            if out_class not in src_classes:
+                return False, (
+                    f"数字 '{num_str}' 含义不匹配："
+                    f"输出用于{out_class}类指标，原文用于{'/'.join(sorted(src_classes))}类指标"
+                )
 
     return True, ""
 
@@ -2833,12 +2903,14 @@ def extract_numbers_with_context(text: str) -> list[tuple[str, str]]:
         if span_covers(match.start(), match.end(), id_spans):
             continue
         after = text[match.end():match.end() + 4]
-        if re.match(r'\s*(?:种|类)', after):
+        if re.match(r'\s*(?:种|类|次)', after):
             continue
         num = match.group(0)
         start = max(0, match.start() - 20)
         end = min(len(text), match.end() + 20)
         context = text[start:end]
+        if is_bibliographic_number(num, context) or _QUALITATIVE_SCALE_RE.search(context):
+            continue
         results.append((num, context))
     
     return results
@@ -2848,21 +2920,31 @@ def extract_chinese_numbers_with_context(text: str) -> list[tuple[str, str]]:
     """Extract Chinese numerals with their surrounding context.
     
     Handles: 一二三四五六七八九十百千万亿两
-    With units: 年|倍|%|％|个月|天|周|小时|例|名|位|人|剂|次|万|亿
+    With units: 年|倍|%|％|个月|天|周|小时|例|名|位|人|剂|万|亿.
+    次 is omitted: 一次/每周一次 are idioms, not numeric claims.
     """
     results = []
     text = normalize_for_match(text or "", convert_english_words=False)
     
     # Chinese numerals with units. 一组/两组 are grouping words, not data.
+    # 次 is a frequency/idiom marker (一次独立实验, 每周一次), not a data unit.
     cn_data_pattern = (
         r'[零一二三四五六七八九十百千万亿两]+(?:多)?'
-        r'(?:年|倍|%|％|个月|天|周|小时|例|名|位|人|剂|次|万|亿)'
+        r'(?:年|倍|%|％|个月|天|周|小时|例|名|位|人|剂|万|亿)'
     )
     for match in re.finditer(cn_data_pattern, text):
         after = text[match.end():match.end() + 2]
         if after[:1] in ("种", "类"):
             continue
+        before = text[max(0, match.start() - 2):match.start()]
         cn_num = match.group(0)
+        if cn_num.endswith(("万", "亿")) and (
+            "数" in before or re.fullmatch(r"[百千]+", cn_num[:-1])
+        ):
+            continue
+        window = text[max(0, match.start() - 20):min(len(text), match.end() + 20)]
+        if _QUALITATIVE_SCALE_RE.search(window) or _QUALITATIVE_COUNT_RE.search(window):
+            continue
         start = max(0, match.start() - 20)
         end = min(len(text), match.end() + 20)
         context = text[start:end]
@@ -3130,14 +3212,21 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
         ):
             problems.append(f"数字 '{num}' 在原始材料中未找到")
         else:
-            # Meaning uses the original draft, not the match-normalized
-            # ±20 window. CJK-splitting turns "1年生存率26%" into
-            # "1 年生存率 26%", which would otherwise inherit DCR.
-            meaning_ok, meaning_reason = number_meaning_matches_source(
-                num, all_text, raw_material
-            )
-            if not meaning_ok:
-                problems.append(meaning_reason)
+            # Meaning reads original local windows. The match-normalized
+            # ±20 context CJK-splits "1年生存率26%" into "1 年生存率 26%",
+            # which would inherit DCR; the whole draft would also turn
+            # 一次 → 1 and collide with 1年生存.
+            meaning_hit = False
+            for window in _original_meaning_windows(num, all_text) or [context]:
+                meaning_ok, meaning_reason = number_meaning_matches_source(
+                    num, window, raw_material
+                )
+                if not meaning_ok:
+                    problems.append(meaning_reason)
+                    meaning_hit = True
+                    break
+            if meaning_hit:
+                continue
     
     # Extract Chinese numerals with context (万/亿 included)
     for cn_num, context in extract_chinese_numbers_with_context(all_text):
@@ -3164,11 +3253,13 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
         ):
             problems.append(f"中文数字 '{cn_num}' ({arabic}) 在原始材料中未找到")
         else:
-            meaning_ok, meaning_reason = number_meaning_matches_source(
-                cn_num, all_text, raw_material
-            )
-            if not meaning_ok:
-                problems.append(meaning_reason)
+            for window in _original_meaning_windows(cn_num, all_text) or [context]:
+                meaning_ok, meaning_reason = number_meaning_matches_source(
+                    cn_num, window, raw_material
+                )
+                if not meaning_ok:
+                    problems.append(meaning_reason)
+                    break
     
     # Limitations count and quality
     min_limits = 3 if tier == "deep" else 1
@@ -3225,7 +3316,12 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
         + extract_chinese_numbers_with_context(results_text)
     )
     found_valid_number = False
+    usable_results = []
     for num, context in results_claims:
+        if _QUALITATIVE_COUNT_RE.search(context or "") or _QUALITATIVE_SCALE_RE.search(context or ""):
+            continue
+        if is_bibliographic_number(num, context):
+            continue
         num_core = extract_number_core(num) or extract_number_core(
             chinese_numeral_to_arabic(num)
         )
@@ -3233,6 +3329,7 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
             continue
         if is_exempt_number_context(context, num_core):
             continue
+        usable_results.append((num, context))
         if number_exists_in_source(
             num, source_norm_units, source_identifiers, context,
             source_raw=source_raw_units,
@@ -3240,24 +3337,11 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
             found_valid_number = True
             break
 
-    def _is_bibliographic_number(num: str, context: str) -> bool:
-        """Dates, years and DOI fragments are not study data."""
-        ctx = (context or "").lower()
-        if re.search(r'doi|published online|volume|pages?|issn|pmcid|pmid|核对记录|pmc\d+', ctx):
-            return True
-        core = extract_number_core(num) or ""
-        if re.fullmatch(r'(?:19|20)\d{2}', core):
-            return True
-        return False
-
-    source_has_standalone = any(
-        not _is_bibliographic_number(num, ctx)
-        for num, ctx in extract_numbers_with_context(raw_material)
-    )
+    source_has_standalone = bool(extract_numbers_with_context(raw_material))
     if source_has_standalone:
-        if results_claims and not found_valid_number:
+        if usable_results and not found_valid_number:
             problems.append("结果字段中的数字无法在原文中核实")
-        elif not results_claims:
+        elif not usable_results:
             problems.append("结果字段应包含至少一个可核实的数字（来自原文）")
 
     problems.extend(check_comparison_direction(all_text, raw_material))

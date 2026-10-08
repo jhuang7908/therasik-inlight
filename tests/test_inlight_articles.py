@@ -2183,6 +2183,100 @@ class TestMatcherToleratesFaithfulDrafts(unittest.TestCase):
         self.assertIsNone(dropped)
         self.assertTrue(any("99" in d.get("reason", "") for d in stats["drops"]))
 
+    def test_sge_once_and_millions_through_production_validate_depth(self):
+        """Real SGE runB drafts: 一次/百万/DOI fragments must not false-drop i8."""
+        import json
+        from pathlib import Path
+        from inlight_articles import (
+            extract_chinese_numbers_with_context,
+            extract_numbers_with_context,
+            validate_depth,
+            _hard_problems,
+        )
+
+        week = json.loads(Path(
+            "tests/acceptance_articles_fixtures/weeks/pr5f.json"
+        ).read_text())
+        item = next(
+            it for it in week["items"]
+            if "s41587-026-03318-7" in it["row"]["url"]
+        )
+        raw = item["nature_abstract"] + "\n" + item["row"]["summary"]
+        runb = json.loads(Path(
+            "tests/acceptance_articles_fixtures/recorded_claude/pr5f_runB.json"
+        ).read_text())
+
+        def _draft(i):
+            for call in runb["calls"]:
+                if call.get("i") == i:
+                    return call["content"][0]["input"]
+            raise AssertionError(i)
+
+        self.assertEqual(extract_chinese_numbers_with_context("相当于一次独立实验"), [])
+        self.assertEqual(extract_chinese_numbers_with_context("筛选了数以百万计的通路组合"), [])
+        self.assertFalse(extract_numbers_with_context(item["row"]["summary"]))
+
+        i8 = _draft(8)
+        i8_probs = validate_depth(i8, raw)
+        self.assertFalse(
+            any("一次" in p or "百万" in p or "结果字段" in p for p in i8_probs),
+            i8_probs,
+        )
+        self.assertFalse(_hard_problems(i8_probs), i8_probs)
+
+        i7 = _draft(7)
+        i7_probs = validate_depth(i7, raw)
+        self.assertTrue(any("必须包含数字" in p for p in i7_probs), i7_probs)
+        self.assertFalse(any("一次" in p or "结果字段" in p for p in i7_probs), i7_probs)
+
+    def test_sge_i8_through_process_single_article_verifier(self):
+        """i8 must publish as deep through _process_single_article (not helpers only)."""
+        import json
+        from pathlib import Path
+        from unittest.mock import patch
+        from inlight_articles import EnrichedItem, _process_single_article
+
+        week = json.loads(Path(
+            "tests/acceptance_articles_fixtures/weeks/pr5f.json"
+        ).read_text())
+        row = next(
+            it for it in week["items"]
+            if "s41587-026-03318-7" in it["row"]["url"]
+        )
+        runb = json.loads(Path(
+            "tests/acceptance_articles_fixtures/recorded_claude/pr5f_runB.json"
+        ).read_text())
+        art = next(
+            c["content"][0]["input"] for c in runb["calls"] if c.get("i") == 8
+        )
+        item = EnrichedItem(
+            url=row["row"]["url"],
+            title=row["row"]["title"],
+            source=row["row"]["source"],
+            date=row["row"]["date"],
+            abstract=row["nature_abstract"],
+            rss_summary=row["row"]["summary"],
+            evidence_level="abstract",
+        )
+
+        def fake_draft(it, tier, config, problems=None):
+            return dict(art)
+
+        with patch("inlight_articles.draft_single_article", side_effect=fake_draft):
+            with patch("inlight_articles.validate_names", return_value=[]):
+                with patch("inlight_articles.verify_article_claims", return_value={
+                    "status": "ok", "problems": [], "calls": 1,
+                    "input_tokens": 1, "output_tokens": 1,
+                }):
+                    out = _process_single_article(
+                        {"url": item.url, "tier": "deep", "field": "c7"},
+                        {item.url: item},
+                        {},
+                    )
+        self.assertIsNotNone(out, "faithful SGE redraft was false-dropped")
+        self.assertEqual(out["tier"], "deep")
+        self.assertIn("散弹枪式", out.get("title", "") + out.get("one_liner", ""))
+
     def test_chinese_numeral_classifier_on_groups(self):
         from inlight_articles import classify_unit_in_context, number_exists_in_source, normalize_source_text
         from inlight_articles import UNIT_COUNT, NOUN_GROUP, classify_noun_after, chinese_numeral_to_arabic
