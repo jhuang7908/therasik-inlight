@@ -2125,8 +2125,29 @@ def _quoted_terms_in(body: str) -> list[str]:
 _COMPANY_SUFFIX_RE = re.compile(
     r'(?:,?\s*)?(?:Inc|Incorporated|Ltd|LLC|L\.L\.C|plc|AG|Corp|Corporation|'
     r'Company|Co|Limited|N\.V|GmbH|SE|L\.P|LP|B\.V|K\.K|S\.A|SA|SAS|'
-    r'Pty|Pte|AB|Oy|NV|BV|KK)\.?\s*$',
+    r'Pty|Pte|AB|Oy|NV|BV|KK|A/S)\.?\s*$',
     re.IGNORECASE,
+)
+_SUFFIX_ONLY_RE = re.compile(
+    r'''^
+    (?:the\s+)?
+    (?:
+        B\.?V\.? | N\.?V\.? | A\.?G\.? | S\.?A\.?S?\.? | plc | Ltd\.? |
+        Inc\.? | Corp\.? | LLC | L\.L\.C\.? | GmbH | SE | A/?S | AB |
+        KK | K\.K\.? | Co\.? | Limited | Company | Corporation |
+        Incorporated | LP | L\.P\.? | Pty | Pte | Oy | NV | BV
+    )
+    (?:
+        \s+(?:
+            B\.?V\.? | N\.?V\.? | A\.?G\.? | S\.?A\.?S?\.? | plc | Ltd\.? |
+            Inc\.? | Corp\.? | LLC | L\.L\.C\.? | GmbH | SE | A/?S | AB |
+            KK | K\.K\.? | Co\.? | Limited | Company | Corporation |
+            Incorporated | LP | L\.P\.? | Pty | Pte | Oy | NV | BV
+        )
+    )*
+    \.?
+    $''',
+    re.IGNORECASE | re.VERBOSE,
 )
 _LEGAL_FORM_TOKENS = frozenset({
     'corporation', 'company', 'limited', 'liability', 'partnership',
@@ -2135,63 +2156,85 @@ _LEGAL_FORM_TOKENS = frozenset({
     'naamloze', 'aktiengesellschaft', 'gesellschaft', 'the', 'of', 'and',
     'a', 'an', 'under', 'law', 'laws', 'state', 'kingdom', 'republic',
     'province', 'met', 'beperkte', 'aansprakelijkheid',
+    'bv', 'nv', 'ag', 'sa', 'plc', 'ltd', 'inc', 'corp', 'llc', 'gmbh',
+    'se', 'ab', 'kk', 'co', 'lp', 'pty', 'pte', 'oy',
 })
 _JURISDICTION_OR_LAW_RE = re.compile(
     r'\blaws?\b|'
     r'\b(?:organized|incorporated|existing|formed|established)\s+under\b|'
-    r'\b(?:state|kingdom|republic|principality|commonwealth)\s+of\b',
+    r'\b(?:state|kingdom|republic|principality|commonwealth|province)\s+of\b',
     re.IGNORECASE,
 )
-# Trailing descriptive clause after the legal name. Do not cap word count:
-# "a private limited liability company organized under the laws of X" is long.
-_DESCRIPTIVE_CLAUSE_RE = re.compile(
-    r""",\s*a(?:n)?\s+
-    (?:
-        .{0,240}?(?:organized|incorporated|existing|formed|established)\s+under\b.{0,80}
-        |
-        (?:indirect\s+)?(?:wholly[-\s]owned\s+)?subsidiary\s+of\b.{0,80}
-        |
-        (?:private|public)\s+limited\b.{0,160}
-        |
-        (?:[\w.\-]+\s+){0,8}
-        (?:corporation|company|partnership|limited(?:\s+liability\s+company)?|
-           societ[eé](?:\s+anonyme)?|aktiengesellschaft|kabushiki\s+kaisha|
-           besloten\s+vennootschap|naamloze\s+vennootschap)
-    )
-    \s*$""",
-    re.IGNORECASE | re.VERBOSE,
+_PLACE_NAME_RE = re.compile(
+    r'\b(?:islands?|territor(?:y|ies)|prefecture)\b|'
+    r'\b(?:republic|state|commonwealth|kingdom|principality|province|duchy)\s+of\b',
+    re.IGNORECASE,
 )
+_NAME_WALK_STOP = frozenset({
+    'with', 'between', 'into', 'from', 'by', 'on', 'or', 'as', 'to',
+    'entered', 'pursuant', 'which', 'that', 'this', 'said', 'called',
+    'agreement', 'plan', 'merger', 'dated', 'under',
+    'organized', 'incorporated', 'existing', 'formed', 'established',
+    'laws', 'law', 'exempted',
+    'is', 'are', 'was', 'were', 'be', 'been', 'being',
+    'has', 'have', 'had', 'will', 'shall',
+    'january', 'february', 'march', 'april', 'may', 'june',
+    'july', 'august', 'september', 'october', 'november', 'december',
+})
+_NAME_VERB_TOKENS = frozenset({
+    'is', 'are', 'was', 'were', 'be', 'been', 'being',
+    'has', 'have', 'had', 'will', 'shall',
+})
 
 
-def _strip_descriptive_clause(before: str) -> str:
-    """Remove entity-type / jurisdiction clauses so the legal name remains."""
-    if not before:
+def _cut_at_descriptive_clause(text: str) -> str:
+    """Keep the legal name: everything before the first descriptive clause.
+
+    '<Name>, a/an <jurisdiction> <entity type> ("Parent")' and
+    '<Name>, organized/incorporated … ("Parent")' resolve from the text
+    before that comma, not from the last capitalized words before '('.
+    """
+    if not text:
         return ''
-    text = before
-    # Parenthesized foreign legal form, e.g. (besloten vennootschap ...)
     text = re.sub(
-        rf'\((?!{ _DEFINED_TERM_QUOTES }|the\s+{ _DEFINED_TERM_QUOTES })[^)]{{0,160}}\)\s*$',
+        rf'\((?!{_DEFINED_TERM_QUOTES}|the\s+{_DEFINED_TERM_QUOTES})[^)]{{0,160}}\)\s*$',
         '', text,
     ).strip()
-    text = _DESCRIPTIVE_CLAUSE_RE.sub('', text).strip()
-    # Also cut 'organized under … Law/laws of <place>' when it is not
-    # introduced by ', a …' (e.g. 'the buyer is organized under Dutch Law').
-    text = re.sub(
-        r'(?:,\s*a(?:n)?\s+.{0,200}?)?'
-        r'(?:organized|incorporated|existing|formed|established)\s+'
-        r'under\b.{0,80}$',
-        '', text, flags=re.IGNORECASE,
-    ).strip()
-    text = re.sub(
-        r'\s+under\s+(?:the\s+)?(?:[\w\-]+\s+){0,6}laws?\s*$',
-        '', text, flags=re.IGNORECASE,
-    ).strip()
+    cut = re.search(
+        r',\s*(?:a(?:n)?\s+|organized\b|incorporated\b|existing\b|formed\b)',
+        text, re.IGNORECASE,
+    )
+    if cut:
+        text = text[:cut.start()]
+    else:
+        cut = re.search(
+            r'\s+(?:organized|incorporated|existing|formed|established)\s+under\b',
+            text, re.IGNORECASE,
+        )
+        if cut:
+            text = text[:cut.start()]
     return text.rstrip(',').strip()
+
+
+def _is_suffix_only_name(name: str) -> bool:
+    """True for BV / B.V. / N.V. / AG / plc / Ltd / Inc. and combinations."""
+    if not name:
+        return True
+    compact = re.sub(r'[,\s]+', ' ', name.strip()).strip().rstrip('.')
+    return bool(_SUFFIX_ONLY_RE.match(compact))
+
+
+def _is_place_name(name: str) -> bool:
+    if not name:
+        return False
+    return bool(_PLACE_NAME_RE.search(name))
 
 
 def _is_jurisdiction_or_legal_form_name(name: str) -> bool:
     """True when a capture is only a place, legal-form word, or 'Law' phrase."""
     if not name:
+        return True
+    if _is_suffix_only_name(name) or _is_place_name(name):
         return True
     low = name.strip().lower()
     if _JURISDICTION_OR_LAW_RE.search(low):
@@ -2203,16 +2246,68 @@ def _is_jurisdiction_or_legal_form_name(name: str) -> bool:
 
 
 def _looks_like_company_name(name: str) -> bool:
-    """True for a legal-style name (suffix or 2+ proper tokens, not a place)."""
+    """True for a legal-style name. Suffix-only and place names are not."""
     if not name or _is_bare_role_word(name) or _is_jurisdiction_or_legal_form_name(name):
         return False
-    if _COMPANY_SUFFIX_RE.search(name.strip()):
+    if _is_suffix_only_name(name):
+        return False
+    if _COMPANY_SUFFIX_RE.search(name.strip()) and not _is_suffix_only_name(name):
+        return True
+    if re.search(r'\band\s+Company\b', name, re.IGNORECASE):
         return True
     parts = [
-        p for p in re.findall(r"[A-Z][A-Za-z0-9&.\'-]*", name)
+        p for p in re.findall(r"[A-Za-z][A-Za-z0-9&.\'-]*", name)
         if p.lower() not in {'law', 'laws', 'the', 'of', 'and'}
     ]
     return len(parts) >= 2
+
+
+def _extract_defined_term_company_name(before: str) -> str | None:
+    """Company name immediately before a defined-term parenthesis.
+
+    Accepts a lowercase first word (brand names). Never returns a bare
+    legal-form suffix. Uses the text before the first descriptive clause.
+    """
+    text = _cut_at_descriptive_clause(before)
+    if not text:
+        return None
+    tokens = re.findall(
+        r'(?:[A-Za-z]\.){1,3}[A-Za-z]\.?|[A-Za-z][A-Za-z0-9&.\'-]*|&',
+        text,
+    )
+    if not tokens:
+        return None
+    collected: list[str] = []
+    for tok in reversed(tokens):
+        low = tok.lower().rstrip('.')
+        if low in _NAME_WALK_STOP:
+            if collected:
+                break
+            continue
+        if collected and _looks_like_company_name(' '.join(reversed(collected))):
+            if low in {'and', 'the', 'of'}:
+                break
+        collected.append(tok)
+        if len(collected) >= 8:
+            break
+    while collected and collected[-1].lower() in {'the', 'a', 'an', 'and', 'of'}:
+        collected.pop()
+    collected.reverse()
+    while collected and collected[0].lower() in {'the', 'a', 'an', 'and', 'of', 'with'}:
+        collected.pop(0)
+    if not collected:
+        return None
+    if any(t.lower().rstrip('.') in _NAME_VERB_TOKENS for t in collected):
+        return None
+    name = ' '.join(collected)
+    name = re.sub(r'\s+', ' ', name).strip().rstrip(',')
+    if (
+        _is_suffix_only_name(name)
+        or _is_jurisdiction_or_legal_form_name(name)
+        or not _looks_like_company_name(name)
+    ):
+        return None
+    return name
 
 
 def _appears_as_party_in_filing(name: str, filing_text: str) -> bool:
@@ -2229,8 +2324,17 @@ def _appears_as_party_in_filing(name: str, filing_text: str) -> bool:
 
 
 def is_plausible_party_name(name: str, filing_text: str = '') -> bool:
-    """A resolved party must look like a company or appear as a party in the filing."""
-    if not name or _is_bare_role_word(name) or _is_jurisdiction_or_legal_form_name(name):
+    """A resolved party must look like a company or appear as a party in the filing.
+
+    Suffix-only strings (BV, N.V., AG, plc, …) and place names never qualify,
+    even if they appear in the filing.
+    """
+    if (
+        not name
+        or _is_bare_role_word(name)
+        or _is_suffix_only_name(name)
+        or _is_jurisdiction_or_legal_form_name(name)
+    ):
         return False
     if _looks_like_company_name(name):
         return True
@@ -2254,7 +2358,11 @@ def parse_defined_terms(text: str) -> dict[str, list[str]]:
         name = re.sub(r',\s*a(?:n)?\s+[\w\s.\-]+$', '', name, flags=re.IGNORECASE).strip()
         if not term or not name:
             return
-        if _is_jurisdiction_or_legal_form_name(name) or _is_bare_role_word(name):
+        if (
+            _is_suffix_only_name(name)
+            or _is_jurisdiction_or_legal_form_name(name)
+            or _is_bare_role_word(name)
+        ):
             return
         if term in _BARE_ROLE_WORDS and not _looks_like_company_name(name):
             return
@@ -2275,20 +2383,11 @@ def parse_defined_terms(text: str) -> dict[str, list[str]]:
                 quoted = [um.group(1)]
         if not quoted:
             continue
-        before = text[max(0, m.start() - 200):m.start()]
-        before = _strip_descriptive_clause(before)
-        nm = re.search(
-            r'([A-Z][A-Za-z0-9&.\'-]*(?:\s+[A-Z&][A-Za-z0-9&.\'-]*){0,6}'
-            r'(?:,?\s*(?:Inc|Incorporated|Ltd|LLC|L\.L\.C|plc|AG|Corp|'
-            r'Corporation|Company|Co|Limited|N\.V|GmbH|SE|L\.P|LP|'
-            r'B\.V|K\.K|S\.A|SA|SAS|Pty|Pte|AB|Oy|NV|BV|KK)\.?)?)'
-            r'\s*$',
-            before,
-        )
-        if not nm:
+        name = _extract_defined_term_company_name(text[max(0, m.start() - 200):m.start()])
+        if not name:
             continue
         for term in quoted:
-            _add(term, nm.group(1))
+            _add(term, name)
     return mapping
 
 

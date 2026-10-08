@@ -2011,6 +2011,138 @@ class TestDefinedTermsDecideParties:
         )
         assert deal is None
 
+    def test_lowercase_brand_plus_suffix_is_full_name(self):
+        cases = [
+            ('acme therapeutics BV ("Parent")', "parent", "acme", "bv"),
+            (
+                "nimbus bioworks N.V., a naamloze vennootschap organized under "
+                "the laws of the Netherlands (\"Purchaser\")",
+                "purchaser",
+                "nimbus",
+                "n.v",
+            ),
+        ]
+        for text, term, brand, suffix in cases:
+            names = sec_deals.parse_defined_terms(text).get(term, [])
+            assert names, text
+            blob = " ".join(names).lower()
+            assert brand in blob and suffix in blob, names
+            assert not any(sec_deals._is_suffix_only_name(n) for n in names)
+
+    def test_suffix_only_party_is_rejected(self):
+        for raw in (
+            "BV", "B.V.", "N.V.", "AG", "S.A.", "SA", "plc", "Ltd", "Ltd.",
+            "Inc.", "Corp.", "LLC", "GmbH", "SE", "A/S", "AB", "KK", "Co.",
+            "Limited", "Company, Inc.",
+        ):
+            assert sec_deals.is_plausible_party_name(raw) is False, raw
+            assert sec_deals.parse_defined_terms(f'{raw} ("Parent")') == {}
+
+    def test_islands_and_place_clauses_are_not_the_party(self):
+        cases = [
+            (
+                "Osprey Pharma Inc., a Cayman Islands exempted company (\"Parent\")",
+                "parent",
+                "osprey",
+            ),
+            (
+                "Harbor Bio Ltd, a British Virgin Islands business company (\"Purchaser\")",
+                "purchaser",
+                "harbor",
+            ),
+            (
+                "Thistle Rx plc, organized under the laws of the Republic of Ireland (\"Parent\")",
+                "parent",
+                "thistle",
+            ),
+            (
+                "Willow Pharma Inc., a company organized under the laws of the "
+                "Commonwealth of Pennsylvania (\"Purchaser\")",
+                "purchaser",
+                "willow",
+            ),
+        ]
+        forbidden = (
+            "island", "cayman", "virgin", "republic", "ireland",
+            "commonwealth", "pennsylvania",
+        )
+        for text, term, must_have in cases:
+            names = sec_deals.parse_defined_terms(text).get(term, [])
+            assert names, text
+            blob = " ".join(names).lower()
+            assert must_have in blob, names
+            for word in forbidden:
+                assert word not in blob, f"{word!r} leaked: {names}"
+
+    def test_and_company_short_name_links_to_legal_name(self):
+        filing = (
+            "Cedar Grove and Company (\"Cedar\") entered into a License Agreement "
+            "with Kestrel Rx, Inc. Cedar granted Kestrel Rx an exclusive license."
+        )
+        names = sec_deals.parse_defined_terms(filing).get("cedar", [])
+        assert any("cedar grove and company" == n.lower() for n in names), names
+        assert sec_deals.verify_defined_term_in_type_quote(
+            "Cedar Grove and Company",
+            "Cedar granted Kestrel Rx an exclusive license",
+            filing,
+        ) is True
+
+    def test_swiss_welsh_french_ontario_delaware_resolve_to_legal_name(self):
+        cases = [
+            ("Lumen Therapeutics AG, a Swiss corporation (\"Parent\")", "parent", "lumen"),
+            (
+                "Kestrel Rx plc, a company incorporated under the laws of "
+                "England and Wales (the \"Company\")",
+                "company",
+                "kestrel",
+            ),
+            (
+                "Willow Pharma S.A., a French société anonyme (\"Purchaser\")",
+                "purchaser",
+                "willow",
+            ),
+            ("Nimbus Labs Inc., an Ontario corporation (\"Parent\")", "parent", "nimbus"),
+            (
+                "Helios BidCo LLC, a Delaware corporation (\"Purchaser\")",
+                "purchaser",
+                "helios",
+            ),
+        ]
+        forbidden = (
+            "swiss", "switzerland", "wales", "england", "french", "france",
+            "ontario", "delaware",
+        )
+        for text, term, must_have in cases:
+            names = sec_deals.parse_defined_terms(text).get(term, [])
+            assert names, text
+            blob = " ".join(names).lower()
+            assert must_have in blob, names
+            for word in forbidden:
+                assert word not in blob, f"{word!r} leaked: {names}"
+
+    def test_process_drops_suffix_only_acquirer(self):
+        filing = (
+            "acme therapeutics BV, a private limited liability company "
+            "organized under Dutch Law (\"Parent\"), agreed that Parent will "
+            "acquire Kestrel Rx, Inc. for $400 million. Kestrel Rx, Inc. is "
+            "the target."
+        )
+        deal = sec_deals.process_sec_deal(
+            filing_text=filing,
+            filer_name="Kestrel Rx, Inc.",
+            filing_url="https://test",
+            filing_date="2026-10-05",
+            event_date="2026-10-01",
+            claude_response={
+                "deal_type": "acquisition",
+                "counterparty_name": "BV",
+                "type_quote": "Parent will acquire Kestrel Rx, Inc. for $400 million",
+                "counterparty_quote": "acme therapeutics BV, a private limited liability company",
+                "amounts": [{"kind": "purchase_price", "quote": "for $400 million"}],
+            },
+        )
+        assert deal is None
+
 
 class TestEquityNeverADealPayment:
     def test_private_placement_not_upfront(self):
