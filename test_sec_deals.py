@@ -18,6 +18,10 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 import sec_deals
 
+# Production default is fail-closed. Unit tests call process_sec_deal
+# without a live client; skip the gate only here.
+sec_deals.LLM_DENY_GATE_REQUIRED = False
+
 logging.basicConfig(level=logging.INFO)
 
 FIXTURES_DIR = Path(__file__).parent / "test_fixtures"
@@ -2812,7 +2816,7 @@ class TestInstrumentHistoryAndPartyHygiene:
     def test_recent_dated_as_of_short_name_is_still_current(self):
         filing = (
             "Lumen Therapeutics, Inc. (the \"Company\") entered into an Exclusive "
-            "License Agreement, dated as of October 2, 2026 "
+            "Research and License Agreement, dated as of October 2, 2026 "
             "(the \"Research Pact\"). Pursuant to the Research Pact, the Company "
             "granted Quill Bio Ltd an exclusive licence. Quill will pay a $9 "
             "million upfront payment."
@@ -3682,6 +3686,14 @@ class TestReview3832546:
             "counterparty": "Willow North GmbH",
             "counterparty_quote": "entered into a License Agreement with Willow North GmbH",
         }
+        prev = sec_deals.LLM_DENY_GATE_REQUIRED
+        try:
+            sec_deals.LLM_DENY_GATE_REQUIRED = True
+            assert sec_deals.confirm_brand_new_agreement(
+                body, "2026-10-01", "Willow North GmbH", filing, None,
+            ) is False
+        finally:
+            sec_deals.LLM_DENY_GATE_REQUIRED = prev
         client.messages.create.return_value = _msg(yes_payload)
         assert sec_deals.confirm_brand_new_agreement(
             body, "2026-10-01", "Willow North GmbH", filing, client,

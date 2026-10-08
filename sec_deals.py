@@ -18,6 +18,8 @@ import json
 import logging
 import os
 import re
+from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import TimeoutError as FuturesTimeout
 from dataclasses import dataclass, field
 from datetime import date, timedelta
 from enum import Enum
@@ -145,6 +147,10 @@ For each amount, provide a quote containing BOTH the dollar amount AND a role ke
 
 # Module-level flag for disabling verifier in tests
 VERIFIER_ENABLED = True
+# Production default: no live client → drop. Tests set this False via conftest.
+LLM_DENY_GATE_REQUIRED = True
+LLM_DENY_GATE_TIMEOUT_SECONDS = 60
+LLM_DENY_GATE_RETRIES = 1
 
 DEAL_VERIFICATION_SCHEMA = {
     "name": "verify_deal",
@@ -418,6 +424,21 @@ def _is_live_anthropic_client(client: Any) -> bool:
     return mod.startswith("anthropic")
 
 
+def _gate_names_equivalent(left: str, right: str) -> bool:
+    """Case, punctuation, and Inc./Ltd suffix-insensitive name match."""
+    if not left or not right:
+        return False
+    a = re.sub(r'[^a-z0-9]+', '', normalize_company_name(left).lower())
+    b = re.sub(r'[^a-z0-9]+', '', normalize_company_name(right).lower())
+    return bool(a) and a == b
+
+
+_GATE_NONBINDING_RE = re.compile(
+    r'(?i)\b(?:non-binding|letter\s+of\s+intent|term\s+sheets?|'
+    r'memorandum\s+of\s+understanding)\b'
+)
+
+
 def confirm_brand_new_agreement(
     item_text: str,
     dated: str,
@@ -425,70 +446,98 @@ def confirm_brand_new_agreement(
     filing_text: str,
     claude_client: Any = None,
 ) -> bool:
-    """Fail-closed LLM deny-gate. Tests without a live Anthropic client skip.
+    """Fail-closed LLM deny-gate.
 
-    Publish only on YES plus verbatim quotes and an exact counterparty match.
-    No key, API error, NO, doubt, missing quote, or mismatch → drop.
+    No live client: drop unless LLM_DENY_GATE_REQUIRED is False (tests only).
+    Timeout, API error, NO, doubt, missing/non-verbatim quote, name mismatch,
+    name missing from its quote, or a non-binding LOI/term sheet → drop.
     """
     if not _is_live_anthropic_client(claude_client):
-        logging.info("llm_deny_gate: skip (no live client)")
+        if LLM_DENY_GATE_REQUIRED:
+            logging.info("llm_deny_gate: drop reason=no_live_client")
+            return False
+        logging.info("llm_deny_gate: skip (test-only flag)")
         return True
     body = (item_text or filing_text or "").strip()
     if not body or not counterparty:
         logging.info("llm_deny_gate: drop reason=missing_text_or_counterparty")
         return False
     prompt = (
-        f"Is this a brand-new agreement first entered into on {dated or 'the stated date'}, "
-        "and NOT an amendment, restatement, renewal, extension, replacement, "
-        "reinstatement, expansion or continuation of any earlier agreement "
-        "between these parties? Who is the counterparty legal entity? "
+        f"Is this a brand-new binding definitive agreement first entered into "
+        f"on {dated or 'the stated date'}, and NOT an amendment, restatement, "
+        "renewal, extension, replacement, reinstatement, expansion or "
+        "continuation of any earlier agreement between these parties? "
+        "A non-binding letter of intent, term sheet, or memorandum of "
+        "understanding must be answered NO. "
+        "Who is the counterparty legal entity? "
         "Quote the sentence proving each answer.\n\n"
         f"ITEM TEXT:\n{body[:24000]}"
     )
-    try:
-        model = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5-5")
-        message = claude_client.messages.create(
-            model=model,
-            max_tokens=1200,
-            tools=[CONFIRM_BRAND_NEW_SCHEMA],
-            tool_choice={"type": "auto"},
-            messages=[{"role": "user", "content": prompt}],
-        )
-        if getattr(message, "stop_reason", None) != "tool_use":
-            logging.info("llm_deny_gate: drop reason=stop_reason=%s", getattr(message, "stop_reason", None))
-            return False
-        payload = None
-        for block in message.content:
-            if getattr(block, "type", None) == "tool_use" and getattr(block, "name", None) == "confirm_brand_new":
-                payload = block.input
-                break
-        if not isinstance(payload, dict):
-            logging.info("llm_deny_gate: drop reason=no_tool")
-            return False
-        verdict = (payload.get("is_brand_new") or "").strip().upper()
-        nq = (payload.get("newness_quote") or "").strip()
-        gate_cp = (payload.get("counterparty") or "").strip()
-        cq = (payload.get("counterparty_quote") or "").strip()
-        if verdict != "YES":
-            logging.info("llm_deny_gate: drop reason=verdict=%s", verdict or "missing")
-            return False
-        if not nq or not verify_quote_in_filing(nq, filing_text or body):
-            logging.info("llm_deny_gate: drop reason=newness_quote_not_verbatim")
-            return False
-        if not cq or not verify_quote_in_filing(cq, filing_text or body):
-            logging.info("llm_deny_gate: drop reason=counterparty_quote_not_verbatim")
-            return False
-        if gate_cp.lower() != counterparty.lower():
-            logging.info(
-                "llm_deny_gate: drop reason=counterparty_mismatch extracted=%s gate=%s",
-                counterparty, gate_cp,
-            )
-            return False
-        logging.info("llm_deny_gate: YES cp=%s quote=%s", gate_cp, nq[:80])
-        return True
-    except Exception as e:
-        logging.info("llm_deny_gate: drop reason=api_error %s: %s", type(e).__name__, e)
-        return False
+    kwargs = {
+        "model": os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5-5"),
+        "max_tokens": 1200,
+        "tools": [CONFIRM_BRAND_NEW_SCHEMA],
+        "tool_choice": {"type": "auto"},
+        "messages": [{"role": "user", "content": prompt}],
+    }
+    last_err = "timeout"
+    attempts = 1 + max(0, int(LLM_DENY_GATE_RETRIES))
+    for attempt in range(attempts):
+        try:
+            with ThreadPoolExecutor(max_workers=1) as pool:
+                fut = pool.submit(claude_client.messages.create, **kwargs)
+                message = fut.result(timeout=LLM_DENY_GATE_TIMEOUT_SECONDS)
+            if getattr(message, "stop_reason", None) != "tool_use":
+                logging.info("llm_deny_gate: drop reason=stop_reason=%s", getattr(message, "stop_reason", None))
+                return False
+            payload = None
+            for block in message.content:
+                if getattr(block, "type", None) == "tool_use" and getattr(block, "name", None) == "confirm_brand_new":
+                    payload = block.input
+                    break
+            if not isinstance(payload, dict):
+                logging.info("llm_deny_gate: drop reason=no_tool")
+                return False
+            verdict = (payload.get("is_brand_new") or "").strip().upper()
+            nq = (payload.get("newness_quote") or "").strip()
+            gate_cp = (payload.get("counterparty") or "").strip()
+            cq = (payload.get("counterparty_quote") or "").strip()
+            if verdict != "YES":
+                logging.info("llm_deny_gate: drop reason=verdict=%s", verdict or "missing")
+                return False
+            if _GATE_NONBINDING_RE.search(f"{nq} {cq} {body[:800]}"):
+                logging.info("llm_deny_gate: drop reason=non_binding")
+                return False
+            if not nq or not verify_quote_in_filing(nq, filing_text or body):
+                logging.info("llm_deny_gate: drop reason=newness_quote_not_verbatim")
+                return False
+            if not cq or not verify_quote_in_filing(cq, filing_text or body):
+                logging.info("llm_deny_gate: drop reason=counterparty_quote_not_verbatim")
+                return False
+            if not (
+                match_company_whole_word(gate_cp, cq)
+                or match_company_whole_word(counterparty, cq)
+            ):
+                logging.info("llm_deny_gate: drop reason=name_not_in_quote")
+                return False
+            if not _gate_names_equivalent(gate_cp, counterparty):
+                logging.info(
+                    "llm_deny_gate: drop reason=counterparty_mismatch extracted=%s gate=%s",
+                    counterparty, gate_cp,
+                )
+                return False
+            logging.info("llm_deny_gate: YES cp=%s quote=%s", gate_cp, nq[:80])
+            return True
+        except FuturesTimeout:
+            last_err = "timeout"
+            logging.info("llm_deny_gate: timeout attempt=%s", attempt + 1)
+        except Exception as e:
+            last_err = f"api_error {type(e).__name__}: {e}"
+            logging.info("llm_deny_gate: drop reason=%s attempt=%s", last_err, attempt + 1)
+            if attempt + 1 >= attempts:
+                return False
+    logging.info("llm_deny_gate: drop reason=%s", last_err)
+    return False
 
 
 # =============================================================================
@@ -2989,6 +3038,10 @@ _NOT_PARENT_ROLES = frozenset({
     'stockholder', 'stockholders', 'holder', 'holders',
     'representative', 'stockholder representative',
     'holder representative', 'guarantor', 'guarantors',
+    'shareholder', 'shareholders', 'securityholder', 'securityholders',
+    'securityholders representative', 'securityholder representative',
+    'shareholders representative', 'shareholder representative',
+    'holders representative', 'holders\' representative',
 })
 _ROLE_GROUP = {
     'parent': 'buyer_parent',
@@ -3474,8 +3527,9 @@ _CAPACITY_OR_DESIGNEE_INTRO_RE = re.compile(
     r'as\s+(?:designee|nominee|agent|representative|trustee)\b)'
 )
 _HOLDERS_REP_RE = re.compile(
-    r"(?i)\b(?:holders?'|stockholders?'|shareholders?')\s+representative\b"
-    r"|\bholder(?:s)?\s+representative\b"
+    r"(?i)\b(?:holders?'|stockholders?'|shareholders?'|securityholders?'|"
+    r"security\s+holders?')\s+representative\b"
+    r"|\b(?:holder|stockholder|shareholder|securityholder)s?\s+representative\b"
 )
 
 
@@ -4014,18 +4068,27 @@ def is_merger_or_tender_vehicle(
     return False
 
 
+def _acceptable_merger_parent(name: str, filing_text: str = '') -> bool:
+    """Parent must be a legal entity, never a holders' rep or earlier role."""
+    if not name:
+        return False
+    if _is_bare_role_word(name) or _is_capacity_role_term(name):
+        return False
+    if _is_holders_representative_name(name, filing_text):
+        return False
+    return True
+
+
 def resolve_merger_vehicle(
     name: str,
     filing_text: str,
     type_quote: str = "",
     deal_type: DealType | None = None,
 ) -> str | None:
-    """Replace a merger/tender vehicle with the named parent, or None to drop.
+    """Replace a merger/tender vehicle with the entity defined as Parent.
 
-    Vehicles are identified by role as well as name: a party defined as
-    Purchaser / Merger Sub / Acquisition Sub / Offeror, or described as a
-    wholly owned subsidiary of Parent, whatever its legal name.
-    Non-vehicles are returned unchanged. If no parent is named, return None.
+    Never a holders'/securityholders' representative or a role noun. Nearby
+    'wholly owned subsidiary of X' is used only when no Parent is defined.
     """
     if not name:
         return None
@@ -4034,7 +4097,10 @@ def resolve_merger_vehicle(
         name.strip(), re.IGNORECASE,
     )
     if generic_sub:
-        return _clean_parent_name(generic_sub.group(1), parse_defined_terms(filing_text or ''))
+        cleaned = _clean_parent_name(generic_sub.group(1), parse_defined_terms(filing_text or ''))
+        if cleaned and _acceptable_merger_parent(cleaned, filing_text or ''):
+            return cleaned
+        return None
 
     blob = f"{type_quote}\n{filing_text or ''}"
     term_map = parse_defined_terms(blob)
@@ -4042,29 +4108,31 @@ def resolve_merger_vehicle(
     if not is_vehicle:
         return name
 
-    parent = _extract_parent_near_name(name, blob, term_map)
-    if parent:
-        return None if _is_bare_role_word(parent) else parent
-    # Name is a role noun ("Purchaser") — resolve the company defined as that role,
-    # then that company's parent.
+    defined_parent = _parent_from_defined_terms(term_map)
+    if (
+        defined_parent
+        and _acceptable_merger_parent(defined_parent, blob)
+        and not (
+            match_company_whole_word(defined_parent, name)
+            or match_company_whole_word(name, defined_parent)
+        )
+    ):
+        return defined_parent
+
+    nearby = _extract_parent_near_name(name, blob, term_map)
+    if nearby and _acceptable_merger_parent(nearby, blob):
+        return nearby
+
     role_key = normalize_company_name(name).lower()
     for defined_name in term_map.get(role_key, []):
         if is_merger_vehicle_name(defined_name) or defined_name.lower() == name.lower():
             continue
         nested = _extract_parent_near_name(defined_name, blob, term_map)
-        if nested:
+        if nested and _acceptable_merger_parent(nested, blob):
             return nested
-        # The defined name might itself be the parent if it isn't a vehicle —
-        # but a company defined as Purchaser is the vehicle, not the parent.
-    parent = _parent_from_defined_terms(term_map)
-    if parent and not (
-        match_company_whole_word(parent, name) or match_company_whole_word(name, parent)
-    ):
-        # Only use the defined Parent when this name is tied to it.
-        if _described_as_wholly_owned_sub(name, blob) or is_merger_vehicle_name(name):
-            if _is_bare_role_word(parent):
-                return None
-            return parent
+
+    if defined_parent and _acceptable_merger_parent(defined_parent, blob):
+        return defined_parent
     return None
 
 
@@ -4104,6 +4172,8 @@ _ALLOWED_NEW_TITLES = frozenset({
     "co-commercialisation agreement",
     "co-development and co-commercialization agreement",
     "co-development and co-commercialisation agreement",
+    "exclusive research and license agreement",
+    "exclusive research and licence agreement",
 })
 _LICENSE_COLLAB_TITLES = frozenset(
     t for t in _ALLOWED_NEW_TITLES
@@ -4242,8 +4312,44 @@ def _normalize_instrument_title(title: str) -> str:
     return t.lower()
 
 
+# Harmless adjectives only. option / collaboration / co-development stay
+# structural allow-list words (stripping them would turn those titles into
+# bare "agreement"). Change words still deny.
+_HARMLESS_TITLE_ADJ = frozenset({
+    "exclusive", "patent", "research", "strategic",
+})
+_TITLE_CHANGE_RE = re.compile(
+    r'(?i)\b(?:'
+    r'amend|restat|replac|supersed|renew|extend|revis|updat|'
+    r'reinstat|rollover|modif|supplement|expand|prolong|convert|'
+    r'consolidat|renegotiat|refresh|enlarg|second|phase'
+    r')\w*'
+)
+
+
+def _folded_instrument_title(title: str) -> str:
+    """Strip harmless adjectives, then match the allow-list core."""
+    words = _normalize_instrument_title(title).split()
+    kept = [w for w in words if w not in _HARMLESS_TITLE_ADJ]
+    cleaned: list[str] = []
+    for w in kept:
+        if w == 'and' and (not cleaned or cleaned[-1] == 'and'):
+            continue
+        cleaned.append(w)
+    if cleaned and cleaned[0] == 'and':
+        cleaned = cleaned[1:]
+    if cleaned and cleaned[-1] == 'and':
+        cleaned = cleaned[:-1]
+    return ' '.join(cleaned)
+
+
 def _title_is_allowed_new(title: str) -> bool:
-    """True only for a plain allow-list title with no extra modifier word."""
+    """True for an allow-list title, including harmless adjectives."""
+    if not title or _TITLE_CHANGE_RE.search(title):
+        return False
+    folded = _folded_instrument_title(title)
+    if folded in _ALLOWED_NEW_TITLES:
+        return True
     return _normalize_instrument_title(title) in _ALLOWED_NEW_TITLES
 
 
@@ -4263,19 +4369,22 @@ def _title_is_tainted(title: str) -> bool:
 def _title_is_new_license_or_collab(title: str) -> bool:
     if _title_is_tainted(title):
         return False
-    return _normalize_instrument_title(title) in _LICENSE_COLLAB_TITLES
+    folded = _folded_instrument_title(title)
+    return folded in _LICENSE_COLLAB_TITLES or _normalize_instrument_title(title) in _LICENSE_COLLAB_TITLES
 
 
 def _title_is_merger_instrument(title: str) -> bool:
     if _title_is_tainted(title):
         return False
-    return _normalize_instrument_title(title) in _MERGER_TITLES
+    folded = _folded_instrument_title(title)
+    return folded in _MERGER_TITLES or _normalize_instrument_title(title) in _MERGER_TITLES
 
 
 def _title_is_acquisition_instrument(title: str) -> bool:
     if _title_is_tainted(title):
         return False
-    return _normalize_instrument_title(title) in _ACQUISITION_TITLES
+    folded = _folded_instrument_title(title)
+    return folded in _ACQUISITION_TITLES or _normalize_instrument_title(title) in _ACQUISITION_TITLES
 
 
 def _date_in_or_near_period(dated: date | None, reference_date: str | None) -> bool:
@@ -4362,7 +4471,7 @@ def _window_floor(reference_date: str | None) -> date:
 
 _YEAR_NOT_AGREEMENT_RE = re.compile(
     r'(?i)(?:'
-    r'securities\s+(?:exchange\s+)?act\s+of\s+(?:19|20)\d{2}'
+    r'(?:[A-Za-z]+\s+){0,8}act\s+of\s+(?:19|20)\d{2}(?:,?\s+as\s+amended)?'
     r'|patents?\s+(?:filed|issued|granted|specific|owned)?'
     r'|(?:founded|incorporated|organized)\s+(?:in\s+)?(?:19|20)\d{2}'
     r'|prior\s+written\s+notice'
@@ -4374,10 +4483,33 @@ _EARLIER_RELATION_RE = re.compile(
     r'\b(?:earlier|existing|already|previous|prior|original|first)\s+'
     r'(?:version\s+of\s+(?:the\s+)?)?'
     r'(?:agreement|licen[sc]e|collaboration|relationship|pact)\b'
+    r'|\b(?:already|currently|presently)\s+(?:holds?|held|holding)\b'
+    r'|\b(?:rights?|grants?)\s+(?:that\s+)?'
+    r'(?:the\s+)?(?:counterparty|licensee|party)\s+already\s+(?:holds?|held|has)\b'
+    r'|\b(?:current|earlier|existing|prior|previous|original)\s+'
+    r'(?:rights?|grants?)\b'
+    r'|\b(?:convert(?:s|ed|ing)?|consolidat\w*|renegotiat\w*|'
+    r'refresh(?:ed|es|ing)?|enlarg\w*|expand\w*|prolong\w*|extend\w*)\s+'
+    r'(?:(?:the|this|that|an?)\s+)*'
+    r'(?:existing|prior|previous|earlier|original|current)\s+'
+    r'(?:agreement|licen[sc]e|collaboration|relationship|pact|deal)\b'
+    r'|\bkeeps?\s+(?:the\s+)?(?:earlier|existing|prior|previous|original)\s+'
+    r'grants?\s+in\s+(?:force|effect)\b'
+    r'|\b(?:earlier|existing|prior|previous|original)\s+grants?\s+'
+    r'(?:remain|stay|are\s+kept)\s+in\s+(?:force|effect)\b'
     r'|\bremains\s+in\s+effect\b'
     r'|\bin\s+place\s+of\b'
     r'|\bfirst\s+agreement\b'
     r')'
+)
+_DEFINED_TERM_CHANGE_RE = re.compile(
+    r'(?i)["\u201c\u201d\u2018\u2019]'
+    r'[^"\u201c\u201d\u2018\u2019]{0,100}?'
+    r'\b(?:amend|restat|replac|supersed|renew|extend|revis|updat|'
+    r'reinstat|expand|prolong|convert|consolidat|renegotiat|refresh|'
+    r'enlarg|modif)\w*'
+    r'[^"\u201c\u201d\u2018\u2019]{0,100}?'
+    r'["\u201c\u201d\u2018\u2019]'
 )
 _OTHER_PARTY_IN_CLAUSE_RE = re.compile(
     r'\b(?:with|between|among)\s+'
@@ -4460,6 +4592,11 @@ def _description_has_earlier_relationship(
         if _clause_names_other_party(sent, current_cp):
             continue
         return True
+    chg = _DEFINED_TERM_CHANGE_RE.search(masked)
+    if chg:
+        sent = _sentence_at(masked, chg.start())
+        if not _clause_names_other_party(sent, current_cp):
+            return True
     keep_years = {d.year for d in (keep_dates or []) if d}
     floor = _window_floor(reference_date)
     for m in _YEAR_OR_FY_RE.finditer(masked):
@@ -4640,10 +4777,12 @@ class _NewAgreement:
 def _collect_item101_new_agreements(
     body: str,
     reference_date: str,
+    filing_text: str = '',
 ) -> list[_NewAgreement]:
     found: list[_NewAgreement] = []
     if not body:
         return found
+    form = _cover_form(filing_text or body)
     for m in _ENTERED_VERB_RE.finditer(body):
         sentence = _sentence_at(body, m.start())
         after_verb = body[m.end(): m.end() + 280]
@@ -4668,6 +4807,8 @@ def _collect_item101_new_agreements(
         cp = _entered_sentence_counterparty(sentence)
         if _description_has_earlier_relationship(desc, cp, reference_date, [dated]):
             continue
+        if form == '6-K' and _AMEND_EXTEND_ON_RE.search(_mask_non_agreement_years(desc)):
+            continue
         found.append(_NewAgreement(
             title=title,
             short=_short_name_in_sentence(sentence),
@@ -4675,6 +4816,25 @@ def _collect_item101_new_agreements(
             sentence=sentence,
         ))
     return found
+
+
+def _agreement_date_for_gate(
+    filing_text: str,
+    type_quote: str,
+    event_date: str | None,
+    filing_date: str | None,
+) -> str:
+    """Instrument MDY for the gate; fall back to the 8-K event date."""
+    ref = event_date or filing_date or ''
+    body = _structural_item101(filing_text, type_quote) or filing_text or ''
+    for agmt in _collect_item101_new_agreements(body, ref, filing_text):
+        if (not type_quote) or _quote_tied_to_agreement(type_quote, body, agmt):
+            return agmt.dated.isoformat()
+    passage = _containing_passage(type_quote, body) or type_quote or ''
+    own = _instrument_own_mdy(passage)
+    if own:
+        return own.isoformat()
+    return ref
 
 
 def _quote_tied_to_agreement(
@@ -4825,7 +4985,7 @@ def has_affirmative_new_agreement(
         return False
 
     tied = False
-    for agmt in _collect_item101_new_agreements(body, reference_date):
+    for agmt in _collect_item101_new_agreements(body, reference_date, filing_text):
         quote_tied = (not type_quote) or _quote_tied_to_agreement(type_quote, body, agmt)
         if not quote_tied and deal_type in (DealType.MERGER, DealType.ACQUISITION):
             passage = _containing_passage(type_quote, body) or type_quote
@@ -4914,7 +5074,7 @@ def out_of_scope_deal_reason(
 
     if _COMPLETION_RE.search(type_quote) or _COMPLETION_RE.search(passage):
         return 'completion/closing'
-    agreements = _collect_item101_new_agreements(body, reference_date)
+    agreements = _collect_item101_new_agreements(body, reference_date, filing_text)
     tied = any(_quote_tied_to_agreement(type_quote, body, ag) for ag in agreements)
     if not tied:
         if is_amendment_language(type_quote) or is_amendment_language(passage):
@@ -5578,8 +5738,14 @@ def process_sec_deal(
     if still_vehicle and is_merger_or_tender_vehicle(
         counterparty, filing_text, type_quote, deal_type
     ):
-        logging.info("Deal dropped: merger vehicle '%s' has no named parent", counterparty)
-        return None
+        parent = _parent_from_defined_terms(term_map)
+        if parent and _acceptable_merger_parent(parent, filing_text):
+            logging.info("Resolved merger vehicle '%s' to Parent '%s'", counterparty, parent)
+            resolved_cp = parent
+            still_vehicle = False
+        else:
+            logging.info("Deal dropped: merger vehicle '%s' has no named parent", counterparty)
+            return None
     if resolved_cp is None:
         logging.info("Deal dropped: merger vehicle '%s' has no named parent", counterparty)
         return None
@@ -5894,7 +6060,7 @@ def process_sec_deal(
     item_body = _structural_item101(filing_text, type_quote) or filing_text
     if not confirm_brand_new_agreement(
         item_text=item_body,
-        dated=event_date or filing_date or '',
+        dated=_agreement_date_for_gate(filing_text, type_quote, event_date, filing_date),
         counterparty=counterparty,
         filing_text=filing_text,
         claude_client=claude_client,
