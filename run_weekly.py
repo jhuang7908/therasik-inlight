@@ -103,6 +103,38 @@ DEAL_TYPES_ALLOWED = {
 
 
 # =============================================================================
+# EDGAR COMPANY NAME NORMALIZATION
+# =============================================================================
+
+def normalize_edgar_company_name(display_name: str) -> str:
+    """Normalize EDGAR display name by stripping ticker and CIK.
+    
+    EDGAR display names look like:
+    - 'Alector, Inc.  (ALEC)  (CIK 0001653087)'
+    - 'ROCKET PHARMACEUTICALS, INC.  (RCKT)  (CIK 0001281895)'
+    
+    Returns the clean company name without ticker/CIK parentheticals.
+    """
+    if not display_name:
+        return display_name
+    
+    # Strip ticker and CIK parentheticals at the end
+    # Pattern: name (TICKER) (CIK XXXXXX) or variations
+    result = display_name.strip()
+    
+    # Remove (CIK XXXXXXXXX) or (CIK 0001234567) patterns
+    result = re.sub(r'\s*\(CIK\s*\d+\)\s*$', '', result, flags=re.IGNORECASE)
+    
+    # Remove ticker symbol in parentheses (2-5 uppercase letters)
+    result = re.sub(r'\s*\([A-Z]{2,5}\)\s*$', '', result)
+    
+    # Clean up any double spaces and trailing whitespace
+    result = re.sub(r'\s+', ' ', result).strip()
+    
+    return result
+
+
+# =============================================================================
 # EVIDENCE-QUOTE SYSTEM (Round-6 redesign)
 # =============================================================================
 
@@ -861,104 +893,6 @@ def _test_real_sec_filings():
     
     print(f"_test_real_sec_filings: {passed}/{len(tests)} tests passed")
     return passed == len(tests)
-
-
-def _test_adversarial_deals():
-    """Test adversarial cases: Merck/Verona/Pfizer swap, Alpha/Beta mixed deal."""
-    
-    # Adversarial case 1: Merck/Verona/Pfizer swap
-    # The filing says Merck acquires Verona, but model might claim Pfizer
-    merck_filing = """
-    On October 3, 2026, Merck & Co., Inc. ("Merck") announced that it has entered 
-    into a definitive agreement to acquire Verona Pharma plc ("Verona") for 
-    approximately $600 million in cash. Verona's lead product is a treatment for 
-    chronic obstructive pulmonary disease. The acquisition is expected to close 
-    in Q1 2027.
-    """
-    
-    # Adversarial model response claiming Pfizer
-    fake_deal = {
-        'url': 'https://sec.gov/fake',
-        'party1_name': 'Pfizer',
-        'party1_quote': 'Pfizer acquires Verona Pharma',  # NOT in filing
-        'party2_name': 'Verona',
-        'party2_quote': 'acquire Verona Pharma plc',
-        'deal_type_quote': 'agreement to acquire',
-        'amount_quotes': {'total': '$600 million in cash'},
-    }
-    
-    # Should be rejected - party1_quote not in filing
-    result1 = process_deal_with_quotes(fake_deal, merck_filing, 'Merck & Co., Inc.')
-    test1_pass = result1 is None
-    
-    # Adversarial case 2: Alpha/Beta mixed deal - amounts from different sections
-    mixed_filing = """
-    SECTION 1 - PARTNERSHIP:
-    Alpha Corp announced a collaboration with Beta Inc for an upfront payment 
-    of $500 million. This partnership focuses on oncology research.
-    
-    """ + "x" * 2000 + """
-    
-    SECTION 2 - UNRELATED ACQUISITION:
-    In separate news, Gamma Ltd completed its acquisition of Delta Corp for 
-    $200 million in an all-cash transaction. This deal was funded by Gamma's 
-    existing credit facility.
-    """
-    
-    # Model tries to mix amounts from different deals
-    mixed_deal = {
-        'url': 'https://sec.gov/mixed',
-        'party1_name': 'Alpha Corp',
-        'party1_quote': 'Alpha Corp announced a collaboration with Beta Inc',
-        'party2_name': 'Beta Inc',
-        'party2_quote': 'collaboration with Beta Inc',
-        'deal_type_quote': 'announced a collaboration',
-        'amount_quotes': {
-            'upfront': '$500 million',  # Correct
-            'total': '$200 million',  # WRONG - from different section
-        },
-    }
-    
-    result2 = process_deal_with_quotes(mixed_deal, mixed_filing, 'Alpha Corp')
-    
-    # The $200 million quote should be rejected (not in same passage)
-    # But the deal might still go through with just the $500 million
-    if result2:
-        # Check that the wrong amount was NOT included
-        test2_pass = 'total' not in result2.get('verified_quotes', {}).get('amounts', {})
-        if not test2_pass:
-            # Or check the amount doesn't have $200M
-            test2_pass = '200' not in result2.get('money', '')
-    else:
-        test2_pass = True  # Deal rejected entirely is also acceptable
-    
-    # Adversarial case 3: Filer not a party
-    wrong_filer_deal = {
-        'url': 'https://sec.gov/wrong_filer',
-        'party1_name': 'CompanyA',
-        'party1_quote': 'CompanyA entered into agreement',
-        'party2_name': 'CompanyB',
-        'party2_quote': 'agreement with CompanyB',
-        'deal_type_quote': 'license agreement',
-        'amount_quotes': {},
-    }
-    
-    # Filer is CompanyC (not in the deal)
-    result3 = process_deal_with_quotes(wrong_filer_deal, 'CompanyA and CompanyB license agreement', 'CompanyC, Inc.')
-    test3_pass = result3 is None  # Should be rejected
-    
-    passed = sum([test1_pass, test2_pass, test3_pass])
-    total = 3
-    
-    if not test1_pass:
-        print("FAIL: Merck/Verona/Pfizer swap was not rejected")
-    if not test2_pass:
-        print("FAIL: Alpha/Beta mixed deal amounts not properly filtered")
-    if not test3_pass:
-        print("FAIL: Wrong filer deal was not rejected")
-    
-    print(f"_test_adversarial_deals: {passed}/{total} tests passed")
-    return passed == total
 
 
 def _test_integration_deal_pipeline():
@@ -1754,14 +1688,39 @@ CNINFO_DEAL_KEYWORDS = [
 ]
 
 
-def _strip_html(html: str) -> str:
-    """Strip HTML tags and decode entities, return plain text."""
+def _strip_html(html: str, preserve_paragraphs: bool = True) -> str:
+    """Strip HTML tags and decode entities, return plain text.
+    
+    Args:
+        html: Raw HTML content
+        preserve_paragraphs: If True, convert block elements (p, div, tr, br, li, table)
+            to double newlines so paragraph structure is preserved for same-paragraph
+            checks. If False, collapse all whitespace.
+    """
     import html as html_module
     text = re.sub(r'<script[^>]*>.*?</script>', ' ', html, flags=re.DOTALL | re.IGNORECASE)
     text = re.sub(r'<style[^>]*>.*?</style>', ' ', text, flags=re.DOTALL | re.IGNORECASE)
-    text = re.sub(r'<[^>]+>', ' ', text)
-    text = html_module.unescape(text)
-    text = re.sub(r'\s+', ' ', text).strip()
+    
+    if preserve_paragraphs:
+        # Convert block elements to paragraph breaks (double newlines)
+        # These are elements that typically start new visual blocks
+        block_tags = r'</?(p|div|tr|br|li|table|section|article|header|footer|h[1-6]|blockquote|pre|hr)\b[^>]*>'
+        text = re.sub(block_tags, '\n\n', text, flags=re.IGNORECASE)
+        # Remove remaining tags
+        text = re.sub(r'<[^>]+>', ' ', text)
+        text = html_module.unescape(text)
+        # Normalize multiple newlines to exactly double newlines (paragraph breaks)
+        text = re.sub(r'\n\s*\n+', '\n\n', text)
+        # Normalize spaces within lines
+        text = re.sub(r'[ \t]+', ' ', text)
+        # Clean up leading/trailing whitespace on each line
+        lines = [line.strip() for line in text.split('\n')]
+        text = '\n'.join(lines).strip()
+    else:
+        text = re.sub(r'<[^>]+>', ' ', text)
+        text = html_module.unescape(text)
+        text = re.sub(r'\s+', ' ', text).strip()
+    
     return text
 
 
@@ -3212,7 +3171,8 @@ def fetch_sec_filings(start: datetime, limit: int) -> tuple[list[dict], str]:
                             
                         source = hit.get("_source", {})
                         
-                        company = source.get("display_names", ["Unknown"])[0]
+                        raw_company = source.get("display_names", ["Unknown"])[0]
+                        company = normalize_edgar_company_name(raw_company)
                         filed_date = source.get("file_date", "")
                         form = source.get("form", form_type)
                         accession = source.get("adsh", "").replace("-", "")
@@ -4059,21 +4019,27 @@ field 必须是：{json.dumps(FIELDS, ensure_ascii=False)}
         
         # Strip unverified numbers from news/academic text
         source_text = src.get("summary", "")
+        title = (raw.get("title") or src["title"]).strip()
         lead = (raw.get("lead") or "").strip()
         body = (raw.get("body") or "").strip()
         discuss = (raw.get("discuss") or "").strip()
         
         # Apply number stripping if we have source text
+        # Strip from title, lead, body, discuss, AND steps
         if source_text:
             import sec_deals
+            title = sec_deals.strip_unverified_numbers_from_text(title, source_text)
             lead = sec_deals.strip_unverified_numbers_from_text(lead, source_text)
             body = sec_deals.strip_unverified_numbers_from_text(body, source_text)
             discuss = sec_deals.strip_unverified_numbers_from_text(discuss, source_text)
+            # Also strip steps
+            steps = [sec_deals.strip_unverified_numbers_from_text(s, source_text) for s in steps]
+            steps = [s for s in steps if s.strip()]  # Remove empty steps after stripping
         
         articles.append({
             "url": url,
             "field": field,
-            "title": (raw.get("title") or src["title"]).strip(),
+            "title": title,
             "journal": journal or src["source"],
             "authors": authors or "（来源未列出作者）",
             "lead": lead,
@@ -4268,7 +4234,7 @@ def site_deal(item: dict) -> dict:
     return result
 
 
-def wechat_html(articles: list[dict], deals: list[dict], week: str) -> str:
+def wechat_html(articles: list[dict], deals: list[dict], week: str, no_deals: bool = False) -> str:
     """Generate WeChat-compatible HTML with inline styles."""
     
     toc_items = []
@@ -4309,7 +4275,7 @@ def wechat_html(articles: list[dict], deals: list[dict], week: str) -> str:
                 doi = url.replace("https://doi.org/", "DOI: ")
                 parts.append(f'<p style="font-size:12px;color:#999;margin:0.5em 0;">{doi}</p>')
     
-    if deals:
+    if deals and not no_deals:
         parts.append('<h2 style="border-left:4px solid #0f6b5c;padding-left:12px;margin:2em 0 1em;">交易动态</h2>')
         
         grouped = {"lic": [], "acq": [], "inv": []}
@@ -4338,16 +4304,29 @@ def wechat_html(articles: list[dict], deals: list[dict], week: str) -> str:
                         amount_note = "（披露文件）"
                     parts.append(f'<p style="margin:0.3em 0;"><strong>{money}</strong>{amount_note}</p>')
                 
-                amount_details = []
-                if deal.get("upfront"):
-                    amount_details.append(f"首付：{deal['upfront']}")
-                if deal.get("milestones"):
-                    amount_details.append(f"里程碑：{deal['milestones']}")
-                if deal.get("equity"):
-                    amount_details.append(f"股权：{deal['equity']}")
-                if amount_details:
-                    details_text = " · ".join(amount_details)
-                    parts.append(f'<p style="margin:0.2em 0;font-size:14px;color:#555;">{details_text}</p>')
+                # Display structure details (首付/里程碑/已提取/股份)
+                # From SEC deals: ms field contains "首付：X | 里程碑：Y" format
+                # From legacy deals: separate upfront/milestones/equity fields
+                ms = deal.get("ms", "")
+                if ms:
+                    # ms field is already formatted like "首付：1 亿美元 | 里程碑：最高 11.7 亿美元"
+                    # Convert pipe separators to bullet points for display
+                    parts_list = [p.strip() for p in ms.split('|') if p.strip()]
+                    if parts_list:
+                        details_text = " · ".join(parts_list)
+                        parts.append(f'<p style="margin:0.2em 0;font-size:14px;color:#555;">{details_text}</p>')
+                else:
+                    # Legacy path: separate fields
+                    amount_details = []
+                    if deal.get("upfront"):
+                        amount_details.append(f"首付：{deal['upfront']}")
+                    if deal.get("milestones"):
+                        amount_details.append(f"里程碑：{deal['milestones']}")
+                    if deal.get("equity"):
+                        amount_details.append(f"股权：{deal['equity']}")
+                    if amount_details:
+                        details_text = " · ".join(amount_details)
+                        parts.append(f'<p style="margin:0.2em 0;font-size:14px;color:#555;">{details_text}</p>')
                 
                 if deal.get("why"):
                     parts.append(f'<p style="margin:0.3em 0;">{deal["why"]}</p>')
@@ -4372,7 +4351,7 @@ def wechat_html(articles: list[dict], deals: list[dict], week: str) -> str:
     return "\n".join(parts)
 
 
-def write_output(draft: dict, dest: Path, week: str) -> None:
+def write_output(draft: dict, dest: Path, week: str, no_deals: bool = False) -> None:
     img_dir = dest / "images"
     img_dir.mkdir(parents=True, exist_ok=True)
     articles = []
@@ -4427,12 +4406,12 @@ def write_output(draft: dict, dest: Path, week: str) -> None:
     
     (dest / "articles.json").write_text(json.dumps(articles, ensure_ascii=False, indent=2), encoding="utf-8")
     (dest / "deals.json").write_text(json.dumps(deals, ensure_ascii=False, indent=2), encoding="utf-8")
-    html = wechat_html(articles, deals, week)
+    html = wechat_html(articles, deals, week, no_deals=no_deals)
     (dest / "wechat" / "article.html").write_text(html, encoding="utf-8")
     logging.info("写出 %s", dest)
 
 
-def update_latest(dest: Path) -> None:
+def update_latest(dest: Path, no_deals: bool = False) -> None:
     articles = json.loads((dest / "articles.json").read_text(encoding="utf-8"))
     deals = json.loads((dest / "deals.json").read_text(encoding="utf-8"))
     latest_path = ROOT / "content" / "latest.json"
@@ -4443,9 +4422,16 @@ def update_latest(dest: Path) -> None:
         except json.JSONDecodeError:
             logging.warning("content/latest.json 无法解析，将覆盖")
     seen_a = {a.get("id") for a in articles}
-    seen_d = {d.get("url") for d in deals}
     merged_a = articles + [a for a in previous.get("articles") or [] if a.get("id") not in seen_a]
-    merged_d = deals + [d for d in previous.get("deals") or [] if d.get("url") not in seen_d]
+    
+    if no_deals:
+        # Preserve existing deals unchanged when --no-deals is enabled
+        merged_d = previous.get("deals") or []
+        logging.info("--no-deals 已启用：保留现有 %d 条行业动态", len(merged_d))
+    else:
+        seen_d = {d.get("url") for d in deals}
+        merged_d = deals + [d for d in previous.get("deals") or [] if d.get("url") not in seen_d]
+    
     payload = {
         "generated": dest.name,
         "articles": merged_a[:40],
@@ -4557,7 +4543,11 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="生成一周的前沿追踪内容")
     parser.add_argument("--dry-run", action="store_true", help="只写到 preview/，不改网站内容目录")
     parser.add_argument("--test", action="store_true", help="运行单元测试")
+    parser.add_argument("--no-deals", action="store_true", help="不收集行业动态，只输出学术文章")
     args = parser.parse_args()
+    
+    # --no-deals can also be set via environment variable
+    no_deals = args.no_deals or os.environ.get("INLIGHT_NO_DEALS") == "1"
     
     if args.test:
         print("Running unit tests...\n")
@@ -4588,7 +4578,8 @@ def main() -> None:
         all_passed &= _test_filer_is_party()
         all_passed &= _test_company_whole_word()
         all_passed &= _test_real_sec_filings()
-        all_passed &= _test_adversarial_deals()
+        # Note: _test_adversarial_deals removed - it used undefined process_deal_with_quotes
+        # Note: _test_integration_deal_pipeline uses sec_deals module directly, keep it
         all_passed &= _test_integration_deal_pipeline()
         # NEW: Test that sec_deals module is used
         all_passed &= _test_sec_deals_module()
@@ -4610,25 +4601,36 @@ def main() -> None:
         # Extract deals from SEC filings - THE ONLY DEAL PATH
         global _SEC_DEALS_CALLED
         _SEC_DEALS_CALLED = True
-        deals = extract_sec_deals(items, config)
+        
+        if no_deals:
+            logging.info("--no-deals 已启用：跳过 SEC 交易提取")
+            deals = []
+        else:
+            deals = extract_sec_deals(items, config)
         
         # Draft articles (deals are handled separately above)
         draft = claude_draft(items, config)
         draft["deals"] = deals  # Add deals from sec_deals module
         
-        if not draft["articles"] and not deals:
-            logging.error("模型没有留下任何来源内的条目")
-            raise SystemExit(3)
+        if no_deals:
+            # With --no-deals, only require articles
+            if not draft["articles"]:
+                logging.error("模型没有留下任何来源内的文章")
+                raise SystemExit(3)
+        else:
+            if not draft["articles"] and not deals:
+                logging.error("模型没有留下任何来源内的条目")
+                raise SystemExit(3)
         week = date.today().isoformat()
         dest = (ROOT / "preview" / "weekly" / week) if args.dry_run else (ROOT / "content" / "weekly" / week)
         if dest.exists():
             logging.error("目录已存在，避免覆盖：%s", dest)
             raise SystemExit(4)
-        write_output(draft, dest, week)
+        write_output(draft, dest, week, no_deals=no_deals)
         if args.dry_run:
             logging.info("dry-run 完成，没有改 content/，也没有调用公众号")
         else:
-            update_latest(dest)
+            update_latest(dest, no_deals=no_deals)
             logging.info("网站内容已写入。提交并推送 main 后，GitHub Pages 会更新。公众号请另跑 publish_wechat.py")
     except SystemExit:
         raise

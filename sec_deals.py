@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import re
 from dataclasses import dataclass, field
 from enum import Enum
@@ -329,7 +330,16 @@ ROLE_PATTERNS: list[tuple[str, str, str | None]] = [
     (r'merger\s+(?:of|between)\s+([\w\s&,\.]+?)\s+(?:and|with)\s+([\w\s&,\.]+)',
      'merger_party', 'merger_party'),
     
-    # Buyout / payment patterns - "the Company paid X" (before license to catch buyouts)
+    # Investment patterns - filer as investor (BEFORE buyout to catch "paid...to purchase shares")
+    # "the Company paid X to purchase shares" - filer is investor
+    (r'(the\s+Company|[\w\s&,\.]+?)\s+paid\s+([\w\s&,\.]+?)\s+.*?to\s+purchase\s+(?:shares?|equity|stock)',
+     'investor', 'investee'),
+    (r'(the\s+Company|[\w\s&,\.]+?)\s+invest(?:ed|s)\s+in\s+([\w\s&,\.]+)',
+     'investor', 'investee'),
+    (r'(the\s+Company|[\w\s&,\.]+?)\s+purchas(?:ed|es)\s+.*?(?:shares?|equity|stock)\s+(?:of|from|in)\s+([\w\s&,\.]+)',
+     'investor', 'investee'),
+    
+    # Buyout / payment patterns - "the Company paid X" (generic, after investment)
     (r'(the\s+Company|[\w\s&,\.]+?)\s+paid\s+([\w\s&,\.]+)',
      'payer', 'payee'),
     (r'(the\s+Company|[\w\s&,\.]+?)\s+(?:will\s+pay)\s+([\w\s&,\.]+)',
@@ -517,7 +527,10 @@ def parse_amount_from_quote(quote: str, kind: AmountKind) -> ParsedAmount | None
     Rules:
     - Conditional words (may/could/potential/eligible/up to) only allowed for
       milestones_total/facility_size, rendered as '最高'.
-    - Currency: US$/$/USD = USD. GBP/EUR parsed, CNY ignored.
+    - Currency: US$/$/USD = USD. GBP/EUR parsed with € or £ symbol or word, CNY ignored.
+    - Units must be explicit (million/billion) - bare $7,500,000 is raw dollars, not millions.
+    - Sanity cap: amounts > $100 billion are dropped.
+    - EUR/GBP require € or £ symbol or EUR/GBP/euro/pound word, not character class matching.
     """
     if not quote:
         return None
@@ -536,15 +549,18 @@ def parse_amount_from_quote(quote: str, kind: AmountKind) -> ParsedAmount | None
             return None
         up_to = True
     
-    # Pattern: $X.X million/billion (most common)
+    # SANITY CAP: $100 billion = 100,000 million
+    SANITY_CAP_MILLIONS = 100_000
+    
+    # Pattern 1: $X.X million/billion (most common - WITH explicit scale word)
     match = re.search(
-        r'(?:US\$|\$|USD)\s*([\d,]+(?:\.\d+)?)\s*(million|billion|thousand|M|B|K)?\b',
+        r'(?:US\$|\$|USD)\s*([\d,]+(?:\.\d+)?)\s*(million|billion|thousand)\b',
         text, re.IGNORECASE
     )
     
     if match:
         num_str = match.group(1).replace(',', '')
-        scale_str = (match.group(2) or 'million').lower()
+        scale_str = match.group(2).lower()
         
         try:
             value = float(num_str)
@@ -552,11 +568,17 @@ def parse_amount_from_quote(quote: str, kind: AmountKind) -> ParsedAmount | None
             return None
         
         scale_map = {
-            'billion': 1000, 'b': 1000,
-            'million': 1, 'm': 1,
-            'thousand': 0.001, 'k': 0.001,
+            'billion': 1000,
+            'million': 1,
+            'thousand': 0.001,
         }
         scale = scale_map.get(scale_str, 1)
+        value_in_millions = value * scale
+        
+        # Sanity cap
+        if value_in_millions > SANITY_CAP_MILLIONS:
+            logging.debug("Amount dropped: exceeds $100B sanity cap: %s", quote[:50])
+            return None
         
         return ParsedAmount(
             value=value,
@@ -567,7 +589,44 @@ def parse_amount_from_quote(quote: str, kind: AmountKind) -> ParsedAmount | None
             raw_quote=quote
         )
     
-    # Pattern: X million/billion dollars (no $ sign)
+    # Pattern 2: $X,XXX,XXX (bare dollar amount without million/billion word)
+    # This is raw dollars, NOT millions. E.g., $7,500,000 = 7.5 million
+    match = re.search(
+        r'(?:US\$|\$|USD)\s*([\d,]+(?:\.\d+)?)\b(?!\s*(?:million|billion|thousand|M|B|K)\b)',
+        text, re.IGNORECASE
+    )
+    
+    if match:
+        num_str = match.group(1).replace(',', '')
+        
+        try:
+            value = float(num_str)
+        except ValueError:
+            return None
+        
+        # Convert raw dollars to millions
+        value_in_millions = value / 1_000_000
+        
+        # Sanity cap
+        if value_in_millions > SANITY_CAP_MILLIONS:
+            logging.debug("Amount dropped: exceeds $100B sanity cap: %s", quote[:50])
+            return None
+        
+        # Only accept if it's a reasonable amount (at least $100,000)
+        if value < 100_000:
+            logging.debug("Amount dropped: bare dollar amount too small: %s", quote[:50])
+            return None
+        
+        return ParsedAmount(
+            value=value_in_millions,
+            scale=1,  # Already converted to millions
+            currency='USD',
+            up_to=up_to,
+            kind=kind,
+            raw_quote=quote
+        )
+    
+    # Pattern 3: X million/billion dollars (no $ sign, with scale word)
     match = re.search(
         r'([\d,]+(?:\.\d+)?)\s*(million|billion|thousand)\s*(?:U\.?S\.?\s*)?dollars?',
         text, re.IGNORECASE
@@ -584,6 +643,12 @@ def parse_amount_from_quote(quote: str, kind: AmountKind) -> ParsedAmount | None
         
         scale_map = {'billion': 1000, 'million': 1, 'thousand': 0.001}
         scale = scale_map.get(scale_str, 1)
+        value_in_millions = value * scale
+        
+        # Sanity cap
+        if value_in_millions > SANITY_CAP_MILLIONS:
+            logging.debug("Amount dropped: exceeds $100B sanity cap: %s", quote[:50])
+            return None
         
         return ParsedAmount(
             value=value,
@@ -594,22 +659,41 @@ def parse_amount_from_quote(quote: str, kind: AmountKind) -> ParsedAmount | None
             raw_quote=quote
         )
     
-    # Pattern for GBP: £X million/billion
+    # Pattern 4: GBP - require £ symbol or explicit GBP/pound word (not [GBP] character class)
+    # £X.X million/billion OR X million/billion pounds OR GBP X million
     match = re.search(
-        r'[£GBP]\s*([\d,]+(?:\.\d+)?)\s*(million|billion)?\b',
+        r'(?:£|GBP\s*)\s*([\d,]+(?:\.\d+)?)\s*(million|billion)?\b',
         text, re.IGNORECASE
     )
+    if not match:
+        match = re.search(
+            r'([\d,]+(?:\.\d+)?)\s*(million|billion)\s*(?:British\s+)?pounds?\b',
+            text, re.IGNORECASE
+        )
+    
     if match:
         num_str = match.group(1).replace(',', '')
-        scale_str = (match.group(2) or 'million').lower()
+        scale_str = (match.group(2) or '').lower() if match.lastindex >= 2 else ''
         
         try:
             value = float(num_str)
         except ValueError:
             return None
         
-        scale_map = {'billion': 1000, 'million': 1}
-        scale = scale_map.get(scale_str, 1)
+        # Default to million only if explicitly stated or symbol present with million
+        if scale_str:
+            scale_map = {'billion': 1000, 'million': 1}
+            scale = scale_map.get(scale_str, 1)
+        else:
+            # Bare £80 without million/billion - treat as raw GBP, convert
+            scale = 1 / 1_000_000  # Convert raw pounds to millions
+        
+        value_in_millions = value * scale
+        
+        # Sanity cap
+        if value_in_millions > SANITY_CAP_MILLIONS:
+            logging.debug("Amount dropped: exceeds £100B sanity cap: %s", quote[:50])
+            return None
         
         return ParsedAmount(
             value=value,
@@ -620,22 +704,41 @@ def parse_amount_from_quote(quote: str, kind: AmountKind) -> ParsedAmount | None
             raw_quote=quote
         )
     
-    # Pattern for EUR: €X million/billion
+    # Pattern 5: EUR - require € symbol or explicit EUR/euro word (not [EUR] character class)
+    # €X.X million/billion OR X million/billion euros OR EUR X million
     match = re.search(
-        r'[€EUR]\s*([\d,]+(?:\.\d+)?)\s*(million|billion)?\b',
+        r'(?:€|EUR\s*)\s*([\d,]+(?:\.\d+)?)\s*(million|billion)?\b',
         text, re.IGNORECASE
     )
+    if not match:
+        match = re.search(
+            r'([\d,]+(?:\.\d+)?)\s*(million|billion)\s*euros?\b',
+            text, re.IGNORECASE
+        )
+    
     if match:
         num_str = match.group(1).replace(',', '')
-        scale_str = (match.group(2) or 'million').lower()
+        scale_str = (match.group(2) or '').lower() if match.lastindex >= 2 else ''
         
         try:
             value = float(num_str)
         except ValueError:
             return None
         
-        scale_map = {'billion': 1000, 'million': 1}
-        scale = scale_map.get(scale_str, 1)
+        # Default to million only if explicitly stated or symbol present with million
+        if scale_str:
+            scale_map = {'billion': 1000, 'million': 1}
+            scale = scale_map.get(scale_str, 1)
+        else:
+            # Bare €120 without million/billion - treat as raw EUR, convert
+            scale = 1 / 1_000_000  # Convert raw euros to millions
+        
+        value_in_millions = value * scale
+        
+        # Sanity cap
+        if value_in_millions > SANITY_CAP_MILLIONS:
+            logging.debug("Amount dropped: exceeds €100B sanity cap: %s", quote[:50])
+            return None
         
         return ParsedAmount(
             value=value,
@@ -646,21 +749,21 @@ def parse_amount_from_quote(quote: str, kind: AmountKind) -> ParsedAmount | None
             raw_quote=quote
         )
     
-    # Pattern for shares: X shares or X,XXX,XXX shares
+    # Pattern 6: Shares - X shares or X,XXX,XXX shares
     # Only for equity kind
     if kind == AmountKind.EQUITY:
         match = re.search(
-            r'([\d,]+)\s*shares?',
+            r'([\d,]+)\s*shares?\b',
             text, re.IGNORECASE
         )
         if match:
             num_str = match.group(1).replace(',', '')
             try:
                 value = float(num_str)
-                # For shares, we store the count directly
+                # For shares, we store the count directly (NOT scaled)
                 return ParsedAmount(
                     value=value,
-                    scale=1,  # raw count
+                    scale=1,  # raw count, NOT millions
                     currency='SHARES',
                     up_to=up_to,
                     kind=kind,
@@ -679,20 +782,31 @@ def render_amount_chinese(parsed: ParsedAmount) -> str:
     - $35.0 million → 3,500 万美元
     - up to $1.5 billion → 最高 15 亿美元
     - $20.0 million → 2,000 万美元
+    - 4,425,487 shares → 约 442.5 万股 (NOT 4.4 亿股)
     - '首付' only for kind=upfront whose quote contains 'upfront'
+    
+    Units:
+    - 万 (wan) = 10,000
+    - 亿 (yi) = 100,000,000 = 10,000 万
     """
     if not parsed:
-        return '未披露'
+        return ''
     
     # Handle shares separately
+    # parsed.value is the raw share count (e.g., 4425487 for 4,425,487 shares)
     if parsed.currency == 'SHARES':
         shares = int(parsed.value)
-        if shares >= 10000:
-            wan = shares / 10000
+        # Use 万 for shares >= 10,000: 4,425,487 → 约 442.5 万股
+        # Use 亿 for shares >= 100,000,000: 150,000,000 → 约 1.5 亿股
+        if shares >= 100_000_000:  # 1 亿 = 100 million shares
+            yi = shares / 100_000_000
+            return f"约 {yi:.1f} 亿股".replace('.0 ', ' ')
+        elif shares >= 10_000:  # 1 万 = 10,000 shares
+            wan = shares / 10_000
             if wan >= 100:
-                return f"约 {wan / 100:.1f} 亿股".replace('.0 ', ' ')
+                return f"约 {wan:.1f} 万股".replace('.0 ', ' ')
             else:
-                return f"约 {wan:,.0f} 万股"
+                return f"约 {wan:,.1f} 万股".replace('.0 ', ' ')
         else:
             return f"{shares:,} 股"
     
@@ -766,6 +880,164 @@ def detect_nonprofit_or_government(filing_text: str) -> bool:
 
 
 # =============================================================================
+# DEAL TYPE VALIDATION AND NON-DEAL FILTERING
+# =============================================================================
+
+# Non-deal agreement types that should be dropped
+NON_DEAL_PATTERNS = [
+    r'\bmaster\s+services?\s+agreement\b',
+    r'\bservices?\s+agreement\b',
+    r'\blease\s+agreement\b',
+    r'\boffice\s+lease\b',
+    r'\bemployment\s+agreement\b',
+    r'\bseverance\s+agreement\b',
+    r'\bsupply\s+agreement\b',
+    r'\bmanufacturing\s+(?:and\s+)?supply\b',
+    r'\bconsulting\s+agreement\b',
+    r'\badvisory\s+agreement\b',
+    r'\bconfidentiality\s+agreement\b',
+    r'\bnon-?disclosure\s+agreement\b',
+    r'\bsettlement\s+agreement\b',
+    r'\bindemnification\s+agreement\b',
+]
+
+# Deal type keywords that must be present in type_quote to validate model's claim
+DEAL_TYPE_VALIDATORS = {
+    DealType.ACQUISITION: [
+        r'\bacquir(?:e|es|ed|ing|ition)\b',
+        r'\bpurchase\s+(?:of\s+)?(?:all|the)\s+(?:outstanding\s+)?(?:shares?|stock|equity)\b',
+        r'\bmerger\b',
+        r'\bbuy(?:s|ing)?\s+(?:all|the)\s+(?:outstanding\s+)?(?:shares?|equity)\b',
+    ],
+    DealType.MERGER: [
+        r'\bmerger\b',
+        r'\bmerge[sd]?\b',
+        r'\bcombination\b',
+    ],
+    DealType.OBLIGATION_BUYOUT: [
+        r'\bbuy-?out\b',
+        r'\bterminat(?:e|ed|ion)\b.*\b(?:royalt|milestone|payment|obligation)\b',
+        r'\bextinguish\b.*\b(?:royalt|milestone|payment|obligation)\b',
+        r'\bpaid\b.*\bfor\s+(?:the\s+)?(?:one-?time\s+)?buy-?out\b',
+        # Paid + removes obligation pattern (Immunome-BMS style)
+        r'\bpaid\b.*\bremoves?\b.*\b(?:royalt|milestone|payment|obligation)\b',
+        r'\bremoves?\s+(?:the\s+)?(?:Company\'?s?\s+)?obligation\b',
+    ],
+    DealType.DEBT_FACILITY: [
+        r'\b(?:credit|loan|term\s+loan|revolving)\s+(?:facility|agreement)\b',
+        r'\bdebt\s+(?:facility|financing|agreement)\b',
+        r'\bventure\s+(?:debt|loan)\b',
+        r'\bloan\s+and\s+security\s+agreement\b',
+    ],
+}
+
+
+def is_non_deal_agreement(type_quote: str) -> bool:
+    """Check if the type_quote describes a non-deal agreement (services, lease, etc.)."""
+    if not type_quote:
+        return False
+    
+    text_lower = type_quote.lower()
+    
+    for pattern in NON_DEAL_PATTERNS:
+        if re.search(pattern, text_lower):
+            return True
+    
+    return False
+
+
+def validate_deal_type_from_quote(
+    claimed_type: DealType, 
+    type_quote: str
+) -> DealType | None:
+    """Validate and potentially correct the claimed deal type based on type_quote content.
+    
+    Returns:
+        - The validated deal type (may be different from claimed if quote supports it)
+        - None if the type cannot be validated and should be dropped
+    
+    Rules:
+    - Acquisition requires explicit acquire/merger/purchase language with acquirer as subject
+    - License/collaboration is the default for "Agreement" without more specific language
+    - Equity financing allowed only for investment-specific language
+    - Debt facility requires credit/loan language
+    - Obligation buyout requires explicit buyout/termination of obligations
+    """
+    if not type_quote:
+        return None
+    
+    text_lower = type_quote.lower()
+    
+    # Check for validators if the claimed type has specific requirements
+    if claimed_type in DEAL_TYPE_VALIDATORS:
+        patterns = DEAL_TYPE_VALIDATORS[claimed_type]
+        has_support = any(re.search(p, text_lower) for p in patterns)
+        if not has_support:
+            logging.info("Deal type '%s' not supported by type_quote", claimed_type.value)
+            # Try to infer correct type
+            return infer_deal_type_from_quote(type_quote)
+    
+    # Additional validation for acquisitions - the acquirer must be the grammatical subject
+    if claimed_type == DealType.ACQUISITION:
+        # Check for patterns where someone other than the filer/counterparty is acquiring
+        if re.search(r'\bpreviously\s+(?:entered|agreed|signed)\b', text_lower):
+            logging.info("Deal dropped: type_quote describes historical agreement")
+            return None
+    
+    return claimed_type
+
+
+def infer_deal_type_from_quote(type_quote: str) -> DealType | None:
+    """Infer deal type from type_quote content when model's claim doesn't match.
+    
+    Returns None if no deal type can be inferred (deal should be dropped).
+    """
+    if not type_quote:
+        return None
+    
+    text_lower = type_quote.lower()
+    
+    # Check each type's validators in order of specificity
+    for deal_type, patterns in DEAL_TYPE_VALIDATORS.items():
+        if any(re.search(p, text_lower) for p in patterns):
+            return deal_type
+    
+    # License/collaboration is the catch-all for agreements
+    if re.search(r'\b(?:licen[sc]e|collaboration|partnership|co-?develop|exclusive\s+rights?)\b', text_lower):
+        return DealType.LICENSE_COLLABORATION
+    
+    # Equity financing
+    if re.search(r'\b(?:financ|invest|series\s+[a-z]|equity\s+(?:investment|financing))\b', text_lower):
+        return DealType.EQUITY_FINANCING
+    
+    # Generic agreement without deal-specific language - drop
+    return None
+
+
+def is_historical_agreement(type_quote: str) -> bool:
+    """Check if the type_quote describes a historical/past agreement rather than current event."""
+    if not type_quote:
+        return False
+    
+    text_lower = type_quote.lower()
+    
+    historical_patterns = [
+        r'\bpreviously\s+(?:entered|agreed|executed|signed)\b',
+        r'\b(?:in|during|since)\s+\d{4}\b',  # "in 2019", "since 2020"
+        r'\bdated\s+(?:as\s+of\s+)?\w+\s+\d{1,2},?\s+\d{4}\b',  # "dated January 15, 2019"
+        r'\bpursuant\s+to\s+(?:the|that)\s+(?:certain\s+)?(?:\w+\s+)?agreement\s+(?:dated|entered)\b',
+        r'\boriginal\s+agreement\b',
+        r'\bas\s+amended\s+(?:and\s+restated\s+)?(?:from\s+time\s+to\s+time\s+)?(?:through|prior\s+to)\b',
+    ]
+    
+    for pattern in historical_patterns:
+        if re.search(pattern, text_lower):
+            return True
+    
+    return False
+
+
+# =============================================================================
 # TITLE TEMPLATES (NO MODEL FREE TEXT)
 # =============================================================================
 
@@ -798,7 +1070,11 @@ def build_deal_title(
         return f"{filer}与{counterparty}授权合作{amount_suffix}"
     
     elif deal_type == DealType.EQUITY_FINANCING:
-        return f"{filer}获{counterparty}投资{amount_suffix}"
+        # Direction depends on role - filer could be investor or investee
+        if filer_role == 'investor':
+            return f"{filer}投资{counterparty}{amount_suffix}"
+        else:
+            return f"{filer}获{counterparty}投资{amount_suffix}"
     
     elif deal_type == DealType.DEBT_FACILITY:
         return f"{filer}与{counterparty}签署贷款协议{amount_suffix}"
@@ -913,6 +1189,23 @@ def process_sec_deal(
         logging.info("Deal dropped: type_quote not found in filing")
         return None
     
+    # Verification 1a: Check for non-deal agreements (services, lease, etc.)
+    if is_non_deal_agreement(type_quote):
+        logging.info("Deal dropped: non-deal agreement type (services/lease/employment): %s", type_quote[:80])
+        return None
+    
+    # Verification 1b: Check if this describes a historical agreement
+    if is_historical_agreement(type_quote):
+        logging.info("Deal dropped: type_quote describes historical agreement: %s", type_quote[:80])
+        return None
+    
+    # Verification 1c: Validate deal type against type_quote content
+    validated_type = validate_deal_type_from_quote(deal_type, type_quote)
+    if validated_type is None:
+        logging.info("Deal dropped: could not validate deal type from type_quote")
+        return None
+    deal_type = validated_type
+    
     # Verification 2: counterparty_quote must exist in filing
     if not counterparty_quote:
         logging.info("Deal dropped: no counterparty_quote")
@@ -966,12 +1259,25 @@ def process_sec_deal(
             logging.debug("Amount dropped: quote not found in filing: %s", quote[:50])
             continue
         
-        # Verification: amount quote must name counterparty OR be in same paragraph
-        # Per design: "Each amount quote must name or be within the same paragraph"
+        # Verification: amount quote must name counterparty OR be in a paragraph that names counterparty
+        # Per design: "Each amount quote must name or be within the same paragraph as counterparty"
         counterparty_in_quote = match_company_whole_word(counterparty, quote)
-        same_para = quotes_in_same_paragraph(quote, counterparty_quote, filing_text)
         
-        if not counterparty_in_quote and not same_para:
+        # Check if the amount quote's paragraph contains the counterparty name
+        counterparty_in_same_para = False
+        if not counterparty_in_quote:
+            # Find the paragraph containing this amount quote
+            paragraphs = split_into_paragraphs(filing_text)
+            norm_quote = normalize_whitespace(quote).lower()
+            for _, _, para_text in paragraphs:
+                norm_para = normalize_whitespace(para_text).lower()
+                if norm_quote in norm_para:
+                    # Found the paragraph - check if counterparty is in it
+                    if match_company_whole_word(counterparty, para_text):
+                        counterparty_in_same_para = True
+                        break
+        
+        if not counterparty_in_quote and not counterparty_in_same_para:
             logging.debug("Amount dropped: neither names counterparty nor in same paragraph: %s", quote[:50])
             continue
         
@@ -987,14 +1293,29 @@ def process_sec_deal(
         else:
             logging.debug("Amount dropped: could not parse amount from: %s", quote[:50])
     
-    # Build headline amount (first amount or facility_size/purchase_price)
+    # Build headline amount (first non-conditional amount)
+    # Conditional amounts ("may receive up to") should NOT be used as headline
+    # They can only appear in detail lines (e.g., milestones)
     headline_amount = None
     for amount in verified_amounts:
-        if amount.kind in (AmountKind.PURCHASE_PRICE, AmountKind.FACILITY_SIZE, AmountKind.UPFRONT):
+        # Skip conditional (up_to) amounts for headline - these are uncertain
+        if amount.up_to:
+            continue
+        if amount.kind in (AmountKind.PURCHASE_PRICE, AmountKind.UPFRONT):
             headline_amount = render_amount_chinese(amount)
             break
-    if not headline_amount and verified_amounts:
-        headline_amount = render_amount_chinese(verified_amounts[0])
+    # For debt facility, facility_size with up_to IS appropriate as headline
+    if not headline_amount:
+        for amount in verified_amounts:
+            if amount.kind == AmountKind.FACILITY_SIZE:
+                headline_amount = render_amount_chinese(amount)
+                break
+    # Still no headline? Use first non-conditional, non-milestone amount
+    if not headline_amount:
+        for amount in verified_amounts:
+            if not amount.up_to and amount.kind != AmountKind.MILESTONES_TOTAL:
+                headline_amount = render_amount_chinese(amount)
+                break
     
     # Build title and lines (no model free text)
     title = build_deal_title(filer_name, counterparty, deal_type, filer_role, headline_amount)
@@ -1043,7 +1364,7 @@ def extract_deals_from_filings(
     filings: list[dict],
     claude_client: Any = None,
     max_deals: int = 6
-) -> list[dict]:
+) -> tuple[list[dict], int]:
     """Extract deals from SEC filings using Claude with strict verification.
     
     This is the main entry point for the production pipeline.
@@ -1054,18 +1375,20 @@ def extract_deals_from_filings(
         max_deals: Maximum number of deals to return
     
     Returns:
-        List of verified deal dicts.
+        Tuple of (list of verified deal dicts, count of failed filings).
     """
     if not filings:
-        return []
+        return [], 0
     
     if claude_client is None:
         from anthropic import Anthropic
         claude_client = Anthropic()
     
     deals = []
+    failed_count = 0
     
     for filing in filings:
+        filing_url = filing.get('url', 'unknown')
         filing_text = filing.get('filing_text', '')
         if not filing_text or len(filing_text) < 100:
             continue
@@ -1078,7 +1401,7 @@ def extract_deals_from_filings(
         
         # Event date required - if missing, skip
         if not event_date:
-            logging.info("Filing skipped: no event date: %s", filing.get('url', ''))
+            logging.info("Filing skipped: no event date: %s", filing_url)
             continue
         
         # Call Claude with strict tool schema
@@ -1106,11 +1429,13 @@ If there is no significant deal, return deal_type="none".
 
 IMPORTANT: Every quote must be an EXACT substring of the filing text above. Do not paraphrase or modify quotes."""
 
+            # Use tool_choice="auto" which is compatible with all Claude models
+            # Then validate the response contains the expected tool call
             message = claude_client.messages.create(
                 model=model,
                 max_tokens=2000,
                 tools=[DEAL_EXTRACTION_SCHEMA],
-                tool_choice={"type": "tool", "name": "extract_deal"},
+                tool_choice={"type": "auto"},
                 messages=[{"role": "user", "content": prompt}],
             )
             
@@ -1121,28 +1446,38 @@ IMPORTANT: Every quote must be an EXACT substring of the filing text above. Do n
                     claude_response = block.input
                     break
             
-            if claude_response:
-                deal = process_sec_deal(
-                    filing_text=filing_text,
-                    filer_name=filer_name,
-                    filing_url=filing.get('url', ''),
-                    filing_date=filing.get('date', ''),
-                    event_date=event_date,
-                    claude_response=claude_response
-                )
+            if not claude_response:
+                logging.warning("Filing %s: Claude did not use extract_deal tool", filing_url)
+                failed_count += 1
+                continue
+            
+            deal = process_sec_deal(
+                filing_text=filing_text,
+                filer_name=filer_name,
+                filing_url=filing_url,
+                filing_date=filing.get('date', ''),
+                event_date=event_date,
+                claude_response=claude_response
+            )
+            
+            if deal:
+                deals.append(deal)
+                logging.info("Deal extracted: %s", deal['title'])
                 
-                if deal:
-                    deals.append(deal)
-                    logging.info("Deal extracted: %s", deal['title'])
-                    
-                    if len(deals) >= max_deals:
-                        break
+                if len(deals) >= max_deals:
+                    break
         
         except Exception as e:
-            logging.warning("Error processing filing %s: %s", filing.get('url', ''), e)
+            logging.error("Error processing filing %s: %s: %s", 
+                         filing_url, type(e).__name__, e)
+            failed_count += 1
             continue
     
-    return deals
+    if failed_count > 0:
+        logging.warning("SEC deal extraction: %d filings failed out of %d processed", 
+                       failed_count, len(filings))
+    
+    return deals, failed_count
 
 
 # =============================================================================
@@ -1155,7 +1490,8 @@ def split_into_sentences(text: str) -> list[tuple[int, int, str]]:
     Split on '。！？' and '. ' followed by space/capital.
     NEVER split on decimal points (e.g., '$35.0 million').
     
-    Returns list of (start, end, sentence) tuples.
+    Returns list of (start, end, sentence) tuples where start/end are positions
+    in the ORIGINAL text.
     """
     if not text:
         return []
@@ -1167,44 +1503,51 @@ def split_into_sentences(text: str) -> list[tuple[int, int, str]]:
     # - English: '. ' followed by uppercase or end
     # But NOT: decimal points like '$35.0' or '1.5 billion'
     
-    # First, protect decimal numbers by marking them
-    protected = text
-    decimal_pattern = r'(\d+)\.(\d)'
-    placeholder = '__DECIMAL__'
-    
-    # Temporarily replace decimal points
-    decimals = []
-    def protect_decimal(m):
-        decimals.append((m.group(1), m.group(2)))
-        return f"{m.group(1)}{placeholder}{len(decimals) - 1}__"
-    
-    protected = re.sub(decimal_pattern, protect_decimal, protected)
-    
-    # Now split on sentence boundaries
-    # Chinese sentence enders
-    pattern = r'([。！？])|(\.\s+(?=[A-Z]|$))'
+    # Find all sentence-ending punctuation, excluding decimal points
+    # We look for: 。！？ OR (period followed by space and uppercase/end)
+    # We explicitly check that period is NOT preceded by a digit
     
     last_end = 0
-    for m in re.finditer(pattern, protected):
-        sentence = protected[last_end:m.end()].strip()
-        if sentence:
-            sentences.append((last_end, m.end(), sentence))
-        last_end = m.end()
+    i = 0
+    while i < len(text):
+        char = text[i]
+        
+        # Chinese sentence enders
+        if char in '。！？':
+            sentence = text[last_end:i+1].strip()
+            if sentence:
+                sentences.append((last_end, i+1, sentence))
+            last_end = i + 1
+            i += 1
+            continue
+        
+        # English period - check it's not a decimal
+        if char == '.':
+            # Check if this is a decimal: digit before and digit after
+            is_decimal = False
+            if i > 0 and i < len(text) - 1:
+                if text[i-1].isdigit() and text[i+1].isdigit():
+                    is_decimal = True
+            
+            if not is_decimal:
+                # Check if followed by space and uppercase (or end of text)
+                rest = text[i+1:]
+                if not rest or (rest[0].isspace() and len(rest) > 1 and 
+                               (rest.lstrip() and rest.lstrip()[0].isupper())):
+                    sentence = text[last_end:i+1].strip()
+                    if sentence:
+                        sentences.append((last_end, i+1, sentence))
+                    last_end = i + 1
+        
+        i += 1
     
     # Don't forget the last sentence
-    if last_end < len(protected):
-        sentence = protected[last_end:].strip()
+    if last_end < len(text):
+        sentence = text[last_end:].strip()
         if sentence:
-            sentences.append((last_end, len(protected), sentence))
+            sentences.append((last_end, len(text), sentence))
     
-    # Restore decimal points
-    def restore_decimal(s):
-        result = s
-        for i, (d1, d2) in enumerate(decimals):
-            result = result.replace(f"{d1}{placeholder}{i}__", f"{d1}.{d2}")
-        return result
-    
-    return [(start, end, restore_decimal(sentence)) for start, end, sentence in sentences]
+    return sentences
 
 
 def extract_numbers_from_text(text: str) -> set[str]:
@@ -1241,6 +1584,8 @@ def strip_unverified_numbers_from_text(
     
     This runs on news/academic text in production.
     Removes whole sentences (split correctly) that contain numbers not in source.
+    
+    Note: Positions returned by split_into_sentences are in the original text.
     """
     if not text or not source_text:
         return text
@@ -1248,8 +1593,10 @@ def strip_unverified_numbers_from_text(
     source_numbers = extract_numbers_from_text(source_text)
     sentences = split_into_sentences(text)
     
-    kept_parts = []
-    last_end = 0
+    if not sentences:
+        return text
+    
+    kept_sentences = []
     
     for start, end, sentence in sentences:
         sentence_numbers = extract_numbers_from_text(sentence)
@@ -1258,29 +1605,24 @@ def strip_unverified_numbers_from_text(
         unverified = sentence_numbers - source_numbers
         
         if unverified:
-            # This sentence has unverified numbers - remove it
+            # This sentence has unverified numbers - skip it
             logging.debug("Stripping sentence with unverified numbers %s: %s", 
                          unverified, sentence[:50])
-            # Keep any text before this sentence that wasn't part of a previous sentence
-            if start > last_end:
-                kept_parts.append(text[last_end:start])
         else:
             # Keep this sentence
-            kept_parts.append(text[last_end:end])
-        
-        last_end = end
+            kept_sentences.append(sentence)
     
-    # Keep any trailing text
-    if last_end < len(text):
-        kept_parts.append(text[last_end:])
+    if not kept_sentences:
+        return ''
     
-    result = ''.join(kept_parts).strip()
+    # Join sentences with space
+    result = ' '.join(kept_sentences)
     
     # Clean up any double spaces or orphaned punctuation
     result = re.sub(r'\s+', ' ', result)
     result = re.sub(r'^\s*[,，;；]\s*', '', result)
     
-    return result
+    return result.strip()
 
 
 # =============================================================================
