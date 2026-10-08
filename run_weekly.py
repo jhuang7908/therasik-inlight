@@ -26,18 +26,31 @@ from pathlib import Path
 import feedparser
 import yaml
 
+try:
+    from inlight_fields import (
+        FIELD_PROMPT_RULES,
+        FIELDS,
+        classify_draft_articles,
+        claude_create_kwargs,
+        site_classification_fields,
+    )
+    FIELD_MODULE_AVAILABLE = True
+except ImportError:
+    FIELD_MODULE_AVAILABLE = False
+    FIELDS = {
+        "f1": "类器官",
+        "f2": "动物模型",
+        "f3": "AI 药物设计",
+        "f4": "肿瘤免疫与细胞治疗",
+        "f5": "自身免疫与移植免疫",
+        "f6": "疫苗与感染免疫",
+        "f7": "抗体工程",
+        "f8": "核酸与基因治疗（含 LNP 递送）",
+        "f9": "精准肿瘤与临床转化",
+    }
+    FIELD_PROMPT_RULES = "领域 field 只能是：" + ", ".join(FIELDS)
+
 ROOT = Path(__file__).resolve().parent
-FIELDS = {
-    "c1": "类器官",
-    "c2": "AI 药物设计",
-    "c3": "肿瘤免疫",
-    "c4": "自身免疫疾病",
-    "c5": "动物模型",
-    "c6": "抗体工程",
-    "c7": "细胞治疗",
-    "c8": "疫苗",
-    "c9": "小核酸与 LNP",
-}
 DEAL_KINDS = {"acq", "lic", "newco", "clin", "inv", "policy"}
 IMAGE_PREFIX = (
     "Flat BioRender-style scientific illustration on white background, "
@@ -114,13 +127,16 @@ def check_anthropic_model() -> str:
     
     try:
         client = Anthropic()
-        client.messages.create(
+        create_kwargs = dict(
             model=model,
             max_tokens=50,
             tools=[test_tool],
             tool_choice={"type": "auto"},
             messages=[{"role": "user", "content": "Call test_tool with ok=true"}],
         )
+        if FIELD_MODULE_AVAILABLE:
+            create_kwargs = claude_create_kwargs(**create_kwargs)
+        client.messages.create(**create_kwargs)
         logging.info("模型 %s 可用（tool_choice=auto 测试通过）", model)
         return model
     except NotFoundError:
@@ -525,7 +541,7 @@ def claude_draft(items: list[dict], config: dict) -> dict:
                         "type": "object",
                         "properties": {
                             "url": {"type": "string", "description": "Original URL from input, copied exactly"},
-                            "field": {"type": "string", "enum": list(FIELDS.keys()), "description": "Primary field based on the research subject"},
+                            "field": {"type": "string", "enum": [*FIELDS.keys(), "none"], "description": "Primary field based on the research subject, or none if out of scope"},
                             "title": {"type": "string", "description": "Chinese title"},
                             "journal": {"type": "string", "description": "Journal name only (Nature, Cell, etc.)"},
                             "authors": {"type": "string", "description": "Author names from source. Required. Must be actual person names, NOT journal or source names."},
@@ -579,14 +595,8 @@ def claude_draft(items: list[dict], config: dict) -> dict:
 
 ## 领域分类规则
 
-领域 field 只能是：{json.dumps(FIELDS, ensure_ascii=False)}
-
-分类必须基于研究的主要对象，而非使用的工具或技术：
-- c5 动物模型：仅当论文的主题是动物模型本身（如新品系建立、模型验证）。如果只是"在小鼠中验证"某疗法，应归到疗法对应的领域。
-- c1 类器官：仅当论文的主题是类器官本身（培养方法、新类型）。用类器官筛选药物归 c2；用类器官研究肿瘤免疫归 c3。
-- c3 肿瘤免疫：包括免疫检查点、肿瘤微环境、CAR-T 等针对肿瘤的免疫疗法。
-- c7 细胞治疗：通用细胞治疗（包括非肿瘤适应症的 CAR-T）。
-- 代谢工程、合成生物学、逆转录转座子研究不属于 c5 动物模型。
+领域 field 只能是：{json.dumps(FIELDS, ensure_ascii=False)}，或 none。
+{FIELD_PROMPT_RULES}
 
 ## 行业动态分类规则
 
@@ -614,13 +624,16 @@ steps 必须是 3-5 个简短步骤（每个≤25字），描述论文的核心�
     data = None
     
     for attempt in range(2):  # One retry if no tool_use block
-        message = client.messages.create(
+        create_kwargs = dict(
             model=model,
             max_tokens=8000,
             tools=[tool_schema],
             tool_choice={"type": "auto"},
             messages=[{"role": "user", "content": prompt}],
         )
+        if FIELD_MODULE_AVAILABLE:
+            create_kwargs = claude_create_kwargs(**create_kwargs)
+        message = client.messages.create(**create_kwargs)
         
         # Extract tool use result
         for block in message.content:
@@ -664,7 +677,7 @@ steps 必须是 3-5 个简短步骤（每个≤25字），描述论文的核心�
             logging.warning("丢弃不在来源里的文章：%s", url)
             continue
         field = raw.get("field")
-        if field not in FIELDS:
+        if field not in FIELDS and field != "none":
             logging.warning("丢弃领域无效的文章：%s", url)
             continue
         
@@ -744,7 +757,10 @@ steps 必须是 3-5 个简短步骤（每个≤25字），描述论文的核心�
         })
     cap_a = int(config.get("max_academic") or 6)
     cap_d = int(config.get("max_industry") or 4)
-    return {"articles": articles[:cap_a], "deals": deals[:cap_d]}
+    articles = articles[:cap_a]
+    if FIELD_MODULE_AVAILABLE:
+        articles = classify_draft_articles(articles, by_url, client=client, model=model)
+    return {"articles": articles, "deals": deals[:cap_d]}
 
 
 def draw_image(prompt: str, dest: Path) -> None:
@@ -781,7 +797,7 @@ def site_article(item: dict, image_rel: str) -> dict:
         "j": item["journal"],
         "url": item["url"],
         "au": item["authors"] or item["source"],
-        "tags": [item["field"]],
+        "tags": [item["field"]] if item.get("field") else [],
         "sum": item["lead"],
         "lead": item["lead"],
         "body": item["body"],
@@ -797,6 +813,11 @@ def site_article(item: dict, image_rel: str) -> dict:
         result["n"] = item["n"]
     if item.get("evidence_level"):
         result["evidence_level"] = item["evidence_level"]
+    if FIELD_MODULE_AVAILABLE:
+        result.update(site_classification_fields(item))
+        if result.get("rf"):
+            primary = result.get("f")
+            result["tags"] = [primary, *result["rf"]] if primary else list(result["rf"])
     return result
 
 
