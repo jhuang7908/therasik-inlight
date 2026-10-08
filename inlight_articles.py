@@ -447,26 +447,38 @@ def scrape_nature_abstract(url: str) -> str:
         return ""
 
 
-def scrape_biorxiv_fulltext(url: str) -> str:
-    """Get bioRxiv/medRxiv full text if available."""
+def fetch_biorxiv_record(url: str) -> dict:
+    """Fetch abstract and authors from the bioRxiv/medRxiv details API."""
     if "biorxiv.org" not in url and "medrxiv.org" not in url:
-        return ""
-    
+        return {}
     doi = extract_doi(url)
     if not doi:
-        return ""
-    
-    api_url = f"https://api.biorxiv.org/details/biorxiv/{doi}"
+        return {}
+    kind = "medrxiv" if "medrxiv.org" in url else "biorxiv"
+    api_url = f"https://api.biorxiv.org/details/{kind}/{doi}"
     data = _http_get(api_url)
-    if data:
-        try:
-            result = json.loads(data.decode("utf-8"))
-            collection = result.get("collection", [])
-            if collection:
-                return collection[0].get("abstract", "")
-        except (json.JSONDecodeError, KeyError):
-            pass
-    return ""
+    if not data:
+        return {}
+    try:
+        result = json.loads(data.decode("utf-8"))
+        collection = result.get("collection", [])
+        if not collection:
+            return {}
+        rec = collection[0]
+        authors = rec.get("authors") or rec.get("author_corresponding") or ""
+        if isinstance(authors, list):
+            authors = ", ".join(str(a) for a in authors if a)
+        return {
+            "abstract": rec.get("abstract") or "",
+            "authors": authors if isinstance(authors, str) else "",
+        }
+    except (json.JSONDecodeError, KeyError, TypeError):
+        return {}
+
+
+def scrape_biorxiv_fulltext(url: str) -> str:
+    """Get bioRxiv/medRxiv abstract if available."""
+    return fetch_biorxiv_record(url).get("abstract", "")
 
 
 def enrich_item(row: dict) -> EnrichedItem:
@@ -523,37 +535,51 @@ def enrich_item(row: dict) -> EnrichedItem:
                     item.evidence_level = "fulltext"
                     item.source_trace.append(f"PMC fulltext: Results {len(item.fulltext_results)} chars, Figs {len(item.fig_captions)} chars")
     
-    if not item.abstract and "nature.com" in item.url:
-        abstract = scrape_nature_abstract(item.url)
-        if abstract:
-            item.abstract = abstract
-            item.evidence_level = "abstract"
-            item.source_trace.append(f"Nature abstract: {len(abstract)} chars")
-    
-    if not item.abstract and item.pmid:
-        abstract = pubmed_efetch_abstract(item.pmid)
-        if abstract:
-            item.abstract = abstract
-            item.evidence_level = "abstract"
-            item.source_trace.append(f"PubMed efetch: {len(abstract)} chars")
-    
-    if not item.abstract and ("biorxiv.org" in item.url or "medrxiv.org" in item.url):
-        abstract = scrape_biorxiv_fulltext(item.url)
-        if abstract:
-            item.abstract = abstract
-            item.evidence_level = "preprint"  # bioRxiv/medRxiv are preprints
-            item.source_trace.append(f"bioRxiv API: {len(abstract)} chars")
-    
-    # Always mark bioRxiv/medRxiv as preprint, even if we got abstract from EPMC
+    # Collect every public abstract and keep the longest BEFORE the
+    # 1200-character deep-tier gate. A short EPMC teaser must not hide
+    # a full PubMed / journal / bioRxiv abstract.
+    abstracts: list[tuple[str, str]] = []
+    if item.abstract:
+        abstracts.append(("EPMC abstract", item.abstract))
+
+    if item.pmid:
+        pm = pubmed_efetch_abstract(item.pmid)
+        if pm:
+            abstracts.append(("PubMed efetch", pm))
+
+    if "nature.com" in item.url:
+        nat = scrape_nature_abstract(item.url)
+        if nat:
+            abstracts.append(("Nature abstract", nat))
+
     if "biorxiv.org" in item.url or "medrxiv.org" in item.url:
-        if item.evidence_level == "abstract":
-            item.evidence_level = "preprint"
-    
-    if not item.abstract:
+        rec = fetch_biorxiv_record(item.url)
+        if rec.get("abstract"):
+            abstracts.append(("bioRxiv API", rec["abstract"]))
+        if rec.get("authors") and not item.authors:
+            item.authors = rec["authors"]
+
+    if abstracts:
+        label, text = max(abstracts, key=lambda x: len(x[1]))
+        item.abstract = text
+        if item.evidence_level != "fulltext":
+            item.evidence_level = "abstract"
+        item.source_trace.append(
+            f"{label}: {len(text)} chars (longest of {len(abstracts)} sources)"
+        )
+    elif item.rss_summary:
         item.abstract = item.rss_summary
         item.evidence_level = "press"
         item.source_trace.append("Fallback to RSS summary")
-    
+
+    if "biorxiv.org" in item.url or "medrxiv.org" in item.url:
+        if item.evidence_level in ("abstract", "press"):
+            item.evidence_level = "preprint"
+        if not item.journal:
+            item.journal = (
+                "medRxiv（预印本）" if "medrxiv.org" in item.url else "bioRxiv（预印本）"
+            )
+
     return item
 
 
@@ -1272,6 +1298,8 @@ LENGTH_BODY_FIELDS = (
     "mechanism", "significance", "limitations",
 )
 MISSING_VALUE_MARK = "未给出"
+BRIEF_HAN_MAX = 900
+SEE_BODY_RE = re.compile(r"详见正文")
 
 
 def identifier_spans(text: str) -> list[tuple[int, int]]:
@@ -2331,6 +2359,8 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
     else:
         if total_chars < 450:
             problems.append(f"brief 档正文 {total_chars} 汉字，低于下限 450 字")
+        elif total_chars > BRIEF_HAN_MAX:
+            problems.append(f"brief 档正文 {total_chars} 汉字，超过上限 {BRIEF_HAN_MAX} 字")
     
     # Evidence level check
     if isinstance(datacard, dict):
@@ -2902,6 +2932,20 @@ def sanitize_published_article(art: dict, enriched: EnrichedItem | None = None) 
     if AUTHOR_PLACEHOLDER_RE.search(authors) or MISSING_VALUE_MARK in authors:
         art["authors"] = ""
 
+    body = " ".join(
+        str(x) for x in (
+            art.get("one_liner"),
+            art.get("results"),
+            art.get("design"),
+            art.get("significance"),
+        ) if x
+    )
+    datacard = art.get("datacard")
+    if isinstance(datacard, dict):
+        for key, val in list(datacard.items()):
+            if SEE_BODY_RE.search(str(val)) and not re.search(r'95\s*%|CI|HR|置信区间', body, re.I):
+                datacard.pop(key, None)
+
     # Final sweep: no remaining literal \n in any string
     def _scrub(obj: Any) -> Any:
         if isinstance(obj, str):
@@ -2913,6 +2957,47 @@ def sanitize_published_article(art: dict, enriched: EnrichedItem | None = None) 
         return obj
 
     return _scrub(art)
+
+
+def count_verified_numeric_claims(art: dict, raw_material: str) -> int:
+    """How many distinct output numbers are source-verified.
+
+    Used so a redraft that deletes correct CIs scores worse than the first draft.
+    """
+    if not art or not raw_material:
+        return 0
+    source_norm = normalize_unit_spacing(normalize_source_text(raw_material))
+    source_raw = normalize_unit_spacing(
+        normalize_source_text(raw_material, convert_english_words=False)
+    )
+    ids = extract_identifiers_from_source(raw_material)
+    parts: list[str] = []
+    for key in ("results", "one_liner", "design", "statistics"):
+        val = art.get(key)
+        if isinstance(val, list):
+            parts.extend(str(x) for x in val if x)
+        elif isinstance(val, str) and val:
+            parts.append(val)
+    datacard = art.get("datacard")
+    if isinstance(datacard, dict):
+        parts.extend(str(v) for v in datacard.values() if v)
+    text = " ".join(parts)
+    seen: set[str] = set()
+    n = 0
+    for num, ctx in extract_numbers_with_context(text) + extract_chinese_numbers_with_context(text):
+        core = extract_number_core(num) or extract_number_core(chinese_numeral_to_arabic(num))
+        if not core or core in seen:
+            continue
+        if number_exists_in_source(num, source_norm, ids, ctx, source_raw=source_raw):
+            seen.add(core)
+            n += 1
+    return n
+
+
+def _draft_quality_score(hard: list[str], problems: list[str], art: dict | None, raw: str) -> tuple:
+    """Lower is better: hard problems, then fewer verified numbers, then total."""
+    verified = count_verified_numeric_claims(art or {}, raw)
+    return (len(hard), -verified, len(problems))
 
 
 def _hard_problems(problems: list[str]) -> list[str]:
@@ -3077,8 +3162,12 @@ def _process_single_article(selection: dict, url_to_enriched: dict, config: dict
             retry_art, retry_problems = _prepare(retry_art)
             retry_hard = _hard_problems(retry_problems)
 
-            first_score = (len(first_hard_problems), len(first_problems))
-            retry_score = (len(retry_hard), len(retry_problems))
+            first_score = _draft_quality_score(
+                first_hard_problems, first_problems, first_art, raw_material
+            )
+            retry_score = _draft_quality_score(
+                retry_hard, retry_problems, retry_art, raw_material
+            )
 
             if retry_score <= first_score:
                 art = retry_art
