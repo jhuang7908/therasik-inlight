@@ -144,7 +144,9 @@ def pipeline_targets(config: dict | None) -> dict:
         "max_deep": int(cfg.get("max_deep") or 5),
         "max_brief": int(cfg.get("max_brief") or 12),
         "max_industry": int(cfg.get("max_industry") or 4),
-        "max_candidates": int(cfg.get("max_candidates") or 30),
+        # 0 = no cap. Only apply when the loaded config sets the key
+        # (production sources.yaml does; acceptance/replay fixtures do not).
+        "max_candidates": int(cfg["max_candidates"]) if cfg.get("max_candidates") else 0,
     }
 
 

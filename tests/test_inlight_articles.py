@@ -2134,14 +2134,52 @@ class TestYieldAndSourceFetch(unittest.TestCase):
         defaults = pipeline_targets({})
         self.assertEqual(defaults["target_articles"], 10)
         self.assertEqual(defaults["target_deep"], 3)
+        self.assertEqual(defaults["max_candidates"], 0)  # no silent cap
         self.assertGreaterEqual(defaults["max_deep"], defaults["target_deep"])
         self.assertGreaterEqual(
             defaults["max_deep"] + defaults["max_brief"], defaults["target_articles"]
         )
-        custom = pipeline_targets({"target_articles": 14, "target_deep": 4, "max_deep": 6})
+        custom = pipeline_targets({
+            "target_articles": 14, "target_deep": 4, "max_deep": 6, "max_candidates": 30,
+        })
         self.assertEqual(custom["target_articles"], 14)
         self.assertEqual(custom["target_deep"], 4)
         self.assertEqual(custom["max_deep"], 6)
+        self.assertEqual(custom["max_candidates"], 30)
+
+    def test_omitted_max_candidates_does_not_drop_later_items(self):
+        """Replay/acceptance fixtures omit the key; do not silently cap at 30."""
+        from inlight_articles import process_articles, EnrichedItem
+
+        n = 35
+        rows = [{
+            "url": f"https://doi.org/10.1/item-{i}",
+            "kind": "academic",
+            "title": f"T{i}",
+            "source": "N",
+            "date": "2026-01-01",
+            "summary": "x" * 80,
+        } for i in range(n)]
+        seen = []
+
+        def fake_enrich(row):
+            seen.append(row["url"])
+            return EnrichedItem(
+                url=row["url"], title=row["title"], source="N",
+                date="2026-01-01", abstract="x" * 80, evidence_level="abstract",
+            )
+
+        with patch("inlight_articles.enrich_item", side_effect=fake_enrich):
+            with patch("inlight_articles.triage_items", return_value=[]):
+                process_articles(rows, {"target_articles": 10, "target_deep": 3})
+        self.assertEqual(len(seen), n)
+        self.assertIn("https://doi.org/10.1/item-34", seen)
+
+        seen.clear()
+        with patch("inlight_articles.enrich_item", side_effect=fake_enrich):
+            with patch("inlight_articles.triage_items", return_value=[]):
+                process_articles(rows, {"max_candidates": 12})
+        self.assertEqual(len(seen), 12)
 
     def test_sources_yaml_exposes_yield_keys(self):
         import yaml
@@ -2152,6 +2190,7 @@ class TestYieldAndSourceFetch(unittest.TestCase):
         self.assertGreaterEqual(int(cfg["target_deep"]), 3)
         self.assertGreaterEqual(int(cfg["max_deep"]), int(cfg["target_deep"]))
         self.assertGreaterEqual(int(cfg["max_brief"]) + int(cfg["max_deep"]), 10)
+        self.assertGreaterEqual(int(cfg["max_candidates"]), 10)
 
     def test_triage_prompt_asks_for_depth_and_quantity(self):
         from inlight_articles import build_triage_prompt, EnrichedItem
