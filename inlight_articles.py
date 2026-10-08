@@ -131,7 +131,21 @@ class EnrichedItem:
     methods_design: str = ""
     evidence_level: str = "press"
     rss_summary: str = ""
+    press_coverage: str = ""  # public press/media text when journal FT is closed
     source_trace: list[str] = field(default_factory=list)
+
+
+def pipeline_targets(config: dict | None) -> dict:
+    """Configurable weekly yield. Defaults match the ACIR-style brief (10 / 3 deep)."""
+    cfg = config or {}
+    return {
+        "target_articles": int(cfg.get("target_articles") or 10),
+        "target_deep": int(cfg.get("target_deep") or 3),
+        "max_deep": int(cfg.get("max_deep") or 5),
+        "max_brief": int(cfg.get("max_brief") or 12),
+        "max_industry": int(cfg.get("max_industry") or 4),
+        "max_candidates": int(cfg.get("max_candidates") or 30),
+    }
 
 
 def extract_doi(url: str) -> str:
@@ -571,6 +585,119 @@ def crossref_abstract(doi: str) -> str:
         return ""
 
 
+def _openalex_deinvert(inv: dict) -> str:
+    if not isinstance(inv, dict) or not inv:
+        return ""
+    size = 0
+    for positions in inv.values():
+        if positions:
+            size = max(size, max(positions) + 1)
+    if size <= 0 or size > 20000:
+        return ""
+    words = [""] * size
+    for word, positions in inv.items():
+        for p in positions or []:
+            if 0 <= p < size:
+                words[p] = str(word)
+    return " ".join(w for w in words if w).strip()
+
+
+def openalex_work(doi: str) -> dict:
+    """OpenAlex work record: reconstructed abstract and OA landing URL."""
+    if not doi:
+        return {}
+    url = "https://api.openalex.org/works/" + urllib.parse.quote(f"https://doi.org/{doi}")
+    data = _http_get(url)
+    if not data:
+        return {}
+    try:
+        msg = json.loads(data.decode("utf-8"))
+    except (json.JSONDecodeError, TypeError):
+        return {}
+    abstract = _openalex_deinvert(msg.get("abstract_inverted_index") or {})
+    oa = ""
+    loc = msg.get("best_oa_location") or msg.get("open_access") or {}
+    if isinstance(loc, dict):
+        oa = loc.get("pdf_url") or loc.get("oa_url") or loc.get("landing_page_url") or ""
+    if not oa and isinstance(msg.get("open_access"), dict):
+        oa = msg["open_access"].get("oa_url") or ""
+    return {"abstract": abstract, "oa_url": oa}
+
+
+def unpaywall_oa_url(doi: str) -> str:
+    """Best public OA URL from Unpaywall. No paywall bypass."""
+    if not doi:
+        return ""
+    url = (
+        "https://api.unpaywall.org/v2/"
+        + urllib.parse.quote(doi)
+        + "?email=frontier%40inlight.therasik.com"
+    )
+    data = _http_get(url)
+    if not data:
+        return ""
+    try:
+        msg = json.loads(data.decode("utf-8"))
+        loc = msg.get("best_oa_location") or {}
+        return loc.get("url_for_pdf") or loc.get("url") or ""
+    except (json.JSONDecodeError, TypeError, AttributeError):
+        return ""
+
+
+def fetch_oa_fulltext(oa_url: str) -> str:
+    """Visible text from a public OA landing page or HTML full text."""
+    if not oa_url or not oa_url.startswith("http"):
+        return ""
+    if oa_url.lower().endswith(".pdf"):
+        return ""
+    text = _html_visible_text(_http_get(oa_url))
+    return text[:20000] if len(text) >= 800 else ""
+
+
+def fetch_press_coverage(title: str, doi: str) -> str:
+    """Public press-release / media text when journal full text is closed."""
+    queries: list[str] = []
+    if doi:
+        queries.append(f'"{doi}" AND ("press release" OR eurekalert OR "news release")')
+    words = [w for w in re.findall(r"[A-Za-z0-9\-]+", title or "") if len(w) > 2][:8]
+    if words:
+        queries.append(
+            "TITLE:\"" + " ".join(words) + "\" AND (\"press release\" OR eurekalert)"
+        )
+    for q in queries:
+        url = "https://www.ebi.ac.uk/europepmc/webservices/rest/search?" + urllib.parse.urlencode({
+            "query": q,
+            "resultType": "core",
+            "format": "json",
+            "pageSize": "3",
+        })
+        data = _http_get(url)
+        if not data:
+            continue
+        try:
+            hits = json.loads(data.decode("utf-8")).get("resultList", {}).get("result", [])
+        except (json.JSONDecodeError, TypeError):
+            continue
+        for hit in hits:
+            if not isinstance(hit, dict):
+                continue
+            hit_doi = (hit.get("doi") or "").lower()
+            if doi and hit_doi == doi.lower():
+                continue
+            text = (hit.get("abstractText") or "").strip()
+            if len(text) >= 200:
+                return text[:8000]
+    if title:
+        ea = (
+            "https://www.eurekalert.org/search/"
+            + urllib.parse.quote(title[:80])
+        )
+        visible = _html_visible_text(_http_get(ea))
+        if len(visible) >= 400 and re.search(r"(?i)press release|embargo|researchers", visible):
+            return visible[:8000]
+    return ""
+
+
 def enrich_item(row: dict) -> EnrichedItem:
     """Enrich an item with abstract/fulltext from public sources.
     
@@ -653,16 +780,33 @@ def enrich_item(row: dict) -> EnrichedItem:
         cr = crossref_abstract(doi)
         if cr:
             abstracts.append(("Crossref abstract", cr))
+        oa_work = openalex_work(doi)
+        if oa_work.get("abstract"):
+            abstracts.append(("OpenAlex abstract", oa_work["abstract"]))
+        oa_url = oa_work.get("oa_url") or unpaywall_oa_url(doi)
+        if oa_url and not item.fulltext_results:
+            ft = fetch_oa_fulltext(oa_url)
+            if ft:
+                item.fulltext_results = ft[:20000]
+                item.evidence_level = "fulltext"
+                item.source_trace.append(f"OA fulltext: {len(ft)} chars from {oa_url[:80]}")
 
     pub = scrape_publisher_abstract(item.url)
     if pub:
         abstracts.append(("publisher abstract", pub))
 
+    press = fetch_press_coverage(item.title, doi)
+    if press:
+        item.press_coverage = press
+        item.source_trace.append(f"press/media: {len(press)} chars")
+        if not item.abstract and not abstracts:
+            abstracts.append(("press coverage", press))
+
     if abstracts:
         label, text = max(abstracts, key=lambda x: len(x[1]))
         item.abstract = text
         if item.evidence_level != "fulltext":
-            item.evidence_level = "abstract"
+            item.evidence_level = "press" if label == "press coverage" else "abstract"
         item.source_trace.append(
             f"{label}: {len(text)} chars (longest of {len(abstracts)} sources)"
         )
@@ -917,9 +1061,12 @@ ARTICLE_TOOL_SCHEMA = {
 
 def build_triage_prompt(items: list[EnrichedItem], config: dict) -> str:
     """Build prompt for triage stage."""
-    max_deep = config.get("max_deep", 3)
-    max_brief = config.get("max_brief", 6)
-    max_industry = config.get("max_industry", 4)
+    t = pipeline_targets(config)
+    max_deep = t["max_deep"]
+    max_brief = t["max_brief"]
+    max_industry = t["max_industry"]
+    target_articles = t["target_articles"]
+    target_deep = t["target_deep"]
     
     items_json = []
     for item in items:
@@ -930,18 +1077,25 @@ def build_triage_prompt(items: list[EnrichedItem], config: dict) -> str:
             "date": item.date,
             "kind": item.kind,
             "evidence_level": item.evidence_level,
+            "abstract_chars": len(item.abstract or ""),
+            "has_fulltext": bool(item.fulltext_results),
+            "has_press": bool(item.press_coverage),
             "abstract_preview": item.abstract[:500] if item.abstract else item.rss_summary[:500],
         })
     
     return f"""你是前沿追踪的选题编辑。下面是本周抓到的条目，请挑选最重要的进入本期周报。
 
+本期对标 ACIR 周报：要有深度，也要有数量。目标是发表至少 {target_articles} 篇解读，其中至少 {target_deep} 篇深度（机制 + 数据 + 意义 + 局限）。上限高于目标，以便核对淘汰后仍够量。宁可少发，不可发错。
+
 ## 选题规则
 
-1. 最多选 {max_deep} 篇深度解读（tier=deep），必须有 fulltext 或 abstract 级别的证据
-2. 最多选 {max_brief} 篇论文速览（tier=brief）
-3. 最多选 {max_industry} 条行业动态（tier=industry）
-4. evidence_level 为 press/secondary 的条目只能选为 brief 或 industry，不能选为 deep
-5. 优先选择：临床试验结果、首次人体数据、平台级方法突破、有开放获取全文的重要发现
+1. 最多选 {max_deep} 篇深度解读（tier=deep）。必须有开放获取全文或足够长的摘要（evidence_level 为 fulltext / abstract / preprint），写出机制、数据、意义与局限。优先给有全文的条目。新闻稿不能单独支撑 deep。
+2. 最多选 {max_brief} 篇论文速览（tier=brief）。深度名额用满后再用速览凑数量。
+3. 合计尽量接近 {target_articles} 篇（deep+brief），不要只选两三篇。
+4. 最多选 {max_industry} 条行业动态（tier=industry）
+5. evidence_level 为 press/secondary 的条目只能选为 brief 或 industry，不能选为 deep
+6. 优先选择：临床试验结果、首次人体数据、平台级方法突破、有开放获取全文的重要发现
+7. 不要为凑数降低事实标准。材料不够写解读的条目不要选。
 
 ## 领域分类
 
@@ -965,9 +1119,18 @@ def _article_prompt_abstract(item: EnrichedItem) -> str:
         # Only append the RSS teaser when it is not the same text as the abstract
         if rss and not is_near_duplicate(rss, abstract):
             parts.append("RSS 摘要：\n" + rss[:8000])
+        press = (item.press_coverage or "").strip()
+        if press and not is_near_duplicate(press, abstract):
+            parts.append("公开新闻稿 / 媒体报道（期刊全文不可得时的补充材料，不得写成已读全文）：\n" + press[:8000])
         return "\n".join(parts)
-    if rss:
-        return rss[:8000]
+    press = (item.press_coverage or "").strip()
+    if rss or press:
+        extra = []
+        if rss:
+            extra.append(rss[:8000])
+        if press and (not rss or not is_near_duplicate(press, rss)):
+            extra.append("公开新闻稿 / 媒体报道：\n" + press[:8000])
+        return "\n".join(extra)
     return "无"
 
 
@@ -3227,7 +3390,7 @@ def triage_items(items: list[EnrichedItem], config: dict) -> list[dict]:
     client = Anthropic()
     message = client.messages.create(
         model=model,
-        max_tokens=2000,
+        max_tokens=4000,
         tools=[TRIAGE_TOOL_SCHEMA],
         tool_choice={"type": "auto"},
         messages=[{"role": "user", "content": prompt}],
@@ -3752,50 +3915,133 @@ def _hard_problems(problems: list[str]) -> list[str]:
     return [p for p in problems if any(m in p for m in markers)]
 
 
+def _source_bucket(item: EnrichedItem) -> str:
+    if item.fulltext_results:
+        return "fulltext"
+    if item.evidence_level == "preprint":
+        return "preprint"
+    if item.press_coverage and item.evidence_level == "press":
+        return "press"
+    if item.abstract and item.evidence_level != "press":
+        return "abstract"
+    return "press"
+
+
+def log_run_yield(stats: dict, config: dict | None) -> None:
+    """Per-run yield log. Targets are aims; accuracy is never relaxed to hit them."""
+    t = pipeline_targets(config)
+    src = stats.get("sources") or {}
+    logging.info("=== 周报产量 ===")
+    logging.info(
+        "候选：抓取 %d，选题 %d（目标发表 %d，目标深度 %d；上限 deep %d / brief %d）",
+        stats.get("candidates_fetched", 0),
+        stats.get("candidates_triaged", 0),
+        t["target_articles"], t["target_deep"], t["max_deep"], t["max_brief"],
+    )
+    logging.info(
+        "来源：全文 %d / 摘要 %d / 新闻稿 %d / 预印本 %d",
+        src.get("fulltext", 0), src.get("abstract", 0),
+        src.get("press", 0), src.get("preprint", 0),
+    )
+    logging.info(
+        "发表：深度 %d / 速览 %d / 丢弃 %d",
+        stats.get("published_deep", 0),
+        stats.get("published_brief", 0),
+        stats.get("dropped", 0),
+    )
+    for drop in stats.get("drops") or []:
+        logging.info("丢弃 %s：%s", drop.get("url", ""), drop.get("reason", ""))
+    published = stats.get("published_deep", 0) + stats.get("published_brief", 0)
+    if published < t["target_articles"] or stats.get("published_deep", 0) < t["target_deep"]:
+        logging.warning(
+            "产量低于目标：发表 %d（深度 %d）< 目标 %d（深度 %d）。未放宽核对。",
+            published, stats.get("published_deep", 0),
+            t["target_articles"], t["target_deep"],
+        )
+
+
+LAST_RUN_STATS: dict = {}
+
+
 def process_articles(items: list[dict], config: dict) -> dict:
     """Process items through enrichment, triage, drafting, and validation.
     
     Returns dict with articles and deals (deals passed through unchanged).
     """
+    t = pipeline_targets(config)
     academic_items = [item for item in items if item.get("kind") == "academic"]
-    industry_items = [item for item in items if item.get("kind") != "academic"]
+    if t["max_candidates"] and len(academic_items) > t["max_candidates"]:
+        logging.info(
+            "Capping academic candidates %d → %d for enrich/triage",
+            len(academic_items), t["max_candidates"],
+        )
+        academic_items = academic_items[: t["max_candidates"]]
     
     logging.info("Enriching %d academic items", len(academic_items))
     enriched = [enrich_item(item) for item in academic_items]
     
+    source_counts = {"fulltext": 0, "abstract": 0, "press": 0, "preprint": 0}
+    for item in enriched:
+        source_counts[_source_bucket(item)] = source_counts.get(_source_bucket(item), 0) + 1
+        logging.info(
+            "来源抓取 %s：%s（%s）",
+            item.url, _source_bucket(item), "; ".join(item.source_trace[-3:]),
+        )
+    
     selections = triage_items(enriched, config)
+    academic_sels = [s for s in selections if s.get("tier") != "industry"]
+    
+    stats = {
+        "candidates_fetched": len(academic_items),
+        "candidates_triaged": len(academic_sels),
+        "sources": source_counts,
+        "published_deep": 0,
+        "published_brief": 0,
+        "dropped": 0,
+        "drops": [],
+    }
     
     url_to_enriched = {e.url: e for e in enriched}
-    url_to_selection = {s["url"]: s for s in selections}
     
     articles = []
     for selection in selections:
         url = selection["url"]
         tier = selection["tier"]
-        field = selection["field"]
         
         if tier == "industry":
             continue
         
-        # Wrap ALL per-article processing in try-except
-        # One article's failure should NEVER crash the whole run
         try:
-            art = _process_single_article(selection, url_to_enriched, config)
+            art = _process_single_article(selection, url_to_enriched, config, stats=stats)
             if art:
                 articles.append(art)
+                if art.get("tier") == "deep":
+                    stats["published_deep"] += 1
+                else:
+                    stats["published_brief"] += 1
+            else:
+                stats["dropped"] += 1
+                if not any(d.get("url") == url for d in stats["drops"]):
+                    stats["drops"].append({"url": url, "reason": "dropped after validation"})
         except Exception as e:
             logging.error("EXCEPTION processing article %s: %s - dropping this article, run continues", url, e)
             import traceback
             logging.debug("Traceback: %s", traceback.format_exc())
+            stats["dropped"] += 1
+            stats["drops"].append({"url": url, "reason": f"exception: {e}"})
             continue
     
-    # Process industry items: they stay on the existing claude_draft path
-    # Don't return raw industry items - return empty list
-    # Industry items should continue using the old claude_draft deals path
-    return {"articles": articles, "deals": []}
+    stats["dropped"] = len(stats["drops"])
+    LAST_RUN_STATS.clear()
+    LAST_RUN_STATS.update(stats)
+    log_run_yield(stats, config)
+    
+    return {"articles": articles, "deals": [], "stats": stats}
 
 
-def _process_single_article(selection: dict, url_to_enriched: dict, config: dict) -> dict | None:
+def _process_single_article(
+    selection: dict, url_to_enriched: dict, config: dict, stats: dict | None = None,
+) -> dict | None:
     """Process a single article through drafting, validation, and transformation.
     
     Extracted to allow per-article exception handling in process_articles.
@@ -3804,11 +4050,17 @@ def _process_single_article(selection: dict, url_to_enriched: dict, config: dict
     url = selection["url"]
     tier = selection["tier"]
     field = selection["field"]
+
+    def drop(reason: str):
+        logging.error("Dropping %s: %s", url, reason)
+        if stats is not None:
+            stats.setdefault("drops", []).append({"url": url, "reason": reason})
+        return None
     
     enriched_item = url_to_enriched.get(url)
     if not enriched_item:
         logging.warning("Skipping unknown URL from triage: %s", url)
-        return None
+        return drop("unknown URL from triage")
     
     if enriched_item.evidence_level in ("press", "secondary") and tier == "deep":
         logging.warning("Downgrading %s from deep to brief (evidence: %s)", url, enriched_item.evidence_level)
@@ -3838,6 +4090,9 @@ def _process_single_article(selection: dict, url_to_enriched: dict, config: dict
     if enriched_item.rss_summary:
         if not enriched_item.abstract or not is_near_duplicate(enriched_item.rss_summary, enriched_item.abstract):
             raw_parts.append(enriched_item.rss_summary)
+    if enriched_item.press_coverage:
+        if not any(is_near_duplicate(enriched_item.press_coverage, p) for p in raw_parts if p):
+            raw_parts.append(enriched_item.press_coverage)
     raw_material = "\n".join(raw_parts)
     
     def _prepare(draft: dict | None) -> tuple[dict | None, list[str]]:
@@ -3857,7 +4112,7 @@ def _process_single_article(selection: dict, url_to_enriched: dict, config: dict
         art = draft_single_article(enriched_item, tier, config)
     if not art:
         logging.warning("Failed to draft article for: %s", url)
-        return None
+        return drop("draft failed")
 
     art, problems = _prepare(art)
 
@@ -3887,7 +4142,7 @@ def _process_single_article(selection: dict, url_to_enriched: dict, config: dict
                 retry_art = draft_single_article(enriched_item, "brief", config)
                 if retry_art is None:
                     logging.error("Brief fallback also failed, dropping: %s", url)
-                    return None
+                    return drop("brief fallback draft failed")
                 tier = "brief"
                 art, problems = _prepare(retry_art)
             elif first_has_soft_only:
@@ -3896,7 +4151,7 @@ def _process_single_article(selection: dict, url_to_enriched: dict, config: dict
                 problems = first_problems
             else:
                 logging.error("Dropping %s after failed redraft: %s", url, first_hard_problems)
-                return None
+                return drop("redraft failed: " + "; ".join(first_hard_problems[:4]))
         else:
             retry_art, retry_problems = _prepare(retry_art)
             retry_hard = _hard_problems(retry_problems)
@@ -3927,30 +4182,30 @@ def _process_single_article(selection: dict, url_to_enriched: dict, config: dict
                         brief_art = draft_single_article(enriched_item, "brief", config, problems=problems)
                         if brief_art is None:
                             logging.error("Brief targeted redraft failed, dropping: %s", url)
-                            return None
+                            return drop("brief redraft failed")
                         tier = "brief"
                         art, problems = _prepare(brief_art)
                         hard_problems = _hard_problems(problems)
                         if hard_problems:
                             logging.error("Dropping %s after brief redraft - hard problems: %s", url, hard_problems)
-                            return None
+                            return drop("brief redraft still hard: " + "; ".join(hard_problems[:4]))
                         if problems:
                             logging.warning("Accepting %s with soft problems: %s", url, problems)
                     else:
                         logging.error("Dropping %s after retry - hard problems: %s", url, hard_problems)
-                        return None
+                        return drop("retry still hard: " + "; ".join(hard_problems[:4]))
                 else:
                     logging.warning("Accepting %s with soft-only problems: %s", url, soft_problems)
 
     if _hard_problems(problems):
         logging.error("Dropping %s with remaining hard problems: %s", url, _hard_problems(problems))
-        return None
+        return drop("hard problems remain: " + "; ".join(_hard_problems(problems)[:4]))
 
     art, dropped = _run_claim_verifier_stage(
         art, problems, raw_material, enriched_item, config, tier, field,
     )
     if dropped or not art:
-        return None
+        return drop("claim verifier: " + "; ".join((LAST_CLAIM_AUDIT.get("problems") or ["rejected"])[:4]))
 
     # Transform new format to include legacy fields needed by write_output
     # Add date from enriched item

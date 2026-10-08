@@ -511,6 +511,15 @@ def fetch_all(config: dict) -> list[dict]:
         else:
             logging.info("  %s: %d 条", stat["name"], stat["count"])
     logging.info("总计 %d 条新内容", len(rows))
+    max_candidates = int(config.get("max_candidates") or 0)
+    if max_candidates:
+        academic = [r for r in rows if r.get("kind") == "academic"]
+        industry = [r for r in rows if r.get("kind") != "academic"]
+        if len(academic) > max_candidates:
+            logging.info("候选池 academic %d → %d (max_candidates)", len(academic), max_candidates)
+            academic = academic[:max_candidates]
+        rows = academic + industry
+        logging.info("送去管线的学术候选 %d，行业 %d", len(academic), len(industry))
     
     return rows
 

@@ -2125,5 +2125,196 @@ class TestClaimVerifier(unittest.TestCase):
         self.assertIn("527", item.abstract)
 
 
+class TestYieldAndSourceFetch(unittest.TestCase):
+    """ACIR-style quantity/depth targets without relaxing accuracy."""
+
+    def test_pipeline_targets_from_config(self):
+        from inlight_articles import pipeline_targets
+
+        defaults = pipeline_targets({})
+        self.assertEqual(defaults["target_articles"], 10)
+        self.assertEqual(defaults["target_deep"], 3)
+        self.assertGreaterEqual(defaults["max_deep"], defaults["target_deep"])
+        self.assertGreaterEqual(
+            defaults["max_deep"] + defaults["max_brief"], defaults["target_articles"]
+        )
+        custom = pipeline_targets({"target_articles": 14, "target_deep": 4, "max_deep": 6})
+        self.assertEqual(custom["target_articles"], 14)
+        self.assertEqual(custom["target_deep"], 4)
+        self.assertEqual(custom["max_deep"], 6)
+
+    def test_sources_yaml_exposes_yield_keys(self):
+        import yaml
+        from pathlib import Path
+
+        cfg = yaml.safe_load(Path(__file__).resolve().parent.parent.joinpath("sources.yaml").read_text())
+        self.assertGreaterEqual(int(cfg["target_articles"]), 10)
+        self.assertGreaterEqual(int(cfg["target_deep"]), 3)
+        self.assertGreaterEqual(int(cfg["max_deep"]), int(cfg["target_deep"]))
+        self.assertGreaterEqual(int(cfg["max_brief"]) + int(cfg["max_deep"]), 10)
+
+    def test_triage_prompt_asks_for_depth_and_quantity(self):
+        from inlight_articles import build_triage_prompt, EnrichedItem
+
+        items = [EnrichedItem(
+            url="https://doi.org/10.1/example", title="T", source="N", date="2026-01-01",
+            abstract="x" * 100, evidence_level="abstract",
+        )]
+        prompt = build_triage_prompt(items, {})
+        self.assertIn("至少 10", prompt)
+        self.assertIn("至少 3", prompt)
+        self.assertIn("宁可少发，不可发错", prompt)
+        self.assertIn("机制", prompt)
+
+    def test_enrich_oa_fulltext_and_press_fallback(self):
+        from inlight_articles import enrich_item
+
+        epmc = json.dumps({
+            "resultList": {"result": [{
+                "abstractText": "Short teaser only.",
+                "pmid": "1",
+                "isOpenAccess": "N",
+                "doi": "10.1038/s41467-026-00001-x",
+            }]},
+        }).encode()
+        openalex = json.dumps({
+            "abstract_inverted_index": {
+                "Fezolinetant": [0], "reduced": [1], "VMS": [2],
+                "by": [3], "64%": [4], "in": [5], "527": [6], "women": [7],
+            },
+            "best_oa_location": {"landing_page_url": "https://example.org/oa-html"},
+        }).encode()
+        oa_html = (
+            "<html><body>" +
+            ("Results: fezolinetant 45 mg reduced VMS frequency by 64% among 527 women. " * 30) +
+            "</body></html>"
+        ).encode()
+        press_epmc = json.dumps({
+            "resultList": {"result": [{
+                "doi": "10.9999/press-item",
+                "abstractText": (
+                    "In a press briefing researchers said fezolinetant 45 mg cut "
+                    "hot-flash frequency by 64 percent in 527 women at week 12."
+                ),
+            }]},
+        }).encode()
+
+        def http(url, timeout=30):
+            if "europepmc.org" in url and "press release" in url:
+                return press_epmc
+            if "europepmc.org" in url:
+                return epmc
+            if "openalex.org" in url:
+                return openalex
+            if "example.org/oa-html" in url:
+                return oa_html
+            return None
+
+        with patch("inlight_articles._http_get", side_effect=http):
+            item = enrich_item({
+                "url": "https://doi.org/10.1038/s41467-026-00001-x",
+                "title": "Fezolinetant SKYLIGHT 1 VMS trial",
+                "source": "Nature Communications",
+                "date": "2026-01-01",
+                "kind": "academic",
+                "summary": "RSS teaser",
+            })
+        self.assertEqual(item.evidence_level, "fulltext")
+        self.assertIn("64%", item.fulltext_results)
+        self.assertTrue(item.press_coverage)
+        self.assertIn("press", " ".join(item.source_trace).lower() + " media")
+
+    def test_press_only_cannot_be_deep(self):
+        from inlight_articles import EnrichedItem, _process_single_article
+
+        item = EnrichedItem(
+            url="https://example.org/press-only",
+            title="Press note",
+            source="EurekAlert",
+            date="2026-01-01",
+            abstract="A news note with no paper abstract.",
+            press_coverage="Institution press release repeating the news note.",
+            evidence_level="press",
+        )
+        drafted = None
+
+        def fake_draft(it, tier, config, problems=None):
+            nonlocal drafted
+            drafted = tier
+            return None
+
+        with patch("inlight_articles.draft_single_article", side_effect=fake_draft):
+            _process_single_article(
+                {"url": item.url, "tier": "deep", "field": "c4"},
+                {item.url: item},
+                {},
+            )
+        self.assertEqual(drafted, "brief")
+
+    def test_press_does_not_launder_invented_numbers(self):
+        from inlight_articles import validate_depth
+
+        art = {
+            "tier": "brief",
+            "title": "缓解率99%",
+            "one_liner": "缓解率99%。",
+            "background": "背景句。" * 20,
+            "design": "设计句。" * 15,
+            "results": ["客观缓解率达到99%。"],
+            "mechanism": "",
+            "limitations": ["单臂"],
+            "significance": "若属实或改变实践。",
+            "datacard": {"n": "10例"},
+            "data_points": [],
+            "url": "https://doi.org/10.1/x",
+        }
+        source = (
+            "A phase 2 study enrolled 10 patients. The objective response rate was 40%. "
+            "Institution press release: investigators described a 40% response."
+        )
+        problems = validate_depth(art, source)
+        self.assertTrue(any("99" in p for p in problems), problems)
+
+    def test_run_stats_log_deep_brief_and_drops(self):
+        from inlight_articles import process_articles, LAST_RUN_STATS, EnrichedItem
+
+        item = EnrichedItem(
+            url="https://doi.org/10.1/yield",
+            title="T",
+            source="N",
+            date="2026-01-01",
+            abstract="The rate was 40% in 10 patients.",
+            evidence_level="abstract",
+        )
+        stats_holder = {}
+
+        def fake_enrich(row):
+            return item
+
+        def fake_triage(items, config):
+            return [{"url": item.url, "tier": "brief", "field": "c3"}]
+
+        def fake_process(selection, url_to, config, stats=None):
+            if stats is not None:
+                stats.setdefault("drops", []).append(
+                    {"url": item.url, "reason": "retry still hard: 数字 '99%' 在原始材料中未找到"}
+                )
+            return None
+
+        with patch("inlight_articles.enrich_item", side_effect=fake_enrich):
+            with patch("inlight_articles.triage_items", side_effect=fake_triage):
+                with patch("inlight_articles._process_single_article", side_effect=fake_process):
+                    out = process_articles(
+                        [{"url": item.url, "kind": "academic", "title": "T",
+                          "source": "N", "date": "2026-01-01", "summary": "x" * 80}],
+                        {"target_articles": 10, "target_deep": 3},
+                    )
+        self.assertEqual(out["articles"], [])
+        self.assertEqual(LAST_RUN_STATS["dropped"], 1)
+        self.assertEqual(LAST_RUN_STATS["candidates_triaged"], 1)
+        self.assertTrue(LAST_RUN_STATS["drops"])
+        self.assertIn("99%", LAST_RUN_STATS["drops"][0]["reason"])
+
+
 if __name__ == "__main__":
     unittest.main()

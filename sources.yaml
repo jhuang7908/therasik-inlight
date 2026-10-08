@@ -5,8 +5,15 @@
 # needs_browser_ua: true 表示需要用浏览器 User-Agent 抓取
 
 window_days: 7
-max_per_source: 6
-max_academic: 6
+# ACIR-style weekly yield. These are aims, not quotas: never relax accuracy
+# to hit them. Missing an article is OK; publishing a wrong one is not.
+target_articles: 10   # 解读 to aim for (deep + brief)
+target_deep: 3        # of those, at least this many deep
+max_deep: 5           # triage cap (above target so validation drops still leave 3)
+max_brief: 12         # triage cap
+max_candidates: 30    # academic items to enrich and triage
+max_per_source: 10
+max_academic: 16      # legacy-path publish cap; new pipeline uses the targets above
 max_industry: 4
 
 sources:
@@ -35,6 +42,18 @@ sources:
     url: https://www.nature.com/nbt
     feed: https://www.nature.com/nbt.rss
 
+  - name: Nature Communications
+    kind: academic
+    type: rss
+    url: https://www.nature.com/ncomms
+    feed: https://www.nature.com/ncomms.rss
+
+  - name: Nature Immunology
+    kind: academic
+    type: rss
+    url: https://www.nature.com/ni
+    feed: https://www.nature.com/ni.rss
+
   - name: Science
     kind: academic
     type: rss
@@ -55,6 +74,13 @@ sources:
     feed: https://connect.biorxiv.org/biorxiv_xml.php?subject=immunology
     needs_browser_ua: true
     biorxiv_category: immunology  # For API fallback when RSS fails
+
+  - name: medRxiv
+    kind: academic
+    type: rss
+    url: https://www.medrxiv.org
+    feed: https://connect.medrxiv.org/medrxiv_xml.php?subject=all
+    needs_browser_ua: true
 
   - name: PubMed
     kind: academic
