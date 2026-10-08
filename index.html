@@ -379,7 +379,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
   .item h3,.card h3{font-size:12px;-webkit-line-clamp:2;min-height:calc(2 * 1.45 * 12px)}
   .cbody{padding:6px 8px 8px;gap:3px}
   /* Tags: max 1 visible, truncate */
-  .metarow .tagrow .kind{max-width:50px}
+  .metarow .tagrow .kind{max-width:60px}
   .metarow .tagrow .kind:nth-child(n+2){display:none}
   .idate{font-size:11px}
   .jname{font-size:10px;display:none}
@@ -1082,7 +1082,7 @@ function dealCard(x,i){
       <div class="money">${x.m}</div>
       <div class="metarow"><span class="idate">${y}.${String(+mo).padStart(2,'0')}</span>
         <span class="tagrow">${tags}</span>
-        <button class="expbtn" type="button" aria-expanded="false" data-exp="${i}">详情 ↓</button></div>
+        <button class="expbtn" type="button" aria-expanded="false" data-key="${x.url}">详情 ↓</button></div>
     </div></div>`;
 }
 let activePanel=null, activeCard=null, activeBtn=null;
@@ -1093,7 +1093,7 @@ function getGridCols(grid){
 function getCardIndex(card,grid){
   return [...grid.children].filter(c=>!c.classList.contains('feed-details-panel')).indexOf(card);
 }
-function insertDetailsPanel(card,grid,dealData){
+function insertDetailsPanel(card,grid,dealData,panelId){
   const cols=getGridCols(grid);
   const idx=getCardIndex(card,grid);
   const rowEnd=Math.ceil((idx+1)/cols)*cols;
@@ -1102,6 +1102,7 @@ function insertDetailsPanel(card,grid,dealData){
   const tags=dealData.kinds.map(k=>`<span class="kind" style="--kc:${KINDS[k][1]}">${KINDS[k][0]}</span>`).join('');
   const panel=document.createElement('div');
   panel.className='feed-details-panel';
+  panel.id=panelId||'';
   panel.innerHTML=`<div class="panel-tags">${tags}</div>
     ${dealData.ms?`<p class="msline">${dealData.ms}</p>`:''}
     <p>${dealData.why}</p>
@@ -1110,14 +1111,14 @@ function insertDetailsPanel(card,grid,dealData){
   return panel;
 }
 function closeDetailsPanel(){
+  const btn=activeBtn;
   if(activePanel){activePanel.remove();activePanel=null;}
   if(activeCard){activeCard.classList.remove('expanded');activeCard=null;}
-  if(activeBtn){activeBtn.setAttribute('aria-expanded','false');activeBtn.textContent='详情 ↓';activeBtn=null;}
+  if(btn){btn.setAttribute('aria-expanded','false');btn.removeAttribute('aria-controls');btn.textContent='详情 ↓';btn.focus();}
+  activeBtn=null;
 }
-function getDealData(idx,feedId){
-  if(feedId==='homefeed') return DEALS[idx];
-  const rows=DEALS.filter(x=>filter==='all'||x.kinds.includes(filter));
-  return rows[idx];
+function getDealByKey(key){
+  return DEALS.find(d=>d.url===key);
 }
 document.addEventListener('click',e=>{
   const closeBtn=e.target.closest&&e.target.closest('.close-btn');
@@ -1127,19 +1128,22 @@ document.addEventListener('click',e=>{
   const item=b.closest('.item');
   const grid=item.closest('.feed');
   if(!grid) return;
-  const expIdx=parseInt(b.dataset.exp.replace(/[^0-9]/g,''),10);
-  const feedId=grid.id;
   const isOpen=item.classList.contains('expanded');
   closeDetailsPanel();
   if(isOpen) return;
-  const dealData=getDealData(expIdx,feedId);
+  const dealData=getDealByKey(b.dataset.key);
   if(!dealData) return;
   activeCard=item;
   activeBtn=b;
   item.classList.add('expanded');
+  const panelId='details-panel-'+Date.now();
   b.setAttribute('aria-expanded','true');
+  b.setAttribute('aria-controls',panelId);
   b.textContent='收起 ↑';
-  activePanel=insertDetailsPanel(item,grid,dealData);
+  activePanel=insertDetailsPanel(item,grid,dealData,panelId);
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&activePanel) closeDetailsPanel();
 });
 function repaintCatalog(){
   document.getElementById('latestgrid').innerHTML=CAT.slice(0,8).map((a,i)=>catCard(a,'l'+i)).join('');
@@ -1187,20 +1191,15 @@ const hfHtml=DEALS.slice(0,4).map((x,i)=>dealCard(x,'h'+i)).join('');
 const lg=document.getElementById('latestgrid');
 let lgHtml='';
 function refit(){ setHtml(lg,lgHtml); setHtml(hf,hfHtml); }
-let rt,lastCols=0;
+let rt;
 addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{
-  if(!activePanel||!activeCard) return;
+  if(!activePanel||!activeCard||!activeCard.isConnected) return;
   const grid=activeCard.closest('.feed');
   if(!grid) return;
-  const cols=getGridCols(grid);
-  if(cols!==lastCols){
-    const dealIdx=parseInt(activeBtn.dataset.exp.replace(/[^0-9]/g,''),10);
-    const feedId=grid.id;
-    const dealData=getDealData(dealIdx,feedId);
-    activePanel.remove();
-    activePanel=insertDetailsPanel(activeCard,grid,dealData);
-    lastCols=cols;
-  }
+  const cards=[...grid.children].filter(c=>!c.classList.contains('feed-details-panel'));
+  const i=cards.indexOf(activeCard),cols=getGridCols(grid);
+  const anchor=cards[Math.min(Math.ceil((i+1)/cols)*cols,cards.length)-1];
+  if(activePanel.previousElementSibling!==anchor) anchor.after(activePanel);
 },150)});
 
 const views=[...document.querySelectorAll('.view')];
