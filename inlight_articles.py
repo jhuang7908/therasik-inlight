@@ -1074,13 +1074,13 @@ def number_in_text_as_word_boundary(number: str, text: str) -> bool:
     return bool(re.search(pattern, text_clean))
 
 
-def normalize_source_text(text: str) -> str:
+def normalize_source_text(text: str, *, convert_english_words: bool = True) -> str:
     """Normalize source text for number/name comparison.
     
     Applies:
     - Lowercase
     - Whitespace normalization
-    - English number words to digits (nine -> 9)
+    - English number words to digits (nine -> 9), unless convert_english_words=False
     - Unicode superscripts to plain (10⁶ -> 10^6)
     - Thousands separators removed (1,139 -> 1139)
     - En-dash ranges (10–20 -> 10-20)
@@ -1089,8 +1089,10 @@ def normalize_source_text(text: str) -> str:
     result = text.lower()
     result = re.sub(r'\s+', ' ', result)
     
-    # English number words
-    result = english_number_to_arabic(result)
+    # English number words. Callers that need to distinguish a real Arabic
+    # digit from a converted word (six → 6) pass convert_english_words=False.
+    if convert_english_words:
+        result = english_number_to_arabic(result)
     
     # Superscripts to caret notation
     sup_map = {'⁰': '0', '¹': '1', '²': '2', '³': '3', '⁴': '4',
@@ -1161,10 +1163,10 @@ def extract_identifiers_from_source(source: str) -> set[str]:
 # must not be extracted as claimed numbers and must not evidence a count/% .
 _IDENTIFIER_TOKEN_RE = re.compile(
     r'(?i)(?:'
-    r'(?:CD|IL|HLA|IFN|NK|NF|CCR|CCL|CXCL|CXCR|Th|TAK|PD|MK|p)\s*-?\s*[A-Za-z]?\d+[A-Za-z0-9./-]*'
+    # Gene/protein/strain/compound tokens: letters + digits (Dsg2, CD14, p38, MK-25)
+    r'(?<![A-Za-z0-9])[A-Za-z][A-Za-z]{0,10}-?\d+[A-Za-z0-9./-]*'
     r'|(?:NCT|RPCEC|ISRCTN|EudraCT|ACTRN|ChiCTR)\d+'
     r'|Nissle\s+\d+'
-    r'|(?<![A-Za-z0-9])[A-Z]\d+(?![A-Za-z0-9])'
     r')'
 )
 
@@ -1244,8 +1246,98 @@ def source_has_equivalent_number(num_core: str, context: str, source_norm: str) 
     return False
 
 
+# Unit classes attached to a number. A time or dose quantity is a different
+# dimension from a clinical count or rate: "1-year" does not evidence "1例",
+# and "six doses" does not evidence "6例" / "6%".
+UNIT_COUNT = "count"
+UNIT_RATE = "rate"
+UNIT_TIME = "time"
+UNIT_DOSE = "dose"
+_CLINICAL_UNITS = {UNIT_COUNT, UNIT_RATE, None}
+
+
+def classify_unit_after(text: str, num_end: int) -> str | None:
+    """Unit class of the token immediately following a number."""
+    after = text[num_end:num_end + 18]
+    if re.match(r'(?i)[\s\-]*(years?|months?|weeks?|days?|hours?|yrs?|hrs?|年|个?月|周|天|日|小时)', after):
+        return UNIT_TIME
+    if re.match(r'(?i)[\s\-]*(doses?|dosing|mg\b|μg\b|ug\b|µg\b|剂)', after):
+        return UNIT_DOSE
+    if re.match(r'(?i)\s*(例|名|位|patients?|subjects?|participants?|cases?)', after):
+        return UNIT_COUNT
+    if re.match(r'(?i)\s*(%|％|percent)', after):
+        return UNIT_RATE
+    if after.startswith("次"):
+        return UNIT_DOSE
+    return None
+
+
+def classify_unit_in_context(context: str, num_core: str) -> str | None:
+    """Unit class claimed by a non-identifier occurrence of num_core.
+
+    Identifier digits (the 6 in IL-6) are ignored so a nearby "6例" still
+    classifies as a count.
+    """
+    if not context or not num_core:
+        return None
+    id_spans = identifier_spans(context)
+    determined = []
+    for match in re.finditer(re.escape(num_core), context):
+        if span_covers(match.start(), match.end(), id_spans):
+            continue
+        cls = classify_unit_after(context, match.end())
+        if cls is not None:
+            determined.append(cls)
+    if determined:
+        return determined[0]
+    return None
+
+
+def _occurrence_unit_classes(num_core: str, source: str) -> list[str | None]:
+    """Unit class of every standalone occurrence of num_core in source.
+
+    Letters immediately after the digits are allowed so "100mg" still counts
+    as a dose; they are not treated as a larger identifier.
+    """
+    if not num_core or not source:
+        return []
+    pattern = rf'(?<![a-zA-Z0-9.\-]){re.escape(num_core)}(?![0-9.])'
+    id_spans = identifier_spans(source)
+    classes = []
+    for m in re.finditer(pattern, source):
+        if span_covers(m.start(), m.end(), id_spans):
+            continue
+        classes.append(classify_unit_after(source, m.end()))
+    return classes
+
+
+def _number_presence(num_core: str, source: str, out_class: str | None) -> str:
+    """How a standalone number in source relates to the claimed unit class.
+
+    Returns:
+        "ok"               – number is usable evidence for this claim
+        "wrong_dimension"  – number exists only as time/dose/etc. while the
+                             claim is a clinical count or rate
+        "no"               – number is not present as standalone data
+    """
+    if not number_in_text_as_word_boundary(num_core, source):
+        return "no"
+    classes = _occurrence_unit_classes(num_core, source)
+    if not classes:
+        return "no"
+    if out_class in (UNIT_COUNT, UNIT_RATE):
+        if any(c in _CLINICAL_UNITS for c in classes):
+            return "ok"
+        return "wrong_dimension"
+    if out_class in (UNIT_TIME, UNIT_DOSE):
+        if any(c in (out_class, None) for c in classes):
+            return "ok"
+        return "no"
+    return "ok"
+
+
 def number_exists_in_source(num_str: str, source_norm: str, source_identifiers: set[str], 
-                            context_window: str = "") -> bool:
+                            context_window: str = "", source_raw: str | None = None) -> bool:
     """Check if a number exists in the source text (after normalization).
     
     Returns True ONLY if the number appears as a STANDALONE data value in source,
@@ -1256,12 +1348,17 @@ def number_exists_in_source(num_str: str, source_norm: str, source_identifiers: 
     - Source has "CD318" -> "31例" should NOT pass
     - Source has "52% response rate" -> "52%" should pass
     
+    A dimensioned quantity (1-year, six doses, 100 mg) is not evidence for a
+    clinical count or rate (1例, 6例, 100%). English number words only evidence
+    a claim when the claimed unit class is compatible with the source unit.
+    
     Args:
         num_str: The number string from output (e.g., "50", "3.5倍", "72小时")
-        source_norm: Normalized source text (lowercased, whitespace normalized)
+        source_norm: Normalized source text (English words converted to digits)
         source_identifiers: Set of identifiers extracted from source (for reference only)
-        context_window: Surrounding text from output (used to check if number appears
-                        as part of an identifier that exists in source)
+        context_window: Surrounding text from output
+        source_raw: Normalized source WITHOUT English-word conversion. Used to
+                    tell a real Arabic digit from a converted word.
     """
     # Normalize the number
     num_clean = num_str.replace(',', '').replace('，', '').strip()
@@ -1280,16 +1377,31 @@ def number_exists_in_source(num_str: str, source_norm: str, source_identifiers: 
     if source_has_equivalent_number(num_core, context_window or "", source_norm):
         return True
 
-    # Check if the number exists in source with word boundaries
-    # This is the primary check: the number must appear as standalone data
-    if number_in_text_as_word_boundary(num_core, source_norm):
+    raw = source_raw if source_raw is not None else source_norm
+    out_class = classify_unit_in_context(context_window or "", num_core)
+
+    raw_status = _number_presence(num_core, raw, out_class)
+    if raw_status == "ok":
         return True
+    # "1" in "1-year" is a real Arabic digit, but a time label is not a
+    # patient-count / rate and must not evidence "1例" / "1%".
+    if raw_status == "wrong_dimension":
+        return False
+
+    # Digit appears only after English-word conversion ("six" → "6").
+    # Compatible units (6剂 ← six doses) are accepted; 6例 / 6% are not.
+    if raw is not source_norm:
+        conv_status = _number_presence(num_core, source_norm, out_class)
+        if conv_status == "ok":
+            return True
     
     # Try Chinese numeral conversion
     cn_converted = chinese_numeral_to_arabic(num_clean)
     cn_core = extract_number_core(cn_converted)
     if cn_core and cn_core != num_core:
-        if number_in_text_as_word_boundary(cn_core, source_norm):
+        if _number_presence(cn_core, raw, out_class) == "ok":
+            return True
+        if raw is not source_norm and _number_presence(cn_core, source_norm, out_class) == "ok":
             return True
     
     return False
@@ -1352,9 +1464,12 @@ def is_exempt_number_context(context: str, number: str) -> bool:
                 if start <= nm.start() < end or abs(nm.start() - start) <= 1:
                     return True
     
-    # Check for "原文未给出/未报告" - any number in these phrases is exempt
-    if re.search(r'原文未给出|原文未报告|未读到|未给出|未报告', context):
-        return True
+    # A number is exempt only if it sits in the SAME sentence as a
+    # missing-value phrase. A neighboring "原文未给出" must not launder
+    # an invented "6例" in the next sentence.
+    for sent in re.split(r'[。！？；;\n]', context):
+        if number in sent and re.search(r'原文未给出|原文未报告|未读到|未给出|未报告', sent):
+            return True
     
     return False
 
@@ -1377,10 +1492,11 @@ def normalize_unit_spacing(text: str) -> str:
 CONTRADICTORY_METRIC_PAIRS = [
     # Response rate vs adverse events - completely different metrics
     ({"response", "缓解", "orr", "crr", "cr", "pr", "客观缓解", "完全缓解", "部分缓解", "有效",
-      "疾病控制", "dcr", "控制率"},
+      "疾病控制", "dcr", "控制率", "disease control", "disease-control"},
      {"adverse", "不良", "ae", "toxicity", "毒性", "side effect", "副作用", "trae", "teae"}),
     # Response / disease-control vs mortality
-    ({"response", "缓解", "orr", "有效", "疾病控制", "dcr", "控制率", "完全缓解", "客观缓解"},
+    ({"response", "缓解", "orr", "有效", "疾病控制", "dcr", "控制率", "完全缓解", "客观缓解",
+      "disease control", "disease-control"},
      {"死亡", "mortality", "death", "致死", "died"}),
     # Overall survival vs progression-free survival
     ({"pfs", "无进展", "progression-free", "progression free"},
@@ -1390,12 +1506,14 @@ CONTRADICTORY_METRIC_PAIRS = [
      {"adverse", "不良", "ae", "toxicity", "毒性"}),
 ]
 
-# Unit patterns that indicate count vs rate/percentage
-# 例, 名, 人, patients -> count
-# %, rate, 率 -> percentage
-# Also match fractional expressions like N/M (e.g., 19/36) as counts
-COUNT_UNIT_PATTERNS = re.compile(r'例|名|人|位|patients|subjects|participants|cases|\d+\s*/\s*\d+', re.IGNORECASE)
+# Unit patterns that indicate count vs rate/percentage.
+# Do not use bare 人: it matches 人原代细胞 / 人群 and is not a patient-count unit.
+COUNT_UNIT_PATTERNS = re.compile(r'例|名|位|patients|subjects|participants|cases|\d+\s*/\s*\d+', re.IGNORECASE)
 RATE_UNIT_PATTERNS = re.compile(r'%|％|率|rate|percent', re.IGNORECASE)
+
+# Short English metric tokens that would otherwise match inside longer words
+# ("os" in "survival", "cr" in "secretory").
+_SHORT_METRIC_KEYWORDS = {"os", "cr", "pr", "ae", "or", "hr", "dcr", "orr", "pfs", "dfs", "efs", "crr"}
 
 
 def extract_metric_keywords(context: str) -> set[str]:
@@ -1409,7 +1527,7 @@ def extract_metric_keywords(context: str) -> set[str]:
     # Key metrics to detect
     all_keywords = [
         "response", "缓解", "orr", "crr", "cr", "pr", "客观缓解", "完全缓解", "部分缓解",
-        "有效", "efficacy", "疾病控制", "dcr", "控制率",
+        "有效", "efficacy", "疾病控制", "dcr", "控制率", "disease control", "disease-control",
         "survival", "生存", "os", "pfs", "dfs", "efs", "存活",
         "无进展", "progression-free", "progression free", "总生存", "overall survival",
         "一年生存", "1-year", "1 year", "1年",
@@ -1419,7 +1537,10 @@ def extract_metric_keywords(context: str) -> set[str]:
     ]
     
     for kw in all_keywords:
-        if kw in context_lower:
+        if kw in _SHORT_METRIC_KEYWORDS:
+            if re.search(r'(?<![a-z])' + re.escape(kw) + r'(?![a-z])', context_lower):
+                keywords.add(kw)
+        elif kw in context_lower:
             keywords.add(kw)
     
     return keywords
@@ -1450,21 +1571,28 @@ def number_meaning_matches_source(num_str: str, output_context: str, source_text
     # "28%的患者死亡" puts the metric after the number; "无进展生存率26%" is
     # longer than 8 characters.
     output_keywords = set()
+    id_spans = identifier_spans(output_context)
+    claimed_match = None
     for num_match in re.finditer(re.escape(num_core), output_context):
+        if span_covers(num_match.start(), num_match.end(), id_spans):
+            continue
+        if claimed_match is None:
+            claimed_match = num_match
         immediate_start = max(0, num_match.start() - 16)
         immediate_end = min(len(output_context), num_match.end() + 10)
         output_keywords.update(extract_metric_keywords(
             output_context[immediate_start:immediate_end]
         ))
-    # Keep a representative match for the unit-type check below
-    num_match = re.search(re.escape(num_core), output_context)
+    # Keep a representative non-identifier match for the unit-type check
+    num_match = claimed_match
     if not num_match:
         return True, ""
     
     # Find all occurrences of this number in source 
     source_norm = source_text.lower()
     
-    # Find number in source with moderate context (30 chars before/after)
+    # Find number in source with enough left-context for multi-word metric
+    # names ("disease control was achieved in 25%").
     pattern = rf'(?<![a-zA-Z0-9]){re.escape(num_core)}(?![a-zA-Z0-9])'
     
     # First, check for unit type mismatch: 例 (count) vs % (percentage)
@@ -1477,10 +1605,13 @@ def number_meaning_matches_source(num_str: str, output_context: str, source_text
     output_is_rate = bool(RATE_UNIT_PATTERNS.search(output_immediate_unit))
     
     # Check unit types if we can determine the output type
+    source_id_spans = identifier_spans(source_norm)
     if output_is_count or output_is_rate:
         source_has_count = False
         source_has_rate = False
         for match in re.finditer(pattern, source_norm):
+            if span_covers(match.start(), match.end(), source_id_spans):
+                continue
             start = max(0, match.start() - 15)
             end = min(len(source_norm), match.end() + 15)
             source_context = source_norm[start:end]
@@ -1491,9 +1622,9 @@ def number_meaning_matches_source(num_str: str, output_context: str, source_text
         
         # Flag mismatch: output says count, but source only has rate (or vice versa)
         if output_is_count and source_has_rate and not source_has_count:
-            return False, f"数字 '{num_str}' 单位不匹配：输出为人数（例/名），原文为百分比（%）"
+            return False, f"数字 '{num_str}' 含义不匹配：单位不匹配，输出为人数（例/名），原文为百分比（%）"
         if output_is_rate and source_has_count and not source_has_rate:
-            return False, f"数字 '{num_str}' 单位不匹配：输出为百分比（%），原文为人数（例/名）"
+            return False, f"数字 '{num_str}' 含义不匹配：单位不匹配，输出为百分比（%），原文为人数（例/名）"
     
     # Now check for metric keyword contradictions
     if not output_keywords:
@@ -1501,8 +1632,10 @@ def number_meaning_matches_source(num_str: str, output_context: str, source_text
     
     source_keywords = set()
     for match in re.finditer(pattern, source_norm):
-        start = max(0, match.start() - 30)
-        end = min(len(source_norm), match.end() + 15)
+        if span_covers(match.start(), match.end(), source_id_spans):
+            continue
+        start = max(0, match.start() - 50)
+        end = min(len(source_norm), match.end() + 20)
         source_context = source_norm[start:end]
         source_keywords.update(extract_metric_keywords(source_context))
     
@@ -1584,20 +1717,28 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
     
     # Normalize source for comparison
     source_norm = normalize_source_text(raw_material)
+    source_raw = normalize_source_text(raw_material, convert_english_words=False)
     
     # Extract identifiers from source (these are allowed to have digits)
     source_identifiers = extract_identifiers_from_source(raw_material)
     
+    def _text_chunks(val) -> list[str]:
+        if isinstance(val, str) and val:
+            return [val]
+        if isinstance(val, list):
+            return [str(x) for x in val if x not in (None, "")]
+        return []
+
     # Collect ALL text from output
     all_text_parts = [
-        art.get("title", ""),
-        art.get("one_liner", ""),
-        art.get("background", ""),
-        art.get("design", ""),
-        *art.get("results", []),
-        art.get("mechanism", ""),
-        art.get("significance", ""),
-        *art.get("limitations", []),
+        *(_text_chunks(art.get("title"))),
+        *(_text_chunks(art.get("one_liner"))),
+        *(_text_chunks(art.get("background"))),
+        *(_text_chunks(art.get("design"))),
+        *(_text_chunks(art.get("results"))),
+        *(_text_chunks(art.get("mechanism"))),
+        *(_text_chunks(art.get("significance"))),
+        *(_text_chunks(art.get("limitations"))),
     ]
     datacard = art.get("datacard", {})
     if isinstance(datacard, dict):
@@ -1616,8 +1757,11 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
     norm = normalize_whitespace(raw_material)
     norm_english = english_number_to_arabic(norm)
     
-    for dp in art.get("data_points", []):
-        value = dp.get("value", "").strip()
+    for dp in art.get("data_points") or []:
+        if not isinstance(dp, dict):
+            problems.append("data_point 不是对象")
+            continue
+        value = str(dp.get("value", "")).strip()
         quote = dp.get("source_quote", "").strip()
         meaning = dp.get("meaning", "").strip()
         
@@ -1627,15 +1771,12 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
         # - Disease names or other non-numeric content
         # - Placeholder values
         
-        # Check if value contains at least one digit
+        # A data_point must itself be numeric. "nine doses" / "millions" /
+        # "tens of kilobases" have no digit and are rejected. A value that
+        # already carries Arabic digits (e.g. "100 mg weekly for nine doses")
+        # is a real measurement and is kept.
         if not re.search(r'\d', value):
-            # No digits at all - reject
             problems.append(f"data_point value 必须包含数字：'{value}'")
-            continue
-
-        # English number words are not numeric data ("nine doses", "millions")
-        if _ENGLISH_NUMERAL_VALUE_RE.search(value):
-            problems.append(f"data_point value 必须使用阿拉伯数字，不能用英文数词：'{value}'")
             continue
         
         # Check for vague/imprecise quantifiers that lack specific numbers
@@ -1659,11 +1800,11 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
         # Reject disease names and other non-quantitative content
         # BUT: allow clinical metrics like 疾病控制率 (DCR), 无病生存期 (DFS), etc.
         clinical_metric_patterns = [
-            r'疾病控制率',  # Disease Control Rate (DCR)
+            r'疾病控制',    # DCR, 疾病控制率, 疾病控制比例
             r'无病生存',    # Disease-Free Survival (DFS)
             r'疾病进展',    # Disease Progression
-            r'disease\s*control\s*rate',
-            r'disease\s*free\s*survival',
+            r'disease\s*-?\s*control',
+            r'disease\s*-?\s*free\s*survival',
             r'无进展生存',  # Progression-Free Survival (often involves disease)
         ]
         is_clinical_metric = any(re.search(p, meaning, re.IGNORECASE) for p in clinical_metric_patterns)
@@ -1703,6 +1844,7 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
     
     # Normalize unit spacing in source for matching: "12 nM" = "12nM"
     source_norm_units = normalize_unit_spacing(source_norm)
+    source_raw_units = normalize_unit_spacing(source_raw)
     
     # Extract Arabic numbers with context
     for num, context in extract_numbers_with_context(all_text):
@@ -1717,7 +1859,10 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
         # Normalize unit spacing for comparison
         context_norm = normalize_unit_spacing(context)
         
-        if not number_exists_in_source(num, source_norm_units, source_identifiers, context_norm):
+        if not number_exists_in_source(
+            num, source_norm_units, source_identifiers, context_norm,
+            source_raw=source_raw_units,
+        ):
             problems.append(f"数字 '{num}' 在原始材料中未找到")
         else:
             # Number exists - also check if meaning matches
@@ -1746,7 +1891,9 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
     
     # Limitations count and quality
     min_limits = 3 if tier == "deep" else 1
-    limitations = art.get("limitations", [])
+    limitations = art.get("limitations") or []
+    if not isinstance(limitations, list):
+        limitations = [str(limitations)]
     if len(limitations) < min_limits:
         problems.append(f"局限条数不足：需要 {min_limits} 条，实际 {len(limitations)} 条")
     
@@ -1789,20 +1936,31 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
         problems.append("仅有新闻稿，不得写成深度解读")
     
     # Results must contain at least one verifiable number from source
-    results_text = " ".join(art.get("results", []))
-    results_numbers = extract_numbers_with_context(results_text)
+    # (Arabic or Chinese numerals; honest unit conversions count).
+    results_text = " ".join(_text_chunks(art.get("results")))
+    results_claims = (
+        extract_numbers_with_context(results_text)
+        + extract_chinese_numbers_with_context(results_text)
+    )
     found_valid_number = False
-    for num, context in results_numbers:
-        num_core = extract_number_core(num)
-        if num_core and number_in_text_as_word_boundary(num_core, source_norm):
+    for num, context in results_claims:
+        num_core = extract_number_core(num) or extract_number_core(
+            chinese_numeral_to_arabic(num)
+        )
+        if not num_core:
+            continue
+        if is_exempt_number_context(context, num_core):
+            continue
+        if number_exists_in_source(
+            num, source_norm_units, source_identifiers, context,
+            source_raw=source_raw_units,
+        ):
             found_valid_number = True
             break
-    
-    if not found_valid_number and results_numbers:
-        # Has numbers but none match source
+
+    if results_claims and not found_valid_number:
         problems.append("结果字段中的数字无法在原文中核实")
-    elif not results_numbers:
-        # No numbers at all in results
+    elif not results_claims:
         problems.append("结果字段应包含至少一个可核实的数字（来自原文）")
     
     return problems
@@ -1823,16 +1981,23 @@ def validate_names(art: dict, raw_material: str) -> list[str]:
     problems = []
     norm = normalize_whitespace(raw_material).lower()
     
+    def _name_chunks(val) -> list[str]:
+        if isinstance(val, str) and val:
+            return [val]
+        if isinstance(val, list):
+            return [str(x) for x in val if x not in (None, "")]
+        return []
+
     all_text = " ".join([
-        art.get("title", ""),
-        art.get("one_liner", ""),
-        art.get("background", ""),
-        art.get("design", ""),
-        *art.get("results", []),
-        art.get("mechanism", ""),
-        art.get("significance", ""),
-        art.get("authors", ""),
-        *art.get("limitations", []),
+        *_name_chunks(art.get("title")),
+        *_name_chunks(art.get("one_liner")),
+        *_name_chunks(art.get("background")),
+        *_name_chunks(art.get("design")),
+        *_name_chunks(art.get("results")),
+        *_name_chunks(art.get("mechanism")),
+        *_name_chunks(art.get("significance")),
+        *_name_chunks(art.get("authors")),
+        *_name_chunks(art.get("limitations")),
     ])
     
     # 1. Latin-script author names: "Zhang 等", "Li 等", "Smith 等"
@@ -2302,7 +2467,7 @@ def _hard_problems(problems: list[str]) -> list[str]:
         "未找到", "无法回溯", "编造", "营销词汇", "新闻稿",
         "含义不匹配", "单位不匹配", "汉字", "上限", "下限",
         "data_point", "作者", "术语翻译", "必须包含数字",
-        "必须使用阿拉伯", "过短", "过长",
+        "必须使用阿拉伯", "过短", "过长", "结果字段",
     )
     return [p for p in problems if any(m in p for m in markers)]
 
@@ -2416,12 +2581,18 @@ def _process_single_article(selection: dict, url_to_enriched: dict, config: dict
 
     art, problems = _prepare(art)
 
-    if problems:
-        logging.warning("Validation issues for %s: %s", url, problems)
+    first_hard_problems = _hard_problems(problems)
+    first_soft_problems = [p for p in problems if p not in first_hard_problems]
+    first_has_soft_only = len(first_hard_problems) == 0 and len(first_soft_problems) > 0
 
-        first_hard_problems = _hard_problems(problems)
-        first_soft_problems = [p for p in problems if p not in first_hard_problems]
-        first_has_soft_only = len(first_hard_problems) == 0 and len(first_soft_problems) > 0
+    # Soft-only issues (empty optional fields, limitation count after omit)
+    # are not a reason to spend a redraft or to drop the article.
+    if first_soft_problems and not first_hard_problems:
+        logging.warning("Accepting %s with soft-only problems: %s", url, first_soft_problems)
+        problems = first_soft_problems
+
+    if first_hard_problems:
+        logging.warning("Validation issues for %s: %s", url, problems)
 
         first_art = art
         first_problems = problems
