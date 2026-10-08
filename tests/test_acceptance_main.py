@@ -1,4 +1,14 @@
-"""TheraSik InLight — FIXED acceptance suite for the SEC-deal pipeline (PR #7).
+"""TheraSik InLight — FIXED acceptance suite v2 for the SEC-deal pipeline (PR #7, precision-first scope).
+
+Scope (owner's precision-first rule): the deals section publishes ONLY (a) newly entered license or
+collaboration agreements and (b) definitive acquisition or merger agreements. Loans / credit facilities, ATMs,
+equity offerings, warrants, PIPEs, amendments, terminations, assignments and divestitures are out of scope and
+are never published. Share / warrant components are never rendered.
+
+Every published deal must have passed the independent second Claude call (tool ``verify_deal``), which FAILS
+CLOSED. The suite runs with the verifier ENABLED: it fails if a verifier kill-switch (INLIGHT_NO_VERIFIER, …) is set
+in the environment, if ``sec_deals.VERIFIER_ENABLED`` ends up False, or if a deal is published without a passing
+verifier answer for that filing. See README_FOR_CURSOR.md, "Verifier contract".
 
 Every test runs the REAL ``run_weekly.main()`` (``--dry-run`` into a temporary ROOT). Only I/O is mocked:
 EDGAR HTTP (``requests.get``), the Anthropic client (real ``anthropic.types.Message`` objects with
@@ -17,6 +27,7 @@ import copy
 import html as html_lib
 import importlib
 import json
+import os
 import re
 import socket
 import sys
@@ -29,16 +40,38 @@ import pytest
 HERE = Path(__file__).resolve().parent
 REPO_ROOT = HERE.parent
 FIX = HERE / "acceptance_fixtures"
-CASES: list[dict] = json.loads((FIX / "cases.json").read_text(encoding="utf-8"))["cases"]
+_FIXTURE = json.loads((FIX / "cases.json").read_text(encoding="utf-8"))
+CASES: list[dict] = _FIXTURE["cases"]
+MIN_CASES = int(_FIXTURE["min_cases"])
 MIRROR: dict = json.loads((FIX / "edgar_mirror.json").read_text(encoding="utf-8"))
 PNG_1x1 = base64.b64decode(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
 )
 
 
+KNOWN_TOOLS = ("test_tool", "extract_deal", "verify_deal", "submit_weekly_digest")
+MAX_VERIFIER_CALLS_PER_FILING = 3
+VERIFIER_KILL_SWITCH_RE = re.compile(r"NO_?VERIF|SKIP_?VERIF|DISABLE_?VERIF|VERIF\w*_(?:OFF|DISABLED?)", re.I)
+# Published deal-line label -> amount kind the verifier must have passed.
+LINE_LABEL_KIND = {"首付": "upfront", "初期付款": "upfront", "里程碑": "milestones_total",
+                   "收购对价": "purchase_price", "合并对价": "purchase_price"}
+TITLE_TYPE = (("授权合作", "license_collaboration"), ("合并", "merger"), ("收购", "acquisition"))
+IN_SCOPE_TITLE_RE = re.compile(r"^.+(?:与.+授权合作|收购.+|与.+合并)(?:（[^）]+）)?$")
+OUT_OF_SCOPE_WORDS = ("贷款", "授信", "信贷", "买断", "融资", "增发", "认股权证", "股份", "股", "终止", "转让", "剥离",
+                      "出售", "修订", "修正")
+
+
 # =========================================================================== mocks
 def _canon(url: str) -> str:
     return re.sub(r"/data/0*(\d+)/", r"/data/\1/", url.split("?")[0])
+
+
+def _plain(text: str) -> str:
+    """Entity-decoded, quote/dash-folded, whitespace-normalised text (same folding as a verbatim-quote check)."""
+    t = html_lib.unescape(text or "")
+    t = t.replace("\u201c", '"').replace("\u201d", '"').replace("\u2018", "'").replace("\u2019", "'")
+    t = t.replace("\u2013", "-").replace("\u2014", "-").replace("\xa0", " ")
+    return re.sub(r"\s+", " ", t).strip()
 
 
 def _route_name(name: str) -> str:
@@ -131,6 +164,10 @@ class _Harness:
         self.write_output_calls: list[str] = []
         self.network_attempts: list[str] = []
         self.unexpected_http: list[str] = []
+        self.unexpected_tools: list[str] = []
+        self.verifier_calls: list[dict] = []        # one record per verify_deal request (see _fake_verifier)
+        self.verifier_violations: list[str] = []
+        self._plain_cache: dict[str, str] = {}
         self.recorded = None
         if case.get("claude_recorded"):
             self.recorded = json.loads(
@@ -159,6 +196,10 @@ class _Harness:
                      "SEC_USER_AGENT": "TheraSik InLight acceptance-tests@example.com"}.items():
             mp.setenv(k, v)
         mp.delenv("INLIGHT_NO_DEALS", raising=False)
+        switches = sorted(k for k in os.environ if VERIFIER_KILL_SWITCH_RE.search(k))
+        if switches:
+            pytest.fail(f"verifier kill-switch set in the environment: {switches}. The acceptance suite only runs with "
+                        "the independent verifier ENABLED (the default production path).", pytrace=False)
         mp.setattr(sys, "argv", ["run_weekly.py", "--dry-run"])
 
         # No real network: any socket connect is recorded and refused.
@@ -208,7 +249,7 @@ class _Harness:
         self.hits = [{"_id": f"{f['adsh']}:doc.htm",
                       "_source": {"display_names": [f["display"]], "file_date": f["file_date"], "form": "8-K",
                                   "adsh": f["adsh"], "ciks": [f["cik"]], "sics": [f.get("sic", "2834")],
-                                  "items": ["1.01"]}}
+                                  "items": list(f.get("items") or ["1.01"])}}
                      for f in self.case["filings"].values()]
         self.name2key = {}
         for key, f in self.case["filings"].items():
@@ -234,18 +275,38 @@ class _Harness:
         return ([{"source": "Nature", "kind": "academic", "title": a["title_en"], "url": a["url"], "date": day,
                   "summary": a["summary"], "authors": "Chen L, Wang Y"} for a in self.case["academic"]], "ok")
 
+    @staticmethod
+    def _prompt_text(kw: dict) -> str:
+        """All text the model would see: system prompt + every message (plain string or content blocks)."""
+        parts: list[str] = []
+        sysp = kw.get("system")
+        if isinstance(sysp, str):
+            parts.append(sysp)
+        elif isinstance(sysp, list):
+            parts += [b.get("text", "") for b in sysp if isinstance(b, dict)]
+        for msg in kw.get("messages") or []:
+            c = msg.get("content") if isinstance(msg, dict) else None
+            if isinstance(c, str):
+                parts.append(c)
+            elif isinstance(c, list):
+                parts += [b["text"] for b in c if isinstance(b, dict) and isinstance(b.get("text"), str)]
+        return "\n".join(parts)
+
     def _fake_claude(self, **kw):
-        tools = kw.get("tools") or []
-        tool = tools[0]["name"] if tools else None
-        prompt = kw["messages"][0]["content"]
-        if not isinstance(prompt, str):
-            prompt = json.dumps(prompt, ensure_ascii=False)
+        """Dispatch by the TOOL offered and the filer named in the prompt — never by call order or call count."""
+        names = [t.get("name") for t in (kw.get("tools") or []) if isinstance(t, dict)]
+        known = [x for x in names if x in KNOWN_TOOLS]
+        tool = known[0] if len(known) == 1 else None
+        if tool is None:
+            self.unexpected_tools.append(repr(names))
+            raise AssertionError(f"acceptance harness: unexpected Claude call with tools {names!r}")
+        prompt = self._prompt_text(kw)
         n = len(self.claude_calls)
         if tool == "test_tool":
             self.claude_calls.append({"tool": tool})
             return _anthropic_message([_tool_use("test_tool", {"ok": True}, f"toolu_check_{n}")], "tool_use")
         if tool == "extract_deal":
-            m = re.search(r"The filing company is: (.*)\n", prompt)
+            m = re.search(r"The filing company is: (.*)\n", prompt + "\n")
             filer = m.group(1).strip() if m else ""
             key = self.name2key.get(_route_name(filer))
             self.claude_calls.append({"tool": tool, "filer": filer, "key": key})
@@ -255,19 +316,152 @@ class _Harness:
                 return _anthropic_message(copy.deepcopy(rec["content"]), rec["stop_reason"], rec["usage"], rec["model"])
             resp = copy.deepcopy(self.case["claude"].get(key, {"deal_type": "none"}))
             return _anthropic_message([_tool_use("extract_deal", resp, f"toolu_deal_{n}")], "tool_use")
-        if tool == "submit_weekly_digest":
-            self.claude_calls.append({"tool": tool})
-            field = list(self.rw.FIELDS)[0]
-            arts = []
-            for a in self.case["academic"]:
-                art = a["article"]
-                arts.append({"url": a["url"], "field": field, "journal": "Nature", "authors": "Chen L, Wang Y",
-                             "evidence_level": "abstract", "image_prompt": "abstract circles", "title": art["title"],
-                             "lead": art["lead"], "body": art["body"], "discuss": art["discuss"],
-                             "steps": list(art["steps"])})
-            return _anthropic_message([_tool_use("submit_weekly_digest", {"articles": arts}, f"toolu_digest_{n}")],
-                                      "tool_use")
-        raise AssertionError(f"acceptance harness: unexpected Claude call with tool {tool!r}")
+        if tool == "verify_deal":
+            return self._fake_verifier(prompt, n)
+        self.claude_calls.append({"tool": tool})
+        field = list(self.rw.FIELDS)[0]
+        arts = []
+        for a in self.case["academic"]:
+            art = a["article"]
+            arts.append({"url": a["url"], "field": field, "journal": "Nature", "authors": "Chen L, Wang Y",
+                         "evidence_level": "abstract", "image_prompt": "abstract circles", "title": art["title"],
+                         "lead": art["lead"], "body": art["body"], "discuss": art["discuss"],
+                         "steps": list(art["steps"])})
+        return _anthropic_message([_tool_use("submit_weekly_digest", {"articles": arts}, f"toolu_digest_{n}")],
+                                  "tool_use")
+
+    # ------------------------------------------------------------------ verifier mock
+    def _filing_plain(self, key: str) -> str:
+        """Plain, whitespace-normalised, lower-cased text of every mirrored document of one filing."""
+        if key in self._plain_cache:
+            return self._plain_cache[key]
+        f = self.case["filings"][key]
+        acc = f["adsh"].replace("-", "")
+        docs = [v.get("text", "") for k, v in self.mirror.items()
+                if acc in k and isinstance(v, dict) and v.get("status") == 200 and not k.endswith("-index.htm")]
+        self._plain_cache[key] = _plain(re.sub(r"<[^>]+>", " ", " ".join(docs)))
+        return self._plain_cache[key]
+
+    def _verbatim(self, key: str, quote: str) -> bool:
+        q = _plain(quote or "").lower()
+        return bool(q) and q in self._filing_plain(key).lower()
+
+    def _extract_input(self, key: str) -> dict:
+        """The extract_deal tool input this case feeds production for one filing (constructed or recorded)."""
+        if self.recorded is not None:
+            for b in (self.recorded.get(key) or {}).get("content", []):
+                if b.get("type") == "tool_use" and b.get("name") == "extract_deal":
+                    return b.get("input") or {}
+            return {}
+        return self.case["claude"].get(key) or {}
+
+    def _fake_verifier(self, prompt: str, n: int):
+        """Independent verifier (tool ``verify_deal``), answered per case with a constructed Message.
+
+        Request (b7ebcfe contract): the prompt carries a ``FILING TEXT:`` section and a ``DEAL TO VERIFY:`` block with
+        ``- Company (filer):``, ``- Counterparty:``, ``- Deal type:``, ``- Date:`` and ``- Amounts:`` (``  - <kind>:
+        <rendered>``) lines. Routing is by the filer named there, never by call order.
+
+        Default reply ("deceived verifier"): every requested field "supported", quoting the SAME verbatim evidence the
+        extractor quoted. It adds no signal of its own, so every trap in this suite must still be rejected by the
+        deterministic rules; it is NOT an oracle and cannot be probed for the truth. Per-case ``verifier`` entries
+        replace it with: a field marked unsupported, a non-verbatim quote, an exception / timeout, a reply without
+        tool_use, a missing / malformed verdict, an empty quote, max_tokens, or amounts in a different order.
+        """
+        m = re.search(r"Company \(filer\):[ \t]*(.*)", prompt) or re.search(r"The filing company is:[ \t]*(.*)", prompt)
+        filer = m.group(1).strip() if m else ""
+        key = self.name2key.get(_route_name(filer))
+        rec: dict = {"filer": filer, "key": key, "mode": None, "status": None, "counterparty": None,
+                     "deal_type": None, "kinds": []}
+        self.verifier_calls.append(rec)
+        self.claude_calls.append({"tool": "verify_deal", "filer": filer, "key": key})
+        if key is None:
+            self.verifier_violations.append(f"verify_deal request not routable to a filing (filer line {filer!r})")
+            raise AssertionError("acceptance harness: verify_deal request not routable to a filing")
+        if sum(1 for c in self.verifier_calls if c["key"] == key) > MAX_VERIFIER_CALLS_PER_FILING:
+            self.verifier_violations.append(f"[{key}] more than {MAX_VERIFIER_CALLS_PER_FILING} verify_deal calls (verifier probing)")
+        cp = re.search(r"- Counterparty:[ \t]*(.*)", prompt)
+        dt = re.search(r"- Deal type:[ \t]*(.*)", prompt)
+        am = prompt.split("- Amounts:", 1)[1] if "- Amounts:" in prompt else ""
+        kinds = re.findall(r"^[ \t]+-[ \t]+([a-z_]+):[ \t]*(.+)$", am, re.M)
+        rec.update(counterparty=cp.group(1).strip() if cp else None, deal_type=dt.group(1).strip() if dt else None,
+                   kinds=[k for k, _ in kinds])
+        if not cp or not dt:
+            self.verifier_violations.append(f"[{key}] verify_deal request lacks '- Counterparty:' / '- Deal type:' lines")
+        ft = prompt.split("FILING TEXT:", 1)[1] if "FILING TEXT:" in prompt else ""
+        ext = self._extract_input(key)
+        tq = _plain(str(ext.get("type_quote") or "")).lower()
+        if not tq or tq not in _plain(ft).lower():
+            self.verifier_violations.append(f"[{key}] verify_deal request must show the verifier the filing text "
+                                            "(FILING TEXT: section containing the deal's type_quote)")
+        cfg = (self.case.get("verifier") or {}).get(key) or {}
+        mode = cfg.get("mode") or "answer"
+        rec["mode"] = mode
+        if mode in ("raise", "timeout"):
+            import anthropic
+            exc_cls = getattr(anthropic, "APITimeoutError" if mode == "timeout" else "APIConnectionError", RuntimeError)
+            exc = exc_cls.__new__(exc_cls)
+            Exception.__init__(exc, "Request timed out." if mode == "timeout" else "Connection error.")
+            for attr, val in (("message", str(exc)), ("request", None), ("body", None)):
+                try:
+                    setattr(exc, attr, val)
+                except Exception:
+                    pass
+            raise exc
+        if mode == "no_tool":
+            return _anthropic_message([{"type": "text", "text": "All fields look supported to me."}], "end_turn")
+
+        f = self.case["filings"][key]
+        company_q = f.get("registrant") or re.sub(r"\s*\(.*$", "", f["display"]).strip()
+        plain = self._filing_plain(key)
+        pos = plain.lower().find(tq) if tq else -1
+        dates = re.findall(r"(?:January|February|March|April|May|June|July|August|September|October|November|December)"
+                           r" \d{1,2}, 20\d\d", plain[max(0, pos - 400): pos + 400] if pos >= 0 else plain)
+        date_q = f.get("event") or (dates[0] if dates else "")
+        ex_amounts = [a for a in (ext.get("amounts") or []) if isinstance(a, dict)]
+        body: dict = {
+            "company": {"verdict": "supported", "quote": company_q},
+            "counterparty": {"verdict": "supported", "quote": str(ext.get("counterparty_quote") or "")},
+            "deal_type": {"verdict": "supported", "quote": str(ext.get("type_quote") or "")},
+            "date": {"verdict": "supported", "quote": date_q},
+            "amounts": [],
+        }
+        for kind, rendered in kinds:
+            q = next((a.get("quote") for a in ex_amounts if a.get("kind") == kind), None)
+            body["amounts"].append({"role": kind, "value": rendered.strip(),
+                                    "verdict": "supported" if q else "unsupported", "quote": q or ""})
+        for sel in cfg.get("reject") or []:
+            tgt = [a for a in body["amounts"] if a["role"] == sel.get("role")] if sel["field"] == "amount" else [body[sel["field"]]]
+            for t in tgt:
+                t["verdict"] = "unsupported"
+                t["quote"] = sel.get("quote", t["quote"])
+        for sel in cfg.get("quote") or []:
+            tgt = [a for a in body["amounts"] if a["role"] == sel.get("role")] if sel["field"] == "amount" else [body[sel["field"]]]
+            for t in tgt:
+                t["quote"] = sel["text"]
+        if mode == "missing_field":
+            body.pop(cfg.get("field", "counterparty"), None)
+        if mode == "bad_verdict":
+            body[cfg.get("field", "counterparty")]["verdict"] = cfg.get("verdict", "likely")
+        if mode == "empty_quote":
+            body[cfg.get("field", "deal_type")]["quote"] = ""
+        if mode == "amounts_short":
+            body["amounts"] = body["amounts"][:-1]
+        if mode == "amounts_reordered":
+            body["amounts"] = list(reversed(body["amounts"]))
+
+        # What a correct fail-closed implementation may treat as passed (the publication gate uses this).
+        def ok(x):
+            return isinstance(x, dict) and x.get("verdict") == "supported" and self._verbatim(key, x.get("quote", ""))
+        good = mode in ("answer", "amounts_reordered", "amounts_short")
+        rec["status"] = {
+            "core": good and all(ok(body.get(k)) for k in ("company", "counterparty", "deal_type", "date")),
+            "kinds": {a["role"] for a in body.get("amounts", []) if ok(a)} if good else set(),
+        }
+        stop = "max_tokens" if mode == "max_tokens" else "tool_use"
+        if mode == "max_tokens":
+            rec["status"] = {"core": False, "kinds": set()}
+        return _anthropic_message([_tool_use("verify_deal", body, f"toolu_verify_{n}")], stop)
 
     # ------------------------------------------------------------------ run
     def run(self) -> dict:
@@ -276,6 +470,9 @@ class _Harness:
             self.rw.main()          # <- the real production entry point; any non-SystemExit exception fails the test
         except SystemExit as e:
             code = e.code if isinstance(e.code, int) else (0 if e.code is None else 1)
+        sd = sys.modules.get("sec_deals")
+        if sd is not None and getattr(sd, "VERIFIER_ENABLED", True) is not True:
+            self.verifier_violations.append("sec_deals.VERIFIER_ENABLED is not True after main(): verifier was switched off")
         out: dict[str, Any] = {"exit": code, "deals": None, "articles": None, "wechat": None}
         weeks = sorted((self.root / "preview" / "weekly").glob("*")) if (self.root / "preview" / "weekly").exists() else []
         if weeks:
@@ -322,6 +519,34 @@ def _describe(deal: dict | None) -> str:
     return "NO DEAL" if deal is None else f"t={deal.get('t')!r} m={deal.get('m')!r} ms={deal.get('ms')!r} d={deal.get('d')!r}"
 
 
+def _verifier_gate_errors(h: _Harness, key: str, d: dict) -> list[str]:
+    """A published deal needs a verify_deal answer for the SAME filing that (a) was asked about the published
+    counterparty and deal type, (b) passed company / counterparty / deal_type / date with supported verdicts and
+    verbatim quotes, and (c) passed every published amount kind. Failed verifier calls never count."""
+    t, ms = d.get("t") or "", d.get("ms") or ""
+    want_type = next((ty for word, ty in TITLE_TYPE if word in t), None)
+    kinds = [LINE_LABEL_KIND.get(x.strip().split("：", 1)[0]) for x in ms.split("|") if x.strip()]
+    title_norm = _route_name(re.sub(r"（[^）]*）$", "", t))
+    reasons = []
+    for c in h.verifier_calls:
+        if c["key"] != key:
+            continue
+        st = c.get("status") or {"core": False, "kinds": set()}
+        cp = _route_name(c.get("counterparty") or "")
+        if not st["core"]:
+            reasons.append(f"{c['mode']}: company/counterparty/deal_type/date not passed")
+        elif c.get("deal_type") != want_type:
+            reasons.append(f"verified deal type {c.get('deal_type')!r} != published {want_type!r}")
+        elif not cp or cp not in title_norm:
+            reasons.append(f"verified counterparty {c.get('counterparty')!r} is not the published one")
+        elif [k for k in kinds if k not in st["kinds"]]:
+            reasons.append(f"published amount kinds {[k for k in kinds if k not in st['kinds']]} not passed by the verifier")
+        else:
+            return []
+    return [f"[verifier-contract] [{key}] deal published without a passing verify_deal answer for this filing: "
+            f"{_describe(d)}; reasons: {reasons or ['verify_deal was never called for this filing']}"]
+
+
 def _check(case: dict, h: _Harness, out: dict, log_text: str) -> list[str]:
     errs: list[str] = []
     exp = case["expect"]
@@ -331,6 +556,10 @@ def _check(case: dict, h: _Harness, out: dict, log_text: str) -> list[str]:
         errs.append(f"network access attempted: {h.network_attempts}")
     if h.unexpected_http:
         errs.append(f"unexpected HTTP GETs: {h.unexpected_http}")
+    if h.unexpected_tools:
+        errs.append(f"unexpected Claude tool calls: {h.unexpected_tools}")
+    for v in h.verifier_violations:
+        errs.append(f"[verifier-contract] {v}")
     if out["exit"] == 0:
         if len(h.write_output_calls) != 1:
             errs.append(f"write_output called {len(h.write_output_calls)} times (expected 1): main() did not run through")
@@ -357,6 +586,23 @@ def _check(case: dict, h: _Harness, out: dict, log_text: str) -> list[str]:
         if not ok:
             errs.append(f"[{key}] got {_describe(deal)}\n      allowed: "
                         + " OR ".join("NO DEAL" if s is None else json.dumps(s, ensure_ascii=False) for s in allowed))
+
+    # Scope: only license/collaboration or acquisition/merger deals; share / warrant components are never rendered.
+    for d in deals:
+        t, ms = d.get("t") or "", d.get("ms") or ""
+        if not IN_SCOPE_TITLE_RE.fullmatch(t):
+            errs.append(f"[scope] deal title is not a license/collaboration or acquisition/merger title: {t!r}")
+        bad = [w for w in OUT_OF_SCOPE_WORDS if w in t or w in ms]
+        if bad:
+            errs.append(f"[scope] out-of-scope wording {bad} in published deal: {_describe(d)}")
+        for line in [x.strip() for x in ms.split("|") if x.strip()]:
+            if line.split("：", 1)[0] not in LINE_LABEL_KIND:
+                errs.append(f"[scope] deal line {line!r} is not an upfront / milestone / purchase-price line")
+
+    # Every published deal must have passed the independent verifier for its own filing (fail closed).
+    for key, got in by_filing.items():
+        for d in got:
+            errs += _verifier_gate_errors(h, key, d)
 
     # WeChat must mirror deals.json
     wechat = out["wechat"]
@@ -400,7 +646,7 @@ def _check(case: dict, h: _Harness, out: dict, log_text: str) -> list[str]:
                 errs.append(f"article {e['title']!r} {fld} altered:\n      expected {e[fld]!r}\n      got      {hit[0].get(fld)!r}")
     if errs:
         drops = [ln for ln in log_text.splitlines()
-                 if re.search(r"Deal |dropped|丢弃|未捕获|Error|Traceback", ln)][-25:]
+                 if re.search(r"Deal |dropped|丢弃|未捕获|Error|Traceback|out_of_scope|[Vv]erif", ln)][-25:]
         errs.append("relevant log lines:\n      " + "\n      ".join(drops))
     return errs
 
@@ -429,4 +675,15 @@ def test_guard_main_really_runs(tmp_path, monkeypatch, caplog):
     assert len(h.write_output_calls) == 1, "write_output was not called exactly once by main()"
     assert [c["tool"] for c in h.claude_calls].count("extract_deal") >= 1
     assert out["deals"] and out["articles"] and out["wechat"]
-    assert len(CASES) >= 89, f"acceptance fixtures truncated: {len(CASES)} cases"
+    assert len(CASES) >= MIN_CASES >= 89, f"acceptance fixtures truncated: {len(CASES)} cases"
+    assert any(c["tool"] == "verify_deal" for c in h.claude_calls), "the independent verifier was never called"
+    assert not h.verifier_violations, h.verifier_violations
+
+
+def test_guard_verifier_kill_switch_rejected(tmp_path, monkeypatch):
+    """Guard: a verifier kill-switch in the environment makes the suite fail instead of silently passing."""
+    case = next(c for c in CASES if c["id"] == "R2_alec_honest")
+    monkeypatch.setenv("INLIGHT_NO_VERIFIER", "1")
+    h = _Harness(case, tmp_path, monkeypatch)
+    with pytest.raises(pytest.fail.Exception):
+        h.setup()

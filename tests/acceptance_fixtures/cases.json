@@ -1,6 +1,7 @@
 {
- "version": 1,
- "note": "Fixed acceptance expectations for PR #7. Do not edit expectations to make tests pass.",
+ "version": "v2-precision-first",
+ "note": "Fixed acceptance expectations for PR #7. Do not edit expectations to make tests pass. | v2: precision-first scope + independent verifier (see CHANGES.md)",
+ "min_cases": 143,
  "cases": [
   {
    "id": "R1_regn_honest",
@@ -59,14 +60,7 @@
     ],
     "filings": {
      "REGN": [
-      null,
-      {
-       "kind": "match",
-       "t_re": "^Regeneron Pharmaceuticals, Inc\\.与[^（]*Sanofi[^（]*授权合作（10 亿美元）$",
-       "m": "10 亿美元",
-       "ms": "首付：10 亿美元 | 里程碑：最高 70 亿美元",
-       "d_prefix": "2026-10"
-      }
+      null
      ]
     },
     "articles": {
@@ -79,7 +73,13 @@
       }
      ]
     }
-   }
+   },
+   "v2_changes": [
+    {
+     "filing": "REGN",
+     "reason": "Regeneron's Sixth Amendment to the Amended and Restated License and Collaboration Agreement is an AMENDMENT of a 2009 agreement: out of scope, strict no deal (was 'no deal OR license title'). Owner decision point: substantively it adds four new antibodies."
+    }
+   ]
   },
   {
    "id": "R2_alec_honest",
@@ -215,14 +215,7 @@
     ],
     "filings": {
      "IMNM": [
-      null,
-      {
-       "kind": "match",
-       "t_re": "^Immunome Inc\\.向(?:BMS|Bristol-Myers Squibb(?: Company)?)支付2,000 万美元买断里程碑与分成义务$",
-       "m": "2,000 万美元",
-       "ms_re": "^买断金额：2,000 万美元(?: \\| 股份：(?:约 ?442\\.5 万股|约 ?443 万股|4,425,487 股))?$",
-       "d_prefix": "2026-10"
-      }
+      null
      ]
     },
     "articles": {
@@ -235,7 +228,13 @@
       }
      ]
     }
-   }
+   },
+   "v2_changes": [
+    {
+     "filing": "IMNM",
+     "reason": "Immunome's Amendment No. 4 (milestone/royalty buyout + patent assignment, paid in cash and shares) is an amendment / buyout / assignment: out of scope, strict no deal (was 'no deal OR buyout title with 股份 line')"
+    }
+   ]
   },
   {
    "id": "R3b_imnm_honest_bms",
@@ -294,14 +293,7 @@
     ],
     "filings": {
      "IMNM": [
-      null,
-      {
-       "kind": "match",
-       "t_re": "^Immunome Inc\\.向(?:BMS|Bristol-Myers Squibb(?: Company)?)支付2,000 万美元买断里程碑与分成义务$",
-       "m": "2,000 万美元",
-       "ms_re": "^买断金额：2,000 万美元(?: \\| 股份：(?:约 ?442\\.5 万股|约 ?443 万股|4,425,487 股))?$",
-       "d_prefix": "2026-10"
-      }
+      null
      ]
     },
     "articles": {
@@ -314,7 +306,13 @@
       }
      ]
     }
-   }
+   },
+   "v2_changes": [
+    {
+     "filing": "IMNM",
+     "reason": "Immunome's Amendment No. 4 (milestone/royalty buyout + patent assignment, paid in cash and shares) is an amendment / buyout / assignment: out of scope, strict no deal (was 'no deal OR buyout title with 股份 line')"
+    }
+   ]
   },
   {
    "id": "R4_rckt_honest",
@@ -373,12 +371,7 @@
     ],
     "filings": {
      "RCKT": [
-      {
-       "kind": "exact",
-       "t": "Rocket Pharmaceuticals, Inc.与Hercules Capital签署贷款协议（最高 1.5 亿美元）",
-       "m": "最高 1.5 亿美元",
-       "ms": "贷款额度：最高 1.5 亿美元 | 已提取：3,500 万美元"
-      }
+      null
      ]
     },
     "articles": {
@@ -391,7 +384,13 @@
       }
      ]
     }
-   }
+   },
+   "v2_changes": [
+    {
+     "filing": "RCKT",
+     "reason": "loan / credit facility is out of scope under the precision-first rule: no deal (out_of_scope)"
+    }
+   ]
   },
   {
    "id": "A1a_fab_type_quote",
@@ -638,19 +637,7 @@
       }
      ],
      "REGN": [
-      null,
-      {
-       "kind": "truthful",
-       "t_re": "^Regeneron Pharmaceuticals, Inc\\.与[^（]*Sanofi[^（]*授权合作(?:（(?P<m>[^）]+)）)?$",
-       "m_allowed": [
-        "",
-        "10 亿美元"
-       ],
-       "lines_re": [
-        "首付：10 亿美元",
-        "里程碑：最高 70 亿美元"
-       ]
-      }
+      null
      ]
     },
     "articles": {
@@ -663,7 +650,13 @@
       }
      ]
     }
-   }
+   },
+   "v2_changes": [
+    {
+     "filing": "REGN",
+     "reason": "Regeneron's Sixth Amendment to the Amended and Restated License and Collaboration Agreement is an AMENDMENT of a 2009 agreement: out of scope, strict no deal (was 'no deal OR license title'). Owner decision point: substantively it adds four new antibodies."
+    }
+   ]
   },
   {
    "id": "A2b_other_filing_all_quotes",
@@ -748,19 +741,7 @@
       }
      ],
      "REGN": [
-      null,
-      {
-       "kind": "truthful",
-       "t_re": "^Regeneron Pharmaceuticals, Inc\\.与[^（]*Sanofi[^（]*授权合作(?:（(?P<m>[^）]+)）)?$",
-       "m_allowed": [
-        "",
-        "10 亿美元"
-       ],
-       "lines_re": [
-        "首付：10 亿美元",
-        "里程碑：最高 70 亿美元"
-       ]
-      }
+      null
      ]
     },
     "articles": {
@@ -773,7 +754,13 @@
       }
      ]
     }
-   }
+   },
+   "v2_changes": [
+    {
+     "filing": "REGN",
+     "reason": "Regeneron's Sixth Amendment to the Amended and Restated License and Collaboration Agreement is an AMENDMENT of a 2009 agreement: out of scope, strict no deal (was 'no deal OR license title'). Owner decision point: substantively it adds four new antibodies."
+    }
+   ]
   },
   {
    "id": "A3a_spur_amount_as_genentech",
@@ -1638,19 +1625,7 @@
     ],
     "filings": {
      "IMNM": [
-      null,
-      {
-       "kind": "truthful",
-       "t_re": "^Immunome Inc\\.向(?:BMS|Bristol-Myers Squibb(?: Company)?)支付(?:2,000 万美元)?买断里程碑与分成义务$",
-       "m_allowed": [
-        "",
-        "2,000 万美元"
-       ],
-       "lines_re": [
-        "买断金额：2,000 万美元",
-        "股份：(?:约 ?442\\.5 万股|约 ?443 万股|4,425,487 股)"
-       ]
-      }
+      null
      ]
     },
     "articles": {
@@ -1663,7 +1638,13 @@
       }
      ]
     }
-   }
+   },
+   "v2_changes": [
+    {
+     "filing": "IMNM",
+     "reason": "Immunome's Amendment No. 4 (milestone/royalty buyout + patent assignment, paid in cash and shares) is an amendment / buyout / assignment: out of scope, strict no deal (was 'no deal OR buyout title with 股份 line')"
+    }
+   ]
   },
   {
    "id": "A6b_imnm_as_acq",
@@ -1718,19 +1699,7 @@
     ],
     "filings": {
      "IMNM": [
-      null,
-      {
-       "kind": "truthful",
-       "t_re": "^Immunome Inc\\.向(?:BMS|Bristol-Myers Squibb(?: Company)?)支付(?:2,000 万美元)?买断里程碑与分成义务$",
-       "m_allowed": [
-        "",
-        "2,000 万美元"
-       ],
-       "lines_re": [
-        "买断金额：2,000 万美元",
-        "股份：(?:约 ?442\\.5 万股|约 ?443 万股|4,425,487 股)"
-       ]
-      }
+      null
      ]
     },
     "articles": {
@@ -1743,7 +1712,13 @@
       }
      ]
     }
-   }
+   },
+   "v2_changes": [
+    {
+     "filing": "IMNM",
+     "reason": "Immunome's Amendment No. 4 (milestone/royalty buyout + patent assignment, paid in cash and shares) is an amendment / buyout / assignment: out of scope, strict no deal (was 'no deal OR buyout title with 股份 line')"
+    }
+   ]
   },
   {
    "id": "A6c_imnm_reverse_dir",
@@ -1798,19 +1773,7 @@
     ],
     "filings": {
      "IMNM": [
-      null,
-      {
-       "kind": "truthful",
-       "t_re": "^Immunome Inc\\.向(?:BMS|Bristol-Myers Squibb(?: Company)?)支付(?:2,000 万美元)?买断里程碑与分成义务$",
-       "m_allowed": [
-        "",
-        "2,000 万美元"
-       ],
-       "lines_re": [
-        "买断金额：2,000 万美元",
-        "股份：(?:约 ?442\\.5 万股|约 ?443 万股|4,425,487 股)"
-       ]
-      }
+      null
      ]
     },
     "articles": {
@@ -1823,7 +1786,13 @@
       }
      ]
     }
-   }
+   },
+   "v2_changes": [
+    {
+     "filing": "IMNM",
+     "reason": "Immunome's Amendment No. 4 (milestone/royalty buyout + patent assignment, paid in cash and shares) is an amendment / buyout / assignment: out of scope, strict no deal (was 'no deal OR buyout title with 股份 line')"
+    }
+   ]
   },
   {
    "id": "A6d_imnm_equity_fin",
@@ -1878,19 +1847,7 @@
     ],
     "filings": {
      "IMNM": [
-      null,
-      {
-       "kind": "truthful",
-       "t_re": "^Immunome Inc\\.向(?:BMS|Bristol-Myers Squibb(?: Company)?)支付(?:2,000 万美元)?买断里程碑与分成义务$",
-       "m_allowed": [
-        "",
-        "2,000 万美元"
-       ],
-       "lines_re": [
-        "买断金额：2,000 万美元",
-        "股份：(?:约 ?442\\.5 万股|约 ?443 万股|4,425,487 股)"
-       ]
-      }
+      null
      ]
     },
     "articles": {
@@ -1903,7 +1860,13 @@
       }
      ]
     }
-   }
+   },
+   "v2_changes": [
+    {
+     "filing": "IMNM",
+     "reason": "Immunome's Amendment No. 4 (milestone/royalty buyout + patent assignment, paid in cash and shares) is an amendment / buyout / assignment: out of scope, strict no deal (was 'no deal OR buyout title with 股份 line')"
+    }
+   ]
   },
   {
    "id": "A7a_az_amazon",
@@ -2098,19 +2061,7 @@
     ],
     "filings": {
      "REGN": [
-      null,
-      {
-       "kind": "truthful",
-       "t_re": "^Regeneron Pharmaceuticals, Inc\\.与[^（]*Sanofi[^（]*授权合作(?:（(?P<m>[^）]+)）)?$",
-       "m_allowed": [
-        "",
-        "10 亿美元"
-       ],
-       "lines_re": [
-        "首付：10 亿美元",
-        "里程碑：最高 70 亿美元"
-       ]
-      }
+      null
      ]
     },
     "articles": {
@@ -2123,7 +2074,13 @@
       }
      ]
     }
-   }
+   },
+   "v2_changes": [
+    {
+     "filing": "REGN",
+     "reason": "Regeneron's Sixth Amendment to the Amended and Restated License and Collaboration Agreement is an AMENDMENT of a 2009 agreement: out of scope, strict no deal (was 'no deal OR license title'). Owner decision point: substantively it adds four new antibodies."
+    }
+   ]
   },
   {
    "id": "A7d_roche_genentech_only",
@@ -3661,12 +3618,7 @@
     ],
     "filings": {
      "BIGL": [
-      {
-       "kind": "exact",
-       "t": "BigLoan Bio, Inc.与Lender Capital签署贷款协议（最高 15 亿美元）",
-       "m": "最高 15 亿美元",
-       "ms": "贷款额度：最高 15 亿美元 | 已提取：5 亿美元"
-      }
+      null
      ]
     },
     "articles": {
@@ -3679,7 +3631,13 @@
       }
      ]
     }
-   }
+   },
+   "v2_changes": [
+    {
+     "filing": "BIGL",
+     "reason": "loan / credit facility is out of scope under the precision-first rule: no deal (out_of_scope)"
+    }
+   ]
   },
   {
    "id": "P7_no_event_date",
@@ -3884,19 +3842,7 @@
     ],
     "filings": {
      "IMNM": [
-      null,
-      {
-       "kind": "truthful",
-       "t_re": "^Immunome Inc\\.向(?:BMS|Bristol-Myers Squibb(?: Company)?)支付(?:2,000 万美元)?买断里程碑与分成义务$",
-       "m_allowed": [
-        "",
-        "2,000 万美元"
-       ],
-       "lines_re": [
-        "买断金额：2,000 万美元",
-        "股份：(?:约 ?442\\.5 万股|约 ?443 万股|4,425,487 股)"
-       ]
-      }
+      null
      ]
     },
     "articles": {
@@ -3909,7 +3855,13 @@
       }
      ]
     }
-   }
+   },
+   "v2_changes": [
+    {
+     "filing": "IMNM",
+     "reason": "Immunome's Amendment No. 4 (milestone/royalty buyout + patent assignment, paid in cash and shares) is an amendment / buyout / assignment: out of scope, strict no deal (was 'no deal OR buyout title with 股份 line')"
+    }
+   ]
   },
   {
    "id": "P9_fab_party2",
@@ -4357,20 +4309,7 @@
     ],
     "filings": {
      "RCKT": [
-      null,
-      {
-       "kind": "truthful",
-       "t_re": "^Rocket Pharmaceuticals, Inc\\.与Hercules Capital(?:, Inc\\.)?签署贷款协议(?:（(?P<m>最高 1\\.5 亿美元)）)?$",
-       "m_allowed": [
-        "",
-        "最高 1.5 亿美元"
-       ],
-       "lines_re": [
-        "贷款额度：最高 1\\.5 亿美元",
-        "已提取：3,500 万美元",
-        "股份：(?:约 ?41 万股|409,699 股)"
-       ]
-      }
+      null
      ]
     },
     "articles": {
@@ -4383,7 +4322,13 @@
       }
      ]
     }
-   }
+   },
+   "v2_changes": [
+    {
+     "filing": "RCKT",
+     "reason": "loan / credit facility is out of scope under the precision-first rule: no deal (out_of_scope)"
+    }
+   ]
   },
   {
    "id": "P1d_merck_pfizer_oldquote_lic",
@@ -6052,7 +5997,7 @@
        "kind": "exact",
        "t": "Orbit Bio, Inc.与Takeda授权合作（1.2 亿欧元）",
        "m": "1.2 亿欧元",
-       "ms": "首付：1.2 亿欧元 | 股份：约 250 万股"
+       "ms": "首付：1.2 亿欧元"
       }
      ]
     },
@@ -6066,7 +6011,13 @@
       }
      ]
     }
-   }
+   },
+   "v2_changes": [
+    {
+     "filing": "ORBT",
+     "reason": "share components are never rendered: the '股份：约 250 万股' line is removed; the EUR upfront stays exact"
+    }
+   ]
   },
   {
    "id": "N2_title_invented",
@@ -6877,33 +6828,13 @@
       }
      ],
      "RCKT": [
-      {
-       "kind": "match",
-       "t_re": "^Rocket Pharmaceuticals, Inc\\.与Hercules Capital(?:, Inc\\.)?签署贷款协议（最高 1\\.5 亿美元）$",
-       "m": "最高 1.5 亿美元",
-       "ms": "贷款额度：最高 1.5 亿美元 | 已提取：3,500 万美元",
-       "d_prefix": "2026-09"
-      }
+      null
      ],
      "REGN": [
-      null,
-      {
-       "kind": "match",
-       "t_re": "^Regeneron Pharmaceuticals, Inc\\.与[^（]*Sanofi[^（]*授权合作（10 亿美元）$",
-       "m": "10 亿美元",
-       "ms": "首付：10 亿美元 | 里程碑：最高 70 亿美元",
-       "d_prefix": "2026-10"
-      }
+      null
      ],
      "IMNM": [
-      null,
-      {
-       "kind": "match",
-       "t_re": "^Immunome Inc\\.向(?:BMS|Bristol-Myers Squibb(?: Company)?)支付2,000 万美元买断里程碑与分成义务$",
-       "m": "2,000 万美元",
-       "ms_re": "^买断金额：2,000 万美元(?: \\| 股份：(?:约 ?442\\.5 万股|约 ?443 万股|4,425,487 股))?$",
-       "d_prefix": "2026-10"
-      }
+      null
      ]
     },
     "articles": {
@@ -6916,7 +6847,21 @@
       }
      ]
     }
-   }
+   },
+   "v2_changes": [
+    {
+     "filing": "RCKT",
+     "reason": "loan / credit facility is out of scope under the precision-first rule: no deal (out_of_scope)"
+    },
+    {
+     "filing": "IMNM",
+     "reason": "Immunome's Amendment No. 4 (milestone/royalty buyout + patent assignment, paid in cash and shares) is an amendment / buyout / assignment: out of scope, strict no deal (was 'no deal OR buyout title with 股份 line')"
+    },
+    {
+     "filing": "REGN",
+     "reason": "Regeneron's Sixth Amendment to the Amended and Restated License and Collaboration Agreement is an AMENDMENT of a 2009 agreement: out of scope, strict no deal (was 'no deal OR license title'). Owner decision point: substantively it adds four new antibodies."
+    }
+   ]
   },
   {
    "id": "REAL_pr7c_7511f48_run2",
@@ -6988,33 +6933,13 @@
       }
      ],
      "RCKT": [
-      {
-       "kind": "match",
-       "t_re": "^Rocket Pharmaceuticals, Inc\\.与Hercules Capital(?:, Inc\\.)?签署贷款协议（最高 1\\.5 亿美元）$",
-       "m": "最高 1.5 亿美元",
-       "ms": "贷款额度：最高 1.5 亿美元 | 已提取：3,500 万美元",
-       "d_prefix": "2026-09"
-      }
+      null
      ],
      "REGN": [
-      null,
-      {
-       "kind": "match",
-       "t_re": "^Regeneron Pharmaceuticals, Inc\\.与[^（]*Sanofi[^（]*授权合作（10 亿美元）$",
-       "m": "10 亿美元",
-       "ms": "首付：10 亿美元 | 里程碑：最高 70 亿美元",
-       "d_prefix": "2026-10"
-      }
+      null
      ],
      "IMNM": [
-      null,
-      {
-       "kind": "match",
-       "t_re": "^Immunome Inc\\.向(?:BMS|Bristol-Myers Squibb(?: Company)?)支付2,000 万美元买断里程碑与分成义务$",
-       "m": "2,000 万美元",
-       "ms_re": "^买断金额：2,000 万美元(?: \\| 股份：(?:约 ?442\\.5 万股|约 ?443 万股|4,425,487 股))?$",
-       "d_prefix": "2026-10"
-      }
+      null
      ]
     },
     "articles": {
@@ -7027,7 +6952,21 @@
       }
      ]
     }
-   }
+   },
+   "v2_changes": [
+    {
+     "filing": "RCKT",
+     "reason": "loan / credit facility is out of scope under the precision-first rule: no deal (out_of_scope)"
+    },
+    {
+     "filing": "IMNM",
+     "reason": "Immunome's Amendment No. 4 (milestone/royalty buyout + patent assignment, paid in cash and shares) is an amendment / buyout / assignment: out of scope, strict no deal (was 'no deal OR buyout title with 股份 line')"
+    },
+    {
+     "filing": "REGN",
+     "reason": "Regeneron's Sixth Amendment to the Amended and Restated License and Collaboration Agreement is an AMENDMENT of a 2009 agreement: out of scope, strict no deal (was 'no deal OR license title'). Owner decision point: substantively it adds four new antibodies."
+    }
+   ]
   },
   {
    "id": "REAL_pr7d_ac66a9c_run1",
@@ -7099,33 +7038,13 @@
       }
      ],
      "RCKT": [
-      {
-       "kind": "match",
-       "t_re": "^Rocket Pharmaceuticals, Inc\\.与Hercules Capital(?:, Inc\\.)?签署贷款协议（最高 1\\.5 亿美元）$",
-       "m": "最高 1.5 亿美元",
-       "ms": "贷款额度：最高 1.5 亿美元 | 已提取：3,500 万美元",
-       "d_prefix": "2026-09"
-      }
+      null
      ],
      "REGN": [
-      null,
-      {
-       "kind": "match",
-       "t_re": "^Regeneron Pharmaceuticals, Inc\\.与[^（]*Sanofi[^（]*授权合作（10 亿美元）$",
-       "m": "10 亿美元",
-       "ms": "首付：10 亿美元 | 里程碑：最高 70 亿美元",
-       "d_prefix": "2026-10"
-      }
+      null
      ],
      "IMNM": [
-      null,
-      {
-       "kind": "match",
-       "t_re": "^Immunome Inc\\.向(?:BMS|Bristol-Myers Squibb(?: Company)?)支付2,000 万美元买断里程碑与分成义务$",
-       "m": "2,000 万美元",
-       "ms_re": "^买断金额：2,000 万美元(?: \\| 股份：(?:约 ?442\\.5 万股|约 ?443 万股|4,425,487 股))?$",
-       "d_prefix": "2026-10"
-      }
+      null
      ]
     },
     "articles": {
@@ -7138,7 +7057,21 @@
       }
      ]
     }
-   }
+   },
+   "v2_changes": [
+    {
+     "filing": "RCKT",
+     "reason": "loan / credit facility is out of scope under the precision-first rule: no deal (out_of_scope)"
+    },
+    {
+     "filing": "IMNM",
+     "reason": "Immunome's Amendment No. 4 (milestone/royalty buyout + patent assignment, paid in cash and shares) is an amendment / buyout / assignment: out of scope, strict no deal (was 'no deal OR buyout title with 股份 line')"
+    },
+    {
+     "filing": "REGN",
+     "reason": "Regeneron's Sixth Amendment to the Amended and Restated License and Collaboration Agreement is an AMENDMENT of a 2009 agreement: out of scope, strict no deal (was 'no deal OR license title'). Owner decision point: substantively it adds four new antibodies."
+    }
+   ]
   },
   {
    "id": "REAL_pr7d_ac66a9c_run2",
@@ -7210,32 +7143,1142 @@
       }
      ],
      "RCKT": [
-      {
-       "kind": "match",
-       "t_re": "^Rocket Pharmaceuticals, Inc\\.与Hercules Capital(?:, Inc\\.)?签署贷款协议（最高 1\\.5 亿美元）$",
-       "m": "最高 1.5 亿美元",
-       "ms": "贷款额度：最高 1.5 亿美元 | 已提取：3,500 万美元",
-       "d_prefix": "2026-09"
-      }
+      null
      ],
      "REGN": [
-      null,
-      {
-       "kind": "match",
-       "t_re": "^Regeneron Pharmaceuticals, Inc\\.与[^（]*Sanofi[^（]*授权合作（10 亿美元）$",
-       "m": "10 亿美元",
-       "ms": "首付：10 亿美元 | 里程碑：最高 70 亿美元",
-       "d_prefix": "2026-10"
-      }
+      null
      ],
      "IMNM": [
+      null
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   },
+   "v2_changes": [
+    {
+     "filing": "RCKT",
+     "reason": "loan / credit facility is out of scope under the precision-first rule: no deal (out_of_scope)"
+    },
+    {
+     "filing": "IMNM",
+     "reason": "Immunome's Amendment No. 4 (milestone/royalty buyout + patent assignment, paid in cash and shares) is an amendment / buyout / assignment: out of scope, strict no deal (was 'no deal OR buyout title with 股份 line')"
+    },
+    {
+     "filing": "REGN",
+     "reason": "Regeneron's Sixth Amendment to the Amended and Restated License and Collaboration Agreement is an AMENDMENT of a 2009 agreement: out of scope, strict no deal (was 'no deal OR license title'). Owner decision point: substantively it adds four new antibodies."
+    }
+   ]
+  },
+  {
+   "id": "S01_loan_claimed_license",
+   "group": "v2_scope",
+   "desc": "Loan agreement presented by the model as a license/collaboration",
+   "filings": {
+    "OXBW": {
+     "display": "Oxbow Therapeutics, Inc.  (OXBW)  (CIK 0009991001)",
+     "registrant": "OXBOW THERAPEUTICS, INC.",
+     "paras": [
+      "On October 1, 2026, the Company entered into a Loan and Security Agreement with Ridgeway Capital LLC providing for term loans of up to $75.0 million, of which $25.0 million was funded at closing."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991001",
+     "adsh": "0009991000-26-991001",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "OXBW": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Ridgeway Capital",
+     "type_quote": "the Company entered into a Loan and Security Agreement with Ridgeway Capital LLC",
+     "counterparty_quote": "the Company entered into a Loan and Security Agreement with Ridgeway Capital LLC",
+     "amounts": [
+      {
+       "kind": "upfront",
+       "quote": "of which $25.0 million was funded at closing"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "OXBW": [
+      null
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "S02_atm_claimed_collab",
+   "group": "v2_scope",
+   "desc": "ATM sales agreement presented as a collaboration",
+   "filings": {
+    "MRLN": {
+     "display": "Marlin Bio, Inc.  (MRLN)  (CIK 0009991002)",
+     "registrant": "MARLIN BIO, INC.",
+     "paras": [
+      "On October 1, 2026, the Company entered into an Open Market Sale Agreement with Jefferies LLC, as sales agent, under which the Company may offer and sell shares of its common stock having an aggregate offering price of up to $200.0 million in at-the-market offerings."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991002",
+     "adsh": "0009991000-26-991002",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "MRLN": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Jefferies",
+     "type_quote": "the Company entered into an Open Market Sale Agreement with Jefferies LLC, as sales agent",
+     "counterparty_quote": "the Company entered into an Open Market Sale Agreement with Jefferies LLC, as sales agent",
+     "amounts": [
+      {
+       "kind": "upfront",
+       "quote": "having an aggregate offering price of up to $200.0 million"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "MRLN": [
+      null
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "S03_pipe_strategic_collab",
+   "group": "v2_scope",
+   "desc": "PIPE described 'in connection with a strategic collaboration' presented as collaboration",
+   "filings": {
+    "QUON": {
+     "display": "Quill Oncology, Inc.  (QUON)  (CIK 0009991003)",
+     "registrant": "QUILL ONCOLOGY, INC.",
+     "paras": [
+      "On October 1, 2026, the Company entered into a Securities Purchase Agreement with Novo Holdings A/S in connection with a strategic collaboration, under which Novo Holdings A/S agreed to purchase 4,000,000 shares of common stock in a private placement for gross proceeds of $40.0 million."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991003",
+     "adsh": "0009991000-26-991003",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "QUON": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Novo Holdings",
+     "type_quote": "the Company entered into a Securities Purchase Agreement with Novo Holdings A/S in connection with a strategic collaboration",
+     "counterparty_quote": "the Company entered into a Securities Purchase Agreement with Novo Holdings A/S in connection with a strategic collaboration",
+     "amounts": [
+      {
+       "kind": "upfront",
+       "quote": "for gross proceeds of $40.0 million"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "QUON": [
+      null
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "S04_offering_claimed_acquisition",
+   "group": "v2_scope",
+   "desc": "Underwritten offering presented as an acquisition of the filer",
+   "filings": {
+    "PLCN": {
+     "display": "Pelican Pharma, Inc.  (PLCN)  (CIK 0009991004)",
+     "registrant": "PELICAN PHARMA, INC.",
+     "paras": [
+      "On October 1, 2026, the Company entered into an Underwriting Agreement with Leerink Partners LLC, as representative of the underwriters, under which the underwriters agreed to purchase 10,000,000 shares of common stock at a price of $15.00 per share."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991004",
+     "adsh": "0009991000-26-991004",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "PLCN": {
+     "deal_type": "acquisition",
+     "counterparty_name": "Leerink Partners",
+     "type_quote": "the underwriters agreed to purchase 10,000,000 shares of common stock at a price of $15.00 per share",
+     "counterparty_quote": "an Underwriting Agreement with Leerink Partners LLC",
+     "amounts": [
+      {
+       "kind": "purchase_price",
+       "quote": "at a price of $15.00 per share"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "PLCN": [
+      null
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "S05_license_amendment",
+   "group": "v2_scope",
+   "desc": "Amendment No. 2 to an existing License Agreement presented as a new license",
+   "filings": {
+    "CRVD": {
+     "display": "Corvid Therapeutics, Inc.  (CRVD)  (CIK 0009991005)",
+     "registrant": "CORVID THERAPEUTICS, INC.",
+     "paras": [
+      "On October 1, 2026, the Company entered into Amendment No. 2 to the License Agreement with Sorrel Pharma AG, under which Sorrel Pharma AG agreed to increase the development milestone payments payable to the Company by $50 million."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991005",
+     "adsh": "0009991000-26-991005",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "CRVD": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Sorrel Pharma AG",
+     "type_quote": "the Company entered into Amendment No. 2 to the License Agreement with Sorrel Pharma AG",
+     "counterparty_quote": "the Company entered into Amendment No. 2 to the License Agreement with Sorrel Pharma AG",
+     "amounts": [
+      {
+       "kind": "milestones_total",
+       "quote": "agreed to increase the development milestone payments payable to the Company by $50 million"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "CRVD": [
+      null
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "S06_historical_as_amended_license",
+   "group": "v2_scope",
+   "desc": "Merger 8-K; the model returns the 2019 license ('dated May 4, 2019, as amended') as this week's deal",
+   "filings": {
+    "VRDT": {
+     "display": "Verdant Bio, Inc.  (VRDT)  (CIK 0009991006)",
+     "registrant": "VERDANT BIO, INC.",
+     "paras": [
+      "On October 1, 2026, the Company entered into an Agreement and Plan of Merger with Osprey Pharma plc, under which Osprey Pharma plc will acquire the Company for $18.50 per share in cash.",
+      "Under the License Agreement, dated May 4, 2019, as amended, between the Company and Biogen Inc., the Company granted Biogen Inc. an exclusive license to VB-2 in Japan, and Biogen Inc. paid the Company an upfront payment of $30 million."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991006",
+     "adsh": "0009991000-26-991006",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "VRDT": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Biogen",
+     "type_quote": "the Company granted Biogen Inc. an exclusive license to VB-2 in Japan",
+     "counterparty_quote": "between the Company and Biogen Inc.",
+     "amounts": [
+      {
+       "kind": "upfront",
+       "quote": "Biogen Inc. paid the Company an upfront payment of $30 million"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "VRDT": [
+      null
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "S07_item102_termination",
+   "group": "v2_scope",
+   "desc": "Item 1.02 termination of a license presented as a license, fee as upfront",
+   "filings": {
+    "HLVD": {
+     "display": "Halvard Bio, Inc.  (HLVD)  (CIK 0009991007)",
+     "registrant": "HALVARD BIO, INC.",
+     "paras": [
+      "Item 1.02 Termination of a Material Definitive Agreement",
+      "On October 1, 2026, the Company and Tessaly Pharma Inc. terminated the Collaboration Agreement under which the Company had granted Tessaly Pharma Inc. an exclusive license to HB-4. In connection with the termination, Tessaly Pharma Inc. paid the Company a termination fee of $7.5 million."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991007",
+     "adsh": "0009991000-26-991007",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false,
+     "items": [
+      "1.02"
+     ]
+    }
+   },
+   "claude": {
+    "HLVD": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Tessaly Pharma",
+     "type_quote": "the Company had granted Tessaly Pharma Inc. an exclusive license to HB-4",
+     "counterparty_quote": "the Company had granted Tessaly Pharma Inc. an exclusive license to HB-4",
+     "amounts": [
+      {
+       "kind": "upfront",
+       "quote": "Tessaly Pharma Inc. paid the Company a termination fee of $7.5 million"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "HLVD": [
+      null
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "S08_assignment_claimed_acquisition",
+   "group": "v2_scope",
+   "desc": "Assignment of program rights presented as acquisition of the company",
+   "filings": {
+    "IRWL": {
+     "display": "Ironwood Labs, Inc.  (IRWL)  (CIK 0009991008)",
+     "registrant": "IRONWOOD LABS, INC.",
+     "paras": [
+      "On October 1, 2026, the Company entered into an Asset Purchase and Assignment Agreement with Tern Bio, Inc., under which Tern Bio, Inc. assigned to the Company all of its rights to TX-3 and the Company paid Tern Bio, Inc. $12.0 million."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991008",
+     "adsh": "0009991000-26-991008",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "IRWL": {
+     "deal_type": "acquisition",
+     "counterparty_name": "Tern Bio",
+     "type_quote": "Tern Bio, Inc. assigned to the Company all of its rights to TX-3 and the Company paid Tern Bio, Inc. $12.0 million",
+     "counterparty_quote": "an Asset Purchase and Assignment Agreement with Tern Bio, Inc.",
+     "amounts": [
+      {
+       "kind": "purchase_price",
+       "quote": "the Company paid Tern Bio, Inc. $12.0 million"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "IRWL": [
+      null
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "S09_divestiture_claimed_acquisition",
+   "group": "v2_scope",
+   "desc": "Divestiture of a business unit presented as acquisition",
+   "filings": {
+    "LMND": {
+     "display": "Lumen Diagnostics, Inc.  (LMND)  (CIK 0009991009)",
+     "registrant": "LUMEN DIAGNOSTICS, INC.",
+     "paras": [
+      "On October 1, 2026, the Company entered into a Purchase Agreement with Arbor Partners LLC, under which Arbor Partners LLC agreed to acquire the Company's diagnostics business for $90 million in cash."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991009",
+     "adsh": "0009991000-26-991009",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "LMND": {
+     "deal_type": "acquisition",
+     "counterparty_name": "Arbor Partners",
+     "type_quote": "Arbor Partners LLC agreed to acquire the Company's diagnostics business for $90 million in cash",
+     "counterparty_quote": "a Purchase Agreement with Arbor Partners LLC",
+     "amounts": [
+      {
+       "kind": "purchase_price",
+       "quote": "agreed to acquire the Company's diagnostics business for $90 million in cash"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "LMND": [
+      null
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "S10_buyout_under_license_title",
+   "group": "v2_scope",
+   "desc": "Royalty buyout under an 'Exclusive License Agreement' title presented as a license",
+   "filings": {
+    "SLTM": {
+     "display": "Saltmarsh Therapeutics, Inc.  (SLTM)  (CIK 0009991010)",
+     "registrant": "SALTMARSH THERAPEUTICS, INC.",
+     "paras": [
+      "On October 1, 2026, the Company entered into Amendment No. 1 to the Exclusive License Agreement with Brennan Biologics, Inc., under which the Company made a one-time payment of $6.0 million to Brennan Biologics, Inc. and all future royalty obligations of the Company were terminated."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991010",
+     "adsh": "0009991000-26-991010",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "SLTM": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Brennan Biologics",
+     "type_quote": "the Company entered into Amendment No. 1 to the Exclusive License Agreement with Brennan Biologics, Inc.",
+     "counterparty_quote": "the Company entered into Amendment No. 1 to the Exclusive License Agreement with Brennan Biologics, Inc.",
+     "amounts": [
+      {
+       "kind": "upfront",
+       "quote": "the Company made a one-time payment of $6.0 million to Brennan Biologics, Inc."
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "SLTM": [
+      null
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "S11_royalty_financing_claimed_collab",
+   "group": "v2_scope",
+   "desc": "Royalty financing (revenue interest purchase) presented as collaboration",
+   "filings": {
+    "NMBR": {
+     "display": "Nimbus Rx, Inc.  (NMBR)  (CIK 0009991011)",
+     "registrant": "NIMBUS RX, INC.",
+     "paras": [
+      "On October 1, 2026, the Company entered into a Revenue Interest Purchase Agreement with Blackstone Life Sciences, under which Blackstone Life Sciences will pay the Company $150 million upfront in exchange for a portion of future royalties on NX-5."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991011",
+     "adsh": "0009991000-26-991011",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "NMBR": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Blackstone Life Sciences",
+     "type_quote": "the Company entered into a Revenue Interest Purchase Agreement with Blackstone Life Sciences",
+     "counterparty_quote": "the Company entered into a Revenue Interest Purchase Agreement with Blackstone Life Sciences",
+     "amounts": [
+      {
+       "kind": "upfront",
+       "quote": "Blackstone Life Sciences will pay the Company $150 million upfront"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "NMBR": [
+      null
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "S12_item203_loan_claimed_license",
+   "group": "v2_scope",
+   "desc": "Item 2.03 loan presented as a license",
+   "filings": {
+    "GRNB": {
+     "display": "Granite Bio, Inc.  (GRNB)  (CIK 0009991012)",
+     "registrant": "GRANITE BIO, INC.",
+     "paras": [
+      "Item 2.03 Creation of a Direct Financial Obligation",
+      "On October 1, 2026, the Company entered into a Credit Agreement with Kingsley Credit Partners LLC providing for a senior secured term loan of up to $40.0 million."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991012",
+     "adsh": "0009991000-26-991012",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false,
+     "items": [
+      "2.03"
+     ]
+    }
+   },
+   "claude": {
+    "GRNB": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Kingsley Credit Partners",
+     "type_quote": "the Company entered into a Credit Agreement with Kingsley Credit Partners LLC",
+     "counterparty_quote": "the Company entered into a Credit Agreement with Kingsley Credit Partners LLC",
+     "amounts": [
+      {
+       "kind": "upfront",
+       "quote": "providing for a senior secured term loan of up to $40.0 million"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "GRNB": [
+      null
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "S13_nonbinding_loi_acquisition",
+   "group": "v2_scope",
+   "desc": "Non-binding letter of intent (no definitive agreement) presented as acquisition",
+   "filings": {
+    "THSL": {
+     "display": "Thistle Pharma, Inc.  (THSL)  (CIK 0009991013)",
+     "registrant": "THISTLE PHARMA, INC.",
+     "paras": [
+      "On October 1, 2026, the Company entered into a non-binding letter of intent with Quarry Holdings plc, under which Quarry Holdings plc would acquire the Company for approximately $600 million, subject to due diligence and negotiation of a definitive agreement."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991013",
+     "adsh": "0009991000-26-991013",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "THSL": {
+     "deal_type": "acquisition",
+     "counterparty_name": "Quarry Holdings",
+     "type_quote": "Quarry Holdings plc would acquire the Company for approximately $600 million",
+     "counterparty_quote": "a non-binding letter of intent with Quarry Holdings plc",
+     "amounts": [
+      {
+       "kind": "purchase_price",
+       "quote": "would acquire the Company for approximately $600 million"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "THSL": [
+      null
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "S14_current_amendment_adds_license",
+   "group": "v2_scope",
+   "desc": "Fourth Amendment ', as amended' that adds a territory license: an amendment, out of scope",
+   "filings": {
+    "FNWK": {
+     "display": "Fennwick Bio, Inc.  (FNWK)  (CIK 0009991014)",
+     "registrant": "FENNWICK BIO, INC.",
+     "paras": [
+      "On October 1, 2026, the Company entered into a Fourth Amendment to the Collaboration and License Agreement, dated March 1, 2020, as amended, with Brightline Therapeutics, Inc., pursuant to which the Company granted Brightline Therapeutics, Inc. an exclusive license to FB-2 in Korea and Brightline Therapeutics, Inc. will pay the Company $25 million upfront."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991014",
+     "adsh": "0009991000-26-991014",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "FNWK": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Brightline Therapeutics",
+     "type_quote": "the Company granted Brightline Therapeutics, Inc. an exclusive license to FB-2 in Korea",
+     "counterparty_quote": "with Brightline Therapeutics, Inc.",
+     "amounts": [
+      {
+       "kind": "upfront",
+       "quote": "Brightline Therapeutics, Inc. will pay the Company $25 million upfront"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "FNWK": [
+      null
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "I01_third_party_payee_same_sentence",
+   "group": "v2_inscope",
+   "desc": "The filer's $15M payment to a university (same sentence) labelled the partner's upfront",
+   "filings": {
+    "K": {
+     "display": "Halcrest Bio, Inc.  (HCA)  (CIK 0009991015)",
+     "registrant": "HALCREST BIO, INC.",
+     "paras": [
+      "On October 1, 2026, the Company granted Meridale Pharma AG an exclusive license to HB-9 in Europe. Meridale Pharma AG will pay the Company an upfront payment of $50 million, of which the Company will pay $15 million to Calder University under a prior sublicense agreement, and Harbor Royalty Fund will pay the Company $35 million for a portion of the resulting royalties."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991015",
+     "adsh": "0009991000-26-991015",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "K": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Meridale Pharma AG",
+     "type_quote": "the Company granted Meridale Pharma AG an exclusive license to HB-9 in Europe",
+     "counterparty_quote": "the Company granted Meridale Pharma AG an exclusive license to HB-9 in Europe",
+     "amounts": [
+      {
+       "kind": "upfront",
+       "quote": "of which the Company will pay $15 million to Calder University"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "K": [
       null,
       {
-       "kind": "match",
-       "t_re": "^Immunome Inc\\.向(?:BMS|Bristol-Myers Squibb(?: Company)?)支付2,000 万美元买断里程碑与分成义务$",
-       "m": "2,000 万美元",
-       "ms_re": "^买断金额：2,000 万美元(?: \\| 股份：(?:约 ?442\\.5 万股|约 ?443 万股|4,425,487 股))?$",
-       "d_prefix": "2026-10"
+       "kind": "truthful",
+       "t_re": "^Halcrest Bio, Inc\\.与Meridale(?: Pharma AG)?授权合作(?:（[^）]+）)?$",
+       "m_allowed": [
+        "",
+        "5,000 万美元"
+       ],
+       "lines_re": [
+        "首付：5,000 万美元",
+        "初期付款：5,000 万美元"
+       ]
       }
      ]
     },
@@ -7247,6 +8290,3210 @@
        "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
        "discuss": "样本量有限。"
       }
+     ]
+    }
+   }
+  },
+  {
+   "id": "I02_third_party_payer_same_sentence",
+   "group": "v2_inscope",
+   "desc": "A royalty fund's $35M (same sentence) labelled the partner's upfront",
+   "filings": {
+    "K": {
+     "display": "Halcrest Bio, Inc.  (HCB)  (CIK 0009991016)",
+     "registrant": "HALCREST BIO, INC.",
+     "paras": [
+      "On October 1, 2026, the Company granted Meridale Pharma AG an exclusive license to HB-9 in Europe. Meridale Pharma AG will pay the Company an upfront payment of $50 million, of which the Company will pay $15 million to Calder University under a prior sublicense agreement, and Harbor Royalty Fund will pay the Company $35 million for a portion of the resulting royalties."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991016",
+     "adsh": "0009991000-26-991016",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "K": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Meridale Pharma AG",
+     "type_quote": "the Company granted Meridale Pharma AG an exclusive license to HB-9 in Europe",
+     "counterparty_quote": "the Company granted Meridale Pharma AG an exclusive license to HB-9 in Europe",
+     "amounts": [
+      {
+       "kind": "upfront",
+       "quote": "Harbor Royalty Fund will pay the Company $35 million"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "K": [
+      null,
+      {
+       "kind": "truthful",
+       "t_re": "^Halcrest Bio, Inc\\.与Meridale(?: Pharma AG)?授权合作(?:（[^）]+）)?$",
+       "m_allowed": [
+        "",
+        "5,000 万美元"
+       ],
+       "lines_re": [
+        "首付：5,000 万美元",
+        "初期付款：5,000 万美元"
+       ]
+      }
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "I03_invented_counterparty_defined_term",
+   "group": "v2_inscope",
+   "desc": "Model names a competitor defined in EX-99 (Pfizer) as licensee; type_quote only says 'the Licensee'",
+   "filings": {
+    "K": {
+     "display": "Wrenfield Bio, Inc.  (WRNF)  (CIK 0009991017)",
+     "registrant": "WRENFIELD BIO, INC.",
+     "paras": [
+      "On October 1, 2026, the Company entered into a License Agreement with Calloway Therapeutics Ltd. (the Licensee), and the Company granted the Licensee an exclusive license to WB-4 in Japan."
+     ],
+     "event": "October 1, 2026",
+     "ex99": [
+      "Wrenfield Bio Announces License",
+      "Wrenfield competes with Pfizer Inc. (“Pfizer”), which reported Phase 3 data for a rival program in September."
+     ],
+     "cik": "0009991017",
+     "adsh": "0009991000-26-991017",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "K": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Pfizer",
+     "type_quote": "the Company granted the Licensee an exclusive license to WB-4 in Japan",
+     "counterparty_quote": "Wrenfield competes with Pfizer Inc. (“Pfizer”)",
+     "amounts": []
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "K": [
+      null,
+      {
+       "kind": "truthful",
+       "t_re": "^Wrenfield Bio, Inc\\.与Calloway(?: Therapeutics(?: Ltd\\.)?)?授权合作(?:（[^）]+）)?$",
+       "m_allowed": [
+        ""
+       ],
+       "lines_re": []
+      }
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "I04_invented_counterparty_unnamed_partner",
+   "group": "v2_inscope",
+   "desc": "Partner is unnamed in the filing; model invents AstraZeneca",
+   "filings": {
+    "K": {
+     "display": "Ardent Bio, Inc.  (ARDB)  (CIK 0009991018)",
+     "registrant": "ARDENT BIO, INC.",
+     "paras": [
+      "On October 1, 2026, the Company granted a global pharmaceutical company an exclusive license to AB-11 outside the United States. The licensee will pay the Company an upfront payment of $45 million."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991018",
+     "adsh": "0009991000-26-991018",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "K": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "AstraZeneca",
+     "type_quote": "the Company granted a global pharmaceutical company an exclusive license to AB-11 outside the United States",
+     "counterparty_quote": "the Company granted a global pharmaceutical company an exclusive license to AB-11 outside the United States",
+     "amounts": [
+      {
+       "kind": "upfront",
+       "quote": "The licensee will pay the Company an upfront payment of $45 million"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "K": [
+      null
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "I05_cash_runway_same_paragraph",
+   "group": "v2_inscope",
+   "desc": "Cash/runway $310.4M in the partner's paragraph labelled upfront",
+   "filings": {
+    "K": {
+     "display": "Cobalt Ridge Bio, Inc.  (CBRB)  (CIK 0009991019)",
+     "registrant": "COBALT RIDGE BIO, INC.",
+     "paras": [
+      "On October 1, 2026, the Company granted Ostrava Pharma AG an exclusive license to CR-3 in Europe. Ostrava Pharma AG will pay the Company an upfront payment of $30 million. Including the upfront payment, the Company expects to have approximately $310.4 million of cash, cash equivalents and marketable securities, sufficient to fund operations into 2029."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991019",
+     "adsh": "0009991000-26-991019",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "K": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Ostrava Pharma AG",
+     "type_quote": "the Company granted Ostrava Pharma AG an exclusive license to CR-3 in Europe",
+     "counterparty_quote": "the Company granted Ostrava Pharma AG an exclusive license to CR-3 in Europe",
+     "amounts": [
+      {
+       "kind": "upfront",
+       "quote": "the Company expects to have approximately $310.4 million of cash, cash equivalents and marketable securities"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "K": [
+      null,
+      {
+       "kind": "truthful",
+       "t_re": "^Cobalt Ridge Bio, Inc\\.与Ostrava(?: Pharma AG)?授权合作(?:（[^）]+）)?$",
+       "m_allowed": [
+        "",
+        "3,000 万美元"
+       ],
+       "lines_re": [
+        "首付：3,000 万美元"
+       ]
+      }
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "I06_balance_sheet_table_row",
+   "group": "v2_inscope",
+   "desc": "Balance-sheet table row 'Deferred revenue from Ostrava Pharma AG 27.5' labelled upfront",
+   "filings": {
+    "K": {
+     "display": "Cobalt Ridge Bio, Inc.  (CBRC)  (CIK 0009991020)",
+     "registrant": "COBALT RIDGE BIO, INC.",
+     "paras": [
+      "On October 1, 2026, the Company granted Ostrava Pharma AG an exclusive license to CR-3 in Europe. Ostrava Pharma AG will pay the Company an upfront payment of $30 million.",
+      "Selected Balance Sheet Data (in millions): Cash, cash equivalents and investments 412.9 | Deferred revenue from Ostrava Pharma AG 27.5 | Total stockholders' equity 388.1"
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991020",
+     "adsh": "0009991000-26-991020",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "K": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Ostrava Pharma AG",
+     "type_quote": "the Company granted Ostrava Pharma AG an exclusive license to CR-3 in Europe",
+     "counterparty_quote": "the Company granted Ostrava Pharma AG an exclusive license to CR-3 in Europe",
+     "amounts": [
+      {
+       "kind": "upfront",
+       "quote": "Deferred revenue from Ostrava Pharma AG 27.5"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "K": [
+      null,
+      {
+       "kind": "truthful",
+       "t_re": "^Cobalt Ridge Bio, Inc\\.与Ostrava(?: Pharma AG)?授权合作(?:（[^）]+）)?$",
+       "m_allowed": [
+        "",
+        "3,000 万美元"
+       ],
+       "lines_re": [
+        "首付：3,000 万美元"
+       ]
+      }
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "I07_honest_license_up_to_1_5B_milestones",
+   "group": "v2_inscope",
+   "desc": "Honest license: $75M upfront + up to $1.5 billion milestones (replaces the conversion coverage of the out-of-scope P5)",
+   "filings": {
+    "K": {
+     "display": "Solstice Bio, Inc.  (SLST)  (CIK 0009991021)",
+     "registrant": "SOLSTICE BIO, INC.",
+     "paras": [
+      "On October 1, 2026, the Company granted Hartwell Pharma AG an exclusive worldwide license to SB-21. Hartwell Pharma AG will pay the Company an upfront payment of $75 million, and the Company is eligible to receive up to $1.5 billion in development, regulatory and commercial milestone payments."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991021",
+     "adsh": "0009991000-26-991021",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "K": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Hartwell Pharma AG",
+     "type_quote": "the Company granted Hartwell Pharma AG an exclusive worldwide license to SB-21",
+     "counterparty_quote": "the Company granted Hartwell Pharma AG an exclusive worldwide license to SB-21",
+     "amounts": [
+      {
+       "kind": "upfront",
+       "quote": "Hartwell Pharma AG will pay the Company an upfront payment of $75 million"
+      },
+      {
+       "kind": "milestones_total",
+       "quote": "the Company is eligible to receive up to $1.5 billion in development, regulatory and commercial milestone payments"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "K": [
+      {
+       "kind": "exact",
+       "t": "Solstice Bio, Inc.与Hartwell Pharma AG授权合作（7,500 万美元）",
+       "m": "7,500 万美元",
+       "ms": "首付：7,500 万美元 | 里程碑：最高 15 亿美元"
+      }
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "I08_honest_acquisition_with_cvr",
+   "group": "v2_inscope",
+   "desc": "Honest definitive acquisition by the filer ($250M + up to $150M milestones)",
+   "filings": {
+    "K": {
+     "display": "Kestrel Rx, Inc.  (KSRX)  (CIK 0009991022)",
+     "registrant": "KESTREL RX, INC.",
+     "paras": [
+      "On October 1, 2026, the Company entered into an Agreement and Plan of Merger with Juniper Biosciences, Inc., a privately held company, under which the Company will acquire Juniper Biosciences, Inc. for $250 million in cash at closing, plus up to $150 million in contingent milestone payments."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991022",
+     "adsh": "0009991000-26-991022",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "K": {
+     "deal_type": "acquisition",
+     "counterparty_name": "Juniper Biosciences",
+     "type_quote": "the Company will acquire Juniper Biosciences, Inc. for $250 million in cash at closing",
+     "counterparty_quote": "an Agreement and Plan of Merger with Juniper Biosciences, Inc.",
+     "amounts": [
+      {
+       "kind": "purchase_price",
+       "quote": "the Company will acquire Juniper Biosciences, Inc. for $250 million in cash at closing"
+      },
+      {
+       "kind": "milestones_total",
+       "quote": "plus up to $150 million in contingent milestone payments"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "K": [
+      {
+       "kind": "truthful",
+       "t_re": "^Kestrel Rx, Inc\\.收购Juniper Biosciences(?:, Inc\\.)?(?:（[^）]+）)?$",
+       "m_allowed": [
+        "2.5 亿美元"
+       ],
+       "lines_re": [
+        "收购对价：2\\.5 亿美元",
+        "里程碑：最高 1\\.5 亿美元"
+       ]
+      }
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "I09_honest_new_collaboration",
+   "group": "v2_inscope",
+   "desc": "Honest newly entered Collaboration and License Agreement",
+   "filings": {
+    "K": {
+     "display": "Tamsin Therapeutics, Inc.  (TMSN)  (CIK 0009991023)",
+     "registrant": "TAMSIN THERAPEUTICS, INC.",
+     "paras": [
+      "On October 1, 2026, the Company entered into a Collaboration and License Agreement with Rowan Pharmaceuticals plc, under which the Company granted Rowan Pharmaceuticals plc an exclusive license to TT-6 and the parties will jointly develop TT-6. Rowan Pharmaceuticals plc will pay the Company an upfront payment of $40 million."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991023",
+     "adsh": "0009991000-26-991023",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "K": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Rowan Pharmaceuticals plc",
+     "type_quote": "the Company granted Rowan Pharmaceuticals plc an exclusive license to TT-6",
+     "counterparty_quote": "the Company granted Rowan Pharmaceuticals plc an exclusive license to TT-6",
+     "amounts": [
+      {
+       "kind": "upfront",
+       "quote": "Rowan Pharmaceuticals plc will pay the Company an upfront payment of $40 million"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "K": [
+      {
+       "kind": "exact",
+       "t": "Tamsin Therapeutics, Inc.与Rowan Pharmaceuticals plc授权合作（4,000 万美元）",
+       "m": "4,000 万美元",
+       "ms": "首付：4,000 万美元"
+      }
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "I10_license_with_warrant",
+   "group": "v2_inscope",
+   "desc": "Honest license with a warrant component: warrant / shares are never rendered",
+   "filings": {
+    "K": {
+     "display": "Basalt Bio, Inc.  (BSLT)  (CIK 0009991024)",
+     "registrant": "BASALT BIO, INC.",
+     "paras": [
+      "On October 1, 2026, the Company granted Calder Pharma AG an exclusive license to BB-8 and issued Calder Pharma AG a warrant to purchase up to 1,000,000 shares of common stock. Calder Pharma AG will pay the Company an upfront payment of $22 million."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991024",
+     "adsh": "0009991000-26-991024",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "K": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Calder Pharma AG",
+     "type_quote": "the Company granted Calder Pharma AG an exclusive license to BB-8 and issued Calder Pharma AG a warrant to purchase up to 1,000,000 shares of common stock",
+     "counterparty_quote": "the Company granted Calder Pharma AG an exclusive license to BB-8 and issued Calder Pharma AG a warrant to purchase up to 1,000,000 shares of common stock",
+     "amounts": [
+      {
+       "kind": "upfront",
+       "quote": "Calder Pharma AG will pay the Company an upfront payment of $22 million"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "K": [
+      {
+       "kind": "truthful",
+       "t_re": "^Basalt Bio, Inc\\.与Calder Pharma AG授权合作(?:（[^）]+）)?$",
+       "m_allowed": [
+        "2,200 万美元"
+       ],
+       "lines_re": [
+        "首付：2,200 万美元"
+       ]
+      }
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "I11_license_paid_in_shares",
+   "group": "v2_inscope",
+   "desc": "License whose only upfront is shares: no share or dollar amount may be rendered",
+   "filings": {
+    "K": {
+     "display": "Opaline Bio, Inc.  (OPLN)  (CIK 0009991025)",
+     "registrant": "OPALINE BIO, INC.",
+     "paras": [
+      "On October 1, 2026, the Company granted Vesper Therapeutics Inc. an exclusive license to OB-2, and as upfront consideration Vesper Therapeutics Inc. issued 2,000,000 shares of its common stock to the Company."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991025",
+     "adsh": "0009991000-26-991025",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "K": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Vesper Therapeutics",
+     "type_quote": "the Company granted Vesper Therapeutics Inc. an exclusive license to OB-2",
+     "counterparty_quote": "the Company granted Vesper Therapeutics Inc. an exclusive license to OB-2",
+     "amounts": [
+      {
+       "kind": "upfront",
+       "quote": "as upfront consideration Vesper Therapeutics Inc. issued 2,000,000 shares of its common stock to the Company"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "K": [
+      null,
+      {
+       "kind": "truthful",
+       "t_re": "^Opaline Bio, Inc\\.与Vesper(?: Therapeutics(?: Inc\\.)?)?授权合作(?:（[^）]+）)?$",
+       "m_allowed": [
+        ""
+       ],
+       "lines_re": []
+      }
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "V00_verifier_supports_all",
+   "group": "v2_verifier",
+   "desc": "Control: verifier supports every field with verbatim quotes -> full deal published",
+   "filings": {
+    "K": {
+     "display": "Aster Bio, Inc.  (ASTR)  (CIK 0009991026)",
+     "registrant": "ASTER BIO, INC.",
+     "paras": [
+      "On October 1, 2026, the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe. Larchmont Pharma AG will pay the Company an upfront payment of $60 million, and the Company is eligible to receive up to $900 million in milestone payments."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991026",
+     "adsh": "0009991000-26-991026",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "K": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Larchmont Pharma AG",
+     "type_quote": "the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe",
+     "counterparty_quote": "the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe",
+     "amounts": [
+      {
+       "kind": "upfront",
+       "quote": "Larchmont Pharma AG will pay the Company an upfront payment of $60 million"
+      },
+      {
+       "kind": "milestones_total",
+       "quote": "the Company is eligible to receive up to $900 million in milestone payments"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "K": [
+      {
+       "kind": "exact",
+       "t": "Aster Bio, Inc.与Larchmont Pharma AG授权合作（6,000 万美元）",
+       "m": "6,000 万美元",
+       "ms": "首付：6,000 万美元 | 里程碑：最高 9 亿美元"
+      }
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "V01_verifier_raises",
+   "group": "v2_verifier",
+   "desc": "Verifier call raises APIConnectionError -> no deal (fail closed)",
+   "filings": {
+    "K": {
+     "display": "Aster Bio, Inc.  (ASTR)  (CIK 0009991027)",
+     "registrant": "ASTER BIO, INC.",
+     "paras": [
+      "On October 1, 2026, the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe. Larchmont Pharma AG will pay the Company an upfront payment of $60 million, and the Company is eligible to receive up to $900 million in milestone payments."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991027",
+     "adsh": "0009991000-26-991027",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "K": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Larchmont Pharma AG",
+     "type_quote": "the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe",
+     "counterparty_quote": "the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe",
+     "amounts": [
+      {
+       "kind": "upfront",
+       "quote": "Larchmont Pharma AG will pay the Company an upfront payment of $60 million"
+      },
+      {
+       "kind": "milestones_total",
+       "quote": "the Company is eligible to receive up to $900 million in milestone payments"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "K": [
+      null
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   },
+   "verifier": {
+    "K": {
+     "mode": "raise"
+    }
+   }
+  },
+  {
+   "id": "V02_verifier_timeout",
+   "group": "v2_verifier",
+   "desc": "Verifier call raises APITimeoutError -> no deal (fail closed)",
+   "filings": {
+    "K": {
+     "display": "Aster Bio, Inc.  (ASTR)  (CIK 0009991028)",
+     "registrant": "ASTER BIO, INC.",
+     "paras": [
+      "On October 1, 2026, the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe. Larchmont Pharma AG will pay the Company an upfront payment of $60 million, and the Company is eligible to receive up to $900 million in milestone payments."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991028",
+     "adsh": "0009991000-26-991028",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "K": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Larchmont Pharma AG",
+     "type_quote": "the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe",
+     "counterparty_quote": "the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe",
+     "amounts": [
+      {
+       "kind": "upfront",
+       "quote": "Larchmont Pharma AG will pay the Company an upfront payment of $60 million"
+      },
+      {
+       "kind": "milestones_total",
+       "quote": "the Company is eligible to receive up to $900 million in milestone payments"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "K": [
+      null
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   },
+   "verifier": {
+    "K": {
+     "mode": "timeout"
+    }
+   }
+  },
+  {
+   "id": "V03_verifier_no_tool_use",
+   "group": "v2_verifier",
+   "desc": "Verifier answers in prose without verify_deal tool_use -> no deal",
+   "filings": {
+    "K": {
+     "display": "Aster Bio, Inc.  (ASTR)  (CIK 0009991029)",
+     "registrant": "ASTER BIO, INC.",
+     "paras": [
+      "On October 1, 2026, the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe. Larchmont Pharma AG will pay the Company an upfront payment of $60 million, and the Company is eligible to receive up to $900 million in milestone payments."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991029",
+     "adsh": "0009991000-26-991029",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "K": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Larchmont Pharma AG",
+     "type_quote": "the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe",
+     "counterparty_quote": "the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe",
+     "amounts": [
+      {
+       "kind": "upfront",
+       "quote": "Larchmont Pharma AG will pay the Company an upfront payment of $60 million"
+      },
+      {
+       "kind": "milestones_total",
+       "quote": "the Company is eligible to receive up to $900 million in milestone payments"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "K": [
+      null
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   },
+   "verifier": {
+    "K": {
+     "mode": "no_tool"
+    }
+   }
+  },
+  {
+   "id": "V04_verifier_max_tokens",
+   "group": "v2_verifier",
+   "desc": "Verifier reply cut off (stop_reason=max_tokens) -> no deal",
+   "filings": {
+    "K": {
+     "display": "Aster Bio, Inc.  (ASTR)  (CIK 0009991030)",
+     "registrant": "ASTER BIO, INC.",
+     "paras": [
+      "On October 1, 2026, the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe. Larchmont Pharma AG will pay the Company an upfront payment of $60 million, and the Company is eligible to receive up to $900 million in milestone payments."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991030",
+     "adsh": "0009991000-26-991030",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "K": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Larchmont Pharma AG",
+     "type_quote": "the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe",
+     "counterparty_quote": "the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe",
+     "amounts": [
+      {
+       "kind": "upfront",
+       "quote": "Larchmont Pharma AG will pay the Company an upfront payment of $60 million"
+      },
+      {
+       "kind": "milestones_total",
+       "quote": "the Company is eligible to receive up to $900 million in milestone payments"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "K": [
+      null
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   },
+   "verifier": {
+    "K": {
+     "mode": "max_tokens"
+    }
+   }
+  },
+  {
+   "id": "V05_verifier_missing_counterparty",
+   "group": "v2_verifier",
+   "desc": "Verifier reply omits the counterparty verdict -> no deal",
+   "filings": {
+    "K": {
+     "display": "Aster Bio, Inc.  (ASTR)  (CIK 0009991031)",
+     "registrant": "ASTER BIO, INC.",
+     "paras": [
+      "On October 1, 2026, the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe. Larchmont Pharma AG will pay the Company an upfront payment of $60 million, and the Company is eligible to receive up to $900 million in milestone payments."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991031",
+     "adsh": "0009991000-26-991031",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "K": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Larchmont Pharma AG",
+     "type_quote": "the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe",
+     "counterparty_quote": "the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe",
+     "amounts": [
+      {
+       "kind": "upfront",
+       "quote": "Larchmont Pharma AG will pay the Company an upfront payment of $60 million"
+      },
+      {
+       "kind": "milestones_total",
+       "quote": "the Company is eligible to receive up to $900 million in milestone payments"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "K": [
+      null
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   },
+   "verifier": {
+    "K": {
+     "mode": "missing_field",
+     "field": "counterparty"
+    }
+   }
+  },
+  {
+   "id": "V06_verifier_malformed_verdict",
+   "group": "v2_verifier",
+   "desc": "Verifier deal_type verdict is 'likely' (not 'supported') -> no deal",
+   "filings": {
+    "K": {
+     "display": "Aster Bio, Inc.  (ASTR)  (CIK 0009991032)",
+     "registrant": "ASTER BIO, INC.",
+     "paras": [
+      "On October 1, 2026, the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe. Larchmont Pharma AG will pay the Company an upfront payment of $60 million, and the Company is eligible to receive up to $900 million in milestone payments."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991032",
+     "adsh": "0009991000-26-991032",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "K": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Larchmont Pharma AG",
+     "type_quote": "the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe",
+     "counterparty_quote": "the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe",
+     "amounts": [
+      {
+       "kind": "upfront",
+       "quote": "Larchmont Pharma AG will pay the Company an upfront payment of $60 million"
+      },
+      {
+       "kind": "milestones_total",
+       "quote": "the Company is eligible to receive up to $900 million in milestone payments"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "K": [
+      null
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   },
+   "verifier": {
+    "K": {
+     "mode": "bad_verdict",
+     "field": "deal_type",
+     "verdict": "likely"
+    }
+   }
+  },
+  {
+   "id": "V07_verifier_empty_quote",
+   "group": "v2_verifier",
+   "desc": "Verifier marks deal_type supported with an EMPTY quote -> no deal",
+   "filings": {
+    "K": {
+     "display": "Aster Bio, Inc.  (ASTR)  (CIK 0009991033)",
+     "registrant": "ASTER BIO, INC.",
+     "paras": [
+      "On October 1, 2026, the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe. Larchmont Pharma AG will pay the Company an upfront payment of $60 million, and the Company is eligible to receive up to $900 million in milestone payments."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991033",
+     "adsh": "0009991000-26-991033",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "K": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Larchmont Pharma AG",
+     "type_quote": "the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe",
+     "counterparty_quote": "the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe",
+     "amounts": [
+      {
+       "kind": "upfront",
+       "quote": "Larchmont Pharma AG will pay the Company an upfront payment of $60 million"
+      },
+      {
+       "kind": "milestones_total",
+       "quote": "the Company is eligible to receive up to $900 million in milestone payments"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "K": [
+      null
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   },
+   "verifier": {
+    "K": {
+     "mode": "empty_quote",
+     "field": "deal_type"
+    }
+   }
+  },
+  {
+   "id": "V08_verifier_rejects_counterparty",
+   "group": "v2_verifier",
+   "desc": "Verifier marks counterparty unsupported -> no deal",
+   "filings": {
+    "K": {
+     "display": "Aster Bio, Inc.  (ASTR)  (CIK 0009991034)",
+     "registrant": "ASTER BIO, INC.",
+     "paras": [
+      "On October 1, 2026, the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe. Larchmont Pharma AG will pay the Company an upfront payment of $60 million, and the Company is eligible to receive up to $900 million in milestone payments."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991034",
+     "adsh": "0009991000-26-991034",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "K": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Larchmont Pharma AG",
+     "type_quote": "the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe",
+     "counterparty_quote": "the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe",
+     "amounts": [
+      {
+       "kind": "upfront",
+       "quote": "Larchmont Pharma AG will pay the Company an upfront payment of $60 million"
+      },
+      {
+       "kind": "milestones_total",
+       "quote": "the Company is eligible to receive up to $900 million in milestone payments"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "K": [
+      null
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   },
+   "verifier": {
+    "K": {
+     "reject": [
+      {
+       "field": "counterparty"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "V09_verifier_rejects_deal_type",
+   "group": "v2_verifier",
+   "desc": "Verifier marks deal_type unsupported -> no deal",
+   "filings": {
+    "K": {
+     "display": "Aster Bio, Inc.  (ASTR)  (CIK 0009991035)",
+     "registrant": "ASTER BIO, INC.",
+     "paras": [
+      "On October 1, 2026, the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe. Larchmont Pharma AG will pay the Company an upfront payment of $60 million, and the Company is eligible to receive up to $900 million in milestone payments."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991035",
+     "adsh": "0009991000-26-991035",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "K": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Larchmont Pharma AG",
+     "type_quote": "the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe",
+     "counterparty_quote": "the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe",
+     "amounts": [
+      {
+       "kind": "upfront",
+       "quote": "Larchmont Pharma AG will pay the Company an upfront payment of $60 million"
+      },
+      {
+       "kind": "milestones_total",
+       "quote": "the Company is eligible to receive up to $900 million in milestone payments"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "K": [
+      null
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   },
+   "verifier": {
+    "K": {
+     "reject": [
+      {
+       "field": "deal_type"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "V10_verifier_rejects_company",
+   "group": "v2_verifier",
+   "desc": "Verifier marks the filer unsupported -> no deal",
+   "filings": {
+    "K": {
+     "display": "Aster Bio, Inc.  (ASTR)  (CIK 0009991036)",
+     "registrant": "ASTER BIO, INC.",
+     "paras": [
+      "On October 1, 2026, the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe. Larchmont Pharma AG will pay the Company an upfront payment of $60 million, and the Company is eligible to receive up to $900 million in milestone payments."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991036",
+     "adsh": "0009991000-26-991036",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "K": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Larchmont Pharma AG",
+     "type_quote": "the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe",
+     "counterparty_quote": "the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe",
+     "amounts": [
+      {
+       "kind": "upfront",
+       "quote": "Larchmont Pharma AG will pay the Company an upfront payment of $60 million"
+      },
+      {
+       "kind": "milestones_total",
+       "quote": "the Company is eligible to receive up to $900 million in milestone payments"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "K": [
+      null
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   },
+   "verifier": {
+    "K": {
+     "reject": [
+      {
+       "field": "company"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "V11_verifier_rejects_date",
+   "group": "v2_verifier",
+   "desc": "Verifier marks the date unsupported -> no deal (the date is published)",
+   "filings": {
+    "K": {
+     "display": "Aster Bio, Inc.  (ASTR)  (CIK 0009991037)",
+     "registrant": "ASTER BIO, INC.",
+     "paras": [
+      "On October 1, 2026, the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe. Larchmont Pharma AG will pay the Company an upfront payment of $60 million, and the Company is eligible to receive up to $900 million in milestone payments."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991037",
+     "adsh": "0009991000-26-991037",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "K": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Larchmont Pharma AG",
+     "type_quote": "the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe",
+     "counterparty_quote": "the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe",
+     "amounts": [
+      {
+       "kind": "upfront",
+       "quote": "Larchmont Pharma AG will pay the Company an upfront payment of $60 million"
+      },
+      {
+       "kind": "milestones_total",
+       "quote": "the Company is eligible to receive up to $900 million in milestone payments"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "K": [
+      null
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   },
+   "verifier": {
+    "K": {
+     "reject": [
+      {
+       "field": "date"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "V12_verifier_rejects_upfront",
+   "group": "v2_verifier",
+   "desc": "Verifier marks the upfront unsupported -> upfront dropped (or no deal)",
+   "filings": {
+    "K": {
+     "display": "Aster Bio, Inc.  (ASTR)  (CIK 0009991038)",
+     "registrant": "ASTER BIO, INC.",
+     "paras": [
+      "On October 1, 2026, the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe. Larchmont Pharma AG will pay the Company an upfront payment of $60 million, and the Company is eligible to receive up to $900 million in milestone payments."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991038",
+     "adsh": "0009991000-26-991038",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "K": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Larchmont Pharma AG",
+     "type_quote": "the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe",
+     "counterparty_quote": "the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe",
+     "amounts": [
+      {
+       "kind": "upfront",
+       "quote": "Larchmont Pharma AG will pay the Company an upfront payment of $60 million"
+      },
+      {
+       "kind": "milestones_total",
+       "quote": "the Company is eligible to receive up to $900 million in milestone payments"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "K": [
+      null,
+      {
+       "kind": "exact",
+       "t": "Aster Bio, Inc.与Larchmont Pharma AG授权合作",
+       "m": "",
+       "ms": "里程碑：最高 9 亿美元"
+      }
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   },
+   "verifier": {
+    "K": {
+     "reject": [
+      {
+       "field": "amount",
+       "role": "upfront"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "V13_verifier_counterparty_quote_not_verbatim",
+   "group": "v2_verifier",
+   "desc": "Verifier 'supports' counterparty with a quote NOT in the filing -> no deal",
+   "filings": {
+    "K": {
+     "display": "Aster Bio, Inc.  (ASTR)  (CIK 0009991039)",
+     "registrant": "ASTER BIO, INC.",
+     "paras": [
+      "On October 1, 2026, the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe. Larchmont Pharma AG will pay the Company an upfront payment of $60 million, and the Company is eligible to receive up to $900 million in milestone payments."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991039",
+     "adsh": "0009991000-26-991039",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "K": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Larchmont Pharma AG",
+     "type_quote": "the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe",
+     "counterparty_quote": "the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe",
+     "amounts": [
+      {
+       "kind": "upfront",
+       "quote": "Larchmont Pharma AG will pay the Company an upfront payment of $60 million"
+      },
+      {
+       "kind": "milestones_total",
+       "quote": "the Company is eligible to receive up to $900 million in milestone payments"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "K": [
+      null
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   },
+   "verifier": {
+    "K": {
+     "quote": [
+      {
+       "field": "counterparty",
+       "text": "Larchmont Pharma AG, a leading Swiss biotechnology company, signed the agreement"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "V14_verifier_deal_type_quote_not_verbatim",
+   "group": "v2_verifier",
+   "desc": "Verifier 'supports' deal_type with a paraphrased quote -> no deal",
+   "filings": {
+    "K": {
+     "display": "Aster Bio, Inc.  (ASTR)  (CIK 0009991040)",
+     "registrant": "ASTER BIO, INC.",
+     "paras": [
+      "On October 1, 2026, the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe. Larchmont Pharma AG will pay the Company an upfront payment of $60 million, and the Company is eligible to receive up to $900 million in milestone payments."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991040",
+     "adsh": "0009991000-26-991040",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "K": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Larchmont Pharma AG",
+     "type_quote": "the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe",
+     "counterparty_quote": "the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe",
+     "amounts": [
+      {
+       "kind": "upfront",
+       "quote": "Larchmont Pharma AG will pay the Company an upfront payment of $60 million"
+      },
+      {
+       "kind": "milestones_total",
+       "quote": "the Company is eligible to receive up to $900 million in milestone payments"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "K": [
+      null
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   },
+   "verifier": {
+    "K": {
+     "quote": [
+      {
+       "field": "deal_type",
+       "text": "Larchmont Pharma AG licensed LB-5 from the Company for Europe"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "V15_verifier_amount_quote_not_verbatim",
+   "group": "v2_verifier",
+   "desc": "Verifier 'supports' milestones with a non-verbatim quote -> milestones dropped (or no deal)",
+   "filings": {
+    "K": {
+     "display": "Aster Bio, Inc.  (ASTR)  (CIK 0009991041)",
+     "registrant": "ASTER BIO, INC.",
+     "paras": [
+      "On October 1, 2026, the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe. Larchmont Pharma AG will pay the Company an upfront payment of $60 million, and the Company is eligible to receive up to $900 million in milestone payments."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991041",
+     "adsh": "0009991000-26-991041",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "K": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Larchmont Pharma AG",
+     "type_quote": "the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe",
+     "counterparty_quote": "the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe",
+     "amounts": [
+      {
+       "kind": "upfront",
+       "quote": "Larchmont Pharma AG will pay the Company an upfront payment of $60 million"
+      },
+      {
+       "kind": "milestones_total",
+       "quote": "the Company is eligible to receive up to $900 million in milestone payments"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "K": [
+      null,
+      {
+       "kind": "exact",
+       "t": "Aster Bio, Inc.与Larchmont Pharma AG授权合作（6,000 万美元）",
+       "m": "6,000 万美元",
+       "ms": "首付：6,000 万美元"
+      }
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   },
+   "verifier": {
+    "K": {
+     "quote": [
+      {
+       "field": "amount",
+       "role": "milestones_total",
+       "text": "milestone payments of up to $900 million are payable to the Company"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "V16_verifier_amounts_reordered_one_rejected",
+   "group": "v2_verifier",
+   "desc": "Verifier lists amounts in reverse order and rejects milestones -> keep upfront only, matched by role not index",
+   "filings": {
+    "K": {
+     "display": "Aster Bio, Inc.  (ASTR)  (CIK 0009991042)",
+     "registrant": "ASTER BIO, INC.",
+     "paras": [
+      "On October 1, 2026, the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe. Larchmont Pharma AG will pay the Company an upfront payment of $60 million, and the Company is eligible to receive up to $900 million in milestone payments."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991042",
+     "adsh": "0009991000-26-991042",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "K": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Larchmont Pharma AG",
+     "type_quote": "the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe",
+     "counterparty_quote": "the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe",
+     "amounts": [
+      {
+       "kind": "upfront",
+       "quote": "Larchmont Pharma AG will pay the Company an upfront payment of $60 million"
+      },
+      {
+       "kind": "milestones_total",
+       "quote": "the Company is eligible to receive up to $900 million in milestone payments"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "K": [
+      null,
+      {
+       "kind": "exact",
+       "t": "Aster Bio, Inc.与Larchmont Pharma AG授权合作（6,000 万美元）",
+       "m": "6,000 万美元",
+       "ms": "首付：6,000 万美元"
+      }
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   },
+   "verifier": {
+    "K": {
+     "mode": "amounts_reordered",
+     "reject": [
+      {
+       "field": "amount",
+       "role": "milestones_total"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "V17_verifier_amount_verdict_missing",
+   "group": "v2_verifier",
+   "desc": "Verifier reply has no entry for the second amount -> that amount dropped (or no deal)",
+   "filings": {
+    "K": {
+     "display": "Aster Bio, Inc.  (ASTR)  (CIK 0009991043)",
+     "registrant": "ASTER BIO, INC.",
+     "paras": [
+      "On October 1, 2026, the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe. Larchmont Pharma AG will pay the Company an upfront payment of $60 million, and the Company is eligible to receive up to $900 million in milestone payments."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991043",
+     "adsh": "0009991000-26-991043",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "K": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Larchmont Pharma AG",
+     "type_quote": "the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe",
+     "counterparty_quote": "the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe",
+     "amounts": [
+      {
+       "kind": "upfront",
+       "quote": "Larchmont Pharma AG will pay the Company an upfront payment of $60 million"
+      },
+      {
+       "kind": "milestones_total",
+       "quote": "the Company is eligible to receive up to $900 million in milestone payments"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "K": [
+      null,
+      {
+       "kind": "exact",
+       "t": "Aster Bio, Inc.与Larchmont Pharma AG授权合作（6,000 万美元）",
+       "m": "6,000 万美元",
+       "ms": "首付：6,000 万美元"
+      }
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   },
+   "verifier": {
+    "K": {
+     "mode": "amounts_short"
+    }
+   }
+  },
+  {
+   "id": "V18_verifier_company_quote_not_verbatim",
+   "group": "v2_verifier",
+   "desc": "Verifier 'supports' the filer with a quote not in the filing -> no deal",
+   "filings": {
+    "K": {
+     "display": "Aster Bio, Inc.  (ASTR)  (CIK 0009991044)",
+     "registrant": "ASTER BIO, INC.",
+     "paras": [
+      "On October 1, 2026, the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe. Larchmont Pharma AG will pay the Company an upfront payment of $60 million, and the Company is eligible to receive up to $900 million in milestone payments."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991044",
+     "adsh": "0009991000-26-991044",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "K": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Larchmont Pharma AG",
+     "type_quote": "the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe",
+     "counterparty_quote": "the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe",
+     "amounts": [
+      {
+       "kind": "upfront",
+       "quote": "Larchmont Pharma AG will pay the Company an upfront payment of $60 million"
+      },
+      {
+       "kind": "milestones_total",
+       "quote": "the Company is eligible to receive up to $900 million in milestone payments"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "K": [
+      null
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   },
+   "verifier": {
+    "K": {
+     "quote": [
+      {
+       "field": "company",
+       "text": "Aster Bio, a clinical-stage company headquartered in Boston"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "V19_real_alec_verifier_raises",
+   "group": "v2_verifier",
+   "desc": "REAL Alector filing, honest extraction, verifier raises -> no deal",
+   "filings": {
+    "ALEC": {
+     "display": "Alector, Inc.  (ALEC)  (CIK 0001653087)",
+     "cik": "0001653087",
+     "adsh": "0001193125-26-413090",
+     "file_date": "2026-10-05",
+     "real": true
+    }
+   },
+   "claude": {
+    "ALEC": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Genentech",
+     "type_quote": "entered into a License Agreement (the “Genentech License Agreement”) with Genentech, Inc. (“Genentech”), pursuant to which Alector is granting Genentech exclusive worldwide rights to develop and commercialize Alector’s AL050 program",
+     "counterparty_quote": "Alector will receive a $100 million upfront payment from Genentech under the Genentech License Agreement",
+     "amounts": [
+      {
+       "kind": "upfront",
+       "quote": "Alector will receive a $100 million upfront payment from Genentech under the Genentech License Agreement"
+      },
+      {
+       "kind": "milestones_total",
+       "quote": "Alector will be eligible to receive up to an additional $1.17 billion in development, regulatory, and commercial success-related milestone payments related to the GCase Candidates"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "ALEC": [
+      null
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   },
+   "verifier": {
+    "ALEC": {
+     "mode": "raise"
+    }
+   }
+  },
+  {
+   "id": "V20_real_alec_upfront_quote_not_verbatim",
+   "group": "v2_verifier",
+   "desc": "REAL Alector filing: verifier supports the upfront with a paraphrase not in the filing -> upfront dropped (or no deal)",
+   "filings": {
+    "ALEC": {
+     "display": "Alector, Inc.  (ALEC)  (CIK 0001653087)",
+     "cik": "0001653087",
+     "adsh": "0001193125-26-413090",
+     "file_date": "2026-10-05",
+     "real": true
+    }
+   },
+   "claude": {
+    "ALEC": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Genentech",
+     "type_quote": "entered into a License Agreement (the “Genentech License Agreement”) with Genentech, Inc. (“Genentech”), pursuant to which Alector is granting Genentech exclusive worldwide rights to develop and commercialize Alector’s AL050 program",
+     "counterparty_quote": "Alector will receive a $100 million upfront payment from Genentech under the Genentech License Agreement",
+     "amounts": [
+      {
+       "kind": "upfront",
+       "quote": "Alector will receive a $100 million upfront payment from Genentech under the Genentech License Agreement"
+      },
+      {
+       "kind": "milestones_total",
+       "quote": "Alector will be eligible to receive up to an additional $1.17 billion in development, regulatory, and commercial success-related milestone payments related to the GCase Candidates"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "ALEC": [
+      null,
+      {
+       "kind": "truthful",
+       "t_re": "^Alector, Inc\\.与Genentech(?:, Inc\\.)?授权合作$",
+       "m_allowed": [
+        ""
+       ],
+       "lines_re": [
+        "里程碑：最高 11\\.7 亿美元"
+       ]
+      }
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   },
+   "verifier": {
+    "ALEC": {
+     "quote": [
+      {
+       "field": "amount",
+       "role": "upfront",
+       "text": "Genentech will pay Alector $100 million upfront"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "V21_two_filings_one_verifier_timeout",
+   "group": "v2_verifier",
+   "desc": "Two filings: the verifier times out on one; the other honest deal is still published",
+   "filings": {
+    "ALEC": {
+     "display": "Alector, Inc.  (ALEC)  (CIK 0001653087)",
+     "cik": "0001653087",
+     "adsh": "0001193125-26-413090",
+     "file_date": "2026-10-05",
+     "real": true
+    },
+    "K": {
+     "display": "Aster Bio, Inc.  (ASTR)  (CIK 0009991045)",
+     "registrant": "ASTER BIO, INC.",
+     "paras": [
+      "On October 1, 2026, the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe. Larchmont Pharma AG will pay the Company an upfront payment of $60 million, and the Company is eligible to receive up to $900 million in milestone payments."
+     ],
+     "event": "October 1, 2026",
+     "ex99": null,
+     "cik": "0009991045",
+     "adsh": "0009991000-26-991045",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "ALEC": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Genentech",
+     "type_quote": "entered into a License Agreement (the “Genentech License Agreement”) with Genentech, Inc. (“Genentech”), pursuant to which Alector is granting Genentech exclusive worldwide rights to develop and commercialize Alector’s AL050 program",
+     "counterparty_quote": "Alector will receive a $100 million upfront payment from Genentech under the Genentech License Agreement",
+     "amounts": [
+      {
+       "kind": "upfront",
+       "quote": "Alector will receive a $100 million upfront payment from Genentech under the Genentech License Agreement"
+      },
+      {
+       "kind": "milestones_total",
+       "quote": "Alector will be eligible to receive up to an additional $1.17 billion in development, regulatory, and commercial success-related milestone payments related to the GCase Candidates"
+      }
+     ]
+    },
+    "K": {
+     "deal_type": "license_collaboration",
+     "counterparty_name": "Larchmont Pharma AG",
+     "type_quote": "the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe",
+     "counterparty_quote": "the Company granted Larchmont Pharma AG an exclusive license to LB-5 in Europe",
+     "amounts": [
+      {
+       "kind": "upfront",
+       "quote": "Larchmont Pharma AG will pay the Company an upfront payment of $60 million"
+      },
+      {
+       "kind": "milestones_total",
+       "quote": "the Company is eligible to receive up to $900 million in milestone payments"
+      }
+     ]
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "ALEC": [
+      {
+       "kind": "exact",
+       "t": "Alector, Inc.与Genentech授权合作（1 亿美元）",
+       "m": "1 亿美元",
+       "ms": "首付：1 亿美元 | 里程碑：最高 11.7 亿美元"
+      }
+     ],
+     "K": [
+      null
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   },
+   "verifier": {
+    "K": {
+     "mode": "timeout"
+    }
+   }
+  },
+  {
+   "id": "V22_real_replay_verifier_rejects_alec_milestones",
+   "group": "v2_verifier",
+   "desc": "Recorded real Claude extraction for the 4 real filings; the verifier rejects Alector's milestones -> Alector published without milestones (or not at all), all out-of-scope filings no deal",
+   "filings": {
+    "REGN": {
+     "display": "REGENERON PHARMACEUTICALS, INC.  (REGN)  (CIK 0000872589)",
+     "cik": "0000872589",
+     "adsh": "0001104659-26-113895",
+     "file_date": "2026-10-06",
+     "real": true
+    },
+    "ALEC": {
+     "display": "Alector, Inc.  (ALEC)  (CIK 0001653087)",
+     "cik": "0001653087",
+     "adsh": "0001193125-26-413090",
+     "file_date": "2026-10-05",
+     "real": true
+    },
+    "IMNM": {
+     "display": "Immunome Inc.  (IMNM)  (CIK 0001472012)",
+     "cik": "0001472012",
+     "adsh": "0001193125-26-413217",
+     "file_date": "2026-10-05",
+     "real": true
+    },
+    "RCKT": {
+     "display": "ROCKET PHARMACEUTICALS, INC.  (RCKT)  (CIK 0001281895)",
+     "cik": "0001281895",
+     "adsh": "0001140361-26-038818",
+     "file_date": "2026-10-06",
+     "real": true
+    }
+   },
+   "claude": {},
+   "claude_recorded": "pr7d_ac66a9c_run2",
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-99999-x",
+     "title_en": "IL-13 antibody phase 3",
+     "summary": "In a phase 3 trial of 1.5 mg dosing, 120 patients responded. Response rate was 35.2% versus 12.0% in controls. The antibody targets IL-13 in moderate asthma.",
+     "article": {
+      "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+      "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+      "discuss": "样本量有限。",
+      "title": "IL-13 抗体三期试验结果",
+      "steps": [
+       "招募患者",
+       "给药 1.5 mg",
+       "随访评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0
+    ],
+    "filings": {
+     "ALEC": [
+      null,
+      {
+       "kind": "match",
+       "t_re": "^Alector, Inc\\.与Genentech(?:, Inc\\.)?授权合作（1 亿美元）$",
+       "m": "1 亿美元",
+       "ms": "首付：1 亿美元"
+      }
+     ],
+     "RCKT": [
+      null
+     ],
+     "IMNM": [
+      null
+     ],
+     "REGN": [
+      null
+     ]
+    },
+    "articles": {
+     "exact": [
+      {
+       "title": "IL-13 抗体三期试验结果",
+       "lead": "该三期试验采用 1.5 mg 剂量，120 名患者应答。",
+       "body": "应答率为 35.2%，对照组为 12.0%。该抗体靶向 IL-13。",
+       "discuss": "样本量有限。"
+      }
+     ]
+    }
+   },
+   "verifier": {
+    "ALEC": {
+     "reject": [
+      {
+       "field": "amount",
+       "role": "milestones_total"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "C01_honest_cn_120",
+   "group": "v2_cn",
+   "desc": "Honest 一百二十名 (source: 120 patients) must be kept",
+   "filings": {
+    "K": {
+     "display": "Placid Bio, Inc.  (PLCD)  (CIK 0009991046)",
+     "registrant": "PLACID BIO, INC.",
+     "paras": [
+      "Placid Bio, Inc. held its annual meeting of stockholders."
+     ],
+     "event": null,
+     "ex99": null,
+     "cik": "0009991046",
+     "adsh": "0009991000-26-991046",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "K": {
+     "deal_type": "none"
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-80048-y",
+     "title_en": "Acceptance v2 article",
+     "summary": "In a randomized phase 2 study, 120 patients with psoriasis received the antibody for 16 weeks.",
+     "article": {
+      "title": "银屑病抗体二期研究",
+      "lead": "这项随机二期研究共纳入一百二十名银屑病患者。",
+      "body": "患者接受了为期 16 周的抗体治疗。该抗体耐受性良好。",
+      "discuss": "仍需更大规模研究。",
+      "steps": [
+       "入组",
+       "给药",
+       "评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0,
+     3
+    ],
+    "filings": {
+     "K": [
+      null
+     ]
+    },
+    "articles": {
+     "must_contain": [
+      "这项随机二期研究共纳入一百二十名银屑病患者。",
+      "患者接受了为期 16 周的抗体治疗。",
+      "该抗体耐受性良好。"
+     ]
+    }
+   }
+  },
+  {
+   "id": "C02_honest_cn_35",
+   "group": "v2_cn",
+   "desc": "Honest 三十五名 (source: 35 patients) must be kept",
+   "filings": {
+    "K": {
+     "display": "Placid Bio, Inc.  (PLCD)  (CIK 0009991047)",
+     "registrant": "PLACID BIO, INC.",
+     "paras": [
+      "Placid Bio, Inc. held its annual meeting of stockholders."
+     ],
+     "event": null,
+     "ex99": null,
+     "cik": "0009991047",
+     "adsh": "0009991000-26-991047",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "K": {
+     "deal_type": "none"
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-80049-y",
+     "title_en": "Acceptance v2 article",
+     "summary": "Thirty-five patients (35) with lupus were enrolled across the study; 12 weeks of dosing were completed.",
+     "article": {
+      "title": "狼疮研究",
+      "lead": "研究共纳入三十五名狼疮患者。",
+      "body": "全部患者完成了 12 周给药。未见新的安全信号。",
+      "discuss": "样本量有限。",
+      "steps": [
+       "入组",
+       "给药",
+       "评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0,
+     3
+    ],
+    "filings": {
+     "K": [
+      null
+     ]
+    },
+    "articles": {
+     "must_contain": [
+      "研究共纳入三十五名狼疮患者。",
+      "全部患者完成了 12 周给药。",
+      "未见新的安全信号。"
+     ]
+    }
+   }
+  },
+  {
+   "id": "C03_honest_11_7_yi",
+   "group": "v2_cn",
+   "desc": "Honest 11.7 亿美元 (source: $1.17 billion) must be kept",
+   "filings": {
+    "K": {
+     "display": "Placid Bio, Inc.  (PLCD)  (CIK 0009991048)",
+     "registrant": "PLACID BIO, INC.",
+     "paras": [
+      "Placid Bio, Inc. held its annual meeting of stockholders."
+     ],
+     "event": null,
+     "ex99": null,
+     "cik": "0009991048",
+     "adsh": "0009991000-26-991048",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "K": {
+     "deal_type": "none"
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-80050-y",
+     "title_en": "Acceptance v2 article",
+     "summary": "The partner agreed to milestone payments of up to $1.17 billion; 48 patients were treated in the first-in-human study.",
+     "article": {
+      "title": "授权与首次人体研究",
+      "lead": "首次人体研究共治疗了 48 名患者。",
+      "body": "合作方同意支付最高 11.7 亿美元的里程碑款。该药耐受性良好。",
+      "discuss": "仍需数据。",
+      "steps": [
+       "签约",
+       "给药",
+       "随访"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0,
+     3
+    ],
+    "filings": {
+     "K": [
+      null
+     ]
+    },
+    "articles": {
+     "must_contain": [
+      "首次人体研究共治疗了 48 名患者。",
+      "合作方同意支付最高 11.7 亿美元的里程碑款。",
+      "该药耐受性良好。"
+     ]
+    }
+   }
+  },
+  {
+   "id": "C04_honest_4_125_yi",
+   "group": "v2_cn",
+   "desc": "Honest 4.125 亿美元 (source: $412.5 million) must be kept",
+   "filings": {
+    "K": {
+     "display": "Placid Bio, Inc.  (PLCD)  (CIK 0009991049)",
+     "registrant": "PLACID BIO, INC.",
+     "paras": [
+      "Placid Bio, Inc. held its annual meeting of stockholders."
+     ],
+     "event": null,
+     "ex99": null,
+     "cik": "0009991049",
+     "adsh": "0009991000-26-991049",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "K": {
+     "deal_type": "none"
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-80051-y",
+     "title_en": "Acceptance v2 article",
+     "summary": "Near-term payments total $412.5 million; 48 patients were treated in the first-in-human study.",
+     "article": {
+      "title": "近期付款",
+      "lead": "首次人体研究共治疗了 48 名患者。",
+      "body": "近期付款合计 4.125 亿美元。该药耐受性良好。",
+      "discuss": "仍需数据。",
+      "steps": [
+       "签约",
+       "付款",
+       "随访"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0,
+     3
+    ],
+    "filings": {
+     "K": [
+      null
+     ]
+    },
+    "articles": {
+     "must_contain": [
+      "首次人体研究共治疗了 48 名患者。",
+      "近期付款合计 4.125 亿美元。",
+      "该药耐受性良好。"
+     ]
+    }
+   }
+  },
+  {
+   "id": "C05_invented_four_centres",
+   "group": "v2_cn",
+   "desc": "Invented 四家中心 (no 4 in the source) must be stripped; honest sentence kept",
+   "filings": {
+    "K": {
+     "display": "Placid Bio, Inc.  (PLCD)  (CIK 0009991050)",
+     "registrant": "PLACID BIO, INC.",
+     "paras": [
+      "Placid Bio, Inc. held its annual meeting of stockholders."
+     ],
+     "event": null,
+     "ex99": null,
+     "cik": "0009991050",
+     "adsh": "0009991000-26-991050",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "K": {
+     "deal_type": "none"
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-80052-y",
+     "title_en": "Acceptance v2 article",
+     "summary": "In a phase 2 study, 120 patients received 1.5 mg weekly; the response rate was 35.2%.",
+     "article": {
+      "title": "二期研究",
+      "lead": "二期研究中 120 名患者接受了每周 1.5 mg 给药。",
+      "body": "研究在四家中心开展。应答率为 35.2%。",
+      "discuss": "仍需数据。",
+      "steps": [
+       "入组",
+       "给药",
+       "评估"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0,
+     3
+    ],
+    "filings": {
+     "K": [
+      null
+     ]
+    },
+    "articles": {
+     "must_not_contain": [
+      "四家中心"
+     ],
+     "must_contain": [
+      "二期研究中 120 名患者接受了每周 1.5 mg 给药。",
+      "应答率为 35.2%。"
+     ]
+    }
+   }
+  },
+  {
+   "id": "C06_truncated_11_yi",
+   "group": "v2_cn",
+   "desc": "Truncated 11 亿美元 for $1.17 billion must be stripped; honest sentence kept",
+   "filings": {
+    "K": {
+     "display": "Placid Bio, Inc.  (PLCD)  (CIK 0009991051)",
+     "registrant": "PLACID BIO, INC.",
+     "paras": [
+      "Placid Bio, Inc. held its annual meeting of stockholders."
+     ],
+     "event": null,
+     "ex99": null,
+     "cik": "0009991051",
+     "adsh": "0009991000-26-991051",
+     "file_date": "2026-10-05",
+     "sic": "2834",
+     "real": false
+    }
+   },
+   "claude": {
+    "K": {
+     "deal_type": "none"
+    }
+   },
+   "academic": [
+    {
+     "url": "https://www.nature.com/articles/s41586-026-80053-y",
+     "title_en": "Acceptance v2 article",
+     "summary": "The partner agreed to milestone payments of up to $1.17 billion; 48 patients were treated in the first-in-human study.",
+     "article": {
+      "title": "授权交易",
+      "lead": "首次人体研究共治疗了 48 名患者。",
+      "body": "里程碑款最高约 11 亿美元。该项目进展顺利。",
+      "discuss": "仍需数据。",
+      "steps": [
+       "签约",
+       "付款",
+       "随访"
+      ]
+     }
+    }
+   ],
+   "expect": {
+    "exit": [
+     0,
+     3
+    ],
+    "filings": {
+     "K": [
+      null
+     ]
+    },
+    "articles": {
+     "must_not_contain": [
+      "11 亿美元"
+     ],
+     "must_contain": [
+      "首次人体研究共治疗了 48 名患者。"
      ]
     }
    }
