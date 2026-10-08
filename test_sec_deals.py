@@ -2341,6 +2341,144 @@ class TestDefinedTermsDecideParties:
         )
         assert deal is None
 
+    def test_amended_and_restated_exclusive_license_is_dropped(self):
+        filing = (
+            "Kestrel Rx, Inc. (the \"Company\") entered into an Amended and "
+            "Restated Exclusive License Agreement with Harbor Bio AG (the "
+            "\"License Agreement\"). Pursuant to the License Agreement, the "
+            "Company granted Harbor an exclusive license. Harbor will pay the "
+            "Company a $20 million upfront payment."
+        )
+        assert sec_deals.is_amendment_language(
+            "Amended and Restated Exclusive License Agreement"
+        )
+        deal = sec_deals.process_sec_deal(
+            filing_text=filing,
+            filer_name="Kestrel Rx, Inc.",
+            filing_url="https://test",
+            filing_date="2026-10-05",
+            event_date="2026-10-01",
+            claude_response={
+                "deal_type": "license_collaboration",
+                "counterparty_name": "Harbor Bio AG",
+                "type_quote": "the Company granted Harbor an exclusive license",
+                "counterparty_quote": "Restated Exclusive License Agreement with Harbor Bio AG",
+                "amounts": [{"kind": "upfront", "quote": "a $20 million upfront payment"}],
+            },
+        )
+        assert deal is None
+
+    def test_agreed_to_amend_as_expanded_grant_is_dropped(self):
+        filing = (
+            "Kestrel Rx, Inc. (the \"Company\") agreed to amend the "
+            "Collaboration Agreement with Harbor Bio AG as expanded, the "
+            "Company granted Harbor exclusive rights to develop and "
+            "commercialize. Harbor will pay a $15 million upfront payment."
+        )
+        assert sec_deals.is_amendment_language(filing)
+        deal = sec_deals.process_sec_deal(
+            filing_text=filing,
+            filer_name="Kestrel Rx, Inc.",
+            filing_url="https://test",
+            filing_date="2026-10-05",
+            event_date="2026-10-01",
+            claude_response={
+                "deal_type": "license_collaboration",
+                "counterparty_name": "Harbor Bio AG",
+                "type_quote": "the Company granted Harbor exclusive rights to develop and commercialize",
+                "counterparty_quote": "Collaboration Agreement with Harbor Bio AG",
+                "amounts": [{"kind": "upfront", "quote": "a $15 million upfront payment"}],
+            },
+        )
+        assert deal is None
+
+    def test_of_the_legal_names_are_captured_in_full(self):
+        bank = 'Bank of Exampleland Holdings Ltd ("Parent")'
+        uni = 'University of Example Sciences ("Licensee")'
+        bank_names = sec_deals.parse_defined_terms(bank).get("parent", [])
+        uni_names = sec_deals.parse_defined_terms(uni).get("licensee", [])
+        assert any("bank of exampleland holdings" in n.lower() for n in bank_names), bank_names
+        assert any("university of example sciences" in n.lower() for n in uni_names), uni_names
+        assert not any(n.lower().startswith("exampleland") for n in bank_names)
+        assert not any(n.lower().startswith("example sciences") for n in uni_names)
+
+    def test_amendment_plus_new_license_publishes_only_the_new_one(self):
+        filing = (
+            "Kestrel Rx, Inc. (the \"Company\") entered into an Amended and "
+            "Restated Exclusive License Agreement with Pine Bio Ltd (the "
+            "\"A&R License\"). Separately, the Company entered into a License "
+            "Agreement with Harbor Bio AG (the \"New License\"). Pursuant to "
+            "the New License, the Company granted Harbor Bio AG an exclusive "
+            "license. Harbor will pay the Company a $20 million upfront payment."
+        )
+        ar_quote = "Pursuant to the A&R License, the Company granted Pine exclusive rights"
+        assert sec_deals.out_of_scope_deal_reason(
+            "the Company granted Harbor Bio AG an exclusive license",
+            filing, filing_date="2026-10-05",
+        ) is None
+        deal = sec_deals.process_sec_deal(
+            filing_text=filing,
+            filer_name="Kestrel Rx, Inc.",
+            filing_url="https://test",
+            filing_date="2026-10-05",
+            event_date="2026-10-01",
+            claude_response={
+                "deal_type": "license_collaboration",
+                "counterparty_name": "Harbor Bio AG",
+                "type_quote": "the Company granted Harbor Bio AG an exclusive license",
+                "counterparty_quote": "License Agreement with Harbor Bio AG",
+                "amounts": [{"kind": "upfront", "quote": "a $20 million upfront payment"}],
+            },
+        )
+        assert deal is not None
+        assert "harbor" in deal["counterparty"].lower()
+        assert "pine" not in deal["counterparty"].lower()
+        dropped = sec_deals.process_sec_deal(
+            filing_text=filing + " " + ar_quote,
+            filer_name="Kestrel Rx, Inc.",
+            filing_url="https://test",
+            filing_date="2026-10-05",
+            event_date="2026-10-01",
+            claude_response={
+                "deal_type": "license_collaboration",
+                "counterparty_name": "Pine Bio Ltd",
+                "type_quote": "the Company granted Pine exclusive rights",
+                "counterparty_quote": "Restated Exclusive License Agreement with Pine Bio Ltd",
+                "amounts": [{"kind": "upfront", "quote": "a $20 million upfront payment"}],
+            },
+        )
+        assert dropped is None
+
+    def test_new_license_not_killed_by_unrelated_older_dated_agreement(self):
+        filing = (
+            "The Indenture dated March 1, 2022 remains outstanding. "
+            "Kestrel Rx, Inc. (the \"Company\") entered into a License "
+            "Agreement with Harbor Bio AG. The Company granted Harbor Bio AG "
+            "an exclusive license. Harbor will pay the Company a $20 million "
+            "upfront payment."
+        )
+        assert sec_deals.is_historical_agreement(
+            "The Company granted Harbor Bio AG an exclusive license",
+            "2026-10-05",
+            filing,
+        ) is False
+        deal = sec_deals.process_sec_deal(
+            filing_text=filing,
+            filer_name="Kestrel Rx, Inc.",
+            filing_url="https://test",
+            filing_date="2026-10-05",
+            event_date="2026-10-01",
+            claude_response={
+                "deal_type": "license_collaboration",
+                "counterparty_name": "Harbor Bio AG",
+                "type_quote": "The Company granted Harbor Bio AG an exclusive license",
+                "counterparty_quote": "License Agreement with Harbor Bio AG",
+                "amounts": [{"kind": "upfront", "quote": "a $20 million upfront payment"}],
+            },
+        )
+        assert deal is not None
+        assert "harbor" in deal["counterparty"].lower()
+
 
 class TestEquityNeverADealPayment:
     def test_private_placement_not_upfront(self):

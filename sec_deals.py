@@ -644,10 +644,19 @@ _ABBREV_PERIOD_RE = re.compile(
 
 
 def _split_sentences(text: str) -> list[str]:
-    """Split sentences without treating Inc./Ltd./B.V./S.A. etc. as ends."""
+    """Split sentences without treating Inc./Ltd./B.V./S.A. etc. as ends.
+
+    Still split when an abbreviation period is a real sentence end
+    ('Harbor Bio AG. The Company granted').
+    """
     if not text:
         return []
-    protected = _ABBREV_PERIOD_RE.sub(lambda m: m.group(0)[:-1] + '\u0000', text)
+    protected = re.sub(
+        _ABBREV_PERIOD_RE.pattern + r'(?!\s+[A-Z])',
+        lambda m: m.group(0)[:-1] + '\u0000',
+        text,
+        flags=re.IGNORECASE,
+    )
     parts = re.split(r'(?<=[。！？])|(?<=(?<!\d)\.(?!\d))\s+', protected)
     return [p.replace('\u0000', '.').strip() for p in parts if p.strip()]
 
@@ -1982,39 +1991,19 @@ _MONTH_ALT = (
 
 
 def _agreement_date_from_filing(type_quote: str, filing_text: str) -> date | None:
-    """Dated clause for a defined agreement the grant quote hangs off.
+    """Dated clause for the agreement the grant quote actually refers to.
 
-    'pursuant to which … granted' often omits the date. Look up
-    'the License Agreement dated <date>' (or the defined-term label)
-    anywhere in the filing.
+    Do not use the earliest date of any agreement in the filing (an unrelated
+    indenture must not make a new license look old).
     """
     if not type_quote or not filing_text:
         return None
-    labels: list[str] = []
-    for m in re.finditer(
-        r'\b((?:the\s+)?(?:[A-Za-z]+\s+){0,4}(?:License|Collaboration|'
-        r'Research|Development|Commercial|Merger|Purchase)\s+Agreement)\b',
-        type_quote, re.IGNORECASE,
-    ):
-        labels.append(m.group(1))
-    hangs_off = bool(re.search(
-        r'\bpursuant\s+to\s+which\b|\bgranted?\b',
-        type_quote, re.IGNORECASE,
-    ))
-    if hangs_off or labels:
-        for term in parse_defined_terms(filing_text):
-            if 'agreement' in term and (
-                hangs_off or re.search(rf'\b{re.escape(term)}\b', type_quote, re.IGNORECASE)
-            ):
-                labels.append(term)
+    labels = _referred_agreement_labels(type_quote, filing_text)
+    if not labels:
+        return None
     dated_pat = (
         rf'dated(?:\s+as\s+of)?\s+{_MONTH_ALT}\s+(\d{{1,2}}),\s+(\d{{4}})\b'
     )
-    if hangs_off and not labels:
-        labels.append('License Agreement')
-        labels.append('Agreement')
-    if not labels:
-        return None
     dates: list[date] = []
     seen: set[str] = set()
 
@@ -2028,7 +2017,7 @@ def _agreement_date_from_filing(type_quote: str, filing_text: str) -> date | Non
             return None
 
     for lab in labels:
-        key = lab.lower().strip()
+        key = re.sub(r'^the\s+', '', lab.lower().strip())
         if not key or key in seen:
             continue
         seen.add(key)
@@ -2041,15 +2030,6 @@ def _agreement_date_from_filing(type_quote: str, filing_text: str) -> date | Non
                 parsed = _date_from_match(m)
                 if parsed:
                     dates.append(parsed)
-    if not dates and hangs_off:
-        for m in re.finditer(
-            rf'(?:License|Collaboration)\s+Agreement.{{0,240}}?{dated_pat}'
-            rf'|{dated_pat}.{{0,120}}?(?:License|Collaboration)\s+Agreement',
-            filing_text, re.IGNORECASE | re.DOTALL,
-        ):
-            parsed = _date_from_match(m)
-            if parsed:
-                dates.append(parsed)
     return min(dates) if dates else None
 
 
@@ -2101,22 +2081,103 @@ def _new_agreements_are_only_amendments_or_settlements(filing_text: str) -> bool
     titles = [re.sub(r'\s+', ' ', h).strip() for h in hits if h.strip()]
     if not titles:
         return False
-    return all(re.search(r'\b(?:amendment|settlement)\b', t, re.IGNORECASE) for t in titles)
+    return all(_title_is_amendment_or_settlement(t) for t in titles)
 
 
 def is_amendment_language(text: str) -> bool:
-    """True if the text is about amending an existing agreement."""
+    """True if the text is about amending an existing agreement.
+
+    An amendment is never a new deal: A&R / Amended & Restated, amend(s) the
+    Agreement, agreed to amend, restated, supplement to, as expanded/extended.
+    """
     if not text:
         return False
     t = text.lower()
     return bool(re.search(
-        r'\b(?:amendment\s+no\.?\s*\d+'
-        r'|(?:first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth)\s+amendment'
-        r'|amended\s+and\s+restated'
-        r'|as\s+amended'
-        r'|the\s+amendment\b)',
+        r'(?:'
+        r'\bamendment\s+no\.?\s*\d+'
+        r'|\b(?:first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth)\s+amendment'
+        r'|\bamended\s*(?:and|&)\s*restated'
+        r'|\ba\s*&\s*r\b'
+        r'|\ba&r\b'
+        r'|\bas\s+(?:amended|expanded|extended)\b'
+        r'|\bthe\s+amendment\b'
+        r'|\bagreed\s+to\s+amend'
+        r'|\bamend(?:s|ed)?\s+the\b'
+        r'|\bsupplement\s+to\b'
+        r'|\brestated\b'
+        r')',
         t,
     ))
+
+
+def _title_is_amendment_or_settlement(title: str) -> bool:
+    if not title:
+        return False
+    return is_amendment_language(title) or bool(re.search(
+        r'\b(?:amendment|settlement|supplement)\b', title, re.IGNORECASE,
+    ))
+
+
+_AGREEMENT_LABEL_RE = re.compile(
+    r'\b((?:the\s+)?(?:[A-Z][A-Za-z0-9&]+\s+){0,5}'
+    r'(?:License|Collaboration|Research|Development|Commercial|'
+    r'Merger|Purchase|Exclusive\s+License)\s+Agreement)\b',
+)
+
+
+def _referred_agreement_labels(type_quote: str, filing_text: str = '') -> list[str]:
+    """Agreement names the grant quote actually refers to — not every agreement."""
+    labels: list[str] = []
+    sources: list[str] = []
+    if type_quote:
+        sources.append(type_quote)
+    if filing_text and type_quote:
+        passage = _containing_passage(type_quote, filing_text)
+        if passage and passage != type_quote:
+            sources.append(passage)
+    term_map = parse_defined_terms(filing_text) if filing_text else {}
+    for src in sources:
+        if not src:
+            continue
+        labels.extend(m.group(1) for m in _AGREEMENT_LABEL_RE.finditer(src))
+        for term in term_map:
+            if 'agreement' in term and re.search(
+                rf'\b{re.escape(term)}\b', src, re.IGNORECASE,
+            ):
+                labels.append(term)
+    seen: set[str] = set()
+    out: list[str] = []
+    for lab in labels:
+        key = re.sub(r'^the\s+', '', lab.lower().strip())
+        if not key or key in seen or key == 'agreement':
+            continue
+        seen.add(key)
+        out.append(lab)
+    return out
+
+
+def _grant_refers_to_amended_agreement(type_quote: str, filing_text: str) -> bool:
+    """True when the grant hangs off an amended/restated/supplemented agreement."""
+    if not type_quote or not filing_text:
+        return False
+    labels = _referred_agreement_labels(type_quote, filing_text)
+    if not labels:
+        return False
+    keys = {re.sub(r'^the\s+', '', lab.lower()) for lab in labels}
+    for sent in _split_sentences(filing_text):
+        if not is_amendment_language(sent):
+            continue
+        quoted = [re.sub(r'^the\s+', '', q.lower()) for q in _quoted_terms_in(sent)]
+        if keys & set(quoted):
+            return True
+        for lab in labels:
+            if re.search(
+                rf'entered\s+into\s+(?:an?\s+|the\s+)?.{{0,100}}{re.escape(lab)}',
+                sent, re.IGNORECASE,
+            ):
+                return True
+    return False
 
 
 def is_termination_or_assignment_language(text: str) -> bool:
@@ -2335,7 +2396,7 @@ _DEFINED_NAME_RE = re.compile(
     r'(?:,?\s*(?:' + _LEGAL_SUFFIX_ALT + r')\.?)'
     r'|'
     r'[A-Z][A-Za-z0-9&.\'-]*'
-    r'(?:\s+(?:and|&)\s+[A-Z][A-Za-z0-9&.\'-]*'
+    r'(?:\s+(?:and|&|of(?:\s+the)?)\s+[A-Z][A-Za-z0-9&.\'-]*'
     r'|\s+[A-Z&][A-Za-z0-9&.\'-]*){0,6}'
     r'(?:,?\s*(?:' + _LEGAL_SUFFIX_ALT + r')\.?)?'
     r')\s*$',
@@ -2498,9 +2559,31 @@ def _resolved_name_disallowed(name: str) -> bool:
     return False
 
 
-def _name_from_own_clause(clause: str) -> str | None:
-    """139767d-style end-of-clause name, plus lowercase brands and 'and Company'."""
-    stripped = _strip_descriptive_clause(clause)
+def _complete_of_name(stripped: str, name: str, start: int) -> str | None:
+    """If the capture sits after 'of' / 'of the', extend or drop (never truncate)."""
+    while start > 0:
+        left = stripped[:start]
+        m = re.search(
+            r'([A-Z][A-Za-z0-9&.\'-]*)\s+(of(?:\s+the)?)\s+$', left,
+        )
+        if m:
+            name = f"{m.group(1)} {m.group(2)} {name}"
+            start = m.start()
+            continue
+        if re.search(r'\bof(?:\s+the)?\s+$', left, re.IGNORECASE):
+            return None
+        break
+    return name
+
+
+def _accept_captured_name(name: str) -> str | None:
+    name = re.sub(r'\s+', ' ', name.strip().rstrip(','))
+    if _resolved_name_disallowed(name) or not _looks_like_company_name(name):
+        return None
+    return name
+
+
+def _match_name_at_end(stripped: str) -> str | None:
     if not stripped:
         return None
     nm = _DEFINED_NAME_RE.search(stripped)
@@ -2508,10 +2591,25 @@ def _name_from_own_clause(clause: str) -> str | None:
         return None
     if nm.start() > 0 and stripped[nm.start() - 1].isalnum():
         return None
-    name = re.sub(r'\s+', ' ', nm.group(1).strip().rstrip(','))
-    if _resolved_name_disallowed(name) or not _looks_like_company_name(name):
+    name = _complete_of_name(stripped, nm.group(1), nm.start())
+    if not name:
         return None
-    return name
+    return _accept_captured_name(name)
+
+
+def _name_from_own_clause(clause: str) -> str | None:
+    """139767d-style end-of-clause name, plus 'of the' names and lowercase brands."""
+    stripped = _strip_descriptive_clause(clause)
+    if not stripped:
+        return None
+    name = _match_name_at_end(stripped)
+    if name:
+        return name
+    # Lowercase brand after the last stop word (with/and/among/between).
+    stops = list(re.finditer(r'\b(?:with|and|among|between)\s+', stripped, re.IGNORECASE))
+    if stops:
+        return _match_name_at_end(stripped[stops[-1].end():])
+    return None
 
 
 def _appears_as_party_in_filing(name: str, filing_text: str) -> bool:
@@ -2910,6 +3008,8 @@ def out_of_scope_deal_reason(
 
     if is_amendment_language(type_quote) or is_amendment_language(passage):
         return 'amendment'
+    if _grant_refers_to_amended_agreement(type_quote, filing_text):
+        return 'amendment'
     if _new_agreements_are_only_amendments_or_settlements(filing_text):
         return 'amendment/settlement only'
     if (
@@ -3062,9 +3162,8 @@ def has_license_grant_language(type_quote: str) -> bool:
         return False
     text = type_quote.lower()
 
-    if re.search(
-        r'\b(?:amend(?:ment|ed|s)?'
-        r'|terminat(?:e|ed|es|ing|ion)'
+    if is_amendment_language(type_quote) or re.search(
+        r'\b(?:terminat(?:e|ed|es|ing|ion)'
         r'|assign(?:s|ed|ment)'
         r'|divest(?:iture|ed|s)?'
         r'|transfer(?:red|s)?'
