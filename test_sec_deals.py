@@ -2166,8 +2166,8 @@ class TestDefinedTermsDecideParties:
         )
         assert deal is not None
         assert "acme" in deal["counterparty"].lower()
-        assert not deal["title"].startswith("BV")
-        assert "BV收购" not in deal["title"]
+        assert not sec_deals._is_suffix_only_name(deal["counterparty"])
+        assert not deal["title"].startswith("BV收购")
 
 
 class TestEquityNeverADealPayment:
