@@ -363,6 +363,7 @@ def fetch_pubmed(source: dict, start: date, end: date, limit: int) -> list[dict]
             "url": f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/",
             "date": raw_day if len(raw_day) == 10 else end.isoformat(),
             "summary": f"{journal}. {authors}".strip(),
+            "journal": journal,  # Store journal separately for article enrichment
         })
     logging.info("PubMed 得到 %d 条", len(rows))
     return rows

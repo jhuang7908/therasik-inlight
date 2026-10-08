@@ -436,6 +436,10 @@ def enrich_item(row: dict) -> EnrichedItem:
         rss_summary=row.get("summary", "")[:8000],
     )
     
+    # Get journal from row if provided (e.g., PubMed fetcher includes it)
+    if row.get("journal"):
+        item.journal = row["journal"]
+    
     doi = extract_doi(item.url)
     item.doi = doi
     item.source_trace.append(f"RSS: {len(item.rss_summary)} chars")
@@ -922,6 +926,84 @@ def extract_number_core(text: str) -> str:
     if match:
         return match.group(1)
     return ""
+
+
+def normalize_for_dedup(text: str) -> str:
+    """Normalize text for near-duplicate detection.
+    
+    Handles common differences between EPMC and RSS versions:
+    - HTML entities and tags
+    - Special character encoding (ROR{gamma}t vs actual Greek letters)
+    - Whitespace and punctuation variations
+    """
+    if not text:
+        return ""
+    
+    # Remove HTML tags
+    normalized = re.sub(r'<[^>]+>', '', text)
+    
+    # Decode common HTML entities
+    normalized = normalized.replace('&lt;', '<').replace('&gt;', '>')
+    normalized = normalized.replace('&amp;', '&').replace('&nbsp;', ' ')
+    normalized = normalized.replace('&alpha;', 'alpha').replace('&beta;', 'beta')
+    normalized = normalized.replace('&gamma;', 'gamma').replace('&delta;', 'delta')
+    
+    # Handle curly-brace notation like {gamma}, {alpha}
+    normalized = re.sub(r'\{(\w+)\}', r'\1', normalized)
+    
+    # Normalize Greek letters to ASCII names
+    greek_map = {
+        'α': 'alpha', 'β': 'beta', 'γ': 'gamma', 'δ': 'delta',
+        'ε': 'epsilon', 'ζ': 'zeta', 'η': 'eta', 'θ': 'theta',
+        'κ': 'kappa', 'λ': 'lambda', 'μ': 'mu', 'ν': 'nu',
+        'π': 'pi', 'ρ': 'rho', 'σ': 'sigma', 'τ': 'tau',
+        'ω': 'omega'
+    }
+    for greek, ascii_name in greek_map.items():
+        normalized = normalized.replace(greek, ascii_name)
+    
+    # Normalize whitespace
+    normalized = re.sub(r'\s+', ' ', normalized).strip().lower()
+    
+    return normalized
+
+
+def is_near_duplicate(text1: str, text2: str, threshold: float = 0.9) -> bool:
+    """Check if two texts are near-duplicates after normalization.
+    
+    Returns True if the shorter text is >=threshold% contained in the longer,
+    or if they're very similar after normalization.
+    """
+    if not text1 or not text2:
+        return False
+    
+    norm1 = normalize_for_dedup(text1)
+    norm2 = normalize_for_dedup(text2)
+    
+    # Exact match after normalization
+    if norm1 == norm2:
+        return True
+    
+    # Check if shorter is largely contained in longer
+    shorter, longer = (norm1, norm2) if len(norm1) <= len(norm2) else (norm2, norm1)
+    
+    # If shorter is >=threshold% of longer and shorter is subset
+    if len(shorter) >= len(longer) * threshold and shorter in longer:
+        return True
+    
+    # Check character overlap (simple similarity)
+    if len(shorter) == 0:
+        return False
+    
+    # Count matching character pairs (bigrams)
+    shorter_bigrams = set(shorter[i:i+2] for i in range(len(shorter)-1))
+    longer_bigrams = set(longer[i:i+2] for i in range(len(longer)-1))
+    
+    if not shorter_bigrams:
+        return False
+    
+    overlap = len(shorter_bigrams & longer_bigrams) / len(shorter_bigrams)
+    return overlap >= threshold
 
 
 def number_in_text_as_word_boundary(number: str, text: str) -> bool:
@@ -1798,9 +1880,11 @@ def process_articles(items: list[dict], config: dict) -> dict:
             raw_parts.append(enriched_item.fig_captions)
         if enriched_item.methods_design:
             raw_parts.append(enriched_item.methods_design)
-        # Only include rss_summary if it's different from abstract
-        if enriched_item.rss_summary and enriched_item.rss_summary != enriched_item.abstract:
-            raw_parts.append(enriched_item.rss_summary)
+        # Only include rss_summary if it's not a near-duplicate of abstract
+        # EPMC and RSS may differ only in encoding (ROR{gamma}t vs Greek letters)
+        if enriched_item.rss_summary:
+            if not enriched_item.abstract or not is_near_duplicate(enriched_item.rss_summary, enriched_item.abstract):
+                raw_parts.append(enriched_item.rss_summary)
         raw_material = "\n".join(raw_parts)
         
         art = draft_single_article(enriched_item, tier, config)
@@ -1817,6 +1901,17 @@ def process_articles(items: list[dict], config: dict) -> dict:
         if problems:
             logging.warning("Validation issues for %s: %s", url, problems)
             
+            # Classify first draft problems
+            first_hard_problems = [p for p in problems if any(x in p for x in [
+                '未找到', '无法回溯', '编造', '营销词汇', '新闻稿', '含义不匹配'
+            ])]
+            first_soft_problems = [p for p in problems if p not in first_hard_problems]
+            first_has_soft_only = len(first_hard_problems) == 0 and len(first_soft_problems) > 0
+            
+            # Keep first draft as fallback for soft-only failures
+            first_art = art.copy()
+            first_problems = problems.copy()
+            
             # Targeted redraft with specific problems listed
             logging.info("Targeted redraft with %d problems listed...", len(problems))
             retry_art = draft_single_article(enriched_item, tier, config, problems=problems)
@@ -1832,48 +1927,79 @@ def process_articles(items: list[dict], config: dict) -> dict:
                         continue
                     tier = "brief"
                 else:
-                    continue
-            
-            retry_art["field"] = field
-            art = retry_art
-            problems = validate_depth(art, raw_material)
-            problems.extend(validate_names(art, raw_material))
-            
-            if problems:
-                # Classify problems as hard (invented content) vs soft (formatting/count)
-                hard_problems = [p for p in problems if any(x in p for x in [
-                    '未找到', '无法回溯', '编造', '营销词汇', '新闻稿'
-                ])]
-                soft_problems = [p for p in problems if p not in hard_problems]
-                
-                if hard_problems:
-                    # Hard problems: downgrade or drop
-                    if tier == "deep":
-                        logging.warning("Downgrading %s from deep to brief after retry - hard problems: %s", url, hard_problems)
-                        brief_art = draft_single_article(enriched_item, "brief", config, problems=problems)
-                        if brief_art is None:
-                            logging.error("Brief targeted redraft failed, dropping: %s", url)
-                            continue
-                        brief_art["field"] = field
-                        art = brief_art
-                        tier = "brief"
-                        problems = validate_depth(art, raw_material)
-                        problems.extend(validate_names(art, raw_material))
-                        hard_problems = [p for p in problems if any(x in p for x in [
-                            '未找到', '无法回溯', '编造', '营销词汇', '新闻稿'
-                        ])]
-                        if hard_problems:
-                            logging.error("Dropping %s after brief redraft - hard problems: %s", url, hard_problems)
-                            continue
-                        # Soft-only problems after downgrade: accept with warning
-                        if problems:
-                            logging.warning("Accepting %s with soft problems: %s", url, problems)
+                    # For brief: if first draft had soft-only problems, keep it
+                    if first_has_soft_only:
+                        logging.warning("Redraft failed but first draft had soft-only problems, keeping first: %s", url)
+                        art = first_art
+                        problems = first_problems
                     else:
-                        logging.error("Dropping %s after retry - hard problems: %s", url, hard_problems)
                         continue
+                    # Skip further processing since we're keeping first draft
+                    if first_has_soft_only:
+                        pass  # Will continue to transform section
+            else:
+                retry_art["field"] = field
+                retry_problems = validate_depth(retry_art, raw_material)
+                retry_problems.extend(validate_names(retry_art, raw_material))
+                
+                # Compare first and retry drafts - publish the better one
+                retry_hard = [p for p in retry_problems if any(x in p for x in [
+                    '未找到', '无法回溯', '编造', '营销词汇', '新闻稿', '含义不匹配'
+                ])]
+                retry_soft = [p for p in retry_problems if p not in retry_hard]
+                
+                # Determine which draft is better:
+                # 1. Fewer hard problems is better
+                # 2. If tied on hard, fewer total problems is better
+                first_score = (len(first_hard_problems), len(first_problems))
+                retry_score = (len(retry_hard), len(retry_problems))
+                
+                if retry_score <= first_score:
+                    # Retry is same or better
+                    art = retry_art
+                    problems = retry_problems
+                    logging.info("Using retry draft (score %s vs first %s): %s", retry_score, first_score, url)
                 else:
-                    # Only soft problems: accept the better draft with a warning
-                    logging.warning("Accepting %s with soft-only problems: %s", url, soft_problems)
+                    # First draft is better, keep it
+                    art = first_art
+                    problems = first_problems
+                    logging.info("Keeping first draft (score %s vs retry %s): %s", first_score, retry_score, url)
+                
+                if problems:
+                    # Re-classify the selected draft's problems
+                    hard_problems = [p for p in problems if any(x in p for x in [
+                        '未找到', '无法回溯', '编造', '营销词汇', '新闻稿', '含义不匹配'
+                    ])]
+                    soft_problems = [p for p in problems if p not in hard_problems]
+                    
+                    if hard_problems:
+                        # Hard problems: downgrade or drop
+                        if tier == "deep":
+                            logging.warning("Downgrading %s from deep to brief after retry - hard problems: %s", url, hard_problems)
+                            brief_art = draft_single_article(enriched_item, "brief", config, problems=problems)
+                            if brief_art is None:
+                                logging.error("Brief targeted redraft failed, dropping: %s", url)
+                                continue
+                            brief_art["field"] = field
+                            art = brief_art
+                            tier = "brief"
+                            problems = validate_depth(art, raw_material)
+                            problems.extend(validate_names(art, raw_material))
+                            hard_problems = [p for p in problems if any(x in p for x in [
+                                '未找到', '无法回溯', '编造', '营销词汇', '新闻稿', '含义不匹配'
+                            ])]
+                            if hard_problems:
+                                logging.error("Dropping %s after brief redraft - hard problems: %s", url, hard_problems)
+                                continue
+                            # Soft-only problems after downgrade: accept with warning
+                            if problems:
+                                logging.warning("Accepting %s with soft problems: %s", url, problems)
+                        else:
+                            logging.error("Dropping %s after retry - hard problems: %s", url, hard_problems)
+                            continue
+                    else:
+                        # Only soft problems: accept with a warning
+                        logging.warning("Accepting %s with soft-only problems: %s", url, soft_problems)
         
         # Transform new format to include legacy fields needed by write_output
         # Add date from enriched item
@@ -1913,35 +2039,32 @@ def process_articles(items: list[dict], config: dict) -> dict:
         if not art.get("steps"):
             art["steps"] = ["研究背景", "方法设计", "核心发现", "意义与局限"]
         
-        # Ensure image_prompt is set - derive from paper subject, not generic field
-        # Use English keywords only (Chinese text risks rendering as characters in image)
+        # Ensure image_prompt is set - derive from paper subject ONLY
+        # IMPORTANT: Use English keywords only (Chinese text renders as characters in image)
+        # IMPORTANT: Do NOT add generic field boilerplate that may conflict with subject
         if not art.get("image_prompt"):
-            # Extract English keywords from the enriched item's title/abstract
+            # Extract English keywords from the enriched item's title
             source_title = enriched_item.title or ""
-            # Extract English words (proteins, drugs, mechanisms)
+            # Extract English words (proteins, drugs, mechanisms, cell types)
             english_words = re.findall(r'\b[A-Za-z][A-Za-z0-9-]{2,}\b', source_title)
-            # Filter to likely scientific terms
-            keywords = [w for w in english_words if len(w) >= 3 and w.lower() not in 
-                       {'the', 'and', 'for', 'with', 'from', 'this', 'that', 'are', 'was', 'were', 'not'}][:5]
+            # Filter to likely scientific terms (exclude common words)
+            stopwords = {'the', 'and', 'for', 'with', 'from', 'this', 'that', 'are', 'was', 
+                        'were', 'not', 'via', 'new', 'novel', 'study', 'research', 'analysis',
+                        'findings', 'results', 'evidence', 'role', 'effect', 'effects'}
+            keywords = [w for w in english_words if len(w) >= 3 and w.lower() not in stopwords][:6]
             
-            # Field-based base prompts
-            field_bases = {
-                "c1": "organoid, 3D cell culture, microscopy",
-                "c2": "molecular structure, drug binding, AI network",
-                "c3": "immune cells, tumor, T cells, cancer immunotherapy",
-                "c4": "autoimmune, antibodies, immune system",
-                "c5": "laboratory mice, animal model, preclinical",
-                "c6": "antibody structure, protein engineering",
-                "c7": "CAR-T cells, cell therapy, gene editing",
-                "c8": "vaccine, mRNA, lipid nanoparticle",
-                "c9": "RNA molecule, lipid nanoparticle, gene therapy",
-            }
-            base = field_bases.get(field, "scientific research, biomedical")
-            
+            # Build prompt from paper subject only, no generic field boilerplate
+            # End with style directives that prevent text rendering
             if keywords:
-                art["image_prompt"] = f"{', '.join(keywords)}, {base}, medical illustration"
+                art["image_prompt"] = f"{', '.join(keywords)}, medical illustration, scientific diagram, no text, no labels, no words"
             else:
-                art["image_prompt"] = f"{base}, medical illustration, scientific diagram"
+                # Fallback: generic biomedical imagery only
+                art["image_prompt"] = "biomedical research, cells, molecules, medical illustration, no text, no labels, no words"
+        else:
+            # Model provided image_prompt - ensure no-text directive is added
+            model_prompt = art["image_prompt"]
+            if "no text" not in model_prompt.lower() and "无文字" not in model_prompt:
+                art["image_prompt"] = f"{model_prompt}, no text, no labels, no words"
         
         articles.append(art)
     
