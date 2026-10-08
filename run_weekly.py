@@ -26,6 +26,47 @@ from pathlib import Path
 import feedparser
 import yaml
 
+try:
+    from inlight_articles import enrich_item, process_articles, wechat_html_full
+    ARTICLE_MODULE_AVAILABLE = True
+except ImportError:
+    ARTICLE_MODULE_AVAILABLE = False
+
+try:
+    from inlight_fields import (
+        FIELD_PROMPT_RULES as NEW_FIELD_PROMPT_RULES,
+        FIELDS as NEW_FIELDS,
+        classify_draft_articles,
+        claude_create_kwargs,
+        is_visible,
+        site_classification_fields,
+    )
+    FIELD_MODULE_AVAILABLE = True
+except ImportError:
+    FIELD_MODULE_AVAILABLE = False
+    NEW_FIELDS = {
+        "f1": "类器官",
+        "f2": "动物模型",
+        "f3": "AI 药物设计",
+        "f4": "肿瘤免疫与细胞治疗",
+        "f5": "自身免疫与移植免疫",
+        "f6": "疫苗与感染免疫",
+        "f7": "抗体工程",
+        "f8": "核酸与基因治疗（含 LNP 递送）",
+        "f9": "精准肿瘤与临床转化",
+    }
+    NEW_FIELD_PROMPT_RULES = "领域 field 只能是：" + ", ".join(NEW_FIELDS)
+    def site_classification_fields(item):
+        return {"f": item.get("field")}
+    def classify_draft_articles(articles, *args, **kwargs):
+        return articles
+    def claude_create_kwargs(**kwargs):
+        kwargs.pop("temperature", None)
+        return kwargs
+    def is_visible(article):
+        field = article.get("f") or article.get("field")
+        return bool(field) and field != "none" and not article.get("excluded")
+
 ROOT = Path(__file__).resolve().parent
 FIELDS = {
     "c1": "类器官",
@@ -39,17 +80,64 @@ FIELDS = {
     "c9": "小核酸与 LNP",
 }
 DEAL_KINDS = {"acq", "lic", "newco", "clin", "inv", "policy"}
-IMAGE_PREFIX = (
-    "Flat BioRender-style scientific illustration on white background, "
-    "thin gray outlines, soft teal, coral, gold and blue-gray palette. "
-    "Minimalist, clean, diagrammatic. Show biological molecules, cells, or mechanisms. "
-    "No 3D effects, no glow, no gradients, no photorealism, no shadows. "
-    "Simple shapes only. The subject fills the frame. "
+_PRODUCT_PRICE_HEADLINE_RE = re.compile(
+    r"(?i)"
+    r"\$\s*\d+(?:\.\d+)?\s*(?:billion|bn|b)\s+(?:dollar\s+)?(?:drug|therapy|asset|product|candidate)"
+    r"|\$\d+(?:\.\d+)?B\s+drug"
+    r"|\d+(?:\.\d+)?\s*(?:亿美元|亿)\s*(?:的)?(?:药物|疗法|产品|资产)"
+    r"|(?:drug|therapy|product)\s+(?:worth|valued|priced)\s+"
 )
-IMAGE_SUFFIX = (
-    " No text, no letters, no words, no labels, no captions, no numbers, "
-    "no watermarks, no annotations anywhere in the image; purely visual illustration."
+_DEAL_VALUE_LANG_RE = re.compile(
+    r"(?i)收购|并购|授权|许可费|预付款|首付款|融资额|投资额|交易额|成交价|"
+    r"acqui[rs]|licen[cs]e|upfront|milestone|financ|raised|"
+    r"series\s+[a-e]|takeover|buyout|deal\s+value|transaction\s+value"
 )
+
+
+def normalize_deal_money(money: str, title: str = "", why: str = "", source_title: str = "") -> str:
+    """Keep deal consideration as the source stated it.
+
+    A '$2.2B drug' / product-price headline is not a deal valuation.
+    """
+    money = (money or "未披露").strip() or "未披露"
+    money = re.sub(r"^\$(\d+(?:\.\d+)?)\s*亿", r"\1 亿美元", money)
+    money = re.sub(r"(\d)亿", r"\1 亿", money)
+    blob = " ".join(x for x in (title, why, source_title) if x)
+    if _PRODUCT_PRICE_HEADLINE_RE.search(blob) and not _DEAL_VALUE_LANG_RE.search(blob):
+        return "未披露"
+    return money
+try:
+    from inlight_qc import (
+        IMAGE_PREFIX, IMAGE_SUFFIX, IMAGE_REGEN_LIMIT, IMAGE_MODELS,
+        GOLDEN_POS, image_pipeline_ready, reframe_to_card, qc_image,
+        is_publishable_image, write_fallback_cover,
+    )
+except ImportError:
+    IMAGE_PREFIX = (
+        "Polished BioRender-style scientific schematic, the quality of a graphical "
+        "abstract or mechanism figure in a Nature or Cell paper. "
+    )
+    IMAGE_SUFFIX = (
+        "Absolutely no text, no letters, no numbers, no labels, no logos."
+    )
+    IMAGE_REGEN_LIMIT = 2
+    IMAGE_MODELS = ("gpt-image-2", "gpt-image-1")
+    GOLDEN_POS = ("UR", "LL", "LM", "RM", "TM", "BM", "UL", "LR")
+
+    def image_pipeline_ready():
+        return False, "inlight_qc missing"
+
+    def reframe_to_card(src, dest, pos="UR", target=0.72):
+        return {"ok": False}
+
+    def qc_image(path, prior_hashes=None):
+        return {"pass": False, "reasons": ["inlight_qc missing"]}
+
+    def is_publishable_image(path):
+        return False
+
+    def write_fallback_cover(path):
+        return None
 UA = "FrontierDigestWeekly/1.0 (+https://inlight.therasik.com)"
 
 
@@ -114,13 +202,16 @@ def check_anthropic_model() -> str:
     
     try:
         client = Anthropic()
-        client.messages.create(
+        create_kwargs = dict(
             model=model,
             max_tokens=50,
             tools=[test_tool],
             tool_choice={"type": "auto"},
             messages=[{"role": "user", "content": "Call test_tool with ok=true"}],
         )
+        if FIELD_MODULE_AVAILABLE:
+            create_kwargs = claude_create_kwargs(**create_kwargs)
+        client.messages.create(**create_kwargs)
         logging.info("模型 %s 可用（tool_choice=auto 测试通过）", model)
         return model
     except NotFoundError:
@@ -249,7 +340,7 @@ def fetch_biorxiv_api(start: datetime, limit: int, categories: list[str] | None 
             pub_date = end_date
         
         authors = paper.get("authors") or ""
-        abstract = (paper.get("abstract") or "")[:700]
+        abstract = (paper.get("abstract") or "")[:8000]
         category = paper.get("category") or "bioRxiv"
         
         rows.append({
@@ -297,7 +388,7 @@ def fetch_rss(source: dict, start: datetime, limit: int) -> list[dict]:
         if not url or not title:
             continue
         summary = re.sub(r"<[^>]+>", " ", entry.get("summary") or entry.get("description") or "")
-        summary = re.sub(r"\s+", " ", summary).strip()[:700]
+        summary = re.sub(r"\s+", " ", summary).strip()[:8000]
         rows.append({
             "source": source["name"],
             "kind": source.get("kind") or "academic",
@@ -357,6 +448,7 @@ def fetch_pubmed(source: dict, start: date, end: date, limit: int) -> list[dict]
             "url": f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/",
             "date": raw_day if len(raw_day) == 10 else end.isoformat(),
             "summary": f"{journal}. {authors}".strip(),
+            "journal": journal,  # Store journal separately for article enrichment
         })
     logging.info("PubMed 得到 %d 条", len(rows))
     return rows
@@ -504,8 +596,37 @@ def fetch_all(config: dict) -> list[dict]:
         else:
             logging.info("  %s: %d 条", stat["name"], stat["count"])
     logging.info("总计 %d 条新内容", len(rows))
+    max_candidates = int(config.get("max_candidates") or 0)
+    if max_candidates:
+        academic = [r for r in rows if r.get("kind") == "academic"]
+        industry = [r for r in rows if r.get("kind") != "academic"]
+        if len(academic) > max_candidates:
+            if ARTICLE_MODULE_AVAILABLE:
+                from inlight_articles import balance_academic_candidates
+                academic = balance_academic_candidates(academic, max_candidates)
+            else:
+                academic = academic[:max_candidates]
+            logging.info("候选池 academic %d → %d (max_candidates, 来源均衡)", len(academic), max_candidates)
+        rows = academic + industry
+        logging.info("送去管线的学术候选 %d，行业 %d", len(academic), len(industry))
     
     return rows
+
+
+def _truncate_items_for_legacy(items: list[dict]) -> list[dict]:
+    """Prepare items for the legacy claude_draft prompt.
+
+    Main serializes only source/kind/title/url/date/summary and truncates
+    summaries to 700 chars. Extra keys (e.g. journal, added for the new
+    pipeline) must not leak into this prompt.
+    """
+    result = []
+    for item in items:
+        truncated = {k: v for k, v in item.items() if k != "journal"}
+        if "summary" in truncated:
+            truncated["summary"] = truncated["summary"][:700]
+        result.append(truncated)
+    return result
 
 
 def claude_draft(items: list[dict], config: dict) -> dict:
@@ -569,6 +690,9 @@ def claude_draft(items: list[dict], config: dict) -> dict:
         },
     }
 
+    # Truncate summaries to 700 chars for legacy path (maintains byte-identical prompts with main)
+    items_for_prompt = _truncate_items_for_legacy(items)
+
     prompt = f"""你是前沿追踪的编辑。下面是过去 {config.get('window_days', 7)} 天从固定来源抓到的条目，每条只有标题、链接、日期和来源摘要。
 
 ## 规则
@@ -605,7 +729,7 @@ steps 必须是 3-5 个简短步骤（每个≤25字），描述论文的核心�
 调用 submit_weekly_digest 工具提交你的筛选结果。
 
 输入：
-{json.dumps(items, ensure_ascii=False)}
+{json.dumps(items_for_prompt, ensure_ascii=False)}
 """
     model = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5-5")
     logging.info("调用 Claude %s (tool_use, tool_choice=auto)", model)
@@ -614,13 +738,16 @@ steps 必须是 3-5 个简短步骤（每个≤25字），描述论文的核心�
     data = None
     
     for attempt in range(2):  # One retry if no tool_use block
-        message = client.messages.create(
+        create_kwargs = dict(
             model=model,
             max_tokens=8000,
             tools=[tool_schema],
             tool_choice={"type": "auto"},
             messages=[{"role": "user", "content": prompt}],
         )
+        if FIELD_MODULE_AVAILABLE:
+            create_kwargs = claude_create_kwargs(**create_kwargs)
+        message = client.messages.create(**create_kwargs)
         
         # Extract tool use result
         for block in message.content:
@@ -725,12 +852,12 @@ steps 必须是 3-5 个简短步骤（每个≤25字），描述论文的核心�
             kinds = ["clin"]
         src = by_url[url]
         
-        # Normalize money format
-        money = (raw.get("money") or "未披露").strip()
-        # Convert $26亿 to 26 亿美元
-        money = re.sub(r'^\$(\d+(?:\.\d+)?)\s*亿', r'\1 亿美元', money)
-        # Ensure space before 亿
-        money = re.sub(r'(\d)亿', r'\1 亿', money)
+        money = normalize_deal_money(
+            raw.get("money") or "未披露",
+            title=raw.get("title") or src.get("title") or "",
+            why=raw.get("why") or "",
+            source_title=src.get("title") or "",
+        )
         
         deals.append({
             "url": url,
@@ -747,56 +874,201 @@ steps 必须是 3-5 个简短步骤（每个≤25字），描述论文的核心�
     return {"articles": articles[:cap_a], "deals": deals[:cap_d]}
 
 
-def draw_image(prompt: str, dest: Path) -> None:
+def compose_image_prompt(prompt: str) -> str:
+    """Wrap a subject line in the house-style prefix/suffix unless already wrapped."""
+    marker = "Polished BioRender-style scientific schematic"
+    if marker in (prompt or ""):
+        return prompt
+    clean_prompt = sanitize_image_prompt(prompt or "")
+    return IMAGE_PREFIX + clean_prompt[:1000] + IMAGE_SUFFIX
+
+
+def draw_image(prompt: str, dest: Path, pos: str = "UR", reframe: bool = False) -> None:
     from openai import OpenAI
 
-    model = os.environ.get("OPENAI_IMAGE_MODEL", "gpt-image-1")
-    # Sanitize model prompt to remove label requests, then add prefix and suffix
-    clean_prompt = sanitize_image_prompt(prompt)
-    full_prompt = IMAGE_PREFIX + clean_prompt[:1000] + IMAGE_SUFFIX
-    logging.info("画图 %s -> %s", model, dest.name)
-    result = OpenAI().images.generate(
-        model=model,
-        prompt=full_prompt,
-        size="1536x1024",
-        n=1,
-    )
-    raw = result.data[0].b64_json
-    dest.write_bytes(base64.b64decode(raw))
+    forced = (os.environ.get("OPENAI_IMAGE_MODEL") or "").strip()
+    models = [forced] if forced else list(IMAGE_MODELS)
+    if "gpt-image-2" not in models:
+        models = ["gpt-image-2", *models]
+    full_prompt = compose_image_prompt(prompt)
+    dest = Path(dest)
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    last_err = None
+    for model in models:
+        logging.info("画图 %s -> %s", model, dest.name)
+        kwargs = dict(model=model, prompt=full_prompt, size="1536x1024", n=1, quality="high")
+        try:
+            result = OpenAI().images.generate(**kwargs, background="opaque")
+        except TypeError:
+            try:
+                result = OpenAI().images.generate(**kwargs)
+            except Exception as exc:
+                last_err = exc
+                continue
+        except Exception as exc:
+            last_err = exc
+            continue
+        dest.write_bytes(base64.b64decode(result.data[0].b64_json))
+        if reframe:
+            reframe_to_card(dest, dest, pos=pos)
+        return
+    raise RuntimeError(f"image generate failed: {last_err}")
+
+
+def generate_article_image(
+    prompt: str,
+    dest: Path,
+    qc_enabled: bool = True,
+    prior_hashes: list | None = None,
+    pos: str = "UR",
+) -> dict:
+    """Generate, reframe, QC. Never publish a 1×1. Skip the figure if QC fails."""
+    dest = Path(dest)
+    ready, why = image_pipeline_ready()
+    if not ready:
+        logging.error("跳过配图（质控依赖未就绪）：%s", why)
+        if dest.exists():
+            dest.unlink()
+        return {
+            "pass": False, "fallback": False, "skipped": True,
+            "attempts": 0, "reasons": [why],
+            "ocr_text": False, "accent_frac": 0.0, "fill_frac": 0.0,
+        }
+
+    if not qc_enabled:
+        draw_image(prompt, dest, pos=pos, reframe=False)
+        return {"pass": True, "fallback": False, "attempts": 1, "reasons": []}
+
+    attempts: list[dict] = []
+    for i in range(IMAGE_REGEN_LIMIT + 1):
+        try:
+            draw_image(prompt, dest, pos=pos, reframe=True)
+            result = qc_image(str(dest), prior_hashes=prior_hashes)
+        except Exception as exc:
+            result = {
+                "pass": False,
+                "ocr_text": False,
+                "accent_frac": 0.0,
+                "fill_frac": 0.0,
+                "reasons": [f"generate error: {type(exc).__name__}"],
+            }
+        attempts.append(result)
+        if result.get("pass") and is_publishable_image(dest):
+            result["attempts"] = i + 1
+            result["fallback"] = False
+            return result
+        logging.warning(
+            "Image QC failed attempt %d/%d for %s: %s",
+            i + 1, IMAGE_REGEN_LIMIT + 1, dest.name, result.get("reasons"),
+        )
+    if dest.exists():
+        dest.unlink()
+    last = attempts[-1] if attempts else {"reasons": ["no image"]}
+    logging.error("Image QC exhausted retries; publishing without a figure: %s", dest.name)
+    return {
+        "pass": False,
+        "fallback": False,
+        "skipped": True,
+        "attempts": len(attempts),
+        "reasons": last.get("reasons") or ["qc failed"],
+        "ocr_text": last.get("ocr_text", False),
+        "accent_frac": last.get("accent_frac", 0.0),
+        "fill_frac": last.get("fill_frac", 0.0),
+    }
 
 
 def site_article(item: dict, image_rel: str) -> dict:
+    """Convert article item to site format.
+    
+    Handles both new format (with datacard, results, etc.) and legacy format.
+    """
     import hashlib
     stamp = item["date"].replace("-", "")
     # Use stable hash of DOI/URL to avoid collisions (e.g. all nature.com URLs had same ID)
     url_key = normalize_doi(item["url"]) or item["url"]
     url_hash = hashlib.sha1(url_key.encode()).hexdigest()[:10]
     item_id = f"w-{stamp}-{url_hash}"
+    
     result = {
         "id": item_id,
         "f": item["field"],
         "t": item["title"],
         "ds": item["date"],
         "disp": item["date"][:7].replace("-", "."),
-        "j": item["journal"],
+        "j": item.get("journal") or item.get("source", ""),
         "url": item["url"],
-        "au": item["authors"] or item["source"],
-        "tags": [item["field"]],
-        "sum": item["lead"],
-        "lead": item["lead"],
-        "body": item["body"],
-        "discuss": item["discuss"],
-        "steps": item["steps"],
-        "note": f"材料来自 {item['source']}，只写来源里能核对的内容。",
+        "au": item.get("authors") or "",
+        "tags": [item["field"]] if item.get("field") else [],
+        "sum": item.get("lead", ""),
+        "lead": item.get("lead", ""),
+        "body": item.get("body", ""),
+        "discuss": item.get("discuss", ""),
+        "steps": item.get("steps", []),
+        "note": f"材料来自 {item.get('source', '')}，只写来源里能核对的内容。",
         "img": image_rel,
     }
-    # Include optional metadata fields if present
+    
+    # Include optional metadata fields if present (legacy)
     if item.get("study_type"):
         result["study_type"] = item["study_type"]
     if item.get("n"):
         result["n"] = item["n"]
     if item.get("evidence_level"):
         result["evidence_level"] = item["evidence_level"]
+    if item.get("related_fields"):
+        result["rf"] = [r for r in item["related_fields"] if r and r != item.get("field")]
+        primary = item.get("field")
+        result["tags"] = ([primary] if primary else []) + list(result["rf"])
+    field = str(item.get("field") or "")
+    use_new_taxonomy = FIELD_MODULE_AVAILABLE and (
+        field.startswith("f")
+        or field in ("none", "")
+        or item.get("excluded")
+        or str(item.get("primary_field") or "").startswith("f")
+    )
+    if use_new_taxonomy:
+        extra = site_classification_fields(item)
+        if extra.get("excluded") or not extra.get("f"):
+            result.update(extra)
+            result["f"] = extra.get("f")
+            result["tags"] = []
+        elif extra.get("f"):
+            result.update(extra)
+            if result.get("rf"):
+                primary = result.get("f")
+                result["tags"] = [primary, *result["rf"]] if primary else list(result["rf"])
+            elif extra.get("f"):
+                result["tags"] = [extra["f"]]
+    
+    # Include new format fields if present
+    if item.get("tier"):
+        result["tier"] = item["tier"]
+    if item.get("one_liner"):
+        result["one_liner"] = item["one_liner"]
+    if item.get("datacard"):
+        result["datacard"] = item["datacard"]
+    if item.get("background"):
+        result["background"] = item["background"]
+    if item.get("design"):
+        result["design"] = item["design"]
+    if item.get("results"):
+        result["results"] = item["results"]
+    if item.get("mechanism"):
+        result["mechanism"] = item["mechanism"]
+    if item.get("limitations"):
+        result["limitations"] = item["limitations"]
+    if item.get("significance"):
+        result["significance"] = item["significance"]
+    if item.get("source_trace"):
+        result["source_trace"] = item["source_trace"]
+    for key in (
+        "read_note", "sections_read", "secondhand_label", "citation",
+        "fig_caption", "data_chart_svg", "data_chart_points",
+        "skip_mechanism_figure", "gemini_review",
+    ):
+        if item.get(key):
+            result[key] = item[key]
+    
     return result
 
 
@@ -884,19 +1156,76 @@ def write_output(draft: dict, dest: Path, week: str) -> None:
     img_dir = dest / "images"
     img_dir.mkdir(parents=True, exist_ok=True)
     articles = []
-    for index, item in enumerate(draft["articles"], start=1):
+    incoming = draft.get("articles") or []
+    qc = draft.get("qc_report") or (draft.get("stats") or {}).get("qc_report")
+    qc_enabled = bool(qc)
+    image_qc_log: list[dict] = []
+    need_images = bool(incoming) and any(item.get("skip_mechanism_figure") is not True for item in incoming)
+    if not incoming:
+        logging.info("本期无发表文章，跳过全部配图")
+    elif not need_images:
+        logging.info("本期无全文深度解读，跳过全部配图")
+    elif qc_enabled:
+        ready, ready_why = image_pipeline_ready()
+        if not ready:
+            logging.error("质控依赖未就绪，跳过全部配图：%s", ready_why)
+            need_images = False
+            image_qc_log.append({"skipped": True, "reason": ready_why})
+
+    prior_hashes: list = []
+    for index, item in enumerate(incoming, start=1):
+        if item.get("excluded") or item.get("field") in ("none", None, ""):
+            logging.info("隐藏领域外文章（不展示）：%s", item.get("title") or item.get("url"))
+            continue
         filename = f"a{index}.png"
+        rel = ""
+        if item.get("skip_mechanism_figure") is True:
+            logging.info("跳过机制图（无全文或不为深度解读）：%s", item.get("title", index))
+        elif need_images:
+            try:
+                dest_img = img_dir / filename
+                pos = GOLDEN_POS[(index - 1) % len(GOLDEN_POS)]
+                if qc_enabled:
+                    qc_img = generate_article_image(
+                        item.get("image_prompt", ""), dest_img, True,
+                        prior_hashes=prior_hashes, pos=pos,
+                    )
+                    image_qc_log.append({
+                        "title": item.get("title", ""),
+                        "url": item.get("url", ""),
+                        "file": filename,
+                        **{k: qc_img.get(k) for k in (
+                            "pass", "fallback", "skipped", "attempts", "reasons",
+                            "ocr_text", "accent_frac", "fill_frac",
+                        ) if k in qc_img or k in ("pass", "fallback", "attempts", "reasons")},
+                    })
+                    if qc_img.get("hash"):
+                        prior_hashes.append(qc_img["hash"])
+                    if is_publishable_image(dest_img):
+                        rel = f"{dest.relative_to(ROOT).as_posix()}/images/{filename}"
+                    elif dest_img.exists():
+                        dest_img.unlink()
+                else:
+                    draw_image(item.get("image_prompt", ""), dest_img)
+                    rel = f"{dest.relative_to(ROOT).as_posix()}/images/{filename}"
+            except Exception:
+                logging.exception("配图失败：%s", item.get("title", index))
+                rel = ""
+                dest_img = img_dir / filename
+                if qc_enabled and dest_img.exists() and not is_publishable_image(dest_img):
+                    dest_img.unlink()
         try:
-            draw_image(item["image_prompt"], img_dir / filename)
-            rel = f"{dest.relative_to(ROOT).as_posix()}/images/{filename}"
+            art = site_article(item, rel)
+            if not is_visible(art):
+                logging.info("隐藏领域外文章（不展示）：%s", item.get("title") or art.get("id"))
+                continue
+            art["lead"] = item.get("lead", "")
+            art["body"] = item.get("body", "")
+            art["discuss"] = item.get("discuss", "")
+            articles.append(art)
         except Exception:
-            logging.exception("配图失败：%s", item["title"])
-            rel = ""
-        art = site_article(item, rel)
-        art["lead"] = item["lead"]
-        art["body"] = item["body"]
-        art["discuss"] = item["discuss"]
-        articles.append(art)
+            logging.exception("渲染失败，跳过该篇：%s", item.get("title", index))
+            continue
     
     # Check for ID collisions
     seen_ids = {}
@@ -907,19 +1236,104 @@ def write_output(draft: dict, dest: Path, week: str) -> None:
         seen_ids[art["id"]] = art["url"]
     
     deals = [site_deal(item) for item in draft["deals"]]
-    cover_prompt = (
-        "A calm cluster of immune cells, one lipid nanoparticle and one organoid, "
-        "arranged for a weekly science digest cover, left side left empty."
-    )
     cover = dest / "wechat" / "cover.png"
     cover.parent.mkdir(parents=True, exist_ok=True)
-    try:
-        draw_image(cover_prompt, cover)
-    except Exception:
-        logging.exception("封面图失败")
+    if need_images:
+        cover_prompt = (
+            "A calm cluster of immune cells, one lipid nanoparticle and one organoid, "
+            "arranged for a weekly science digest cover, left side left empty."
+        )
+        try:
+            if qc_enabled:
+                qc_cover = generate_article_image(
+                    cover_prompt, cover, True, prior_hashes=prior_hashes, pos="UR",
+                )
+                cover_entry = {
+                    "title": "wechat-cover",
+                    "url": "",
+                    "file": "wechat/cover.png",
+                    **{k: qc_cover.get(k) for k in (
+                        "pass", "fallback", "skipped", "attempts", "reasons",
+                        "ocr_text", "accent_frac", "fill_frac",
+                    ) if k in qc_cover or k in ("pass", "fallback", "attempts", "reasons")},
+                }
+                if not is_publishable_image(cover):
+                    write_fallback_cover(str(cover))
+                    if is_publishable_image(cover):
+                        cover_entry["fallback"] = True
+                        cover_entry["skipped"] = False
+                        cover_entry["reasons"] = list(cover_entry.get("reasons") or []) + [
+                            "designed 1600x989 fallback"
+                        ]
+                    elif cover.exists():
+                        cover.unlink()
+                image_qc_log.append(cover_entry)
+            else:
+                draw_image(cover_prompt, cover)
+        except Exception:
+            logging.exception("封面图失败")
+            if qc_enabled:
+                write_fallback_cover(str(cover))
+                if is_publishable_image(cover):
+                    image_qc_log.append({
+                        "title": "wechat-cover",
+                        "url": "",
+                        "file": "wechat/cover.png",
+                        "pass": False,
+                        "fallback": True,
+                        "skipped": False,
+                        "reasons": ["designed 1600x989 fallback after generate error"],
+                    })
+                elif cover.exists():
+                    cover.unlink()
     (dest / "articles.json").write_text(json.dumps(articles, ensure_ascii=False, indent=2), encoding="utf-8")
     (dest / "deals.json").write_text(json.dumps(deals, ensure_ascii=False, indent=2), encoding="utf-8")
-    html = wechat_html(articles, deals, week)
+    if qc:
+        qc_out = dict(qc)
+        if image_qc_log:
+            qc_out["images"] = image_qc_log
+        (dest / "qc_report.json").write_text(json.dumps(qc_out, ensure_ascii=False, indent=2), encoding="utf-8")
+    
+    # Use wechat_html_full for new format articles (with datacard), wechat_html for legacy
+    has_new_format = any(art.get("datacard") or art.get("results") for art in articles)
+    html = ""
+    try:
+        if has_new_format and ARTICLE_MODULE_AVAILABLE:
+            wechat_articles = []
+            for art in articles:
+                try:
+                    wechat_art = {
+                        "title": art.get("t", art.get("title", "")),
+                        "tier": art.get("tier", "brief"),
+                        "one_liner": art.get("one_liner", art.get("lead", "")),
+                        "datacard": art.get("datacard", {}),
+                        "evidence_level": art.get("evidence_level", "abstract"),
+                        "background": art.get("background", ""),
+                        "design": art.get("design", ""),
+                        "results": art.get("results", []),
+                        "mechanism": art.get("mechanism", ""),
+                        "limitations": art.get("limitations", []),
+                        "significance": art.get("significance", ""),
+                        "authors": art.get("au", art.get("authors", "")),
+                        "journal": art.get("j", art.get("journal", "")),
+                        "url": art.get("url", ""),
+                        "img": art.get("img", ""),
+                        "read_note": art.get("read_note", ""),
+                        "secondhand_label": art.get("secondhand_label", ""),
+                        "citation": art.get("citation", ""),
+                        "fig_caption": art.get("fig_caption", ""),
+                        "data_chart_svg": art.get("data_chart_svg", ""),
+                        "skip_mechanism_figure": art.get("skip_mechanism_figure", False),
+                    }
+                    wechat_articles.append(wechat_art)
+                except Exception:
+                    logging.exception("WeChat 条目转换失败，跳过该篇：%s", art.get("t", art.get("url", "")))
+            html = wechat_html_full(wechat_articles, deals, week)
+        else:
+            html = wechat_html(articles, deals, week)
+    except Exception:
+        logging.exception("WeChat HTML 生成失败，仍写出 articles.json")
+        html = "<section><p>本期微信稿生成失败，请见网站全文。</p></section>"
     (dest / "wechat" / "article.html").write_text(html, encoding="utf-8")
     logging.info("写出 %s", dest)
 
@@ -948,22 +1362,87 @@ def update_latest(dest: Path) -> None:
     logging.info("已更新 content/latest.json")
 
 
-def main() -> None:
+def should_use_new_pipeline(args, config: dict | None) -> bool:
+    """Weekly default is the new pipeline when sources.yaml has min_deep.
+
+    Acceptance fixtures omit min_deep and keep the recorded legacy path unless
+    they pass --use-new-pipeline. --use-legacy-pipeline is a debug opt-out.
+    """
+    if getattr(args, "use_legacy_pipeline", False):
+        return False
+    if getattr(args, "use_new_pipeline", False):
+        return True
+    cfg = config or {}
+    return "min_deep" in cfg or bool(cfg.get("acir_qc"))
+
+
+def parse_weekly_args(argv: list[str] | None = None):
     parser = argparse.ArgumentParser(description="生成一周的前沿追踪内容")
     parser.add_argument("--dry-run", action="store_true", help="只写到 preview/，不改网站内容目录")
-    args = parser.parse_args()
+    parser.add_argument(
+        "--use-new-pipeline",
+        action="store_true",
+        help="强制走新文章深度管线（生产 sources.yaml 有 min_deep 时已是默认）",
+    )
+    parser.add_argument(
+        "--use-legacy-pipeline",
+        action="store_true",
+        help="调试用：强制走旧 claude_draft 路径",
+    )
+    return parser.parse_args(argv)
+
+
+def main() -> None:
+    args = parse_weekly_args()
     log_path = setup_log()
     logging.info("日志 %s", log_path)
     try:
         require_env(["ANTHROPIC_API_KEY", "OPENAI_API_KEY"])
         check_anthropic_model()
         config = load_sources()
+        try:
+            from inlight_qc import apply_extra_env_gemini_key
+            apply_extra_env_gemini_key(config)
+        except Exception:
+            logging.warning("额外环境文件未加载 GEMINI_API_KEY（不记录内容）")
         items = fetch_all(config)
         if not items:
             logging.error("最近 %s 天没有抓到条目，不写文件", config.get("window_days", 7))
             raise SystemExit(2)
         logging.info("送去筛选的条目 %d", len(items))
-        draft = claude_draft(items, config)
+        use_new = should_use_new_pipeline(args, config) and ARTICLE_MODULE_AVAILABLE
+        
+        if use_new:
+            logging.info("使用新文章深度管线（enrich + triage + 逐篇生成 + validate）")
+            new_draft = process_articles(items, config)
+            
+            # Industry / deals are optional. Include when available; skip
+            # without failing the week when they are missing or fail to draft.
+            industry_items = [item for item in items if item.get("kind") != "academic"]
+            deals = []
+            if industry_items:
+                try:
+                    logging.info("Processing %d industry items (optional deals/business)", len(industry_items))
+                    old_draft = claude_draft(industry_items, config)
+                    deals = (old_draft or {}).get("deals") or []
+                except Exception:
+                    logging.exception("行业/交易新闻处理失败，本期跳过（可选栏目）")
+                    deals = []
+            else:
+                logging.info("本期无行业/交易候选，跳过（可选栏目）")
+
+            draft = {
+                "articles": new_draft.get("articles", []),
+                "deals": deals[:int(config.get("max_industry", 4))],
+                "qc_report": (new_draft.get("stats") or {}).get("qc_report") or {},
+                "stats": new_draft.get("stats") or {},
+            }
+        elif should_use_new_pipeline(args, config) and not ARTICLE_MODULE_AVAILABLE:
+            logging.warning("新文章管线不可用（inlight_articles.py 导入失败），回退到旧管线")
+            draft = claude_draft(items, config)
+        else:
+            draft = claude_draft(items, config)
+        
         if not draft["articles"] and not draft["deals"]:
             logging.error("模型没有留下任何来源内的条目")
             raise SystemExit(3)
