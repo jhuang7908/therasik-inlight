@@ -384,7 +384,8 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
   .idate{font-size:11px}
   .jname{font-size:10px;display:none}
   .kind{font-size:10px;padding:0 5px}
-  .expbtn{font-size:11px;min-height:32px;min-width:32px;flex-shrink:0}
+  .metarow{gap:4px}
+  .expbtn{font-size:11px;min-height:32px;min-width:32px;flex-shrink:0;padding:4px 2px}
   /* Deals card fixes */
   .item .money{font-size:12px}
   .item .msline{font-size:11px}
@@ -1071,6 +1072,7 @@ function renderChips(){
   }).join('');
   chips.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{filter=b.dataset.k;renderChips();renderFeed()});
 }
+function escAttr(s){return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function dealCard(x,i){
   const k0=x.kinds[0], kc=KINDS[k0][1];
   const [y,mo]=x.d.split('-');
@@ -1082,7 +1084,7 @@ function dealCard(x,i){
       <div class="money">${x.m}</div>
       <div class="metarow"><span class="idate">${y}.${String(+mo).padStart(2,'0')}</span>
         <span class="tagrow">${tags}</span>
-        <button class="expbtn" type="button" aria-expanded="false" data-key="${x.url}">详情 ↓</button></div>
+        <button class="expbtn" type="button" aria-expanded="false" data-key="${escAttr(dealKey(x))}">详情 ↓</button></div>
     </div></div>`;
 }
 let activePanel=null, activeCard=null, activeBtn=null;
@@ -1103,6 +1105,8 @@ function insertDetailsPanel(card,grid,dealData,panelId){
   const panel=document.createElement('div');
   panel.className='feed-details-panel';
   panel.id=panelId||'';
+  panel.setAttribute('role','region');
+  panel.setAttribute('aria-label',dealData.t);
   panel.innerHTML=`<div class="panel-tags">${tags}</div>
     ${dealData.ms?`<p class="msline">${dealData.ms}</p>`:''}
     <p>${dealData.why}</p>
@@ -1110,26 +1114,27 @@ function insertDetailsPanel(card,grid,dealData,panelId){
   insertAfter.after(panel);
   return panel;
 }
-function closeDetailsPanel(){
+function closeDetailsPanel(restore){
   const btn=activeBtn;
   if(activePanel){activePanel.remove();activePanel=null;}
   if(activeCard){activeCard.classList.remove('expanded');activeCard=null;}
-  if(btn){btn.setAttribute('aria-expanded','false');btn.removeAttribute('aria-controls');btn.textContent='详情 ↓';btn.focus();}
+  if(btn){btn.setAttribute('aria-expanded','false');btn.removeAttribute('aria-controls');btn.textContent='详情 ↓';if(restore)btn.focus();}
   activeBtn=null;
 }
+function dealKey(d){return d.url+'|'+d.t;}
 function getDealByKey(key){
-  return DEALS.find(d=>d.url===key);
+  return DEALS.find(d=>dealKey(d)===key);
 }
 document.addEventListener('click',e=>{
   const closeBtn=e.target.closest&&e.target.closest('.close-btn');
-  if(closeBtn){closeDetailsPanel();return;}
+  if(closeBtn){closeDetailsPanel(true);return;}
   const b=e.target.closest&&e.target.closest('.expbtn');
   if(!b) return;
   const item=b.closest('.item');
   const grid=item.closest('.feed');
   if(!grid) return;
   const isOpen=item.classList.contains('expanded');
-  closeDetailsPanel();
+  closeDetailsPanel(isOpen);
   if(isOpen) return;
   const dealData=getDealByKey(b.dataset.key);
   if(!dealData) return;
@@ -1143,7 +1148,7 @@ document.addEventListener('click',e=>{
   activePanel=insertDetailsPanel(item,grid,dealData,panelId);
 });
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'&&activePanel) closeDetailsPanel();
+  if(e.key==='Escape'&&activePanel) closeDetailsPanel(true);
 });
 function repaintCatalog(){
   document.getElementById('latestgrid').innerHTML=CAT.slice(0,8).map((a,i)=>catCard(a,'l'+i)).join('');
@@ -1249,8 +1254,8 @@ function mergeWeekly(data){
     if(!Array.isArray(a.tags)||!a.tags.length) a.tags=a.f?[a.f]:[];
     if(!a.disp&&a.ds) a.disp=a.ds.slice(0,7).replace('-','.');
   });
-  const seen=new Set(DEALS.map(d=>d.url));
-  const nd=(data.deals||[]).filter(d=>d&&d.url&&d.t&&Array.isArray(d.kinds)&&d.kinds.length&&!seen.has(d.url));
+  const seen=new Set(DEALS.map(d=>dealKey(d)));
+  const nd=(data.deals||[]).filter(d=>d&&d.url&&d.t&&Array.isArray(d.kinds)&&d.kinds.length&&!seen.has(dealKey(d)));
   if(!fresh.length&&!nd.length) return;
   if(fresh.length) CAT.unshift(...fresh);
   if(nd.length) DEALS.unshift(...nd);
