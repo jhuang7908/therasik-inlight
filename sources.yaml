@@ -52,6 +52,7 @@ sources:
     type: rss
     url: https://www.biorxiv.org/collection/immunology
     feed: https://connect.biorxiv.org/biorxiv_xml.php?subject=immunology
+    needs_browser_ua: true
 
   - name: PubMed
     kind: academic

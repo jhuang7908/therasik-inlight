@@ -70,20 +70,33 @@ def require_env(names: list[str]) -> None:
 
 
 def check_anthropic_model() -> str:
-    """Verify the Anthropic model is available before proceeding."""
+    """Verify the Anthropic model is available before proceeding.
+    
+    Uses the same tools/tool_choice settings as the real drafting call
+    so that if this check passes, the real call should work too.
+    """
     from anthropic import Anthropic, NotFoundError, APIError
     
     model = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5-5")
     logging.info("检查 Anthropic 模型可用性：%s", model)
     
+    # Use same tool_choice=auto as the real drafting call
+    test_tool = {
+        "name": "test_tool",
+        "description": "Test tool for model check",
+        "input_schema": {"type": "object", "properties": {"ok": {"type": "boolean"}}, "required": ["ok"]},
+    }
+    
     try:
         client = Anthropic()
         client.messages.create(
             model=model,
-            max_tokens=10,
-            messages=[{"role": "user", "content": "ping"}],
+            max_tokens=50,
+            tools=[test_tool],
+            tool_choice={"type": "auto"},
+            messages=[{"role": "user", "content": "Call test_tool with ok=true"}],
         )
-        logging.info("模型 %s 可用", model)
+        logging.info("模型 %s 可用（tool_choice=auto 测试通过）", model)
         return model
     except NotFoundError:
         logging.error("模型 %s 不存在或已下线。请设置 ANTHROPIC_MODEL 环境变量为可用模型。", model)
@@ -459,25 +472,34 @@ steps 必须是 3-5 个简短步骤（每个≤25字），描述论文的核心�
 {json.dumps(items, ensure_ascii=False)}
 """
     model = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5-5")
-    logging.info("调用 Claude %s (tool_use)", model)
+    logging.info("调用 Claude %s (tool_use, tool_choice=auto)", model)
     
-    message = Anthropic().messages.create(
-        model=model,
-        max_tokens=8000,
-        tools=[tool_schema],
-        tool_choice={"type": "tool", "name": "submit_weekly_digest"},
-        messages=[{"role": "user", "content": prompt}],
-    )
-    
-    # Extract tool use result
+    client = Anthropic()
     data = None
-    for block in message.content:
-        if block.type == "tool_use" and block.name == "submit_weekly_digest":
-            data = block.input
+    
+    for attempt in range(2):  # One retry if no tool_use block
+        message = client.messages.create(
+            model=model,
+            max_tokens=8000,
+            tools=[tool_schema],
+            tool_choice={"type": "auto"},
+            messages=[{"role": "user", "content": prompt}],
+        )
+        
+        # Extract tool use result
+        for block in message.content:
+            if block.type == "tool_use" and block.name == "submit_weekly_digest":
+                data = block.input
+                break
+        
+        if data is not None:
             break
+        
+        if attempt == 0:
+            logging.warning("Claude 没有返回 tool_use，重试一次...")
     
     if data is None:
-        logging.error("Claude did not return tool_use block")
+        logging.error("Claude did not return tool_use block after retry")
         raise ValueError("No tool_use response from Claude")
     allowed = {row["url"] for row in items}
     by_url = {row["url"]: row for row in items}

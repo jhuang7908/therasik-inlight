@@ -339,15 +339,15 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 .steph{font-size:12px;font-weight:700}
 .mol{font-size:10.5px;font-weight:700}
 
-/* Mobile improvements: 44px tap targets, better readability */
+/* Mobile improvements: readable nav (≥13px), ≤44px tap, ≤56px header */
 @media (max-width:720px){
   nav{max-height:56px}
-  .nav-in{gap:4px;padding:6px 10px}
+  .nav-in{gap:3px;padding:4px 8px}
   .nav-tabs{gap:2px}
-  .nav-in a{font-size:11px;padding:0 8px;height:32px}
+  .nav-in a{font-size:13px;padding:0 10px;height:44px;min-height:44px}
   .brand .btext{display:none}
-  .bmark,.bmark-wrap{width:28px;height:28px}
-  .navsub{padding:0 12px;height:32px;margin-left:auto;font-size:11px}
+  .bmark,.bmark-wrap{width:32px;height:32px}
+  .navsub{padding:0 12px;height:44px;min-height:44px;margin-left:auto;font-size:13px}
   .btn{min-height:44px;padding:0 20px;display:inline-flex;align-items:center;justify-content:center}
   .chip{min-height:44px;padding:0 16px;display:inline-flex;align-items:center}
   .expbtn{min-height:44px;display:flex;align-items:center}
@@ -359,7 +359,6 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
   .item h3{font-size:16px;-webkit-line-clamp:3}
   .panel ol,.panel ul{font-size:15px}
   nav,.navshell,.nav-in{height:56px;max-height:56px;box-sizing:border-box}
-  .nav-in{padding:0 8px}
   .hb-art{display:none}
   .hero-band{min-height:0;background:var(--surface)}
   .hero-band::after{display:none}
@@ -373,7 +372,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
   .tracker svg{max-height:120px}
 }
 @media (max-width:480px){
-  .nav-in a{padding:0 6px;font-size:10px}
+  .nav-in a{padding:0 8px;font-size:13px}
 }
 </style>
 </head>
@@ -593,15 +592,13 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
   </section>
   <section class="panel">
     <h2>欢迎赞助</h2>
-    <p>赞助用于支付文献获取、绘图工具和邮件服务的成本。我们接受三种形式：</p>
+    <p>目前没有广告位。赞助用于支付文献获取、绘图工具和邮件服务的成本。我们接受以下形式：</p>
     <ol>
       <li><b>署名赞助</b>　在首页和每周邮件页脚标注赞助方名称与链接。</li>
       <li><b>领域冠名</b>　赞助某一个领域的整年解读，在该领域页标注。</li>
       <li><b>内容合作</b>　就某个主题做深度专题，内容独立，赞助方不干预结论。</li>
-      <li><b>网页广告位</b>　正文两侧各一组（桌面 160×600 与 300×250，宽屏放大到 300×600），以及正文流中一个标注「赞助内容」的区块。窄屏时两侧广告折叠到正文下方。</li>
-      <li><b>邮件赞助位</b>　每封邮件在各领域摘要之后、页脚之前，设一个独立的「赞助」区块：一行标题、两三行介绍、一个链接。位置固定，与正文有明显分隔和标注。</li>
     </ol>
-    <p class="note">网页和邮件里的赞助位都标「赞助」，和正文分开排。《广告法》要求广告可识别，邮件还得有真实发信人和一键退订，这几条没有商量的余地。想做成看不出是广告的那种，请找别人。</p>
+    <p class="note">赞助位都标「赞助」，和正文分开排。赞助方不参与选题，也不改结论——这条不议。</p>
   </section>
 
 </div>
