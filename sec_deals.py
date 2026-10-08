@@ -155,7 +155,19 @@ class VerifiedDeal:
 # =============================================================================
 
 def normalize_whitespace(text: str) -> str:
-    """Normalize whitespace for quote matching."""
+    """Normalize whitespace and quotes for quote matching.
+    
+    Handles:
+    - Multiple whitespace → single space
+    - Fancy Unicode quotes (U+201C, U+201D, U+2018, U+2019) → ASCII quotes
+    - En/em dashes (U+2013, U+2014) → regular dash
+    """
+    # Normalize Unicode quotes to ASCII (using explicit Unicode escapes)
+    text = text.replace('\u201c', '"').replace('\u201d', '"')  # fancy double quotes "" → "
+    text = text.replace('\u2018', "'").replace('\u2019', "'")  # fancy single quotes '' → '
+    text = text.replace('\u2013', '-').replace('\u2014', '-')  # en/em dashes
+    
+    # Normalize whitespace
     return re.sub(r'\s+', ' ', text).strip()
 
 
@@ -989,6 +1001,9 @@ DEAL_TYPE_VALIDATORS = {
         r'\bamendment\s+consideration\b',
         # Paid + amendment (paying to amend/terminate obligations)
         r'\bpaid\b.*\bamendment\b',
+        # "has no...obligations" after payment - indicates buyout completed
+        r'\bno\s+(?:further\s+)?(?:milestone|royalt|payment|obligation)s?\b.*\bobligations?\b',
+        r'\bhas\s+no\s+(?:milestone|royalt|payment)',
     ],
     DealType.DEBT_FACILITY: [
         r'\b(?:credit|loan|term\s+loan|revolving)\s+(?:facility|agreement)\b',
@@ -1379,7 +1394,25 @@ def process_sec_deal(
                         counterparty_in_same_para = True
                         break
         
+        # Also check if amount is in a paragraph that follows a counterparty paragraph
+        # and discusses the same agreement (e.g., "The Term Loans" referring to loans from Hercules)
+        in_related_section = False
         if not counterparty_in_quote and not counterparty_in_same_para:
+            # Check if amount is within ~5 paragraphs of a paragraph mentioning counterparty
+            paragraphs = split_into_paragraphs(filing_text)
+            norm_quote = normalize_whitespace(quote).lower()
+            for idx, (_, _, para_text) in enumerate(paragraphs):
+                norm_para = normalize_whitespace(para_text).lower()
+                if norm_quote in norm_para:
+                    # Check nearby paragraphs for counterparty
+                    for nearby_idx in range(max(0, idx - 5), min(len(paragraphs), idx + 2)):
+                        nearby_para = paragraphs[nearby_idx][2]
+                        if match_company_whole_word(counterparty, nearby_para):
+                            in_related_section = True
+                            break
+                    break
+        
+        if not counterparty_in_quote and not counterparty_in_same_para and not in_related_section:
             logging.debug("Amount dropped: neither names counterparty nor in same paragraph: %s", quote[:50])
             continue
         

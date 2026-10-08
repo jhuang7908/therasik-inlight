@@ -1,35 +1,256 @@
-UNITED STATES SECURITIES AND EXCHANGE COMMISSION
-Washington, D.C. 20549
+8-K
+
+false 0001653087 0001653087 2026-09-30 2026-09-30
+
+UNITED STATES
+
+SECURITIES AND EXCHANGE COMMISSION
+
+WASHINGTON, D.C. 20549
+
 FORM 8-K
+
 CURRENT REPORT
 
 Pursuant to Section 13 or 15(d) of the Securities Exchange Act of 1934
 
 Date of Report (Date of earliest event reported): September 30, 2026
 
-ALECTOR, INC.
-(Exact name of registrant as specified in its charter)
+Alector, Inc.
 
-Item 1.01 Entry into a Material Definitive Agreement
+(Exact name of Registrant as Specified in Its Charter)
 
-On September 30, 2026, Alector, Inc. (the "Company") entered into a Collaboration 
-Agreement (the "Agreement") with Genentech, Inc. ("Genentech"), a member of the 
-Roche Group. Pursuant to the Agreement, the Company granted Genentech an 
-exclusive, worldwide license to develop, manufacture and commercialize antibody 
-products targeting progranulin ("PGRN") and one additional target.
+Delaware
 
-Under the terms of the Agreement, the Company will receive an upfront payment 
-of $100 million in cash upon the execution of the Agreement. The Company is 
-eligible to receive up to an aggregate of $1.17 billion in potential development, 
-regulatory and commercial milestone payments. Additionally, Genentech will pay 
-tiered royalties on worldwide net sales ranging from mid-single digits to low 
-double digits.
+001-38792
 
-The Company expects that the upfront payment and potential milestone payments 
-will extend its cash runway into 2029.
+82-2933343
 
-Item 9.01 Financial Statements and Exhibits
+(State or Other Jurisdiction
 
-(d) Exhibits
+of Incorporation)
 
-99.1 Press Release dated October 5, 2026
+(Commission File Number)
+
+(IRS Employer
+
+Identification No.)
+
+131 Oyster Point Blvd.
+
+Suite 600
+
+South San Francisco , California
+
+94080
+
+(Address of Principal Executive Offices)
+
+(Zip Code)
+
+Registrant’s Telephone Number, Including Area Code: ( 415) 231-5660
+
+(Former Name or Former Address, if Changed Since Last Report)
+
+Check the appropriate box below if the Form 8-K filing is intended to simultaneously satisfy the filing obligation of the registrant under any of the following provisions:
+
+☐ Written communications pursuant to Rule 425 under the Securities Act (17 CFR 230.425)
+
+☐ Soliciting material pursuant to Rule 14a-12 under the Exchange Act (17 CFR 240.14a-12)
+
+☐ Pre-commencement communications pursuant to Rule 14d-2(b) under the Exchange Act (17 CFR 240.14d-2(b))
+
+☐ Pre-commencement communications pursuant to Rule 13e-4(c) under the Exchange Act (17 CFR 240.13e-4(c))
+
+Securities registered pursuant to Section 12(b) of the Act:
+
+Title of each class
+
+Trading
+
+Symbol(s)
+
+Name of each exchange on which registered
+
+Common Stock
+
+ALEC
+
+The NASDAQ Stock Market LLC
+
+Indicate by check mark whether the registrant is an emerging growth company as defined in Rule 405 of the Securities Act of 1933 (§ 230.405 of this chapter) or Rule 12b-2 of the Securities Exchange Act of 1934 (§ 240.12b-2 of this chapter).
+
+Emerging growth company ☐
+
+If an emerging growth company, indicate by check mark if the registrant has elected not to use the extended transition period for complying with any new or revised financial accounting standards provided pursuant to Section 13(a) of the Exchange Act. ☐
+
+Item 1.01 Entry Into a Material Definitive Agreement.
+
+License Agreement with Genentech
+
+On September 30, 2026, Alector, Inc. and Alector LLC (collectively, “Alector” or the “Company”) entered into a License Agreement (the “Genentech License Agreement”) with Genentech, Inc. (“Genentech”), pursuant to which Alector is granting Genentech exclusive worldwide rights to develop and commercialize Alector’s AL050 program, which is a brain penetrant engineered glucocerebrosidase (“GCase”) enzyme replacement therapy (the “GCase Candidates”). Under the Genentech License Agreement, Genentech will be responsible for development, regulatory, manufacturing, and commercialization of the GCase Candidates, and Alector will assign ownership of certain of its existing patents specific to the GCase Candidates to Genentech. Alector retains ownership of its Alector Brain Carrier platform and full rights to apply the platform across its wholly owned pi
+
+8-K
+
+false 0001653087 0001653087 2026-09-30 2026-09-30
+
+UNITED STATES
+
+SECURITIES AND EXCHANGE COMMISSION
+
+WASHINGTON, D.C. 20549
+
+FORM 8-K
+
+CURRENT REPORT
+
+Pursuant to Section 13 or 15(d) of the Securities Exchange Act of 1934
+
+Date of Report (Date of earliest event reported): September 30, 2026
+
+Alector, Inc.
+
+(Exact name of Registrant as Specified in Its Charter)
+
+Delaware
+
+001-38792
+
+82-2933343
+
+(State or Other Jurisdiction
+
+of Incorporation)
+
+(Commission File Number)
+
+(IRS Employer
+
+Identification No.)
+
+131 Oyster Point Blvd.
+
+Suite 600
+
+South San Francisco , California
+
+94080
+
+(Address of Principal Executive Offices)
+
+(Zip Code)
+
+Registrant’s Telephone Number, Including Area Code: ( 415) 231-5660
+
+(Former Name or Former Address, if Changed Since Last Report)
+
+Check the appropriate box below if the Form 8-K filing is intended to simultaneously satisfy the filing obligation of the registrant under any of the following provisions:
+
+☐ Written communications pursuant to Rule 425 under the Securities Act (17 CFR 230.425)
+
+☐ Soliciting material pursuant to Rule 14a-12 under the Exchange Act (17 CFR 240.14a-12)
+
+☐ Pre-commencement communications pursuant to Rule 14d-2(b) under the Exchange Act (17 CFR 240.14d-2(b))
+
+☐ Pre-commencement communications pursuant to Rule 13e-4(c) under the Exchange Act (17 CFR 240.13e-4(c))
+
+Securities registered pursuant to Section 12(b) of the Act:
+
+Title of each class
+
+Trading
+
+Symbol(s)
+
+Name of each exchange on which registered
+
+Common Stock
+
+ALEC
+
+The NASDAQ Stock Market LLC
+
+Indicate by check mark whether the registrant is an emerging growth company as defined in Rule 405 of the Securities Act of 1933 (§ 230.405 of this chapter) or Rule 12b-2 of the Securities Exchange Act of 1934 (§ 240.12b-2 of this chapter).
+
+Emerging growth company ☐
+
+If an emerging growth company, indicate by check mark if the registrant has elected not to use the extended transition period for complying with any new or revised financial accounting standards provided pursuant to Section 13(a) of the Exchange Act. ☐
+
+Item 1.01 Entry Into a Material Definitive Agreement.
+
+License Agreement with Genentech
+
+On September 30, 2026, Alector, Inc. and Alector LLC (collectively, “Alector” or the “Company”) entered into a License Agreement (the “Genentech License Agreement”) with Genentech, Inc. (“Genentech”), pursuant to which Alector is granting Genentech exclusive worldwide rights to develop and commercialize Alector’s AL050 program, which is a brain penetrant engineered glucocerebrosidase (“GCase”) enzyme replacement therapy (the “GCase Candidates”). Under the Genentech License Agreement, Genentech will be responsible for development, regulatory, manufacturing, and commercialization of the GCase Candidates, and Alector will assign ownership of certain of its existing patents specific to the GCase Candidates to Genentech. Alector retains ownership of its Alector Brain Carrier platform and full rights to apply the platform across its wholly owned pipeline of compound and product candidates outside of GCases.
+
+Alector will receive a $100 million upfront payment from Genentech under the Genentech License Agreement. In addition, Alector will be eligible to receive up to an additional $1.17 billion in development, regulatory, and commercial success-related milestone payments related to the GCase Candidates. Alector also will be eligible to receive tiered royalties on a specified percentage of net sales of the GCase Candidates at rates ranging from single-digit to double-digit percentages.
+
+Alector will transfer to Genentech manufacturing responsibility to enable manufacture of the GCase Candidates for conducting development and commercialization activities. For a specified period of time during the term of the Genentech License Agreement, Alector is subject to certain restrictions related to the exploitation of certain compounds and products that contain or target GCase.
+
+The Genentech License Agreement contains customary representations, warranties, covenants, and other terms by the parties, and will continue in effect unless terminated by either party pursuant to its terms. Either Alector or Genentech may terminate the Genentech License Agreement in its entirety for the other side’s insolvency or uncured material breach. Genentech may terminate the Genentech License Agreement for convenience upon prior written notice. Upon certain termination events, Genentech will revert certain patents and other assets related to the GCase Candidates back to Alector, including on terms to be agreed upon.
+
+The foregoing description of the terms of the Genentech License Agreement is not complete and is qualified in its entirety by reference to the Genentech License Agreement, a copy of which Alector intends to file as an exhibit to a subsequent periodic report. Alector intends to redact certain confidential portions of the Genentech License Agreement upon filing because such confidential portions are not material and would be competitively harmful to Alector if publicly disclosed.
+
+Option and License Agreement with Spur Therapeutics
+
+On September 30, 2026, Alector provided notice of the exercise of its option to license certain patents from Spur Therapeutics Limited (“Spur”) pursuant to an Option and License Agreement (the “Spur Agreement”) between Alector and Spur, dated August 14, 2026. Under the Spur Agreement, Spur is granting Alector a worldwide, royalty-bearing, non-exclusive, transferable, sublicensable license under certain patents related to its engineered GCase (the “Spur Patents”) to develop, manufacture, and commercialize products for use in all fields (other than a specified excluded indication).
+
+Alector initially paid Spur a one-time upfront payment of $500,000 for the option under the Spur Agreement. Following the exercise of the option under the Spur Agreement and receipt of the upfront payment related to the Genentech License Agreement, Alector will pay Spur $15 million under the Spur Agreement plus a percentage in the teens of any milestone and other non-royalty partnering income that Alector receives with respect to a sublicense of the Spur Patents, which includes any milestone payments to be received under the Genentech License Agreement. Alector will be required to pay Spur additional royalties calculated as a percentage of the royalties that Alector receives with respect to a sublicense of the Spur Patents, which includes any royalties to be received under the Genentech License Agreement.
+
+The Spur Agreement contains customary representations, warranties, covenants, and other terms by the parties, and will continue in effect unless terminated by either party pursuant to its terms. Either Alector or Spur may terminate the Spur Agreement in its entirety for the other side’s insolvency or uncured material breach. Spur may terminate the Spur Agreement upon certain challenges to the Spur Patents. Alector may terminate the Spur Agreement for convenience upon prior written notice.
+
+The foregoing description of the terms of the Spur Agreement is not complete and is qualified in its entirety by reference to the Spur Agreement, a copy of which Alector intends to file as an exhibit to a subsequent periodic report. Alector intends to redact certain confidential portions of the Spur Agreement upon filing because such confidential portions are not material and would be competitively harmful to Alector if publicly disclosed.
+
+Item 2.02
+
+Results of Operations and Financial Condition.
+
+On October 5, 2026, Alector announced its preliminary estimate of cash, cash equivalents, and marketable securities as of September 30, 2026, including after giving effect to the Genentech License Agreement and Spur Agreement. Based upon preliminary estimates and information available to the Company as of the date of this Form 8-K, cash, cash equivalents, and marketable securities totaled approximately $138.7 million as of September 30, 2026, and Alector would have approximately $223.7 million of cash, cash equivalents, and marketable securities as of September 30, 2026 after giving pro forma effect to the initial payments received under the Genentech License Agreement and paid out under the Spur Agreement, which the Company believes will enable it to fund its operations into 2029.
+
+The Company has not yet completed its quarter-end financial close processes for the quarter ended September 30, 2026. This estimate of the Company’s cash, cash equivalents, and marketable securities as of September 30, 2026 is preliminary, has not been audited, and is subject to change upon completion of its financial statement closing procedures. Additional information and disclosure would be required for a more complete understanding of the Company’s financial position as of September 30, 2026. The Company’s independent registered public accounting firm has not audited, reviewed, or performed any procedures with respect to this preliminary information and, accordingly, does not express an opinion or any other form of assurance about it.
+
+Item 7.01
+
+Regulation FD Disclosure.
+
+Alector has issued a press release which is attached hereto as Exhibit 99.1 and incorporated into this Item 7.01 by referenc
+
+EX-99.01
+2
+alec-ex99_01.htm
+EX-99.01
+
+EX-99.01
+
+Exhibit 99.1
+
+Alector Enters Global License Agreement with Genentech for Brain Penetrant GCase Enzyme Replacement Therapy for Parkinson’s Disease and Other Neurodegenerative Diseases
+
+Alector grants Genentech exclusive rights to develop and commercialize AL050, an investigational GCase Enzyme Replacement Therapy (ERT) enabled by Alector Brain Carrier (ABC), Alector’s proprietary blood-brain barrier delivery platform
+
+Alector to receive $100 million upfront payment, with potential for up to $1.17 billion in additional milestone payments, as well as tiered royalties on net sales
+
+---
+
+SOUTH SAN FRANCISCO, Calif., [October 5, 2026] (GLOBE NEWSWIRE) – Alector, Inc. (Nasdaq: ALEC), a biotechnology company focused on developing therapies to counteract the devastating progression of neurodegeneration, today announced it has entered into an exclusive global licensing agreement with Genentech, a member of the Roche Group, granting Genentech worldwide rights to develop and commercialize Alector’s AL050 program, its brain-penetrant engineered glucocerebrosidase (GCase) ERT.
+
+AL050 is designed to address GCase deficiency, a driver of neurodegeneration in Parkinson’s Disease that is most pronounced in – but not limited to – carriers of GBA1 mutations. It combines an Alector-engineered GCase, optimized for greater enzymatic activity and a longer half-life, with Alector’s ABC, which is designed to transport therapeutics across the blood-brain barrier. Delivered into the brain, the enzyme is intended to break down glucosylsphingosine and glucosylceramide, lipids that accumulate in neurons and other brain cells upon GCase deficiency and contribute to neurodegeneration, with the aim of reducing cellular dysfunction and slowing disease progression.
+
+“Deficient GCase activity is increasingly recognized as a contributor to Parkinson’s Disease, and there is still no approved therapy that addresses the underlying enzyme deficiency,” said Arnon Rosenthal, Ph.D., Chief Executive Officer of Alector. “The challenge in treating GCase deficiency is twofold: engineering an enzyme with optimal activity and durability and successfully delivering it to the brain. AL050 addresses this by pairing an engineered GCase enzyme with our proprietary Alector Brain Carrier technology designed to cross the blood-brain barrier. Genentech’s long-standing commitment to Parkinson's Disease makes them an ideal partner as this program moves toward the clinic".
+
+"Parkinson's Disease is one of the fastest-growing neurological conditions worldwide," said Boris L. Zaïtra, Head of Roche Corporate Business Development. "By partnering with
+
+companies such as Alector we aim to delay or halt the progression of Parkinson's so patients maintain and prolong their independence."
+
+Under the terms of the agreement, Alector will receive an upfront payment of $100 million and is also eligible to receive additional payments of up to $1.17 billion upon the achievement of development, regulatory, and commercial milestones. Alector is also eligible for tiered royalties on net sales. Under the collaboration, Genentech will be responsible for development, regulatory, manufacturing, and commercialization across all indications. Alector retains ownership of ABC and full rights to apply the platform across its wholly owned pipeline.
+
+"This partnership extends our cash runway into 2029, providing resources to advance our fully active, subcutaneously delivered, brain-enabled anti-Aβ antibody to multi-cohort clinical data in Alzheimer’s patients, and move our subcutaneously delivered, brain-enabled Tau siRNA and alpha- synuclein siRNA programs through IND-enabling studies and to IND filings," said Dr. Rosenthal.
+
+Alector R&D Webinar on Wholly Owned Pipeline
+
+Alector will host a scientific webinar on Tuesday, October 13 th , 2026, at 8:00 a.m. PT, focused on AL137, its brain-enabled anti-Aβ antibody; AL164, its tau siRNA program; and AL062, its alpha-synuclein siRNA program. Registration and webcast information will be available on the Events and Presentations page of the Alector co
+...
+ of indications, such as Alzheimer’s disease and Parkinson's disease. The company is also developing Alector Brain Carrier (ABC), a proprietary blood-brain barrier platform, which is being applied to its preclinical and research pipeline. ABC aims to enhance the delivery of therapeutics, achieve deeper brain penetration and efficacy at lower doses, and ultimately improve patient outcomes while reducing costs. Alector is headquartered in South San Francisco, California. For more information, please visit www.alector.com .
+
+Forward Looking Statements
+
+This press release contains forward-looking statements within the meaning of the Private Securities Litigation Reform Act of 1995. Forward-looking statements in this press release include, but are not limited to, statements regarding our business plans, business strategy, product candidates, research and preclinical pipeline, blood-brain barrier technology platform, planned and ongoing preclinical studies, planned clinical trials, expected milestones, expectations of our collaborations, and financial and cash guidance. Such statements are subject to numerous risks and uncertainties, including but not limited to risks and uncertainties as set forth in Alector’s Annual Reports on Form 10-K and Quarterly Reports on Form 10-Q, with the Securities and Exchange Commission (SEC), as well as the other documents Alector files from time to time with the SEC. These documents contain and identify important factors that could cause the actual results for Alector to differ materially from those contained in Alector’s forward-looking statements. Any forward-looking statements contained in this press release speak only as of the date hereof, and Alector specifically disclaims any obligation to update any forward-looking statement, except as required by law.

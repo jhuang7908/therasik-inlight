@@ -1,36 +1,1431 @@
-UNITED STATES SECURITIES AND EXCHANGE COMMISSION
-Washington, D.C. 20549
+0001104659-26-113895.txt : 20261006
+0001104659-26-113895.hdr.sgml : 20261006
+20261006075150
+ACCESSION NUMBER: 0001104659-26-113895
+CONFORMED SUBMISSION TYPE: 8-K
+PUBLIC DOCUMENT COUNT: 11
+CONFORMED PERIOD OF REPORT: 20261001
+ITEM INFORMATION: Entry into a Material Definitive Agreement
+ITEM INFORMATION: Results of Operations and Financial Condition
+ITEM INFORMATION: Other Events
+FILED AS OF DATE: 20261006
+DATE AS OF CHANGE: 20261006
+
+FILER:
+
+COMPANY DATA:
+COMPANY CONFORMED NAME: REGENERON PHARMACEUTICALS, INC.
+CENTRAL INDEX KEY: 0000872589
+STANDARD INDUSTRIAL CLASSIFICATION: PHARMACEUTICAL PREPARATIONS [2834]
+ORGANIZATION NAME: 03 Life Sciences
+EIN: 133444607
+STATE OF INCORPORATION: NY
+FISCAL YEAR END: 1231
+
+FILING VALUES:
+FORM TYPE: 8-K
+SEC ACT: 1934 Act
+SEC FILE NUMBER: 000-19034
+FILM NUMBER: 261442314
+
+BUSINESS ADDRESS:
+STREET 1: 777 OLD SAW MILL RIVER ROAD
+CITY: TARRYTOWN
+STATE: NY
+ZIP: 10591
+BUSINESS PHONE: 9148477000
+
+MAIL ADDRESS:
+STREET 1: 777 OLD SAW MILL RIVER ROAD
+CITY: TARRYTOWN
+STATE: NY
+ZIP: 10591
+
+FORMER COMPANY:
+FORMER CONFORMED NAME: REGENERON PHARMACEUTICALS INC
+DATE OF NAME CHANGE: 19930328
+
+8-K
+1
+tm2627077d1_8k.htm
 FORM 8-K
-CURRENT REPORT
 
-Pursuant to Section 13 or 15(d) of the Securities Exchange Act of 1934
+false
+0000872589
 
-Date of Report (Date of earliest event reported): October 1, 2026
+0000872589
 
-REGENERON PHARMACEUTICALS, INC.
-(Exact name of registrant as specified in its charter)
+2026-10-01
+2026-10-01
 
-Item 1.01 Entry into a Material Definitive Agreement
+iso4217:USD
 
-On October 1, 2026, Regeneron Pharmaceuticals, Inc. ("Regeneron" or the "Company") 
-entered into a Sixth Amendment (the "Amendment") to the Antibody License and Collaboration 
-Agreement, dated as of January 2007, as amended (the "Collaboration Agreement"), with 
-Sanofi S.A. ("Sanofi").
+xbrli:shares
 
-Pursuant to the Amendment, Sanofi will pay Regeneron an upfront payment of $1.0 billion 
-in cash. Additionally, the Company is eligible to receive up to an aggregate of $7.0 billion 
-in development, regulatory and commercial milestone payments contingent upon the achievement 
-of certain specified events. The Amendment also provides for the transfer of exclusive 
-rights for four antibodies currently in clinical development.
+iso4217:USD
 
-The parties agreed to modify the profit sharing arrangement, with profits to be shared 
-equally between Regeneron and Sanofi for products developed under the collaboration. 
-The Amendment includes a budget cap for certain development activities and an option 
-for lunsekimig, subject to further negotiations. As part of the Amendment, the parties 
-agreed to dismiss certain pending litigation matters.
+xbrli:shares
 
-Item 9.01 Financial Statements and Exhibits
+UNITED
+STATES
 
-(d) Exhibits
+SECURITIES
+AND EXCHANGE COMMISSION
 
-99.1 Press Release dated October 6, 2026
+Washington,
+D.C. 20549
+
+FORM
+8-K
+
+CURRENT
+REPORT
+
+Pursuant
+to Section 13 or 15(d) of
+
+the Securities
+Exchange Act of 1934
+
+Date
+of Report (Date of earliest event reported): October
+1, 2026
+
+REGENERON
+PHARMACEUTICALS, INC.
+
+(Exact
+name of registrant as specified in its charter)
+
+New
+York
+
+(State
+or other jurisdiction of incorporation)
+
+000-19034
+
+13-3444607
+
+(Commission
+
+File
+Number)
+
+(I.R.S.
+Employer
+
+Identification
+No.)
+
+777
+Old Saw Mill River Road
+
+Tarrytown ,
+New York
+
+10591-6707
+
+(Address
+of principal executive offices)
+
+(Zip
+Code)
+
+Registrant’s
+telephone number, including area code: ( 914 ) 847-7000
+
+Check the
+appropriate box below if the Form 8-K filing is intended to simultaneously satisfy the filing obligation of the registrant under any
+of the following provisions (see General Instruction A.2. below):
+
+¨
+Written communications pursuant to Rule 425 under the Securities Act (17 CFR 230.425)
+
+¨
+Soliciting material pursuant to Rule 14a-12 under the Exchange Act (17 CFR 240.14a-12)
+
+¨
+Pre-commencement communications pursuant to Rule 14d-2(b) under the Exchange Act (17 CFR 240.14d-2(b))
+
+¨
+Pre-commencement communications pursuant to Rule 13e-4(c) under the Exchange Act (17 CFR 240.13e-4(c))
+
+Securities registered pursuant
+to Section 12(b) of the Act:
+
+Title
+of each class
+Trading
+Symbol(s)
+Name
+of each exchange on which registered
+
+Common
+Stock – par value $0.001 per share
+REGN
+The Nasdaq Global Select Market
+
+Indicate by
+check mark whether the registrant is an emerging growth company as defined in Rule 405 of the Securities Act of 1933 (§ 230.405
+of this chapter) or Rule 12b-2 of the Securities Exchange Act of 1934 (§ 240.12b-2 of this chapter).
+
+Em
+
+0001104659-26-113895.txt : 20261006
+0001104659-26-113895.hdr.sgml : 20261006
+20261006075150
+ACCESSION NUMBER: 0001104659-26-113895
+CONFORMED SUBMISSION TYPE: 8-K
+PUBLIC DOCUMENT COUNT: 11
+CONFORMED PERIOD OF REPORT: 20261001
+ITEM INFORMATION: Entry into a Material Definitive Agreement
+ITEM INFORMATION: Results of Operations and Financial Condition
+ITEM INFORMATION: Other Events
+FILED AS OF DATE: 20261006
+DATE AS OF CHANGE: 20261006
+
+FILER:
+
+COMPANY DATA:
+COMPANY CONFORMED NAME: REGENERON PHARMACEUTICALS, INC.
+CENTRAL INDEX KEY: 0000872589
+STANDARD INDUSTRIAL CLASSIFICATION: PHARMACEUTICAL PREPARATIONS [2834]
+ORGANIZATION NAME: 03 Life Sciences
+EIN: 133444607
+STATE OF INCORPORATION: NY
+FISCAL YEAR END: 1231
+
+FILING VALUES:
+FORM TYPE: 8-K
+SEC ACT: 1934 Act
+SEC FILE NUMBER: 000-19034
+FILM NUMBER: 261442314
+
+BUSINESS ADDRESS:
+STREET 1: 777 OLD SAW MILL RIVER ROAD
+CITY: TARRYTOWN
+STATE: NY
+ZIP: 10591
+BUSINESS PHONE: 9148477000
+
+MAIL ADDRESS:
+STREET 1: 777 OLD SAW MILL RIVER ROAD
+CITY: TARRYTOWN
+STATE: NY
+ZIP: 10591
+
+FORMER COMPANY:
+FORMER CONFORMED NAME: REGENERON PHARMACEUTICALS INC
+DATE OF NAME CHANGE: 19930328
+
+8-K
+1
+tm2627077d1_8k.htm
+FORM 8-K
+
+false
+0000872589
+
+0000872589
+
+2026-10-01
+2026-10-01
+
+iso4217:USD
+
+xbrli:shares
+
+iso4217:USD
+
+xbrli:shares
+
+UNITED
+STATES
+
+SECURITIES
+AND EXCHANGE COMMISSION
+
+Washington,
+D.C. 20549
+
+FORM
+8-K
+
+CURRENT
+REPORT
+
+Pursuant
+to Section 13 or 15(d) of
+
+the Securities
+Exchange Act of 1934
+
+Date
+of Report (Date of earliest event reported): October
+1, 2026
+
+REGENERON
+PHARMACEUTICALS, INC.
+
+(Exact
+name of registrant as specified in its charter)
+
+New
+York
+
+(State
+or other jurisdiction of incorporation)
+
+000-19034
+
+13-3444607
+
+(Commission
+
+File
+Number)
+
+(I.R.S.
+Employer
+
+Identification
+No.)
+
+777
+Old Saw Mill River Road
+
+Tarrytown ,
+New York
+
+10591-6707
+
+(Address
+of principal executive offices)
+
+(Zip
+Code)
+
+Registrant’s
+telephone number, including area code: ( 914 ) 847-7000
+
+Check the
+appropriate box below if the Form 8-K filing is intended to simultaneously satisfy the filing obligation of the registrant under any
+of the following provisions (see General Instruction A.2. below):
+
+¨
+Written communications pursuant to Rule 425 under the Securities Act (17 CFR 230.425)
+
+¨
+Soliciting material pursuant to Rule 14a-12 under the Exchange Act (17 CFR 240.14a-12)
+
+¨
+Pre-commencement communications pursuant to Rule 14d-2(b) under the Exchange Act (17 CFR 240.14d-2(b))
+
+¨
+Pre-commencement communications pursuant to Rule 13e-4(c) under the Exchange Act (17 CFR 240.13e-4(c))
+
+Securities registered pursuant
+to Section 12(b) of the Act:
+
+Title
+of each class
+Trading
+Symbol(s)
+Name
+of each exchange on which registered
+
+Common
+Stock – par value $0.001 per share
+REGN
+The Nasdaq Global Select Market
+
+Indicate by
+check mark whether the registrant is an emerging growth company as defined in Rule 405 of the Securities Act of 1933 (§ 230.405
+of this chapter) or Rule 12b-2 of the Securities Exchange Act of 1934 (§ 240.12b-2 of this chapter).
+
+Emerging growth company ¨
+
+If an emerging
+growth company, indicate by check mark if the registrant has elected not to use the extended transition period for complying with any
+new or revised financial accounting standards provided pursuant to Section 13(a) of the Exchange Act. ¨
+
+Item 1.01. Entry into a Material
+Definitive Agreement.
+
+On October
+1, 2026, Regeneron Pharmaceuticals, Inc., a New York corporation (“ Regeneron ” or the “ Company ”),
+Sanofi Biotechnology SAS, a société par actions simplifée organized under the laws of France (“ Sanofi
+Biotechnology ”), and Sanofi, a société anonyme organized under the laws of France (“ Sanofi Parent ”
+and, with Sanofi Biotechnology, “ Sanofi ”), entered into the Sixth Amendment to the Amended and Restated License and
+Collaboration Agreement (the “ Sixth Amendment ”), which amends the Amended and Restated License and Collaboration Agreement,
+dated as of November 10, 2009 (as amended), by and between the Company, Sanofi Biotechnology (as successor in interest to Aventis Pharmaceuticals
+Inc.), and Sanofi Parent (the “ Antibody LCA ”). Pursuant to the Sixth Amendment, the parties have agreed to co-develop
+and co-commercialize four new long-acting, Regeneron-invented antibodies: (i) an antibody targeting interleukin-13 (“ IL-13 ”),
+(ii) an antibody targeting interleukin-4 (“ IL-4 ”), (iii) an antibody targeting IL-4 receptor alpha (IL-4Rα),
+and (iv) a bispecific antibody targeting IL-4xIL-13 (each, a “ New Licensed Product ” and, collectively, the “ New
+Licensed Products ”). Regeneron will also have the option, on an asset-by-asset basis after completion of certain ongoing clinical
+trials, to include in the collaboration Sanofi’s Phase 2/3 asset lunsekimig, an investigational bispecific Nanobody ®
+VHH therapy targeting thymic stromal lymphopoietin (TSLP) and IL-13, and another Sanofi early development product. In the event
+Regeneron exercises this option for any such product, it will reimburse Sanofi for certain development costs related to such product.
+
+Pursuant
+to the Sixth Amendment, Sanofi will make an upfront payment to Regeneron of $1.0 billion. In addition, the Sixth Amendment provides that
+Regeneron will be entitled to receive up to an additional $7.0 billion of payments in the aggregate upon the achievement of certain development,
+regulatory, and commercial milestones with respect to the New Licensed Products. Global profits realized on the sale of New Licensed
+Products will be shared equally between Regeneron and Sanofi, as calculated under the Antibody LCA.
+
+Pursuant
+to the Sixth Amendment, the parties have agreed on an initial global development plan for the IL-13 asset and are to agree on an initial
+global development plan for each of the other New Licensed Products. All development costs incurred with respect to all licensed products
+under the Antibody LCA, including the New Licensed Products, will be shared equally by the parties. In addition, development costs in
+excess of a budget cap for all New Licensed Products will be the responsibility of Regeneron, subject to certain rights to recoup such
+excess costs in future years. Regeneron will be the lead development party and the lead regulatory party prior to the filing of an application
+for marketing approval for each New Licensed Product. Regeneron will remain the lead regulatory party for applications for marketing
+approval and further commercialization in the United States, and Sanofi will be the lead regulatory party for applications for marketing
+approval and further commercialization outside the United States. Sanofi will be the lead party with respect to the commercialization
+of the New Licensed Products.
+
+The foregoing
+description of the Sixth Amendment is qualified in its entirety by reference to the full text of the Sixth Amendment, a copy of which
+will be filed with the U.S. Securities and Exchange Commission as an exhibit to the Quarterly Report on Form 10-Q to be filed by the
+Company for the quarterly period ended September 30, 2026.
+
+Item 2.02. Results of Operations and Financial Condition.
+
+Regeneron
+currently expects that its financial results calculated in accordance with U.S. generally accepted accounting principles (“ GAAP ”)
+and its non-GAAP financial results for the third quarter 2026 will include an acquired in-process research and development (“ IPR&D ”)
+charge of approximately $22 million on a pre-tax basis. The acquired IPR&D charge is expected to negatively impact each of GAAP and
+non-GAAP net income per diluted share for the third quarter 2026 by approximately $0.18.
+
+Acquired
+IPR&D charges may include IPR&D acquired in connection with asset acquisitions as well as up-front, opt-in, and development milestone
+payments and premiums paid on equity securities related to collaboration and licensing agreements. Regeneron does not forecast such
+acquired IPR&D charges due to the uncertainty of the future occurrence, magnitude, and timing of these transactions in any given
+period.
+
+Regeneron’s
+results for the third quarter 2026 have not been finalized and are subject to Regeneron’s financial statement closing procedures.
+There can be no assurance that actual results will not differ from the preliminary (unaudited) estimates described herein.
+
+The information
+included in this Item 2.02 shall not be deemed “filed” for purposes of Section 18 of the Securities Exchange Act of 1934,
+as amended, nor shall such information be deemed incorporated by reference in any filing under the Securities Act of 1933, as amended,
+except as shall be expressly set forth by specific reference in such a filing.
+
+Item 8.01. Other Events.
+
+In connection
+with the execution of the Sixth Amendment, Regeneron and Sanofi entered into a settlement agreement pursuant to which Regeneron agreed
+to dismiss its lawsuit concerning Sanofi’s obligation to provide Regeneron with full access to material information relating to
+the commercialization of Dupixent ® (dupilumab) and other products commercialized pursuant to the Antibody LCA, and Regeneron’s
+audit rights under the Antibody LCA.
+
+Note
+Regarding Forward-Looking Statements
+
+This
+Current Report on Form 8-K (this “ Report ”) includes forward-looking statements that involve risks and uncertainties
+relating to future events and the future performance of Regeneron, and actual events or results may differ materially from these forward-looking
+statements. Words such as “anticipate,” “expect,” “intend,” “plan,” “believe,”
+“seek,” “estimate,” variations of such words, and similar expressions are intended to identify such forward-looking
+statements, although not all forward-looking statements contain these identifying words. These statements concern, and these risks and
+uncertainties include, among others, the Company’s expectations with regard to the development and commercialization of the New
+Licensed Products and the amounts to be received pursuant to the Sixth Amendment, as well as the Company’s expected acquired in-process
+research and development charge for the quarterly period ended September 30, 2026 and its expected impact on GAAP and non-GAAP net income
+per diluted share for this period, as discussed in this Report. A more complete description of these and other material risks can be
+found in Regeneron’s filings with the U.S. Securities and Exchange Commission. Any forward-looking statements are made based on
+management’s current beliefs and judgment, and the reader is cautioned not to rely on any forward-looking statements made by Regeneron.
+The Company does not undertake any obligation to update (publicly or otherwise) any forward-looking statement, including, without limitation,
+any financial projection or guidance, whether as a result of new information, future events, or otherwise.
+
+Note Regarding Non-GAAP
+Financial Measures
+
+This
+Report references non-GAAP net income per diluted share, which is a financial measure that is not calculated in accordance with U.S.
+Generally Accepted Accounting Principles (“ GAAP ”). This non-GAAP financial measure is computed by excluding certain
+non-cash and/or other items from the related GAAP financial measure. The Company also includes a non-GAAP adjustment for the estimated
+income tax effect of reconciling items. The Company makes such adjustments for items the Company does not view as useful in evaluating
+its operating performance. Management uses this and other non-GAAP measures for planning, budgeting, forecasting, assessing historical
+performance, and making financial and operational decisions, and also provides f
+...
+Document Annual Report
+
+Document Quarterly Report
+
+Document Transition Report
+
+Document Shell Company Report
+
+Document Shell Company Event Date
+
+Document Period Start Date
+
+Document Period End Date
+
+Document Fiscal Period Focus
+
+Document Fiscal Year Focus
+
+Current Fiscal Year End Date
+
+Entity File Number
+
+Entity Registrant Name
+
+Entity Central Index Key
+
+Entity Primary SIC Number
+
+Entity Tax Identification Number
+
+Entity Incorporation, State or Country Code
+
+Entity Address, Address Line One
+
+Entity Address, Address Line Two
+
+Entity Address, Address Line Three
+
+Entity Address, City or Town
+
+Entity Address, State or Province
+
+Entity Address, Country
+
+Entity Address, Postal Zip Code
+
+Country Region
+
+City Area Code
+
+Local Phone Number
+
+Extension
+
+Written Communications
+
+Soliciting Material
+
+Pre-commencement Tender Offer
+
+Pre-commencement Issuer Tender Offer
+
+Title of 12(b) Security
+
+No Trading Symbol Flag
+
+Trading Symbol
+
+Security Exchange Name
+
+Title of 12(g) Security
+
+Security Reporting Obligation
+
+Annual Information Form
+
+Audited Annual Financial Statements
+
+Entity Well-known Seasoned Issuer
+
+Entity Voluntary Filers
+
+Entity Current Reporting Status
+
+Entity Interactive Data Current
+
+Entity Filer Category
+
+Entity Small Business
+
+Entity Emerging Growth Company
+
+Elected Not To Use the Extended Transition Period
+
+Document Accounting Standard
+
+Other Reporting Standard Item Number
+
+Entity Shell Company
+
+Entity Public Float
+
+Entity Bankruptcy Proceedings, Reporting Current
+
+Entity Common Stock, Shares Outstanding
+
+Documents Incorporated by Reference [Text Block]
+
+EX-101.PRE
+4
+regn-20261001_pre.xml
+XBRL TAXONOMY EXTENSION PRESENTATION LINKBASE
+
+XML
+6
+R1.htm
+IDEA: XBRL DOCUMENT
+
+v3.26.3
+
+Cover
+
+Oct. 01, 2026
+
+Cover [Abstract]
+
+Document Type
+8-K
+
+Amendment Flag
+false
+
+Document Period End Date
+Oct. 01, 2026
+
+Entity File Number
+000-19034
+
+Entity Registrant Name
+REGENERON
+PHARMACEUTICALS, INC.
+
+Entity Central Index Key
+0000872589
+
+Entity Tax Identification Number
+13-3444607
+
+Entity Incorporation, State or Country Code
+NY
+
+Entity Address, Address Line One
+777
+Old Saw Mill River Road
+
+Entity Address, City or Town
+Tarrytown
+
+Entity Address, State or Province
+NY
+
+Entity Address, Postal Zip Code
+10591-6707
+
+City Area Code
+914
+
+Local Phone Number
+847-7000
+
+Written Communications
+false
+
+Soliciting Material
+false
+
+Pre-commencement Tender Offer
+false
+
+Pre-commencement Issuer Tender Offer
+false
+
+Title of 12(b) Security
+Common
+Stock – par value $0.001 per share
+
+Trading Symbol
+REGN
+
+Security Exchange Name
+NASDAQ
+
+Entity Emerging Growth Company
+false
+
+X
+
+- Definition
+
+Boolean flag that is true when the XBRL content amends previously-filed or accepted submission.
+
++ References
+
+No definition available.
+
++ Details
+
+Name:
+dei_AmendmentFlag
+
+Namespace Prefix:
+dei_
+
+Data Type:
+xbrli:booleanItemType
+
+Balance Type:
+na
+
+Period Type:
+duration
+
+X
+
+- Definition
+
+Area code of city
+
++ References
+
+No definition available.
+
++ Details
+
+Name:
+dei_CityAreaCode
+
+Namespace Prefix:
+dei_
+
+Data Type:
+xbrli:normalizedStringItemType
+
+Balance Type:
+na
+
+Period Type:
+duration
+
+X
+
+- Definition
+
+Cover page.
+
++ References
+
+No definition available.
+
++ Details
+
+Name:
+dei_CoverAbstract
+
+Namespace Prefix:
+dei_
+
+Data Type:
+xbrli:stringItemType
+
+Balance Type:
+na
+
+Period Type:
+duration
+
+X
+
+- Definition
+
+For the EDGAR submission types of Form 8-K: the date of the report, the date of the earliest event reported; for the EDGAR submission types of Form N-1A: the filin
+...
+ Act
+
+-Number 240
+
+-Section 12
+
+-Subsection b-2
+
++ Details
+
+Name:
+dei_EntityRegistrantName
+
+Namespace Prefix:
+dei_
+
+Data Type:
+xbrli:normalizedStringItemType
+
+Balance Type:
+na
+
+Period Type:
+duration
+
+X
+
+- Definition
+
+The Tax Identification Number (TIN), also known as an Employer Identification Number (EIN), is a unique 9-digit value assigned by the IRS.
+
++ References
+
+Reference 1: http://www.xbrl.org/2003/role/presentationRef
+
+-Publisher SEC
+
+-Name Exchange Act
+
+-Number 240
+
+-Section 12
+
+-Subsection b-2
+
++ Details
+
+Name:
+dei_EntityTaxIdentificationNumber
+
+Namespace Prefix:
+dei_
+
+Data Type:
+dei:employerIdItemType
+
+Balance Type:
+na
+
+Period Type:
+duration
+
+X
+
+- Definition
+
+Local phone number for entity.
+
++ References
+
+No definition available.
+
++ Details
+
+Name:
+dei_LocalPhoneNumber
+
+Namespace Prefix:
+dei_
+
+Data Type:
+xbrli:normalizedStringItemType
+
+Balance Type:
+na
+
+Period Type:
+duration
+
+X
+
+- Definition
+
+Boolean flag that is true when the Form 8-K filing is intended to satisfy the filing obligation of the registrant as pre-commencement communications pursuant to Rule 13e-4(c) under the Exchange Act.
+
++ References
+
+Reference 1: http://www.xbrl.org/2003/role/presentationRef
+
+-Publisher SEC
+
+-Name Exchange Act
+
+-Number 240
+
+-Section 13e
+
+-Subsection 4c
+
++ Details
+
+Name:
+dei_PreCommencementIssuerTenderOffer
+
+Namespace Prefix:
+dei_
+
+Data Type:
+xbrli:booleanItemType
+
+Balance Type:
+na
+
+Period Type:
+duration
+
+X
+
+- Definition
+
+Boolean flag that is true when the Form 8-K filing is intended to satisfy the filing obligation of the registrant as pre-commencement communications pursuant to Rule 14d-2(b) under the Exchange Act.
+
++ References
+
+Reference 1: http://www.xbrl.org/2003/role/presentationRef
+
+-Publisher SEC
+
+-Name Exchange Act
+
+-Number 240
+
+-Section 14d
+
+-Subsection 2b
+
++ Details
+
+Name:
+dei_PreCommencementTenderOffer
+
+Namespace Prefix:
+dei_
+
+Data Type:
+xbrli:booleanItemType
+
+Balance Type:
+na
+
+Period Type:
+duration
+
+X
+
+- Definition
+
+Title of a 12(b) registered security.
+
++ References
+
+Reference 1: http://www.xbrl.org/2003/role/presentationRef
+
+-Publisher SEC
+
+-Name Exchange Act
+
+-Number 240
+
+-Section 12
+
+-Subsection b
+
++ Details
+
+Name:
+dei_Security12bTitle
+
+Namespace Prefix:
+dei_
+
+Data Type:
+dei:securityTitleItemType
+
+Balance Type:
+na
+
+Period Type:
+duration
+
+X
+
+- Definition
+
+Name of the Exchange on which a security is registered.
+
++ References
+
+Reference 1: http://www.xbrl.org/2003/role/presentationRef
+
+-Publisher SEC
+
+-Name Exchange Act
+
+-Number 240
+
+-Section 12
+
+-Subsection d1-1
+
++ Details
+
+Name:
+dei_SecurityExchangeName
+
+Namespace Prefix:
+dei_
+
+Data Type:
+dei:edgarExchangeCodeItemType
+
+Balance Type:
+na
+
+Period Type:
+duration
+
+X
+
+- Definition
+
+Boolean flag that is true when the Form 8-K filing is intended to satisfy the filing obligation of the registrant as soliciting material pursuant to Rule 14a-12 under the Exchange Act.
+
++ References
+
+Reference 1: http://www.xbrl.org/2003/role/presentationRef
+
+-Publisher SEC
+
+-Name Exchange Act
+
+-Number 240
+
+-Section 14a
+
+-Subsection 12
+
++ Details
+
+Name:
+dei_SolicitingMaterial
+
+Namespace Prefix:
+dei_
+
+Data Type:
+xbrli:booleanItemType
+
+Balance Type:
+na
+
+Period Type:
+duration
+
+X
+
+- Definition
+
+Trading symbol of an instrument as listed on an exchange.
+
++ References
+
+No definition available.
+
++ Details
+
+Name:
+dei_TradingSymbol
+
+Namespace Prefix:
+dei_
+
+Data Type:
+dei:tradingSymbolItemType
+
+Balance Type:
+na
+
+Period Type:
+duration
+
+X
+
+- Definition
+
+Boolean flag that is true when the Form 8-K filing is intended to satisfy the filing obligation of the registrant as written communications pursuant to Rule 425 under the Securities Act.
+
++ References
+
+Reference 1: http://www.xbrl.org/2003/role/presentationRef
+
+-Publisher SEC
+
+-Name Securities Act
+
+-Number 230
+
+-Section 425
+
++ Details
+
+Name:
+dei_WrittenCommunications
+
+Namespace Prefix:
+dei_
+
+Data Type:
+xbrli:booleanItemType
+
+Balance Type:
+na
+
+Period Type:
+duration
+
+XML
+7
+report.css
+IDEA: XBRL DOCUMENT
+
+/* Updated 2009-11-04 */
+/* v2.2.0.24 */
+
+/* DefRef Styles */
+.report table.authRefData{
+background-color: #def;
+border: 2px solid #2F4497;
+font-size: 1em;
+position: absolute;
+}
+
+.report table.authRefData a {
+display: block;
+font-weight: bold;
+}
+
+.report table.authRefData p {
+margin-top: 0px;
+}
+
+.report table.authRefData .hide {
+background-color: #2F4497;
+padding: 1px 3px 0px 0px;
+text-align: right;
+}
+
+.report table.authRefData .hide a:hover {
+background-color: #2F4497;
+}
+
+.report table.authRefData .body {
+height: 150px;
+overflow: auto;
+width: 400px;
+}
+
+.report table.aut
+...
+,
+"presentation": [
+"http://regeneron.com/role/Cover"
+],
+"lang": {
+"en-us": {
+"role": {
+"label": "Entity Interactive Data Current",
+"documentation": "Boolean flag that is true when the registrant has submitted electronically every Interactive Data File required to be submitted pursuant to Rule 405 of Regulation S-T during the preceding 12 months (or for such shorter period that the registrant was required to submit such files)."
+}
+}
+},
+"auth_ref": [
+"r16"
+]
+},
+"dei_EntityPrimarySicNumber": {
+"xbrltype": "sicNumberItemType",
+"nsuri": "http://xbrl.sec.gov/dei/2025",
+"localname": "EntityPrimarySicNumber",
+"presentation": [
+"http://regeneron.com/role/Cover"
+],
+"lang": {
+"en-us": {
+"role": {
+"label": "Entity Primary SIC Number",
+"documentation": "Primary Standard Industrial Classification (SIC) Number for the Entity."
+}
+}
+},
+"auth_ref": [
+"r14"
+]
+},
+"dei_EntityPublicFloat": {
+"xbrltype": "monetaryItemType",
+"nsuri": "http://xbrl.sec.gov/dei/2025",
+"localname": "EntityPublicFloat",
+"crdr": "credit",
+"presentation": [
+"http://regeneron.com/role/Cover"
+],
+"lang": {
+"en-us": {
+"role": {
+"label": "Entity Public Float",
+"documentation": "The aggregate market value of the voting and non-voting common equity held by non-affiliates computed by reference to the price at which the common equity was last sold, or the average bid and asked price of such common equity, as of the last business day of the registrant's most recently completed second fiscal quarter."
+}
+}
+},
+"auth_ref": []
+},
+"dei_EntityRegistrantName": {
+"xbrltype": "normalizedStringItemType",
+"nsuri": "http://xbrl.sec.gov/dei/2025",
+"localname": "EntityRegistrantName",
+"presentation": [
+"http://regeneron.com/role/Cover"
+],
+"lang": {
+"en-us": {
+"role": {
+"label": "Entity Registrant Name",
+"documentation": "The exact name of the entity filing the report as specified in its charter, which is required by forms filed with the SEC."
+}
+}
+},
+"auth_ref": [
+"r2"
+]
+},
+"dei_EntityShellCompany": {
+"xbrltype": "booleanItemType",
+"nsuri": "http://xbrl.sec.gov/dei/2025",
+"localname": "EntityShellCompany",
+"presentation": [
+"http://regeneron.com/role/Cover"
+],
+"lang": {
+"en-us": {
+"role": {
+"label": "Entity Shell Company",
+"documentation": "Boolean flag that is true when the registrant is a shell company as defined in Rule 12b-2 of the Exchange Act."
+}
+}
+},
+"auth_ref": [
+"r2"
+]
+},
+"dei_EntitySma
+...
+Symbol Flag",
+"documentation": "Boolean flag that is true only for a security having no trading symbol."
+}
+}
+},
+"auth_ref": []
+},
+"dei_OtherReportingStandardItemNumber": {
+"xbrltype": "otherReportingStandardItemNumberItemType",
+"nsuri": "http://xbrl.sec.gov/dei/2025",
+"localname": "OtherReportingStandardItemNumber",
+"presentation": [
+"http://regeneron.com/role/Cover"
+],
+"lang": {
+"en-us": {
+"role": {
+"label": "Other Reporting Standard Item Number",
+"documentation": "\"Item 17\" or \"Item 18\" specified when the basis of accounting is neither US GAAP nor IFRS."
+}
+}
+},
+"auth_ref": [
+"r13"
+]
+},
+"dei_PreCommencementIssuerTenderOffer": {
+"xbrltype": "booleanItemType",
+"nsuri": "http://xbrl.sec.gov/dei/2025",
+"localname": "PreCommencementIssuerTenderOffer",
+"presentation": [
+"http://regeneron.com/role/Cover"
+],
+"lang": {
+"en-us": {
+"role": {
+"label": "Pre-commencement Issuer Tender Offer",
+"documentation": "Boolean flag that is true when the Form 8-K filing is intended to satisfy the filing obligation of the registrant as pre-commencement communications pursuant to Rule 13e-4(c) under the Exchange Act."
+}
+}
+},
+"auth_ref": [
+"r7"
+]
+},
+"dei_PreCommencementTenderOffer": {
+"xbrltype": "booleanItemType",
+"nsuri": "http://xbrl.sec.gov/dei/2025",
+"localname": "PreCommencementTenderOffer",
+"presentation": [
+"http://regeneron.com/role/Cover"
+],
+"lang": {
+"en-us": {
+"role": {
+"label": "Pre-commencement Tender Offer",
+"documentation": "Boolean flag that is true when the Form 8-K filing is intended to satisfy the filing obligation of the registrant as pre-commencement communications pursuant to Rule 14d-2(b) under the Exchange Act."
+}
+}
+},
+"auth_ref": [
+"r9"
+]
+},
+"dei_Security12bTitle": {
+"xbrltype": "securityTitleItemType",
+"nsuri": "http://xbrl.sec.gov/dei/2025",
+"localname": "Security12bTitle",
+"presentation": [
+"http://regeneron.com/role/Cover"
+],
+"lang": {
+"en-us": {
+"role": {
+"label": "Title of 12(b) Security",
+"documentation": "Title of a 12(b) registered security."
+}
+}
+},
+"auth_ref": [
+"r1"
+]
+},
+"dei_Security12gTitle": {
+"xbrltype": "securityTitleItemType",
+"nsuri": "http://xbrl.sec.gov/dei/2025",
+"localname": "Security12gTitle",
+"presentation": [
+"http://regeneron.com/role/Cover"
+],
+"lang": {
+"en-us": {
+"role": {
+"label": "Title of 12(g) Security",
+"documentation": "Title of a 12(g) registered security."
+}
+}
+},
+"auth_ref": [
+"r5"
+]
+},
+"dei_SecurityExchangeName": {
+"xbrltype": "edgarExchangeCodeItemType",
+"nsuri": "http://xbrl.sec.gov/dei/2025",
+"localname": "SecurityExchangeName",
+"presentation": [
+"http://regeneron.com/role/Cover"
+],
+"lang": {
+"en-us": {
+"role": {
+"label": "Security Exchange Name",
+"documentation": "Name of the Exchange on which a security is registered."
+}
+}
+},
+"auth_ref": [
+"r4"
+]
+},
+"dei_SecurityReportingObligation": {
+"xbrltype": "securityReportingObligationItemType",
+"nsuri": "http://xbrl.sec.gov/dei/2025",
+"localname": "SecurityReportingObligation",
+"presentation": [
+"http://regeneron.com/role/Cover"
+],
+"lang": {
+"en-us": {
+"role": {
+"label": "Security Reporting Obligation",
+"documentation": "15(d), indicating whether the security has a reporting obligation under that section of the Exchange Act."
+}
+}
+},
+"auth_ref": [
+"r10"
+]
+},
+"dei_SolicitingMaterial": {
+"xbrltype": "booleanItemType",
+"nsuri": "http://xbrl.sec.gov/dei/2025",
+"localname": "SolicitingMaterial",
+"presentation": [
+"http://regeneron.com/role/Cover"
+],
+"lang": {
+"en-us": {
+"role": {
+"label": "Soliciting Material",
+"documentation": "Boolean flag that is true when the Form 8-K filing is intended to satisfy the filing obligation of the registrant as soliciting material pursuant to Rule 14a-12 under the Exchange Act."
+}
+}
+},
+"auth_ref": [
+"r8"
+]
+},
+"dei_TradingSymbol": {
+"xbrltype": "tradingSymbolItemType",
+"nsuri": "http://xbrl.sec.gov/dei/2025",
+"localname": "TradingSymbol",
+"presentation": [
+"http://regeneron.com/role/Cover"
+],
+"lang": {
+"en-us": {
+"role": {
+"label": "Trading Symbol",
+"documentation": "Trading symbol of an instrument as listed on an exchange."
+}
+}
+},
+"auth_ref": []
+},
+"dei_WrittenCommunications": {
+"xbrltype": "booleanItemType",
+"nsuri": "http://xbrl.sec.gov/dei/2025",
+"localname": "WrittenCommunications",
+"presentation": [
+"http://regeneron.com/role/Cover"
+],
+"lang": {
+"en-us": {
+"role": {
+"label": "Written Communications",
+"documentation": "Boolean flag that is true when the Form 8-K filing is intended to satisfy the filing obligation of the registrant as written communications pursuant to Rule 425 under the Securities Act."
+}
+}
+},
+"auth_ref": [
+"r18"
+]
+}
+}
+}
+},
+"std_ref": {
+"r0": {
+"role": "http://www.xbrl.org/2003/role/presentationRef",
+"Publisher": "SEC",
+"Name": "Exchange Act",
+"Number": "240",
+"Section": "12"
+},
+"r1": {
+"role": "http://www.xbrl.org/2003/role/presentationRef",
+"Publisher": "SEC",
+"Name": "Exchange Act",
+"Number": "240",
+"Section": "12",
+"Subsection": "b"
+},
+"r2": {
+"role": "http://www.xbrl.org/2003/role/presentationRef",
+"Publisher": "SEC",
+"Name": "Exchange Act",
+"Number": "240",
+"Section": "12",
+"Subsection": "b-2"
+},
+"r3": {
+"role": "http://www.xbrl.org/2003
