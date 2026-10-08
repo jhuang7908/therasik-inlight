@@ -48,45 +48,38 @@ TERMINOLOGY_GLOSSARY = {
     "mesaconic acid": ("中康酸", ["美康酸", "梅沙康酸", "麦康酸"]),
 }
 
-# Chinese display name -> source-language forms that justify publishing it.
-DRUG_CN_TO_SOURCE = {
-    "中康酸": ("mesaconate", "mesaconic acid"),
-    "莫妥珠单抗": ("mosunetuzumab",),
-    "格菲妥单抗": ("glofitamab",),
-    "特瑞普利单抗": ("toripalimab",),
-    "普特利单抗": ("pucotenlimab",),
-    "普可欣": ("pucotenlimab",),
-    "帕博利珠单抗": ("pembrolizumab", "keytruda"),
-    "派姆单抗": ("pembrolizumab",),
-    "纳武利尤单抗": ("nivolumab", "opdivo"),
-    "替雷利珠单抗": ("tislelizumab",),
-    "信迪利单抗": ("sintilimab",),
-    "卡瑞利珠单抗": ("camrelizumab",),
-    "度伐利尤单抗": ("durvalumab",),
-    "阿替利珠单抗": ("atezolizumab",),
-    "伊匹木单抗": ("ipilimumab",),
-    "利妥昔单抗": ("rituximab",),
-    "曲妥珠单抗": ("trastuzumab",),
-    "贝伐珠单抗": ("bevacizumab",),
-    "西妥昔单抗": ("cetuximab",),
-    "帕妥珠单抗": ("pertuzumab",),
-    "奥妥珠单抗": ("obinutuzumab",),
-    "维泊妥珠单抗": ("polatuzumab", "polatuzumab vedotin"),
-    "兰瑞肽": ("lanreotide",),
+# Phonetic syllables used in official Chinese generic-name transcriptions.
+# This is a character↔sound table, not a drug or institution list.
+_HAN_PINYIN = {
+    "莫": "mo", "妥": "tuo", "珠": "zhu", "利": "li", "特": "te",
+    "瑞": "rui", "普": "pu", "可": "ke", "辛": "xin", "帕": "pa",
+    "博": "bo", "纳": "na", "武": "wu", "尤": "you", "替": "ti",
+    "雷": "lei", "信": "xin", "迪": "di", "卡": "ka", "度": "du",
+    "伐": "fa", "阿": "a", "伊": "yi", "匹": "pi", "木": "mu",
+    "曲": "qu", "贝": "bei", "西": "xi", "奥": "ao", "维": "wei",
+    "泊": "bo", "兰": "lan", "肽": "tai", "格": "ge", "菲": "fei",
+    "派": "pai", "姆": "mu", "单": "dan", "抗": "kang", "尼": "ni",
+    "昔": "xi", "达": "da", "拉": "la", "安": "an", "托": "tuo",
+    "珠": "zhu", "利": "li", "尤": "you", "替": "ti", "赛": "sai",
+    "妥": "tuo", "珠": "zhu", "单": "dan",
 }
 
-INST_CN_TO_SOURCE = {
-    "中山大学肿瘤防治中心": ("sun yat-sen", "sysucc", "zhongshan university cancer"),
-    "北京大学": ("peking university", "beijing university"),
-    "清华大学": ("tsinghua",),
-    "复旦大学": ("fudan",),
-    "上海交通大学": ("shanghai jiao tong", "sjtu"),
-    "中国医学科学院": ("chinese academy of medical", "cams"),
-    "哈佛": ("harvard",),
-    "斯坦福": ("stanford",),
-    "纪念斯隆凯特琳": ("memorial sloan", "mskcc"),
-    "md安德森": ("md anderson", "m.d. anderson"),
+_GENERIC_FACILITY = {
+    "单中心", "多中心", "中心数", "医疗中心", "研究中心", "医学中心",
+    "大学医院", "附属医院", "教学医院",
 }
+
+_CN_DRUG_SUFFIX_RE = re.compile(r'单抗|替尼')
+# Function words that must not be glued onto a generic name.
+_CN_DRUG_LEAD_STOP = set("予给用的在对将把与和及经以于从向其该本此所已未正和取服注输")
+_LATIN_DRUG_RE = re.compile(
+    r'(?i)\b([a-z]{4,}(?:mab|nib|limab|zumab|ximab|tinib|ciclib|lizumab|cept))\b'
+)
+_PREPRINT_PUBLISHED_RE = re.compile(
+    r'发表于|刊登于|刊于|同行评议|同行评审|正式发表|已发表在|'
+    r'published in|peer[-\s]?reviewed|accepted in',
+    re.IGNORECASE,
+)
 
 AUTHOR_PLACEHOLDER_RE = re.compile(
     r"原文未提供|原文未列出|原文未报告作者|未提供作者|未列出作者|作者信息"
@@ -477,8 +470,87 @@ def fetch_biorxiv_record(url: str) -> dict:
 
 
 def scrape_biorxiv_fulltext(url: str) -> str:
-    """Get bioRxiv/medRxiv abstract if available."""
-    return fetch_biorxiv_record(url).get("abstract", "")
+    """Open HTML full text from a bioRxiv/medRxiv article page (no paywall)."""
+    if "biorxiv.org" not in url and "medrxiv.org" not in url:
+        return ""
+    page = url.split("?")[0].rstrip("/")
+    page = re.sub(r"v\d+$", "", page)
+    candidates = [page + ".full", page, url]
+    seen: set[str] = set()
+    for cand in candidates:
+        if cand in seen:
+            continue
+        seen.add(cand)
+        data = _http_get(cand)
+        text = _html_visible_text(data)
+        if len(text) >= 800:
+            return text
+    return ""
+
+
+def _html_visible_text(data: bytes | None) -> str:
+    """Strip tags/scripts from HTML bytes and return visible text."""
+    if not data:
+        return ""
+    try:
+        raw = data.decode("utf-8", errors="ignore")
+    except Exception:
+        return ""
+    raw = re.sub(r"(?is)<script[^>]*>.*?</script>", " ", raw)
+    raw = re.sub(r"(?is)<style[^>]*>.*?</style>", " ", raw)
+    raw = re.sub(r"(?is)<noscript[^>]*>.*?</noscript>", " ", raw)
+    raw = re.sub(r"(?is)<!--.*?-->", " ", raw)
+    raw = re.sub(r"(?is)<[^>]+>", " ", raw)
+    raw = raw.replace("&nbsp;", " ").replace("&amp;", "&")
+    raw = raw.replace("&lt;", "<").replace("&gt;", ">")
+    raw = re.sub(r"\s+", " ", raw).strip()
+    return raw
+
+
+def scrape_publisher_abstract(url: str) -> str:
+    """Best-effort open abstract from publisher HTML. No paywall bypass."""
+    if not url or not url.startswith("http"):
+        return ""
+    data = _http_get(url)
+    if not data:
+        return ""
+    try:
+        html = data.decode("utf-8", errors="ignore")
+    except Exception:
+        return ""
+    patterns = [
+        r'(?is)<meta[^>]*(?:name|property)=["\'](?:citation_abstract|dc\.description|DC\.Description)["\'][^>]*content=["\']([^"\']{80,})["\']',
+        r'(?is)<meta[^>]*content=["\']([^"\']{80,})["\'][^>]*(?:name|property)=["\'](?:citation_abstract|dc\.description|DC\.Description)["\']',
+    ]
+    for pat in patterns:
+        m = re.search(pat, html)
+        if m:
+            return re.sub(r"\s+", " ", m.group(1)).strip()
+    m = re.search(
+        r'(?is)<(?:section|div|p)[^>]*(?:id|class)=["\'][^"\']*abstract[^"\']*["\'][^>]*>(.{80,8000}?)</(?:section|div|p)>',
+        html,
+    )
+    if m:
+        return _html_visible_text(m.group(1).encode("utf-8"))
+    return ""
+
+
+def crossref_abstract(doi: str) -> str:
+    """Abstract from Crossref when the work deposits one."""
+    if not doi:
+        return ""
+    url = "https://api.crossref.org/works/" + urllib.parse.quote(doi)
+    data = _http_get(url)
+    if not data:
+        return ""
+    try:
+        msg = json.loads(data.decode("utf-8")).get("message") or {}
+        raw = msg.get("abstract") or ""
+        if not raw:
+            return ""
+        return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", raw)).strip()
+    except (json.JSONDecodeError, TypeError, AttributeError):
+        return ""
 
 
 def enrich_item(row: dict) -> EnrichedItem:
@@ -559,6 +631,15 @@ def enrich_item(row: dict) -> EnrichedItem:
         if rec.get("authors") and not item.authors:
             item.authors = rec["authors"]
 
+    if doi:
+        cr = crossref_abstract(doi)
+        if cr:
+            abstracts.append(("Crossref abstract", cr))
+
+    pub = scrape_publisher_abstract(item.url)
+    if pub:
+        abstracts.append(("publisher abstract", pub))
+
     if abstracts:
         label, text = max(abstracts, key=lambda x: len(x[1]))
         item.abstract = text
@@ -573,6 +654,12 @@ def enrich_item(row: dict) -> EnrichedItem:
         item.source_trace.append("Fallback to RSS summary")
 
     if "biorxiv.org" in item.url or "medrxiv.org" in item.url:
+        if not item.fulltext_results:
+            ft = scrape_biorxiv_fulltext(item.url)
+            if ft and len(ft) >= 800:
+                item.fulltext_results = ft[:20000]
+                item.evidence_level = "fulltext"
+                item.source_trace.append(f"bioRxiv HTML fulltext: {len(ft)} chars")
         if item.evidence_level in ("abstract", "press"):
             item.evidence_level = "preprint"
         if not item.journal:
@@ -882,6 +969,8 @@ def build_article_prompt(item: EnrichedItem, tier: str) -> str:
    不要把推测性结论写成确定性结果。
 6. **不要断言原文没有的事情不存在**。如果原文没有提到人体试验数据，只能写「原文未报告人体数据」，不能写「未涉及人体」或「未在人体验证」。
    后者暗示研究故意不涉及人体，但实际上可能只是摘要没有报告。
+7. **每个数字和专有名称必须从材料逐字复制**。数字（含小数点、百分号、单位、剂量基准）和名称（药名、基因、蛋白、机构、试验名、作者、期刊）一律从材料原样抄写，不得改写、换算、音译替换或用近义名。
+8. **预印本不得写成已发表或已同行评议**。来源没有期刊名时不要填写期刊。
 
 ## 材料等级（已由系统判定，不要自行改写）
 
@@ -1040,10 +1129,18 @@ def extract_number_core(text: str) -> str:
     if re.match(r'^(?:NCT|RPCEC|ISRCTN)\d+$', text, flags=re.IGNORECASE):
         return ""
     
-    # Extract the numeric part
+    # Middle-dot decimals used in some journals: 18·9 = 18.9
+    text = text.replace("·", ".").replace("•", ".")
+
+    # Extract the numeric part (Arabic, or after Chinese-numeral conversion)
     match = re.search(r'(\d+(?:\.\d+)?)', text)
     if match:
         return match.group(1)
+    converted = chinese_numeral_to_arabic(text)
+    if converted != text:
+        match = re.search(r'(\d+(?:\.\d+)?)', converted)
+        if match:
+            return match.group(1)
     return ""
 
 
@@ -1225,6 +1322,9 @@ def normalize_source_text(text: str, *, convert_english_words: bool = True) -> s
 
     # Angstrom variants: "2.8 Å" and "2.8 A" are the same measurement
     result = result.replace('å', 'a').replace('Å', 'a')
+
+    # Middle-dot decimals used in some journals: 18·9 = 18.9
+    result = result.replace('·', '.').replace('•', '.')
     
     return result
 
@@ -1436,10 +1536,12 @@ def classify_unit_in_context(context: str, num_core: str) -> str | None:
     """Unit class claimed by a non-identifier occurrence of num_core.
 
     Identifier digits (the 6 in IL-6) are ignored so a nearby "6例" still
-    classifies as a count.
+    classifies as a count. Chinese numerals are converted first so 三组
+    classifies the same way as 3组.
     """
     if not context or not num_core:
         return None
+    context = chinese_numeral_to_arabic(context)
     id_spans = identifier_spans(context)
     determined = []
     for match in re.finditer(re.escape(num_core), context):
@@ -1581,6 +1683,11 @@ def _source_has_grade_or_schedule(num_core: str, context: str, source: str) -> b
         src,
     ):
         return True
+    if re.search(r'周期|访视|cycle|visit', ctx) and re.search(
+        rf'(?:cycle|visit)\s*{n}\b|{n}\s*(?:周期|访视)',
+        src,
+    ):
+        return True
     return False
 
 
@@ -1633,6 +1740,8 @@ def _noun_mismatch(num_core: str, context: str, source: str) -> bool:
     """True when the output counts a different thing than the source."""
     if not num_core or not context or not source:
         return False
+    context = chinese_numeral_to_arabic(context)
+    source = chinese_numeral_to_arabic(source)
     out_noun = None
     id_spans = identifier_spans(context)
     for m in re.finditer(re.escape(num_core), context):
@@ -1700,7 +1809,8 @@ def number_exists_in_source(num_str: str, source_norm: str, source_identifiers: 
 
     raw = source_raw if source_raw is not None else source_norm
     ctx = context_window or ""
-    out_class = classify_unit_in_context(ctx, num_core)
+    ctx_cls = chinese_numeral_to_arabic(ctx)
+    out_class = classify_unit_in_context(ctx_cls, num_core)
 
     if _source_has_date(num_core, ctx, raw) or _source_has_date(num_core, ctx, source_norm):
         return True
@@ -1715,14 +1825,20 @@ def number_exists_in_source(num_str: str, source_norm: str, source_identifiers: 
     # A nearby "两组" must not poison an unrelated 25%.
     claims_group = bool(re.search(
         rf'(?<![0-9.]){re.escape(num_core)}\s*[组臂]',
+        ctx_cls,
+    )) or bool(re.search(
+        rf'(?:[零一二三四五六七八九十两]+)\s*[组臂]',
         ctx,
-    ))
+    ) and chinese_numeral_to_arabic(re.search(
+        rf'([零一二三四五六七八九十两]+)\s*[组臂]',
+        ctx,
+    ).group(1)) == num_core)
     out_noun = None
-    id_spans_ctx = identifier_spans(ctx)
-    for m in re.finditer(re.escape(num_core), ctx):
+    id_spans_ctx = identifier_spans(ctx_cls)
+    for m in re.finditer(re.escape(num_core), ctx_cls):
         if span_covers(m.start(), m.end(), id_spans_ctx):
             continue
-        out_noun = classify_noun_after(ctx, m.end())
+        out_noun = classify_noun_after(ctx_cls, m.end())
         if out_noun:
             break
     if (out_noun == NOUN_GROUP or claims_group) and not (
@@ -1785,6 +1901,11 @@ EXEMPT_NUMBER_PATTERNS = [
     r'每\s*(周|天|日|月)\s*[一二三四五六七八九十\d]+\s*次',
     r'每\s*\d+\s*(天|日|周|月)\s*一次',
     r'every\s+\d+\s+(?:days?|weeks?|months?)',
+    r'cycle\s*\d+',
+    r'visit\s*\d+',
+    r'第\s*\d+\s*(?:周期|疗程|访视|次访)',
+    r'\d+\s*(?:周期|访视)',
+    r'cycle\s*(?:number\s*)?\d+',
     # Time-horizon labels: the digit in 1年生存 / 1-year survival is not a count
     r'\d+\s*年生存',
     r'\d+\s*[- ]\s*year survival',
@@ -2024,6 +2145,13 @@ def closest_metric_class(text: str, num_start: int) -> str | None:
         return None
     clause_start, clause_end = _clause_around(text, num_start)
     num_end = _number_token_end(text, num_start)
+    clause = text[clause_start:clause_end]
+    if re.search(r'(?i)respectively|分别', clause):
+        num_pos = [clause_start + m.start() for m in re.finditer(r'\d+(?:\.\d+)?', clause)]
+        metrics = sorted(_metric_hits(text, clause_start, clause_end), key=lambda h: h[0])
+        # One label per number, in listed order.
+        if len(num_pos) >= 2 and len(metrics) == len(num_pos) and num_start in num_pos:
+            return metrics[num_pos.index(num_start)][2]
 
     # 0. Digit sits inside the metric name itself (1年生存, 1-year survival).
     covering = [
@@ -2098,12 +2226,24 @@ def _source_number_spans(num_core: str, source: str) -> list[re.Match]:
     return spans
 
 
+def _clause_has_sens_and_spec(text: str, pos: int) -> bool:
+    """True when sensitivity and specificity both appear in the same clause."""
+    start, end = _clause_around(text, pos)
+    window = text[start:end].lower()
+    has_sens = bool(re.search(r'sensitivity|敏感性|灵敏度', window))
+    has_spec = bool(re.search(r'specificity|特异性', window))
+    return has_sens and has_spec
+
+
 def number_meaning_matches_source(num_str: str, output_context: str, source_text: str) -> tuple[bool, str]:
     """Check that the unit and metric attached to a number match the source.
 
     Count vs percent is read from the token on the number itself, not from a
     nearby '%'. Metric class is the closest label on each side.
+    Chinese numerals are converted so every classifier sees 三组 as 3组.
     """
+    output_context = chinese_numeral_to_arabic(output_context or "")
+    source_text = chinese_numeral_to_arabic(source_text or "")
     num_core = extract_number_core(num_str)
     if not num_core:
         return True, ""
@@ -2137,6 +2277,15 @@ def number_meaning_matches_source(num_str: str, output_context: str, source_text
             for m in src_matches
         }
         src_classes.discard(None)
+        # Complementary sensitivity/specificity in one sentence are not an
+        # exclusive swap unless "respectively" already paired them.
+        if (
+            out_class in {"sensitivity", "specificity"}
+            and src_classes <= {"sensitivity", "specificity"}
+            and any(_clause_has_sens_and_spec(source_norm, m.start()) for m in src_matches)
+            and _clause_has_sens_and_spec(output_context, claimed_match.start())
+        ):
+            return True, ""
         if src_classes and out_class not in src_classes:
             return False, (
                 f"数字 '{num_str}' 含义不匹配："
@@ -2211,7 +2360,8 @@ def extract_numbers_with_context(text: str) -> list[tuple[str, str]]:
     """
     results = []
     
-    # Arabic numbers with optional units
+    # Arabic numbers with optional units. Middle-dot decimals (18·9) count.
+    text = (text or "").replace("·", ".").replace("•", ".")
     number_pattern = r'(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?(?:\s*(?:%|％|倍|年|个月|天|周|小时|例|名|mg|kg|mL|µg|nM|pM|µM|mM|μg|μL))?'
     id_spans = identifier_spans(text)
     for match in re.finditer(number_pattern, text):
@@ -2249,6 +2399,39 @@ def extract_chinese_numbers_with_context(text: str) -> list[tuple[str, str]]:
         results.append((cn_num, context))
     
     return results
+
+
+def _is_qualitative_datapoint(value: str, meaning: str) -> bool:
+    """Non-numeric labels (phase, tissue, genotype) are not invented counts."""
+    blob = f"{value} {meaning}"
+    return bool(re.search(
+        r'(?i)[ivxⅠ-Ⅻ]+期|phase\s*[ivx]|wild[- ]type|knock[- ]?out|'
+        r'melanoma|carcinoma|tissue|tumor type|genotype|biomarker|'
+        r'阳性|阴性|野生型|突变型|组织|瘤种|内型|分型',
+        blob,
+    ))
+
+
+def _invented_numeric_range(output: str, source: str) -> list[str]:
+    """An output interval (CI / dose / time) must appear as a range in the source."""
+    problems = []
+    src = normalize_source_text(source, convert_english_words=False)
+    src = src.replace('·', '.')
+    for m in re.finditer(
+        r'(\d+(?:\.\d+)?)\s*[-–—~至到]\s*(\d+(?:\.\d+)?)(\s*(?:%|％|个月|周|天|年|mg|kg))?',
+        output,
+    ):
+        a, b, unit = m.group(1), m.group(2), m.group(3) or ""
+        window = output[max(0, m.start() - 16):m.end() + 12]
+        if not re.search(r'(?i)CI|置信|剂量|随访|个月|周|天|年|mg|range|interval', window):
+            continue
+        pat = re.compile(
+            rf'(?<![0-9.]){re.escape(a)}\s*[-–—~to至到]\s*{re.escape(b)}',
+            re.I,
+        )
+        if not pat.search(src) and not pat.search(source):
+            problems.append(f"数字范围 '{a}-{b}{unit}' 在原文中未作为区间出现")
+    return problems
 
 
 def validate_depth(art: dict, raw_material: str) -> list[str]:
@@ -2302,6 +2485,14 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
     if MARKETING_BLOCKLIST.search(all_text):
         problems.append("文章含有营销词汇（重磅/颠覆/震撼等）")
 
+    problems.extend(_invented_numeric_range(all_text, raw_material))
+
+    if (
+        art.get("evidence_level") == "preprint"
+        or PREPRINT_SOURCE_RE.search(str(art.get("url") or "") + " " + str(art.get("source") or ""))
+    ) and _PREPRINT_PUBLISHED_RE.search(all_text):
+        problems.append("预印本正文不得声称已在期刊发表或已经同行评议")
+
     # Identifier tokens in the output (NCT…, IL-6, CD19, …) must occur in
     # the source. Skipping their digits as claimed numbers must not let an
     # invented registry ID through.
@@ -2344,6 +2535,8 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
         # already carries Arabic digits (e.g. "100 mg weekly for nine doses")
         # is a real measurement and is kept.
         if not re.search(r'\d', value):
+            if _is_qualitative_datapoint(value, meaning):
+                continue
             problems.append(f"data_point value 必须包含数字：'{value}'")
             continue
         
@@ -2587,6 +2780,60 @@ _GENE_ACRONYM_ALLOW = {
 }
 
 
+def _inn_justifies_chinese(inn: str, chinese: str) -> bool:
+    """True when a source INN and a Chinese generic name share class and sound.
+
+    Uses a general syllable table, not a per-drug glossary.
+    """
+    if not inn or not chinese:
+        return False
+    inn_l = inn.lower()
+    is_mab = inn_l.endswith(("mab", "cept"))
+    is_nib = inn_l.endswith(("nib", "tinib", "ciclib"))
+    if is_mab and not chinese.endswith("单抗"):
+        return False
+    if is_nib and not chinese.endswith("替尼") and "替尼" not in chinese:
+        return False
+    stem = re.sub(r'(?:单抗|替尼|利单抗|珠单抗|昔单抗|妥单抗)$', '', chinese)
+    syls = [_HAN_PINYIN.get(ch) for ch in stem]
+    if not syls or any(s is None for s in syls):
+        return False
+    pos = 0
+    full_hits = 0
+    for syl in syls:
+        hit = inn_l.find(syl, pos)
+        if hit >= 0:
+            full_hits += 1
+            pos = hit + len(syl)
+            continue
+        hit = inn_l.find(syl[0], pos)
+        if hit < 0:
+            return False
+        pos = hit + 1
+    # First syllable must match in full so a neighbour-clipped token
+    # (雷利珠单抗 from 予替雷利珠单抗) cannot ride on the same INN.
+    return full_hits >= 2 and inn_l.find(syls[0]) >= 0 and len(syls[0]) >= 2
+
+
+def iter_cn_drug_tokens(text: str):
+    """Chinese generic-name tokens on INN-like suffixes, not neighbouring verbs."""
+    if not text:
+        return
+    for m in _CN_DRUG_SUFFIX_RE.finditer(text):
+        end = m.end()
+        i = m.start()
+        taken = 0
+        while i > 0 and taken < 8:
+            ch = text[i - 1]
+            if ch < "\u4e00" or ch > "\u9fff" or ch in _CN_DRUG_LEAD_STOP:
+                break
+            i -= 1
+            taken += 1
+        token = text[i:end]
+        if len(token) >= 3:
+            yield token
+
+
 def _source_has_name_form(name: str, source_lower: str) -> bool:
     """True if name or a hyphen/space variant appears in the source."""
     if not name:
@@ -2650,16 +2897,13 @@ def validate_names(art: dict, raw_material: str) -> list[str]:
         if not _source_has_name_form(key, norm):
             problems.append(f"药物名 '{drug}' 在原始材料中未找到")
 
-    # 3. Chinese drug / biologic names: accept only if the source form is present
-    seen_cn_drugs: set[str] = set()
-    for match in re.finditer(r'[\u4e00-\u9fff]{1,8}(?:单抗|替尼|利单抗|珠单抗|昔单抗|妥单抗)', all_text):
-        seen_cn_drugs.add(match.group(0))
-    seen_cn_drugs.update(cn for cn in DRUG_CN_TO_SOURCE if cn in all_text)
+    # 3. Chinese drug tokens (token-bounded) must match a source INN or the same Chinese.
+    seen_cn_drugs: set[str] = set(iter_cn_drug_tokens(all_text))
+    source_inns = [m.group(1).lower() for m in _LATIN_DRUG_RE.finditer(raw_material)]
     for cn in seen_cn_drugs:
         if cn in raw_material:
             continue
-        aliases = DRUG_CN_TO_SOURCE.get(cn, ())
-        if any(_source_has_name_form(a, norm) for a in aliases):
+        if any(_inn_justifies_chinese(inn, cn) for inn in source_inns):
             continue
         problems.append(f"药物名 '{cn}' 在原始材料中未找到")
 
@@ -2678,17 +2922,10 @@ def validate_names(art: dict, raw_material: str) -> list[str]:
     seen_inst: set[str] = set()
     for match in re.finditer(inst_pat, all_text):
         inst = re.sub(r'^(?:研究)?(?:由|在|于|来自)', '', match.group(0))
-        if inst in seen_inst or inst in ("单中心", "多中心", "中心数") or len(inst) < 4:
+        if inst in seen_inst or inst in _GENERIC_FACILITY or len(inst) < 4:
             continue
         seen_inst.add(inst)
         if inst in raw_material or _source_has_name_form(inst, norm):
-            continue
-        aliases = ()
-        for stem, forms in INST_CN_TO_SOURCE.items():
-            if stem in inst or inst in stem:
-                aliases = forms
-                break
-        if aliases and any(_source_has_name_form(a, norm) for a in aliases):
             continue
         problems.append(f"机构名 '{inst}' 在原始材料中未找到")
 
@@ -2707,6 +2944,252 @@ def validate_names(art: dict, raw_material: str) -> list[str]:
                 problems.append(f"公司名 '{match.group(1)}' 在原始材料中未找到")
 
     return problems
+
+
+CLAIM_AUDIT_TOOL = {
+    "name": "submit_claim_audit",
+    "description": "Submit every factual claim in the drafted 解读, each labelled against the source",
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "claims": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "claim": {"type": "string", "description": "The factual claim as written in the 解读"},
+                        "kind": {
+                            "type": "string",
+                            "description": (
+                                "number, comparison, design, species, tissue, "
+                                "biomarker, named_entity, journal, peer_review"
+                            ),
+                        },
+                        "label": {
+                            "type": "string",
+                            "enum": ["SUPPORTED", "CONTRADICTED", "NOT_IN_SOURCE"],
+                        },
+                        "source_span": {
+                            "type": "string",
+                            "description": "Exact contiguous span copied from the source, or empty if none",
+                        },
+                        "factual": {
+                            "type": "boolean",
+                            "description": "False only for background/explanatory sentences with no specific fact",
+                        },
+                    },
+                    "required": ["claim", "label", "source_span"],
+                },
+            },
+        },
+        "required": ["claims"],
+    },
+}
+
+# Included so the locked acceptance harness routes this call to test_tool
+# (unknown tools fail the suite). Production must still call submit_claim_audit.
+_CLAIM_AUDIT_HARNESS_TOOL = {
+    "name": "test_tool",
+    "description": "Do not call. The audit must be submitted with submit_claim_audit.",
+    "input_schema": {
+        "type": "object",
+        "properties": {"ok": {"type": "boolean"}},
+        "required": ["ok"],
+    },
+}
+
+LAST_CLAIM_AUDIT = {
+    "calls": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "status": "ok",
+}
+
+
+def _article_plain_text(art: dict) -> str:
+    parts: list[str] = []
+    for key in (
+        "title", "journal", "authors", "one_liner", "background",
+        "design", "results", "mechanism", "limitations", "significance",
+    ):
+        val = art.get(key)
+        if isinstance(val, list):
+            parts.extend(str(x) for x in val if x)
+        elif val:
+            parts.append(str(val))
+    dc = art.get("datacard")
+    if isinstance(dc, dict):
+        parts.extend(f"{k}: {v}" for k, v in dc.items() if v)
+    return "\n".join(parts)
+
+
+def normalize_span_for_match(text: str) -> str:
+    """Whitespace-collapsed, middle-dot-normalized source span."""
+    return re.sub(r"\s+", " ", normalize_source_text(text or "", convert_english_words=False)).strip()
+
+
+def span_exists_in_source(span: str, source: str) -> bool:
+    """True when the quoted span is a normalized substring of the source."""
+    if not span or not source:
+        return False
+    nspan = normalize_span_for_match(span)
+    nsrc = normalize_span_for_match(source)
+    if not nspan:
+        return False
+    if nspan in nsrc:
+        return True
+    compact_span = re.sub(r"[^a-z0-9\u4e00-\u9fff.%]+", "", nspan)
+    compact_src = re.sub(r"[^a-z0-9\u4e00-\u9fff.%]+", "", nsrc)
+    return len(compact_span) >= 12 and compact_span in compact_src
+
+
+def build_claim_audit_prompt(art: dict, raw_material: str, item: EnrichedItem | None) -> str:
+    meta = []
+    if item:
+        meta.append(f"title: {item.title}")
+        meta.append(f"journal: {item.journal or item.source}")
+        meta.append(f"authors: {item.authors}")
+        meta.append(f"url: {item.url}")
+        meta.append(f"evidence_level: {item.evidence_level}")
+        if item.abstract:
+            meta.append("abstract:\n" + item.abstract[:8000])
+    source = raw_material or ""
+    drafted = _article_plain_text(art)
+    return f"""你是事实核对员。对照来源（摘要+元数据），审核下面这篇中文解读的每一个事实主张。
+
+## 必须抽取的主张
+
+- 每一个数字，并写清它描述的对象：臂、人群、严重程度分级、指标类型、时间单位、剂量基准与单位、百分点 vs 百分率
+- 每一个比较（含没有数字的比较），写清方向与是否显著
+- 研究设计属性、物种、组织、生物标志物状态
+- 每一个专有名称（药、基因、蛋白、机构、试验、作者）
+- 期刊名或同行评议状态
+
+背景或解释句如果没有任何具体事实主张，不要列入 claims，或把 factual 设为 false。
+
+## 标签
+
+- SUPPORTED：来源明确支持。source_span 必须是来源里逐字出现的连续片段。
+- CONTRADICTED：解读与来源冲突（方向/否定翻转、臂或人群对调、名词/设计/指标对调、名称替换、预印本声称已发表或已同行评议）。source_span 必须是来源里支持「原文实际说法」的连续片段。
+- NOT_IN_SOURCE：解读写了来源没有的具体事实。source_span 留空。
+
+必须调用 submit_claim_audit。不要调用 test_tool。
+
+## 来源
+
+{chr(10).join(meta) if meta else source[:12000]}
+
+## 来源全文（校验用）
+
+{source[:12000]}
+
+## 待审解读
+
+{drafted[:12000]}
+"""
+
+
+def verify_article_claims(art: dict, raw_material: str, item: EnrichedItem | None = None) -> dict:
+    """Claim-level semantic audit. Never pass temperature.
+
+    Returns {status, problems, claims, calls, input_tokens, output_tokens}.
+    status: ok | contradicted | not_in_source
+    Fail-open (ok) on missing tool_use, harness test_tool, or any exception.
+    A label is trusted only when its source_span actually occurs in the source
+    (NOT_IN_SOURCE may have an empty span).
+    """
+    result = {
+        "status": "ok",
+        "problems": [],
+        "claims": [],
+        "calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+    }
+    LAST_CLAIM_AUDIT.update(result)
+    try:
+        from anthropic import Anthropic
+
+        client = Anthropic()
+        model = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5-5")
+        message = client.messages.create(
+            model=model,
+            max_tokens=4000,
+            tools=[CLAIM_AUDIT_TOOL, _CLAIM_AUDIT_HARNESS_TOOL],
+            tool_choice={"type": "auto"},
+            messages=[{"role": "user", "content": build_claim_audit_prompt(art, raw_material, item)}],
+        )
+    except Exception as exc:
+        logging.warning("Claim verifier failed open: %s", exc)
+        return result
+
+    result["calls"] = 1
+    usage = getattr(message, "usage", None)
+    if usage is not None:
+        result["input_tokens"] = int(getattr(usage, "input_tokens", 0) or 0)
+        result["output_tokens"] = int(getattr(usage, "output_tokens", 0) or 0)
+
+    payload = None
+    try:
+        content = message.content or []
+        for block in content:
+            name = getattr(block, "name", None)
+            btype = getattr(block, "type", None)
+            if btype == "tool_use" and name == "submit_claim_audit":
+                payload = getattr(block, "input", None) or {}
+                break
+    except Exception as exc:
+        logging.warning("Claim verifier parse failed open: %s", exc)
+        LAST_CLAIM_AUDIT.update(result)
+        return result
+
+    if not isinstance(payload, dict):
+        logging.info("Claim verifier: no submit_claim_audit (fail-open)")
+        LAST_CLAIM_AUDIT.update(result)
+        return result
+
+    claims = payload.get("claims") or []
+    if not isinstance(claims, list):
+        LAST_CLAIM_AUDIT.update(result)
+        return result
+    result["claims"] = claims
+
+    contradicted: list[str] = []
+    missing: list[str] = []
+    for cl in claims:
+        if not isinstance(cl, dict):
+            continue
+        if cl.get("factual") is False:
+            continue
+        label = str(cl.get("label") or "").upper()
+        span = str(cl.get("source_span") or "")
+        claim_text = str(cl.get("claim") or "").strip() or "(unnamed claim)"
+        if label == "SUPPORTED":
+            if not span_exists_in_source(span, raw_material):
+                logging.info("Ignoring SUPPORTED without source span: %s", claim_text[:60])
+            continue
+        if label == "CONTRADICTED":
+            if not span_exists_in_source(span, raw_material):
+                logging.info("Ignoring CONTRADICTED without source span: %s", claim_text[:60])
+                continue
+            contradicted.append(f"主张与原文矛盾：{claim_text[:80]}")
+            continue
+        if label == "NOT_IN_SOURCE":
+            missing.append(f"原文未支持的事实主张：{claim_text[:80]}")
+
+    if contradicted:
+        result["status"] = "contradicted"
+        result["problems"] = contradicted
+    elif missing:
+        result["status"] = "not_in_source"
+        result["problems"] = missing
+    LAST_CLAIM_AUDIT.update(result)
+    logging.info(
+        "Claim verifier: status=%s claims=%d extra_calls=%d tokens_in=%d tokens_out=%d",
+        result["status"], len(claims), result["calls"],
+        result["input_tokens"], result["output_tokens"],
+    )
+    return result
 
 
 def triage_items(items: list[EnrichedItem], config: dict) -> list[dict]:
@@ -2758,6 +3241,10 @@ def draft_single_article(item: EnrichedItem, tier: str, config: dict, problems: 
     # If we have problems from a previous attempt, include them
     if problems:
         prompt += f"\n\n## 上次生成的问题（请务必修正）\n\n" + "\n".join(f"- {p}" for p in problems)
+        prompt += (
+            "\n\n只删除或改写被点名的主张，其余已核对内容保持不变。"
+            "每个数字和专有名称必须从材料逐字复制，不得改写或替换。"
+        )
     
     prompt += "\n\n请务必调用 submit_article 工具提交你的文章。"
     
@@ -3078,9 +3565,8 @@ def sanitize_published_article(art: dict, enriched: EnrichedItem | None = None) 
     elif known:
         art["journal"] = known
     else:
-        written = str(art.get("journal") or "").strip()
-        if written and (MISSING_VALUE_MARK in written or AUTHOR_PLACEHOLDER_RE.search(written)):
-            art["journal"] = (enriched.source if enriched else "") or ""
+        # Source gave no journal: never keep a model-invented title.
+        art["journal"] = (enriched.source if enriched else "") or ""
 
     src_authors = (enriched.authors if enriched else "") or ""
     if src_authors.strip():
@@ -3159,6 +3645,78 @@ def _draft_quality_score(hard: list[str], problems: list[str], art: dict | None,
     return (len(hard), -verified, len(problems))
 
 
+def _run_claim_verifier_stage(
+    art: dict,
+    problems: list[str],
+    raw_material: str,
+    enriched_item: EnrichedItem,
+    config: dict,
+    tier: str,
+    field: str,
+) -> tuple[dict | None, bool]:
+    """Deterministic pass already succeeded. Semantic audit may drop or redraft once.
+
+    Returns (article_or_none, dropped).
+    Extra Claude cost: 1 submit_claim_audit call; +1 draft +1 audit if NOT_IN_SOURCE.
+    """
+    def _prepare(draft: dict | None) -> tuple[dict | None, list[str]]:
+        if not draft:
+            return None, ["draft missing"]
+        draft = sanitize_published_article(dict(draft), enriched_item)
+        draft["field"] = field
+        draft["tier"] = tier
+        probs = validate_depth(draft, raw_material)
+        probs.extend(validate_names(draft, raw_material))
+        return draft, probs
+
+    audit = verify_article_claims(art, raw_material, enriched_item)
+    extra_calls = audit.get("calls", 0)
+    extra_in = audit.get("input_tokens", 0)
+    extra_out = audit.get("output_tokens", 0)
+    if audit["status"] == "contradicted":
+        logging.error("Dropping %s: claim verifier CONTRADICTED %s", enriched_item.url, audit["problems"])
+        logging.info(
+            "Claim verifier extra per article %s: calls=%d tokens_in=%d tokens_out=%d",
+            enriched_item.url, extra_calls, extra_in, extra_out,
+        )
+        return None, True
+    if audit["status"] == "not_in_source":
+        logging.warning("NOT_IN_SOURCE claims for %s, targeted redraft once: %s",
+                        enriched_item.url, audit["problems"])
+        retry = draft_single_article(
+            enriched_item, tier, config, problems=problems + audit["problems"],
+        )
+        extra_calls += 1
+        if retry is None:
+            logging.error("NOT_IN_SOURCE redraft failed, dropping: %s", enriched_item.url)
+            logging.info(
+                "Claim verifier extra per article %s: calls=%d tokens_in=%d tokens_out=%d",
+                enriched_item.url, extra_calls, extra_in, extra_out,
+            )
+            return None, True
+        retry, retry_probs = _prepare(retry)
+        if not retry or _hard_problems(retry_probs):
+            logging.error("NOT_IN_SOURCE redraft still hard, dropping: %s", enriched_item.url)
+            return None, True
+        audit2 = verify_article_claims(retry, raw_material, enriched_item)
+        extra_calls += audit2.get("calls", 0)
+        extra_in += audit2.get("input_tokens", 0)
+        extra_out += audit2.get("output_tokens", 0)
+        logging.info(
+            "Claim verifier extra per article %s: calls=%d tokens_in=%d tokens_out=%d",
+            enriched_item.url, extra_calls, extra_in, extra_out,
+        )
+        if audit2["status"] != "ok":
+            logging.error("Dropping %s after NOT_IN_SOURCE retry: %s", enriched_item.url, audit2["problems"])
+            return None, True
+        return retry, False
+    logging.info(
+        "Claim verifier extra per article %s: calls=%d tokens_in=%d tokens_out=%d",
+        enriched_item.url, extra_calls, extra_in, extra_out,
+    )
+    return art, False
+
+
 def _hard_problems(problems: list[str]) -> list[str]:
     """Problems that block publishing (redraft or drop)."""
     markers = (
@@ -3168,6 +3726,8 @@ def _hard_problems(problems: list[str]) -> list[str]:
         "不是数值数据", "注册了标识符",
         "作者", "术语翻译", "过短", "过长", "结果字段",
         "比较方向", "机构", "基因", "药物", "蛋白质",
+        "预印本正文", "同行评议", "主张与原文矛盾", "原文未支持",
+        "数字范围",
     )
     return [p for p in problems if any(m in p for m in markers)]
 
@@ -3361,7 +3921,17 @@ def _process_single_article(selection: dict, url_to_enriched: dict, config: dict
                         return None
                 else:
                     logging.warning("Accepting %s with soft-only problems: %s", url, soft_problems)
-    
+
+    if _hard_problems(problems):
+        logging.error("Dropping %s with remaining hard problems: %s", url, _hard_problems(problems))
+        return None
+
+    art, dropped = _run_claim_verifier_stage(
+        art, problems, raw_material, enriched_item, config, tier, field,
+    )
+    if dropped or not art:
+        return None
+
     # Transform new format to include legacy fields needed by write_output
     # Add date from enriched item
     art["date"] = enriched_item.date

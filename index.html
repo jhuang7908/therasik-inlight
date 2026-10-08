@@ -993,8 +993,8 @@ function catCard(a){
   return `<div class="item" style="--kc:var(--${a.f})">
     <a href="${href}">${cover(FIELD_MOTIF[a.f],a.f,a.img||`img/papers/${a.id}.jpg?v=5`)}</a>
     <div class="cbody">
-      <h3><a href="${href}">${a.t}</a></h3>
-      <div class="metarow"><span class="idate">${a.disp}</span><span class="jname">${a.j}</span>
+      <h3><a href="${href}">${escHtml(a.t)}</a></h3>
+      <div class="metarow"><span class="idate">${a.disp}</span><span class="jname">${escHtml(a.j)}</span>
         <span class="tagrow">${tags}</span>
         <a class="expbtn" href="${href}">阅读</a></div>
     </div></div>`;
