@@ -860,6 +860,13 @@ def site_article(item: dict, image_rel: str) -> dict:
         result["significance"] = item["significance"]
     if item.get("source_trace"):
         result["source_trace"] = item["source_trace"]
+    for key in (
+        "read_note", "sections_read", "secondhand_label", "citation",
+        "fig_caption", "data_chart_svg", "data_chart_points",
+        "skip_mechanism_figure", "gemini_review",
+    ):
+        if item.get(key):
+            result[key] = item[key]
     
     return result
 
@@ -950,12 +957,16 @@ def write_output(draft: dict, dest: Path, week: str) -> None:
     articles = []
     for index, item in enumerate(draft["articles"], start=1):
         filename = f"a{index}.png"
-        try:
-            draw_image(item.get("image_prompt", ""), img_dir / filename)
-            rel = f"{dest.relative_to(ROOT).as_posix()}/images/{filename}"
-        except Exception:
-            logging.exception("配图失败：%s", item.get("title", index))
-            rel = ""
+        rel = ""
+        if item.get("skip_mechanism_figure") or item.get("tier") != "deep":
+            logging.info("跳过机制图（无全文或不为深度解读）：%s", item.get("title", index))
+        else:
+            try:
+                draw_image(item.get("image_prompt", ""), img_dir / filename)
+                rel = f"{dest.relative_to(ROOT).as_posix()}/images/{filename}"
+            except Exception:
+                logging.exception("配图失败：%s", item.get("title", index))
+                rel = ""
         try:
             art = site_article(item, rel)
             art["lead"] = item.get("lead", "")
@@ -987,6 +998,8 @@ def write_output(draft: dict, dest: Path, week: str) -> None:
         logging.exception("封面图失败")
     (dest / "articles.json").write_text(json.dumps(articles, ensure_ascii=False, indent=2), encoding="utf-8")
     (dest / "deals.json").write_text(json.dumps(deals, ensure_ascii=False, indent=2), encoding="utf-8")
+    qc = draft.get("qc_report") or draft.get("stats", {}).get("qc_report") or {}
+    (dest / "qc_report.json").write_text(json.dumps(qc, ensure_ascii=False, indent=2), encoding="utf-8")
     
     # Use wechat_html_full for new format articles (with datacard), wechat_html for legacy
     has_new_format = any(art.get("datacard") or art.get("results") for art in articles)
@@ -1012,6 +1025,12 @@ def write_output(draft: dict, dest: Path, week: str) -> None:
                         "journal": art.get("j", art.get("journal", "")),
                         "url": art.get("url", ""),
                         "img": art.get("img", ""),
+                        "read_note": art.get("read_note", ""),
+                        "secondhand_label": art.get("secondhand_label", ""),
+                        "citation": art.get("citation", ""),
+                        "fig_caption": art.get("fig_caption", ""),
+                        "data_chart_svg": art.get("data_chart_svg", ""),
+                        "skip_mechanism_figure": art.get("skip_mechanism_figure", False),
                     }
                     wechat_articles.append(wechat_art)
                 except Exception:
@@ -1062,6 +1081,11 @@ def main() -> None:
         require_env(["ANTHROPIC_API_KEY", "OPENAI_API_KEY"])
         check_anthropic_model()
         config = load_sources()
+        try:
+            from inlight_qc import apply_extra_env_gemini_key
+            apply_extra_env_gemini_key(config)
+        except Exception:
+            logging.warning("额外环境文件未加载 GEMINI_API_KEY（不记录内容）")
         items = fetch_all(config)
         if not items:
             logging.error("最近 %s 天没有抓到条目，不写文件", config.get("window_days", 7))
@@ -1090,6 +1114,8 @@ def main() -> None:
             draft = {
                 "articles": new_draft.get("articles", []),
                 "deals": deals[:int(config.get("max_industry", 4))],
+                "qc_report": (new_draft.get("stats") or {}).get("qc_report") or {},
+                "stats": new_draft.get("stats") or {},
             }
         elif args.use_new_pipeline and not ARTICLE_MODULE_AVAILABLE:
             logging.warning("新文章管线不可用（inlight_articles.py 导入失败），回退到旧管线")

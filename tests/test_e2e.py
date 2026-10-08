@@ -247,6 +247,41 @@ sources:
 
     @patch('anthropic.Anthropic')
     @patch('inlight_articles._http_get')
+    def test_drafting_and_verification_use_anthropic(self, mock_http, mock_anthropic_class, mock_env):
+        """Owner rule: writing and claim/number verification stay on Claude."""
+        from inlight_articles import draft_single_article, verify_article_claims, EnrichedItem
+
+        mock_http.return_value = None
+        mock_client = MagicMock()
+        mock_anthropic_class.return_value = mock_client
+        mock_client.messages.create.side_effect = [
+            make_article_response({**MOCK_ARTICLE_DATA, "tier": "brief"}),
+            MockMessage(
+                content=[MockBlock(type="tool_use", name="submit_claim_audit", input={"claims": []})],
+                stop_reason="end_turn",
+            ),
+        ]
+        item = EnrichedItem(
+            url="https://doi.org/10.1038/test",
+            title="Test",
+            source="Nature",
+            date="2026-01-01",
+            abstract="response rate was 52% in 36 patients enrolled",
+            evidence_level="abstract",
+        )
+        draft_single_article(item, "brief", {})
+        verify_article_claims(MOCK_ARTICLE_DATA, item.abstract, item)
+        assert mock_anthropic_class.called
+        assert mock_client.messages.create.call_count >= 2
+        tool_names = []
+        for call in mock_client.messages.create.call_args_list:
+            for tool in call.kwargs.get("tools") or []:
+                tool_names.append(tool.get("name"))
+        assert "submit_article" in tool_names
+        assert "submit_claim_audit" in tool_names
+
+    @patch('anthropic.Anthropic')
+    @patch('inlight_articles._http_get')
     def test_max_tokens_truncation_handled(self, mock_http, mock_anthropic_class, mock_env):
         """Test that max_tokens truncation returns None (failure)."""
         from inlight_articles import draft_single_article, EnrichedItem
@@ -300,7 +335,7 @@ sources:
     @patch('anthropic.Anthropic')
     @patch('inlight_articles._http_get')
     def test_deep_requires_rich_abstract(self, mock_http, mock_anthropic_class, mock_env):
-        """Test that deep tier requires fulltext or >=1200 char abstract."""
+        """Short abstract without real Results cannot stay deep."""
         from inlight_articles import process_articles
         
         mock_http.return_value = None  # No EPMC data

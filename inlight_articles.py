@@ -133,6 +133,8 @@ class EnrichedItem:
     rss_summary: str = ""
     press_coverage: str = ""  # public press/media text when journal FT is closed
     source_trace: list[str] = field(default_factory=list)
+    sections_read: dict = field(default_factory=dict)
+    read_note: str = ""
 
 
 def _cfg_int(cfg: dict, key: str, default: int) -> int:
@@ -665,13 +667,27 @@ def unpaywall_oa_url(doi: str) -> str:
 
 
 def fetch_oa_fulltext(oa_url: str) -> str:
-    """Visible text from a public OA landing page or HTML full text."""
+    """Results-like prose from a public OA HTML page. No login, no paywall bypass."""
+    from inlight_qc import is_real_results_text
+
     if not oa_url or not oa_url.startswith("http"):
         return ""
     if oa_url.lower().endswith(".pdf"):
         return ""
-    text = _html_visible_text(_http_get(oa_url))
-    return text[:20000] if len(text) >= 800 else ""
+    data = _http_get(oa_url)
+    if not data:
+        return ""
+    try:
+        html = data.decode("utf-8", errors="ignore")
+    except Exception:
+        return ""
+    section = re.search(
+        r"(?is)<(?:h[1-3]|div|section)[^>]*>\s*results?\s*</(?:h[1-3]|div|section)>(.*?)(?:<(?:h[1-3]|div|section)[^>]*>\s*(?:discussion|references|acknowledg))",
+        html,
+    )
+    chunk = section.group(1) if section else html
+    text = _html_visible_text(chunk.encode("utf-8", errors="ignore"))
+    return text[:20000] if is_real_results_text(text) else ""
 
 
 def fetch_press_coverage(title: str, doi: str) -> str:
@@ -765,12 +781,11 @@ def enrich_item(row: dict) -> EnrichedItem:
         if item.pmcid and core.get("isOpenAccess") == "Y":
             xml = epmc_fulltext_xml(item.pmcid)
             if xml:
-                item.fulltext_results = extract_sections_from_xml(xml, ("Results", "Discussion"))[:20000]
-                item.fig_captions = extract_fig_captions_from_xml(xml)
-                item.methods_design = extract_design_methods_from_xml(xml)
-                if item.fulltext_results or item.fig_captions:
-                    item.evidence_level = "fulltext"
-                    item.source_trace.append(f"PMC fulltext: Results {len(item.fulltext_results)} chars, Figs {len(item.fig_captions)} chars")
+                from inlight_qc import record_fulltext
+                results = extract_sections_from_xml(xml, ("Results", "Discussion"))[:20000]
+                figs = extract_fig_captions_from_xml(xml)
+                methods = extract_design_methods_from_xml(xml)
+                record_fulltext(item, results, methods=methods, figs=figs, source_label=f"PMC {item.pmcid}")
     
     # Collect every public abstract and keep the longest BEFORE the
     # 1200-character deep-tier gate. A short EPMC teaser must not hide
@@ -805,11 +820,10 @@ def enrich_item(row: dict) -> EnrichedItem:
             abstracts.append(("OpenAlex abstract", oa_work["abstract"]))
         oa_url = oa_work.get("oa_url") or unpaywall_oa_url(doi)
         if oa_url and not item.fulltext_results:
+            from inlight_qc import record_fulltext
             ft = fetch_oa_fulltext(oa_url)
             if ft:
-                item.fulltext_results = ft[:20000]
-                item.evidence_level = "fulltext"
-                item.source_trace.append(f"OA fulltext: {len(ft)} chars from {oa_url[:80]}")
+                record_fulltext(item, ft, source_label=f"OA {oa_url[:60]}")
 
     pub = scrape_publisher_abstract(item.url)
     if pub:
@@ -837,11 +851,10 @@ def enrich_item(row: dict) -> EnrichedItem:
 
     if "biorxiv.org" in item.url or "medrxiv.org" in item.url:
         if not item.fulltext_results:
+            from inlight_qc import record_fulltext
             ft = scrape_biorxiv_fulltext(item.url)
-            if ft and len(ft) >= 800:
-                item.fulltext_results = ft[:20000]
-                item.evidence_level = "fulltext"
-                item.source_trace.append(f"bioRxiv HTML fulltext: {len(ft)} chars")
+            if ft:
+                record_fulltext(item, ft, source_label="bioRxiv/medRxiv HTML")
         if item.evidence_level in ("abstract", "press"):
             item.evidence_level = "preprint"
         if not item.journal:
@@ -1097,8 +1110,10 @@ def build_triage_prompt(items: list[EnrichedItem], config: dict) -> str:
             "kind": item.kind,
             "evidence_level": item.evidence_level,
             "abstract_chars": len(item.abstract or ""),
-            "has_fulltext": bool(item.fulltext_results),
+            "has_fulltext": item.evidence_level == "fulltext" and bool(item.fulltext_results),
             "has_press": bool(item.press_coverage),
+            "read_note": item.read_note,
+            "results_words": (item.sections_read or {}).get("results", {}).get("words", 0),
             "abstract_preview": item.abstract[:500] if item.abstract else item.rss_summary[:500],
         })
 
@@ -1123,12 +1138,12 @@ def build_triage_prompt(items: list[EnrichedItem], config: dict) -> str:
 
 ## 选题规则
 
-1. 选最多 {max_deep} 篇深度解读（tier=deep），目标至少 {min_deep} 篇。必须有开放获取全文或足够长的摘要（evidence_level 为 fulltext / abstract / preprint），写出机制、数据、意义与局限。优先给有全文的条目。新闻稿不能单独支撑 deep。
+1. 只有 evidence_level=fulltext（程序已取到 Results 正文）的条目可以选为深度解读（tier=deep）。最多 {max_deep} 篇，目标至少 {min_deep} 篇。必须写出机制、数据、意义与局限。没有全文就不要选 deep。
 {brief_rule}
 {industry_rule}
-4. evidence_level 为 press/secondary 的条目只能选为 brief 或 industry，不能选为 deep
-5. 优先选择：临床试验结果、首次人体数据、平台级方法突破、有开放获取全文的重要发现
-6. 不要为凑数降低事实标准。材料不够写深度解读的条目不要选。
+4. evidence_level 为 abstract / preprint / press / secondary 的条目不能选为 deep，也不得配机制图。
+5. 优先选择：有全文的临床试验结果、首次人体数据、平台级方法突破。
+6. 不要为凑数降低全文门槛。全文不够的条目不要选为解读。
 
 ## 领域分类
 
@@ -1189,10 +1204,10 @@ def build_article_prompt(item: EnrichedItem, tier: str) -> str:
 ## 材料等级（已由系统判定，不要自行改写）
 
 evidence_level = {item.evidence_level}
-- fulltext：有开放获取全文（Results / 图注 / 部分 Methods），可以写到实验级细节。
-- abstract：只有摘要，正文深度到摘要为止；凡摘要没有的细节，在 unknowns 里列出来。
-- press / secondary：只有新闻稿或二手转述。这种材料**不要写成解读**，tier 填 "brief"，
-  并在 limitations 第一条写明「本条未读原文，信息来自 {{source_name}}」。
+核对记录 = {item.read_note or '未读全文'}
+- fulltext：程序已取到 Results 正文并写入下方「全文结果」。只根据这些全文写深度解读和机制图。
+- abstract / preprint：只有摘要。不能写成深度解读，不能配机制图。
+- press / secondary：只有新闻稿或二手转述。不能写成深度解读，不能配机制图。
 
 ## 写作档次
 
@@ -1200,7 +1215,9 @@ tier = "{tier}"
 - deep（正文 1400–1900 字）：背景 180-240 + 设计 200-280 + 结果 500-700（3-5段）+ 机制 250-350 + 局限 200-280（≥3条）+ 意义 150-220
 - brief（正文 450–650 字）：背景 50-80 + 设计 60-90 + 结果 180-280（1-2段）+ 局限 60-100（≥1条）+ 意义 60-100
 
-evidence_level 为 press/secondary 时只能填 brief。
+evidence_level 不是 fulltext 时只能填 brief，且不得写 image_prompt / 机制图。
+核对记录必须写明实际读到的材料（例如「读了 PMC 全文 PMCxxxx 的 Results/Methods/图注」）。
+每个数字必须能在全文结果中逐字找到。段落每段不超过 150 字。全文至少 6 个可核实数字。
 
 ## deep 档要求
 
@@ -1237,18 +1254,20 @@ evidence_level 为 press/secondary 时只能填 brief。
 日期：{item.date}
 DOI / 链接：{item.url}
 证据等级：{item.evidence_level}
+核对记录：{item.read_note or '未读全文'}
+已读章节：{json.dumps(item.sections_read, ensure_ascii=False) if item.sections_read else '{}'}
 
 摘要：
-{_article_prompt_abstract(item)}
+{_article_prompt_abstract(item) if item.evidence_level != "fulltext" else "（深度解读以全文 Results 为准，摘要仅供对照）"}
 
-全文结果与讨论（若有）：
-{item.fulltext_results[:15000] if item.fulltext_results else '无'}
+全文结果与讨论（仅在 evidence_level=fulltext 时提供，必须作为数字与机制的唯一依据）：
+{item.fulltext_results[:15000] if item.evidence_level == "fulltext" and item.fulltext_results else '无'}
 
 图注（若有）：
-{item.fig_captions[:4000] if item.fig_captions else '无'}
+{item.fig_captions[:4000] if item.evidence_level == "fulltext" and item.fig_captions else '无'}
 
 研究设计相关方法（若有）：
-{item.methods_design[:3000] if item.methods_design else '无'}
+{item.methods_design[:3000] if item.evidence_level == "fulltext" and item.methods_design else '无'}
 
 调用 submit_article 工具提交。
 """
@@ -3271,7 +3290,7 @@ def build_claim_audit_prompt(art: dict, raw_material: str, item: EnrichedItem | 
             meta.append("abstract:\n" + item.abstract[:8000])
     source = raw_material or ""
     drafted = _article_plain_text(art)
-    return f"""你是事实核对员。对照来源（摘要+元数据），审核下面这篇中文解读的每一个事实主张。
+    return f"""你是事实核对员。对照下面的来源（深度解读必须对照全文 Results），审核这篇中文解读的每一个事实主张。
 
 ## 必须抽取的主张
 
@@ -3885,7 +3904,9 @@ def _run_claim_verifier_stage(
         probs.extend(validate_names(draft, raw_material))
         return draft, probs
 
-    audit = verify_article_claims(art, raw_material, enriched_item)
+    from inlight_qc import verifier_source_text
+    audit_src = verifier_source_text(enriched_item, raw_material)
+    audit = verify_article_claims(art, audit_src, enriched_item)
     extra_calls = audit.get("calls", 0)
     extra_in = audit.get("input_tokens", 0)
     extra_out = audit.get("output_tokens", 0)
@@ -3949,7 +3970,8 @@ def _hard_problems(problems: list[str]) -> list[str]:
 
 
 def _source_bucket(item: EnrichedItem) -> str:
-    if item.fulltext_results:
+    from inlight_qc import item_has_real_fulltext
+    if item_has_real_fulltext(item):
         return "fulltext"
     if item.evidence_level == "preprint":
         return "preprint"
@@ -3987,8 +4009,9 @@ def log_run_yield(stats: dict, config: dict | None) -> None:
         logging.info("丢弃 %s：%s", drop.get("url", ""), drop.get("reason", ""))
     if stats.get("published_deep", 0) < t["min_deep"]:
         logging.warning(
-            "深度解读低于目标：%d < %d（上限 %d）。未放宽核对。",
+            "深度解读低于目标：%d < %d（上限 %d）。全文候选 %d。未放宽全文门槛，未放宽核对。",
             stats.get("published_deep", 0), t["min_deep"], t["max_deep"],
+            stats.get("fulltext_candidates", 0),
         )
 
 
@@ -4000,6 +4023,9 @@ def process_articles(items: list[dict], config: dict) -> dict:
     
     Returns dict with articles and deals (deals passed through unchanged).
     """
+    from inlight_qc import acir_strict, apply_extra_env_gemini_key
+
+    apply_extra_env_gemini_key(config)
     t = pipeline_targets(config)
     academic_items = [item for item in items if item.get("kind") == "academic"]
     if t["max_candidates"] and len(academic_items) > t["max_candidates"]:
@@ -4033,10 +4059,14 @@ def process_articles(items: list[dict], config: dict) -> dict:
         "published_industry": len(industry_sels),
         "dropped": 0,
         "drops": [],
+        "qc_report": {"articles": [], "strict": acir_strict(config)},
+        "fulltext_candidates": 0,
     }
     
     url_to_enriched = {e.url: e for e in enriched}
-    
+    from inlight_qc import item_has_real_fulltext
+    stats["fulltext_candidates"] = sum(1 for e in enriched if item_has_real_fulltext(e))
+
     articles = []
     for selection in selections:
         url = selection["url"]
@@ -4081,6 +4111,13 @@ def _process_single_article(
     Extracted to allow per-article exception handling in process_articles.
     Returns the processed article dict or None if it should be dropped.
     """
+    from inlight_qc import (
+        acir_strict, item_has_real_fulltext, load_gemini_api_key, secondhand_label,
+        validate_acir_structure, verifier_source_text, mechanism_image_prompt,
+        comparable_verified_points, render_data_chart_svg, gemini_review_deep,
+        empty_check, assemble_qc_entry, FIG_DISCLAIMER,
+    )
+
     url = selection["url"]
     tier = selection["tier"]
     field = selection["field"]
@@ -4089,6 +4126,9 @@ def _process_single_article(
         logging.error("Dropping %s: %s", url, reason)
         if stats is not None:
             stats.setdefault("drops", []).append({"url": url, "reason": reason})
+            stats.setdefault("qc_report", {}).setdefault("articles", []).append(
+                assemble_qc_entry(url, False, [empty_check("gate", False, reason)])
+            )
         return None
     
     enriched_item = url_to_enriched.get(url)
@@ -4096,18 +4136,20 @@ def _process_single_article(
         logging.warning("Skipping unknown URL from triage: %s", url)
         return drop("unknown URL from triage")
     
-    if enriched_item.evidence_level in ("press", "secondary") and tier == "deep":
-        logging.warning("Downgrading %s from deep to brief (evidence: %s)", url, enriched_item.evidence_level)
-        tier = "brief"
-    
-    # Deep tier requires fulltext OR rich abstract (>=1200 chars)
-    # Otherwise we get filler content ("未给出" padding)
+    strict = acir_strict(config)
+    t = pipeline_targets(config)
+    real_ft = item_has_real_fulltext(enriched_item)
     abstract_len = len(enriched_item.abstract or "")
-    has_fulltext = bool(enriched_item.fulltext_results)
-    if tier == "deep" and not has_fulltext and abstract_len < 1200:
-        logging.warning("Downgrading %s from deep to brief (abstract only %d chars, need >=1200 or fulltext)", 
-                      url, abstract_len)
-        tier = "brief"
+
+    if not real_ft:
+        if strict and t["max_brief"] == 0:
+            return drop("no real fulltext Results; deep requires fulltext")
+        if tier == "deep" and (strict or abstract_len < 1200):
+            logging.warning("Downgrading %s from deep to brief (no real fulltext Results)", url)
+            tier = "brief"
+
+    if strict and tier == "deep" and not load_gemini_api_key(config):
+        return drop("GEMINI_API_KEY missing; deep QC fail-closed")
     
     # Build raw_material for validation - avoid duplicating abstract/rss_summary
     raw_parts = []
@@ -4135,8 +4177,17 @@ def _process_single_article(
         draft = sanitize_published_article(dict(draft), enriched_item)
         draft["field"] = field
         draft["tier"] = tier
-        probs = validate_depth(draft, raw_material)
-        probs.extend(validate_names(draft, raw_material))
+        src = verifier_source_text(enriched_item, raw_material) if real_ft else raw_material
+        draft["evidence_level"] = "fulltext" if real_ft else enriched_item.evidence_level
+        draft["read_note"] = enriched_item.read_note
+        draft["sections_read"] = enriched_item.sections_read
+        if isinstance(draft.get("datacard"), dict):
+            draft["datacard"]["evidence_level"] = draft["evidence_level"]
+            draft["datacard"]["read_note"] = enriched_item.read_note
+        probs = validate_depth(draft, src)
+        probs.extend(validate_names(draft, src))
+        if strict and draft.get("tier") == "deep":
+            probs.extend(validate_acir_structure(draft))
         return draft, probs
 
     art = draft_single_article(enriched_item, tier, config)
@@ -4279,33 +4330,108 @@ def _process_single_article(
     if not art.get("steps"):
         art["steps"] = ["研究背景", "方法设计", "核心发现", "意义与局限"]
     
-    # Ensure image_prompt is set - derive from paper subject ONLY
-    # IMPORTANT: Use English keywords only (Chinese text renders as characters in image)
-    # IMPORTANT: Do NOT add generic field boilerplate that may conflict with subject
-    if not art.get("image_prompt"):
-        # Extract English keywords from the enriched item's title
-        source_title = enriched_item.title or ""
-        # Extract English words (proteins, drugs, mechanisms, cell types)
-        english_words = re.findall(r'\b[A-Za-z][A-Za-z0-9-]{2,}\b', source_title)
-        # Filter to likely scientific terms (exclude common words)
-        stopwords = {'the', 'and', 'for', 'with', 'from', 'this', 'that', 'are', 'was', 
-                    'were', 'not', 'via', 'new', 'novel', 'study', 'research', 'analysis',
-                    'findings', 'results', 'evidence', 'role', 'effect', 'effects'}
-        keywords = [w for w in english_words if len(w) >= 3 and w.lower() not in stopwords][:6]
-        
-        # Build prompt from paper subject only, no generic field boilerplate
-        # End with style directives that prevent text rendering
-        if keywords:
-            art["image_prompt"] = f"{', '.join(keywords)}, medical illustration, scientific diagram, no text, no labels, no words"
-        else:
-            # Fallback: generic biomedical imagery only
-            art["image_prompt"] = "biomedical research, cells, molecules, medical illustration, no text, no labels, no words"
+    art["evidence_level"] = "fulltext" if real_ft else enriched_item.evidence_level
+    art["read_note"] = enriched_item.read_note
+    art["sections_read"] = enriched_item.sections_read
+    if not art.get("citation"):
+        bits = [enriched_item.authors or art.get("authors") or "",
+                enriched_item.journal or art.get("journal") or "",
+                enriched_item.date, enriched_item.doi or url,
+                art["evidence_level"], enriched_item.read_note or ""]
+        art["citation"] = " ".join(b for b in bits if b)
+    if not real_ft:
+        art["secondhand_label"] = secondhand_label(enriched_item)
+        art["skip_mechanism_figure"] = True
+        art.pop("image_prompt", None)
+        art["fig_caption"] = ""
+    elif art.get("tier") == "deep":
+        art["image_prompt"] = mechanism_image_prompt(
+            enriched_item.fulltext_results, art.get("mechanism") or "",
+        )
+        art["fig_caption"] = FIG_DISCLAIMER
+        art["skip_mechanism_figure"] = False
     else:
-        # Model provided image_prompt - ensure no-text directive is added
-        model_prompt = art["image_prompt"]
-        if "no text" not in model_prompt.lower() and "无文字" not in model_prompt:
-            art["image_prompt"] = f"{model_prompt}, no text, no labels, no words"
-    
+        art["skip_mechanism_figure"] = True
+        art.pop("image_prompt", None)
+
+    qc_src = verifier_source_text(enriched_item, raw_material)
+    gemini_result = None
+    if strict and art.get("tier") == "deep":
+        gemini_result = gemini_review_deep(art, qc_src, config)
+        if not gemini_result.get("pass"):
+            logging.warning("Gemini ACIR 未过，Claude 重写一次：%s", gemini_result.get("reasons"))
+            retry = draft_single_article(
+                enriched_item, "deep", config,
+                problems=[str(gemini_result.get("reasons") or "Gemini ACIR scores < 7")],
+            )
+            if retry:
+                retry, retry_probs = _prepare(retry)
+                if retry and not _hard_problems(retry_probs):
+                    retry, dropped = _run_claim_verifier_stage(
+                        retry, retry_probs, raw_material, enriched_item, config, "deep", field,
+                    )
+                    if retry and not dropped:
+                        gemini_result = gemini_review_deep(retry, qc_src, config)
+                        if gemini_result.get("pass"):
+                            art = retry
+                            art["image_prompt"] = mechanism_image_prompt(
+                                enriched_item.fulltext_results, art.get("mechanism") or "",
+                            )
+                            art["fig_caption"] = FIG_DISCLAIMER
+                            art["skip_mechanism_figure"] = False
+                        else:
+                            return drop("Gemini ACIR still failing after one Claude revise")
+                    else:
+                        return drop("Gemini revise failed claim verifier")
+                else:
+                    return drop("Gemini revise failed structure/numbers")
+            else:
+                return drop("Gemini revise draft failed")
+        art["gemini_review"] = {
+            "scores": gemini_result.get("scores"),
+            "reasons": gemini_result.get("reasons"),
+            "pass": True,
+        }
+
+    if art.get("tier") == "deep" and real_ft:
+        pts = comparable_verified_points(art, qc_src)
+        if len(pts) >= 2:
+            art["data_chart_svg"] = render_data_chart_svg(pts, "核对后的关键对比")
+            art["data_chart_points"] = [
+                {"value": p.get("value"), "meaning": p.get("meaning")} for p in pts
+            ]
+        else:
+            art["data_chart_svg"] = ""
+
+    if art.get("field") not in FIELDS:
+        return drop("field not in the 9 domains")
+
+    checks = [
+        empty_check("admission", real_ft if art.get("tier") == "deep" else True,
+                    enriched_item.read_note or "not fulltext"),
+        empty_check("structure", not (strict and art.get("tier") == "deep" and validate_acir_structure(art)),
+                    "; ".join(validate_acir_structure(art)) if strict else "n/a"),
+        empty_check("numbers", not any("数字" in p and "未找到" in p for p in (problems or [])),
+                    "; ".join(p for p in (problems or []) if "数字" in p) or "ok"),
+        empty_check("claims", True, "claim verifier passed"),
+        empty_check("field", art.get("field") in FIELDS, art.get("field") or ""),
+        empty_check("images",
+                    (art.get("tier") != "deep") or (real_ft and not art.get("skip_mechanism_figure")),
+                    "mechanism figure requires fulltext"),
+    ]
+    if gemini_result is not None:
+        checks.append(empty_check("gemini", bool(gemini_result.get("pass")),
+                                  str(gemini_result.get("reasons") or "")))
+    if stats is not None:
+        stats.setdefault("qc_report", {}).setdefault("articles", []).append(
+            assemble_qc_entry(url, True, checks, {
+                "tier": art.get("tier"),
+                "read_note": enriched_item.read_note,
+                "sections_read": enriched_item.sections_read,
+                "gemini": (gemini_result or {}).get("scores"),
+            })
+        )
+
     return art
 
 
@@ -4427,11 +4553,18 @@ def wechat_html_article(art: dict, include_ai_disclaimer: bool = False) -> str:
     
     # Title
     parts.append(f'<h3 style="font-size:18px;margin:1.5em 0 0.5em;color:#1d2a27;border-left:4px solid #0f6b5c;padding-left:12px;">{_escape_html(art.get("title", ""))}</h3>')
+
+    if art.get("secondhand_label"):
+        parts.append(
+            f'<p style="font-size:12px;color:#888;margin:0.4em 0;">{_escape_html(art["secondhand_label"])}</p>'
+        )
     
-    # Image (if available)
+    # Image (if available) — mechanism figure only when fulltext/deep
     img = art.get("img", "")
-    if img:
+    if img and not art.get("skip_mechanism_figure"):
         parts.append(f'<p style="margin:1em 0;"><img src="{_escape_html(img)}" alt="" style="max-width:100%;border-radius:8px;"></p>')
+        cap = art.get("fig_caption") or "示意图由 AI 生成，依据原文结果绘制，非期刊原图，不代表分子比例。"
+        parts.append(f'<p style="font-size:12px;color:#999;margin:0.3em 0;">{_escape_html(cap)}</p>')
     
     # One-liner
     if art.get("one_liner"):
@@ -4449,6 +4582,8 @@ def wechat_html_article(art: dict, include_ai_disclaimer: bool = False) -> str:
         "primary_endpoint_result": "主要结果",
         "statistics": "统计量",
         "safety": "安全性",
+        "evidence_level": "证据等级",
+        "read_note": "核对记录",
     }
     for key, label in field_names.items():
         val = datacard.get(key, "")
@@ -4460,10 +4595,12 @@ def wechat_html_article(art: dict, include_ai_disclaimer: bool = False) -> str:
         parts.extend(datacard_rows)
         parts.append('</table>')
     
-    # Evidence level - use Chinese labels
+    # Evidence level + 核对记录
     evidence = art.get("evidence_level", "abstract")
     evidence_label = EVIDENCE_LEVEL_LABELS.get(evidence, evidence)
-    parts.append(f'<p style="font-size:12px;color:#999;margin:0.5em 0;">证据等级：{evidence_label}</p>')
+    read_note = art.get("read_note") or (art.get("datacard") or {}).get("read_note") or ""
+    parts.append(f'<p style="font-size:12px;color:#999;margin:0.5em 0;">证据等级：{evidence_label}'
+                 f'{" · " + _escape_html(read_note) if read_note else ""}</p>')
     
     # Section: Background
     if art.get("background"):
@@ -4481,6 +4618,8 @@ def wechat_html_article(art: dict, include_ai_disclaimer: bool = False) -> str:
         parts.append('<h4 style="font-size:15px;margin:1.2em 0 0.3em;color:#333;">核心结果</h4>')
         for para in results:
             parts.append(f'<p style="margin:0.5em 0;">{_escape_html(para)}</p>')
+        if art.get("data_chart_svg"):
+            parts.append(f'<div style="margin:0.8em 0;overflow-x:auto;">{art["data_chart_svg"]}</div>')
     
     # Section: Mechanism (deep only)
     if tier == "deep" and art.get("mechanism"):
@@ -4528,6 +4667,8 @@ def wechat_html_article(art: dict, include_ai_disclaimer: bool = False) -> str:
     doi_str = _extract_doi_from_url(url)
     if doi_str:
         parts.append(f'<p style="font-size:12px;color:#999;margin:0.5em 0;">{_escape_html(doi_str)}</p>')
+    if art.get("citation"):
+        parts.append(f'<p style="font-size:13px;color:#555;margin:0.8em 0;">{_escape_html(art["citation"])}</p>')
     
     # Per-article AI disclaimer (only if requested - usually use single footer disclaimer)
     if include_ai_disclaimer:

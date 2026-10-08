@@ -18,12 +18,17 @@ Windows 上如果 `python` 不在 PATH 里，用 `py -3` 代替 `python`。
 
 | 变量 | 用在哪 |
 | --- | --- |
-| `ANTHROPIC_API_KEY` | `run_weekly.py` 筛选和写中文 |
-| `OPENAI_API_KEY` | `run_weekly.py` 配图和公众号封面 |
+| `ANTHROPIC_API_KEY` | `run_weekly.py` 筛选、写中文深度解读、数字/主张核对（Claude） |
+| `OPENAI_API_KEY` | `run_weekly.py` 配图和公众号封面（图像模型不变） |
 | `ANTHROPIC_MODEL` | 可选，默认 `claude-sonnet-5-5`（脚本启动时会检查模型可用性） |
 | `OPENAI_IMAGE_MODEL` | 可选，默认 `gpt-image-1` |
+| `GEMINI_API_KEY` | 深度解读的独立 ACIR 质控（只审不写）。缺了就闭门失败，不发该篇 |
+| `GEMINI_MODEL` | 可选；也可写在 `sources.yaml` 的 `gemini_model` |
+| `INLIGHT_EXTRA_ENV_FILE` | 可选。生产机 `inlight.env` 没有 Gemini 密钥时，指向另一份只读 env。只读取 `GEMINI_API_KEY`，不写文件，不把内容打进日志 |
 | `WECHAT_APPID` | 只有 `publish_wechat.py` 需要 |
 | `WECHAT_APPSECRET` | 只有 `publish_wechat.py` 需要 |
+
+生产服务器上的每周 `inlight.env` 不会被改。若密钥已经在同一台机器的另一份 env 里，把路径写到 `INLIGHT_EXTRA_ENV_FILE` 或 `sources.yaml` 的 `extra_env_file`。加载失败或两处都没有密钥时，深度解读质控闭门失败。
 
 ## 每周运行
 
@@ -65,6 +70,7 @@ python publish_wechat.py --week 2026-10-07
 - `content/weekly/YYYY-MM-DD/images/` 配图
 - `content/weekly/YYYY-MM-DD/wechat/article.html` 公众号正文
 - `content/weekly/YYYY-MM-DD/wechat/cover.png` 公众号封面
+- `content/weekly/YYYY-MM-DD/qc_report.json` 每篇质控项的通过/失败、Gemini 分数和丢弃原因
 - `content/latest.json` 网站实际读取的最近一批；首页、领域和存档会把这里的新条目叠在原有内容前面
 
 预览运行：同样的结构在 `preview/weekly/YYYY-MM-DD/`。`preview/` 不进 git。
@@ -82,8 +88,9 @@ python publish_wechat.py --week 2026-10-07
 
 ## AI 工具使用
 
-- Claude：使用 tool_use 模式返回结构化 JSON，避免解析错误
-- 图像生成：使用 gpt-image-1，提示词强调 BioRender 风格、无文字无标签
+- Claude（`ANTHROPIC_MODEL`，默认 claude-sonnet-5-5）：选题、从全文起草深度解读、数字/主张核对。不换别的写作模型。
+- Gemini：只做独立 ACIR 复审（结构/深度/数字密度/机制与推测/局限/可追溯），不写正文。
+- 图像生成：使用 gpt-image-1。机制图只给读过全文的深度解读。
 
 ## 静态文章页面（社交分享）
 
@@ -141,7 +148,7 @@ python build_pages.py --dry-run  # 预览，不写文件
 
 ### 每周整体检查
 
-- [ ] 本周 deep 篇数 ≥ 2，且每篇 `evidence_level` 为 `fulltext` 或 `abstract`
+- [ ] 本周 deep 篇数 3–5，且每篇 `evidence_level` 为 `fulltext`（程序取到 Results 正文）
 - [ ] 本周所有条目中，`evidence_level = press/secondary` 占比 ≤ 20%
 - [ ] 零数字条目数 = 0
 - [ ] 零局限条目数 = 0

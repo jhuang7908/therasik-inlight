@@ -194,6 +194,9 @@ article .ahead{display:grid;gap:11px;padding-bottom:18px;border-bottom:1px solid
 .rc-date{font-size:11px;color:var(--muted)}
 
 /* Mobile: datacard collapsible, paragraph limits */
+.secondhand-banner{font-size:12px;color:var(--muted);background:var(--raise);border-radius:8px;padding:8px 12px;margin:8px 0 0}
+.data-chart-wrap{overflow-x:auto;margin:12px 0;max-width:100%}
+.data-chart-wrap svg,.data-chart{max-width:100%;height:auto;display:block}
 @media (max-width:390px){
   .datacard-box{max-height:200px;overflow:hidden;position:relative}
   .datacard-box::after{content:"展开数据卡 ↓";position:absolute;bottom:0;left:0;right:0;padding:8px;background:linear-gradient(transparent,var(--surface) 50%);text-align:center;font-size:12px;color:var(--accent);font-weight:700;cursor:pointer}
@@ -201,6 +204,8 @@ article .ahead{display:grid;gap:11px;padding-bottom:18px;border-bottom:1px solid
   .datacard-box.expanded::after{content:"收起数据卡 ↑";position:static;background:none;padding:12px 0 4px}
   .sec p{max-width:none;overflow-wrap:break-word}
   .primary-endpoint-block .pe-value{font-size:18px}
+  .data-chart-wrap{margin:8px -4px}
+  .secondhand-banner{font-size:11px}
 }
 .corrections-list{display:grid;gap:10px}
 .correction-item{display:grid;gap:4px;padding:10px 12px;background:var(--raise);border-radius:8px;font-size:13px;line-height:1.55}
@@ -1024,13 +1029,16 @@ function renderPaper(id){
       ['primary_endpoint_result', '主要结果'],
       ['statistics', '统计量'],
       ['safety', '安全性'],
+      ['read_note', '核对记录'],
     ];
     const rows = fields.filter(([k]) => dc[k] && dc[k] !== '不适用' && !String(dc[k]).includes('未给出'))
       .map(([k, label]) => `<div><span class="k">${label}</span><p>${escHtml(dc[k])}</p></div>`).join('');
     const evidence = a.evidence_level || dc.evidence_level || 'abstract';
     const evidenceLabels = {fulltext: '全文', abstract: '摘要', preprint: '预印本', press: '新闻稿', secondary: '二手'};
+    const readNote = a.read_note || dc.read_note || '';
     return `<div class="datacard-box">${rows}
       <div><span class="k">证据等级</span><p>${evidenceLabels[evidence] || evidence}</p></div>
+      ${readNote ? `<div><span class="k">核对记录</span><p>${escHtml(readNote)}</p></div>` : ''}
     </div>`;
   }
   
@@ -1049,6 +1057,9 @@ function renderPaper(id){
         html += `<div class="primary-endpoint-block"><span class="pe-label">主要终点</span><span class="pe-value">${escHtml(primaryResult)}</span></div>`;
       }
       html += a.results.map(p => `<p>${escHtml(p)}</p>`).join('');
+      if (a.data_chart_svg) {
+        html += `<div class="data-chart-wrap">${a.data_chart_svg}</div>`;
+      }
       html += `</div>`;
     }
     if (tier === 'deep' && a.mechanism) {
@@ -1102,6 +1113,7 @@ function renderPaper(id){
       <div class="ahead">
         <div class="eyebrow">${FNAMES[a.f]||''} · ${a.ds?cnDate(a.ds):a.disp}${tier==='deep'?' · <span class="tier-badge deep">深度解读</span>':' · <span class="tier-badge brief">速览</span>'}</div>
         <div class="zh-title">${isNewFormat?escHtml(a.t):a.t}</div>
+        ${a.secondhand_label ? `<p class="secondhand-banner">${escHtml(a.secondhand_label)}</p>` : ''}
         ${open && isNewFormat ? `<p class="one-liner">${escHtml(open)}</p>` : ''}
         <div class="tags">${tags}${a.sec?'<span class="tag" style="--tc:var(--c4)">二手核实</span>':''}</div>
       </div>
@@ -1111,14 +1123,14 @@ function renderPaper(id){
           ${!datacardHtml ? `<div><span class="k">领域</span><p>${(a.tags||[]).map(t=>FNAMES[t]||'').filter(Boolean).join('、')}</p></div>` : ''}
         </aside>
         <div class="amain">
-          <div class="fig paperfig">
+          ${a.skip_mechanism_figure ? '' : `<div class="fig paperfig">
             <div class="fig-scroll"><img src="${a.img||('img/papers/'+a.id+'.jpg?v=5')}" alt="" onerror="this.remove()"></div>
             <ol class="figsteps">${steps.map((s,i)=>`<li><b>${i+1}</b>${isNewFormat?escHtml(s):s}</li>`).join('')}</ol>
-            <p class="cap">示意图由 AI 生成，依据论文流程绘制，非期刊原图，不代表分子比例。</p>
-          </div>
+            <p class="cap">${escHtml(a.fig_caption || '示意图由 AI 生成，依据原文结果绘制，非期刊原图，不代表分子比例。')}</p>
+          </div>`}
           ${bodyHtml}
           <details class="sec meet"><summary>编辑备注</summary><p>${isNewFormat?escHtml(a.au||'论文页面没有给出可核对的通讯作者。'):(a.au||'论文页面没有给出可核对的通讯作者。')}</p>${a.note?`<p>${isNewFormat?escHtml(a.note):a.note}</p>`:''}<p>这里没有采访，只写论文或新闻稿里能核对的作者、身份和单位。页面没标通讯作者时，按末位或资深作者写明，不另编履历。</p></details>
-          <div class="sec"><h2>出处</h2><p class="src"><b>原文</b>：${isNewFormat?escHtml(a.j||''):(a.j||'')}。 <a href="${a.url}" target="_blank" rel="noopener">打开原文</a></p></div>
+          <div class="sec"><h2>作者、出处与核对</h2><p class="src">${a.citation ? escHtml(a.citation) + '<br>' : ''}<b>原文</b>：${isNewFormat?escHtml(a.j||''):(a.j||'')}。 <a href="${a.url}" target="_blank" rel="noopener">打开原文</a>${a.read_note ? '<br>'+escHtml(a.read_note) : ''}</p></div>
           <p class="note" style="margin-top:1em;font-size:13px;">本文初稿由 Claude 起草，配图由 gpt-image-1 生成，编辑核对后发布。TheraSik · 启曜生科 出品。</p>
           ${renderRelated()}
         </div>

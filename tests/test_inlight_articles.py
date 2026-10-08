@@ -2231,9 +2231,10 @@ class TestYieldAndSourceFetch(unittest.TestCase):
             "best_oa_location": {"landing_page_url": "https://example.org/oa-html"},
         }).encode()
         oa_html = (
-            "<html><body>" +
-            ("Results: fezolinetant 45 mg reduced VMS frequency by 64% among 527 women. " * 30) +
-            "</body></html>"
+            "<html><body><h2>Results</h2><p>" +
+            ("outcome " * 1600) +
+            "fezolinetant 45 mg reduced VMS frequency by 64% among 527 women." +
+            "</p></body></html>"
         ).encode()
         press_epmc = json.dumps({
             "resultList": {"result": [{
@@ -2268,6 +2269,8 @@ class TestYieldAndSourceFetch(unittest.TestCase):
             })
         self.assertEqual(item.evidence_level, "fulltext")
         self.assertIn("64%", item.fulltext_results)
+        self.assertTrue(item.sections_read.get("results", {}).get("words", 0) >= 1500)
+        self.assertTrue(item.read_note)
         self.assertTrue(item.press_coverage)
         self.assertIn("press", " ".join(item.source_trace).lower() + " media")
 
