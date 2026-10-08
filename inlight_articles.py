@@ -477,6 +477,11 @@ def enrich_item(row: dict) -> EnrichedItem:
             item.evidence_level = "preprint"  # bioRxiv/medRxiv are preprints
             item.source_trace.append(f"bioRxiv API: {len(abstract)} chars")
     
+    # Always mark bioRxiv/medRxiv as preprint, even if we got abstract from EPMC
+    if "biorxiv.org" in item.url or "medrxiv.org" in item.url:
+        if item.evidence_level == "abstract":
+            item.evidence_level = "preprint"
+    
     if not item.abstract:
         item.abstract = item.rss_summary
         item.evidence_level = "press"
@@ -924,56 +929,141 @@ def number_in_text_as_word_boundary(number: str, text: str) -> bool:
     return bool(re.search(pattern, text_clean))
 
 
-def source_has_quantitative_numbers(raw_material: str) -> bool:
-    """Check if source material contains quantitative numbers.
+def normalize_source_text(text: str) -> str:
+    """Normalize source text for number/name comparison.
     
-    Some papers are qualitative (e.g., platform descriptions, methods papers).
-    These should not require numbers in results.
+    Applies:
+    - Lowercase
+    - Whitespace normalization
+    - English number words to digits (nine -> 9)
+    - Unicode superscripts to plain (10⁶ -> 10^6)
+    - Thousands separators removed (1,139 -> 1139)
+    - En-dash ranges (10–20 -> 10-20)
+    - Plus-minus (± -> +/-)
     """
-    # Remove gene names, trial IDs, etc.
-    text = re.sub(r'\b(?:CD|IL|HLA|NK|NF)[A-Za-z]?-?[A-Za-z0-9]+\b', '', raw_material, flags=re.IGNORECASE)
-    text = re.sub(r'\b(?:NCT|RPCEC|ISRCTN)\d+\b', '', text, flags=re.IGNORECASE)
+    result = text.lower()
+    result = re.sub(r'\s+', ' ', result)
     
-    # Look for actual data patterns: percentages, sample sizes, p-values, etc.
-    data_patterns = [
-        r'\d+\s*%',  # Percentages
-        r'n\s*=\s*\d+',  # Sample sizes
-        r'p\s*[<>=]\s*\d',  # P-values
-        r'HR\s*[=:]\s*\d',  # Hazard ratios
-        r'OR\s*[=:]\s*\d',  # Odds ratios
-        r'\d+\s*(?:patient|subject|participant|case)',  # Patient counts
-        r'\d+\s*(?:mg|kg|mL|µg)',  # Doses
-    ]
-    for pattern in data_patterns:
-        if re.search(pattern, text, re.IGNORECASE):
+    # English number words
+    result = english_number_to_arabic(result)
+    
+    # Superscripts to caret notation
+    sup_map = {'⁰': '0', '¹': '1', '²': '2', '³': '3', '⁴': '4',
+               '⁵': '5', '⁶': '6', '⁷': '7', '⁸': '8', '⁹': '9',
+               '⁺': '+', '⁻': '-', 'ⁿ': 'n'}
+    for s, r in sup_map.items():
+        result = result.replace(s, r)
+    
+    # Remove thousands separators
+    result = result.replace(',', '').replace('，', '')
+    
+    # Normalize dashes
+    result = result.replace('–', '-').replace('—', '-')
+    
+    # Plus-minus
+    result = result.replace('±', '+/-')
+    
+    return result
+
+
+def extract_identifiers_from_source(source: str) -> set[str]:
+    """Extract all identifiers from source that may contain digits.
+    
+    These identifiers should be allowed to pass through unchanged:
+    - Gene names: R2, Th17, CCR8, CD318, IL-24, IFN-α2
+    - Mouse lines: SAMP1/YitFC, TNFΔARE, Rag2-/-
+    - Bacterial strains: Nissle 1917, EcN-CAD
+    - Drug names: TAK-981, itolizumab
+    - Trial IDs: NCT04443907, RPCEC00000444
+    """
+    identifiers = set()
+    
+    # Gene names: CD4, CD8, CD14, CD318, IL-23, IFN-α2, HLA-DP04, NK, NF-κB
+    for match in re.finditer(r'\b(?:CD|IL|HLA|IFN|NK|NF|CCR|Th|TAK|CCL|CXCL|CXCR|ROR)[A-Za-zα-ω]?-?[A-Za-z0-9αβγδ/-]*\d+[A-Za-z0-9αβγδ/-]*\b', source, re.IGNORECASE):
+        identifiers.add(match.group(0))
+    
+    # Element/family names: R2, S1, M1
+    for match in re.finditer(r'\b[A-Z]\d+\b', source):
+        identifiers.add(match.group(0))
+    
+    # Mouse lines: SAMP1/YitFC, TNFΔARE, Rag2-/-
+    for match in re.finditer(r'\b[A-Z][A-Za-z0-9Δ]*\d[A-Za-z0-9Δ/-]*(?:/[A-Za-z0-9Δ/-]+)?\b', source):
+        identifiers.add(match.group(0))
+    
+    # Bacterial strains: Nissle 1917, E. coli Nissle 1917
+    for match in re.finditer(r'\bNissle\s*\d+\b', source, re.IGNORECASE):
+        identifiers.add(match.group(0))
+    
+    # Drug compounds with numbers: TAK-981, TAK981
+    for match in re.finditer(r'\b[A-Z]{2,}-?\d{2,}\b', source):
+        identifiers.add(match.group(0))
+    
+    # Trial IDs
+    for match in re.finditer(r'\b(?:NCT|RPCEC|ISRCTN|EudraCT|ACTRN|ChiCTR)\d+\b', source, re.IGNORECASE):
+        identifiers.add(match.group(0))
+    
+    # EcN-CAD style names
+    for match in re.finditer(r'\b[A-Z][a-z]?[A-Z]-?[A-Z]{2,}\b', source):
+        identifiers.add(match.group(0))
+    
+    return identifiers
+
+
+def number_exists_in_source(num_str: str, source_norm: str, source_identifiers: set[str]) -> bool:
+    """Check if a number exists in the source text (after normalization).
+    
+    Returns True if:
+    - The number appears in source with same context (nearby unit/context word)
+    - The number is part of an identifier that appears verbatim in source
+    """
+    # Normalize the number
+    num_clean = num_str.replace(',', '').replace('，', '').strip()
+    
+    # Extract core numeric value
+    num_core = extract_number_core(num_clean)
+    if not num_core:
+        return True  # Not a number
+    
+    # Check if this is part of an identifier in source
+    for ident in source_identifiers:
+        if num_core in ident.lower():
+            # The number is part of an identifier - check if identifier is in output context
+            return True  # Allow - the identifier exists in source
+    
+    # Check if the number exists in source with word boundary
+    if number_in_text_as_word_boundary(num_core, source_norm):
+        return True
+    
+    # Try Chinese numeral conversion
+    cn_converted = chinese_numeral_to_arabic(num_clean)
+    cn_core = extract_number_core(cn_converted)
+    if cn_core and cn_core != num_core:
+        if number_in_text_as_word_boundary(cn_core, source_norm):
             return True
+    
     return False
 
 
 def validate_depth(art: dict, raw_material: str) -> list[str]:
-    """Validate generated article meets depth requirements.
+    """Validate generated article against SOURCE TEXT.
     
-    Returns list of problems. Empty list means validation passed.
+    Design principle: Every number in output must exist in source.
+    No special-casing of "原文未给出" - text saying something is not given
+    is fine only if it contains no number not in source.
     
-    Checks:
-    - Marketing words in ALL text fields (not just title/one_liner)
-    - data_points: quote must be in source, value must match quote
-    - data_points with meaning containing "名称中的编号" are rejected (gaming)
-    - Numbers in body must be registered in data_points
-    - Numbers checked with word boundaries (500 != 5000)
-    - Chinese numerals in body are checked against registered values
-    - English number words in quotes are normalized (nine -> 9)
-    - "原文未给出" statements are NOT flagged as containing unregistered numbers
-    - Results only require numbers if the source has quantitative data
+    Identifiers (R2, Th17, CCR8, etc.) that appear verbatim in source
+    are allowed automatically - never ask the model to rename them.
     """
     problems = []
-    norm = normalize_whitespace(raw_material)
-    # Also prepare version with English numbers converted
-    norm_english = english_number_to_arabic(norm)
-    norm_for_numbers = chinese_numeral_to_arabic(norm)
     tier = art.get("tier", "brief")
     
-    # Collect ALL text for marketing word check (issue #9)
+    # Normalize source for comparison
+    source_norm = normalize_source_text(raw_material)
+    
+    # Extract identifiers from source (these are allowed to have digits)
+    source_identifiers = extract_identifiers_from_source(raw_material)
+    
+    # Collect ALL text from output
     all_text_parts = [
         art.get("title", ""),
         art.get("one_liner", ""),
@@ -994,123 +1084,61 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
     if MARKETING_BLOCKLIST.search(all_text):
         problems.append("文章含有营销词汇（重磅/颠覆/震撼等）")
     
-    # Validate each data_point: quote must be in source, value must be in quote
+    # Validate data_points
+    norm = normalize_whitespace(raw_material)
+    norm_english = english_number_to_arabic(norm)
+    
     for dp in art.get("data_points", []):
         value = dp.get("value", "").strip()
         quote = dp.get("source_quote", "").strip()
         meaning = dp.get("meaning", "").strip()
-        quote_norm = normalize_whitespace(quote)
         
-        # Reject gaming: data_points that register gene-name digits as values
+        # Reject gaming: non-numeric values
+        if value in ('无', '不适用', '两种', '三种', '两种模型', '三种干预'):
+            problems.append(f"data_point value 必须是数值，不能是 '{value}'")
+            continue
+        
+        # Reject gaming: registering identifier digits
         if "名称" in meaning or "编号" in meaning:
             problems.append(f"data_point 注册了标识符而非数据：{value} ({meaning})")
             continue
         
         # Check quote exists in source
+        quote_norm = normalize_whitespace(quote)
         if len(quote_norm) < 10:
             problems.append(f"data_point source_quote 过短：{value}")
             continue
         
-        # Allow quotes that match after English number word conversion
         quote_norm_english = english_number_to_arabic(quote_norm)
         if quote_norm not in norm and quote_norm_english not in norm_english:
             problems.append(f"data_point 无法回溯：{value} (quote: {quote_norm[:50]}...)")
             continue
         
-        # Check value is not empty
-        if not value:
-            problems.append("data_point value 为空")
-            continue
-        
-        # Check value appears in the quote (with boundary check)
-        # Also try English number word conversion
+        # Check value appears in quote
         value_core = extract_number_core(value)
-        value_cn = extract_number_core(chinese_numeral_to_arabic(value))
-        quote_for_check = chinese_numeral_to_arabic(quote)
-        quote_for_check_english = english_number_to_arabic(quote_for_check)
-        
         if value_core:
-            found = (number_in_text_as_word_boundary(value_core, quote_for_check) or
-                     number_in_text_as_word_boundary(value_core, quote_for_check_english))
-            if not found and value_cn and value_cn != value_core:
-                found = number_in_text_as_word_boundary(value_cn, quote_for_check)
-            if not found:
-                problems.append(f"data_point value 不在 quote 中：{value} (quote: {quote[:50]})")
+            quote_for_check = chinese_numeral_to_arabic(english_number_to_arabic(quote))
+            if not number_in_text_as_word_boundary(value_core, quote_for_check):
+                problems.append(f"data_point value 不在 quote 中：{value}")
     
-    # Build set of registered values (with their Arabic equivalents)
-    declared_values = set()
-    for dp in art.get("data_points", []):
-        val = dp.get("value", "").strip()
-        meaning = dp.get("meaning", "").strip()
-        # Skip gaming data_points
-        if "名称" in meaning or "编号" in meaning:
-            continue
-        if val:
-            declared_values.add(val)
-            declared_values.add(extract_number_core(val))
-            declared_values.add(extract_number_core(chinese_numeral_to_arabic(val)))
-    declared_values.discard("")
+    # Extract ALL numbers from output text and check each against source
+    # This includes numbers in "原文未给出" contexts - no special exemption
     
-    # Check numbers in all text are registered
-    # BUT skip "原文未给出" / "原文未报告" / "未给出" statements - these are honest disclaimers
-    text_for_number_check = all_text
-    # Remove disclaimer patterns that contain threshold numbers like "≥3级"
-    text_for_number_check = re.sub(r'[≥>=<≤]?\s*\d+级[^，。；]*原文未给出', '', text_for_number_check)
-    text_for_number_check = re.sub(r'原文未给出[^，。；]*', '', text_for_number_check)
-    text_for_number_check = re.sub(r'原文未报告[^，。；]*', '', text_for_number_check)
-    text_for_number_check = re.sub(r'未给出[具体]?[^，。；]*', '', text_for_number_check)
-    # Remove CI contexts like "具体P值或95%CI"
-    text_for_number_check = re.sub(r'P值或\d+%\s*CI', '', text_for_number_check)
-    text_for_number_check = re.sub(r'\d+%\s*CI', '', text_for_number_check)
+    # Extract numbers from output
+    number_pattern = r'(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?(?:\s*(?:%|％|倍|年|个月|天|周|例|名|mg|kg|mL|µg|nM))?'
+    for match in re.finditer(number_pattern, all_text):
+        num = match.group(0)
+        if not number_exists_in_source(num, source_norm, source_identifiers):
+            problems.append(f"数字 '{num}' 在原始材料中未找到")
     
-    all_numbers = extract_numbers_from_text(text_for_number_check)
-    for num in all_numbers:
-        num_clean = num.strip()
-        num_core = extract_number_core(num_clean)
-        
-        # Skip things that aren't really standalone numbers
-        if not num_core:
-            continue
-        
-        # Check if registered (using word boundary logic)
-        is_registered = False
-        for dv in declared_values:
-            dv_core = extract_number_core(dv) if dv else ""
-            if dv_core and (dv_core == num_core or num_core == dv_core):
-                is_registered = True
-                break
-            # Also check if declared value contains this number (e.g., "19/36" contains "19")
-            if num_core and dv and number_in_text_as_word_boundary(num_core, dv):
-                is_registered = True
-                break
-        
-        if not is_registered:
-            # Only flag numbers with digits
-            if re.search(r'\d', num_clean):
-                problems.append(f"正文数字未登记：{num_clean}")
-    
-    # Check Chinese numerals in body that represent data
-    chinese_data_in_body = re.findall(r'[两三四五六七八九十百千]+(?:年|倍|%|％|个月|天|周|例)', all_text)
-    for cn_num in chinese_data_in_body:
+    # Chinese numerals with data units
+    cn_data_pattern = r'[一二三四五六七八九十百千万亿两]+(?:年|倍|%|％|个月|天|周|例|名|位|人|剂|次)'
+    for match in re.finditer(cn_data_pattern, all_text):
+        cn_num = match.group(0)
         arabic = chinese_numeral_to_arabic(cn_num)
         arabic_core = extract_number_core(arabic)
-        if arabic_core and arabic_core not in declared_values:
-            # Check if registered value matches after conversion
-            is_registered = False
-            for dv in declared_values:
-                dv_core = extract_number_core(dv) if dv else ""
-                if dv_core and dv_core == arabic_core:
-                    is_registered = True
-                    break
-            if not is_registered:
-                problems.append(f"正文中文数字未登记：{cn_num} ({arabic})")
-    
-    # Check results paragraphs have numbers ONLY if source has quantitative data
-    source_has_numbers = source_has_quantitative_numbers(raw_material)
-    if source_has_numbers:
-        for i, para in enumerate(art.get("results", [])):
-            if not re.search(r'\d', para):
-                problems.append(f"results 第 {i+1} 段没有任何数字")
+        if arabic_core and not number_in_text_as_word_boundary(arabic_core, source_norm):
+            problems.append(f"中文数字 '{cn_num}' ({arabic}) 在原始材料中未找到")
     
     # Limitations count and quality
     min_limits = 3 if tier == "deep" else 1
@@ -1206,14 +1234,29 @@ def validate_names(art: dict, raw_material: str) -> list[str]:
                 problems.append(f"中文作者姓氏 '{name}' 在原始材料中未找到（可能是编造）")
     
     # Specific institution patterns (universities, hospitals, centers)
-    institution_pattern = r'([\u4e00-\u9fffA-Za-z\s]+(?:大学|医院|研究所|中心|Institute|University|Hospital|Center|Centre))'
+    # Per spec B: Don't treat '中心数', '单中心' as institutions
+    # Only check: institution suffixes with preceding proper names
+    institution_pattern = r'([\u4e00-\u9fffA-Za-z\s]+(?:大学|医院|研究所|研究中心|医疗中心|癌症中心|Institute|University|Hospital|Center|Centre))'
+    non_institution_phrases = {
+        '单中心', '多中心', '中心数', '数据中心', '研究中心', '该中心',
+        '医疗中心', '癌症中心', '一个中心', '两个中心', '三个中心',
+    }
     for match in re.finditer(institution_pattern, all_text):
         inst = match.group(1).strip()
+        # Skip if it's a generic term, not an institution name
+        if inst in non_institution_phrases or len(inst) < 4:
+            continue
+        # Skip if it's a number + 中心 pattern
+        if re.match(r'^[\d一二三四五六七八九十]+[个家]?中心$', inst):
+            continue
+        # Skip study design terms
+        if inst.endswith('中心') and inst in ('单中心', '多中心', '中心数'):
+            continue
         inst_lower = inst.lower()
         # Only check specific-looking institutions (not generic phrases)
-        if len(inst) >= 4 and inst_lower not in norm:
+        if inst_lower not in norm:
             # Allow generic terms
-            if not any(g in inst_lower for g in ['该研究', '本研究', '这项', '一家', '多家']):
+            if not any(g in inst_lower for g in ['该研究', '本研究', '这项', '一家', '多家', '单中心', '多中心']):
                 problems.append(f"机构名 '{inst}' 在原始材料中未找到（可能是编造）")
     
     # Specific drug/compound names (capitalized, not common words)

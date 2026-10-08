@@ -420,7 +420,12 @@ class TestValidateDepth(unittest.TestCase):
         problems = validate_depth(art, raw)
         self.assertTrue(any("新闻稿" in p for p in problems))
     
-    def test_results_without_numbers(self):
+    def test_results_without_numbers_is_ok(self):
+        """Per spec: 'missing content is OK; any invented fact is a hard defect'.
+        
+        Results without numbers are NOT flagged - missing content is allowed.
+        Only INVENTED content (numbers/names not in source) is flagged.
+        """
         art = {
             "tier": "deep",
             "title": "测试",
@@ -436,14 +441,14 @@ class TestValidateDepth(unittest.TestCase):
                 "statistics": "P<0.001",
                 "safety": "不适用",
             },
-            "results": ["结果显著改善", "效果很好"],
+            "results": ["结果显著改善", "效果很好"],  # No numbers is OK
             "limitations": ["局限1", "局限2", "局限3"],
             "data_points": [],
         }
-        # Source has quantitative numbers, so results without numbers should be flagged
         raw = "results showed 52% improvement in n = 36 patients"
         problems = validate_depth(art, raw)
-        self.assertTrue(any("第 1 段没有任何数字" in p for p in problems))
+        # Should NOT flag missing numbers - missing is OK, invented is not
+        self.assertFalse(any("段没有任何数字" in p for p in problems))
 
 
 class TestValidateNames(unittest.TestCase):
@@ -684,7 +689,7 @@ class TestIntegrationMocked(unittest.TestCase):
                 "statistics": "原文未报告统计学检验",
                 "safety": "三级及以上不良事件28%",
             },
-            "background": "针对难治性血液肿瘤，传统化疗方案、靶向药物和免疫检查点抑制剂的疗效往往有限，中位生存期通常不足一年，急需新型治疗方法来改善患者预后。CAR-T细胞治疗是一种前沿免疫疗法。",
+            "background": "针对难治性血液肿瘤，传统化疗方案、靶向药物和免疫检查点抑制剂的疗效往往有限，急需新型治疗方法来改善患者预后。CAR-T细胞治疗是一种前沿免疫疗法。",
             "design": "这是一项单中心单臂开放标签临床研究，连续纳入36例经二线及以上标准治疗后复发或难治的患者，均接受CAR-T细胞治疗，主要终点为客观缓解率，次要终点包括生存期。",
             "results": ["研究显示客观缓解率达到52%（19/36例），其中完全缓解率为28%。中位随访12个月后大部分缓解患者仍维持缓解状态。安全性方面，三级及以上不良事件发生率为28%，无治疗相关死亡。"],
             "mechanism": "",

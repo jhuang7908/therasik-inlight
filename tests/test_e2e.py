@@ -553,17 +553,18 @@ class TestValidationFalsePositives:
         assert not trial_flags, f"Incorrectly flagged trial IDs: {trial_flags}"
     
     def test_qualitative_paper_no_numbers_required(self):
-        """Papers without quantitative data should not require numbers in results."""
-        from inlight_articles import validate_depth, source_has_quantitative_numbers
+        """Papers without quantitative data should not require numbers in results.
+        
+        Per spec: 'missing content is OK; any invented fact is a hard defect'.
+        Results can omit numbers - we only flag INVENTED numbers.
+        """
+        from inlight_articles import validate_depth
         
         # Source has no quantitative numbers - qualitative platform description
         raw = """We present a shotgun genetic engineering platform that enables 
         exploration of tens of kilobases of sequence space. The system generated 
         millions of variants across three design dimensions. Two amino acid 
         substitutions were prioritized based on computational analysis."""
-        
-        # Verify source is detected as qualitative
-        assert not source_has_quantitative_numbers(raw), "Should detect qualitative source"
         
         art = {
             "tier": "brief",
@@ -590,7 +591,7 @@ class TestValidationFalsePositives:
         }
         problems = validate_depth(art, raw)
         
-        # Should NOT require numbers in results for qualitative source
+        # Should NOT require numbers in results - missing content is OK
         number_in_results = [p for p in problems if "没有任何数字" in p]
         assert not number_in_results, f"Should not require numbers in qualitative paper: {number_in_results}"
     
@@ -628,6 +629,54 @@ class TestValidationFalsePositives:
         number_problems = [p for p in problems if "正文数字未登记" in p]
         disclaimer_flags = [p for p in number_problems if "3" in p]
         assert not disclaimer_flags, f"Incorrectly flagged numbers in disclaimers: {disclaimer_flags}"
+
+
+class TestInstitutionFalsePositives:
+    """Test that generic terms are not flagged as invented institutions."""
+    
+    def test_single_center_not_flagged(self):
+        """'单中心' (single-center) should not be flagged as an institution name."""
+        from inlight_articles import validate_names
+        
+        art = {
+            "title": "单中心研究显示疗效",
+            "one_liner": "这是一项单中心研究。",
+            "background": "研究在某医疗中心开展。",
+            "design": "单中心、单臂设计。",
+            "results": ["结果显示有效。"],
+            "mechanism": "",
+            "significance": "有临床意义。",
+            "authors": "Test Author",
+            "limitations": ["单中心研究外推性有限"],
+        }
+        raw = "This single-center study was conducted at Memorial Hospital."
+        problems = validate_names(art, raw)
+        
+        # Should NOT flag "单中心" as an invented institution
+        institution_flags = [p for p in problems if "机构名" in p and "单中心" in p]
+        assert not institution_flags, f"Incorrectly flagged '单中心' as institution: {institution_flags}"
+    
+    def test_center_count_not_flagged(self):
+        """'中心数' (number of centers) should not be flagged."""
+        from inlight_articles import validate_names
+        
+        art = {
+            "title": "多中心研究",
+            "one_liner": "中心数为12。",
+            "background": "研究设计。",
+            "design": "多中心设计，中心数共12个。",
+            "results": ["结果。"],
+            "mechanism": "",
+            "significance": "意义。",
+            "authors": "Test",
+            "limitations": [],
+        }
+        raw = "The study was conducted at 12 centers."
+        problems = validate_names(art, raw)
+        
+        # Should NOT flag "中心数" as an institution
+        center_flags = [p for p in problems if "中心数" in p]
+        assert not center_flags, f"Incorrectly flagged '中心数': {center_flags}"
 
 
 class TestDataPointGaming:
