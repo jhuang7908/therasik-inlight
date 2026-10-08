@@ -1498,6 +1498,86 @@ class TestDivestitureOutOfScope:
         assert deal is None
 
 
+class TestMergerVehicleCounterparty:
+    """Never publish Merger Sub / Purchaser / Acquisition Sub as the counterparty."""
+
+    def test_vehicle_names_are_detected(self):
+        assert sec_deals.is_merger_vehicle_name("Merger Sub")
+        assert sec_deals.is_merger_vehicle_name("Purchaser")
+        assert sec_deals.is_merger_vehicle_name("Helios Acquisition Corp")
+        assert sec_deals.is_merger_vehicle_name("Helios Acquisition Sub")
+        assert sec_deals.is_merger_vehicle_name("Holdings Sub")
+        assert not sec_deals.is_merger_vehicle_name("Juniper Biosciences, Inc.")
+        assert not sec_deals.is_merger_vehicle_name("Genentech")
+
+    def test_resolve_to_named_parent(self):
+        filing = (
+            "Merger Sub, a wholly owned subsidiary of Osprey Pharma plc, "
+            "will merge with and into the Company."
+        )
+        parent = sec_deals.resolve_merger_vehicle("Merger Sub", filing)
+        assert parent is not None
+        assert "osprey pharma" in parent.lower()
+        assert "merger sub" not in parent.lower()
+
+    def test_wholly_owned_subsidiary_of_parent_phrase(self):
+        assert sec_deals.resolve_merger_vehicle(
+            "a wholly owned subsidiary of Osprey Pharma plc",
+            "Osprey Pharma plc agreed to the merger.",
+        ) == "Osprey Pharma"
+
+    def test_unresolved_vehicle_is_none(self):
+        assert sec_deals.resolve_merger_vehicle(
+            "Merger Sub", "The Company signed a merger agreement."
+        ) is None
+
+    def test_process_resolves_purchaser_to_parent(self):
+        filing = (
+            "Kestrel Rx, Inc. (the \"Company\") entered into an Agreement and Plan "
+            "of Merger with Purchaser, a wholly owned subsidiary of Osprey Pharma plc. "
+            "Purchaser will merge with and into the Company. The Company will be acquired "
+            "for $18.50 per share."
+        )
+        deal = sec_deals.process_sec_deal(
+            filing_text=filing,
+            filer_name="Kestrel Rx, Inc.",
+            filing_url="https://test",
+            filing_date="2026-10-05",
+            event_date="2026-10-01",
+            claude_response={
+                "deal_type": "merger",
+                "counterparty_name": "Purchaser",
+                "type_quote": "Purchaser will merge with and into the Company",
+                "counterparty_quote": "Purchaser, a wholly owned subsidiary of Osprey Pharma plc",
+                "amounts": [{"kind": "purchase_price", "quote": "for $18.50 per share"}],
+            },
+        )
+        assert deal is not None
+        assert "osprey pharma" in deal["counterparty"].lower()
+        assert "purchaser" not in deal["counterparty"].lower()
+
+    def test_process_drops_unresolved_vehicle(self):
+        filing = (
+            "Kestrel Rx, Inc. (the \"Company\"). Merger Sub will merge with and into "
+            "the Company for $18.50 per share."
+        )
+        deal = sec_deals.process_sec_deal(
+            filing_text=filing,
+            filer_name="Kestrel Rx, Inc.",
+            filing_url="https://test",
+            filing_date="2026-10-05",
+            event_date="2026-10-01",
+            claude_response={
+                "deal_type": "merger",
+                "counterparty_name": "Merger Sub",
+                "type_quote": "Merger Sub will merge with and into the Company",
+                "counterparty_quote": "Merger Sub will merge with and into the Company",
+                "amounts": [{"kind": "purchase_price", "quote": "for $18.50 per share"}],
+            },
+        )
+        assert deal is None
+
+
 # =============================================================================
 # RUN TESTS
 # =============================================================================

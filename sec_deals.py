@@ -2024,6 +2024,78 @@ def is_divestiture_or_asset_sale(text: str) -> bool:
     return False
 
 
+_VEHICLE_NAME_RE = re.compile(
+    r'\b(?:merger\s+sub(?:sidiary)?'
+    r'|purchaser'
+    r'|acquisition\s+(?:corp(?:oration)?|sub(?:sidiary)?)'
+    r'|holdings\s+sub(?:sidiary)?)\b',
+    re.IGNORECASE,
+)
+
+
+def is_merger_vehicle_name(name: str) -> bool:
+    """True for Merger Sub / Purchaser / Acquisition Corp / Holdings Sub vehicles."""
+    if not name:
+        return False
+    raw = name.strip()
+    n = normalize_company_name(raw).strip()
+    if not raw:
+        return False
+    return bool(_VEHICLE_NAME_RE.search(raw) or (n and _VEHICLE_NAME_RE.search(n)))
+
+
+def resolve_merger_vehicle(name: str, filing_text: str, type_quote: str = "") -> str | None:
+    """Replace a merger vehicle with the named parent, or None to drop.
+
+    Non-vehicle names are returned unchanged. 'a wholly owned subsidiary of
+    Parent' resolves to Parent. If no parent is named, return None.
+    """
+    if not name:
+        return None
+    generic_sub = re.match(
+        r'^(?:an?\s+)?(?:indirect\s+)?wholly[-\s]owned\s+subsidiary\s+of\s+(.+)$',
+        name.strip(), re.IGNORECASE,
+    )
+    if generic_sub:
+        parent = normalize_company_name(generic_sub.group(1)).strip()
+        return parent or None
+    if not is_merger_vehicle_name(name):
+        return name
+    blob = f"{type_quote}\n{filing_text or ''}"
+
+    escaped = re.escape(name)
+    parent_patterns = [
+        # NAME, a wholly owned subsidiary of PARENT
+        rf'{escaped}(?:,|\s)+a(?:n)?\s+(?:indirect\s+)?'
+        rf'wholly[-\s]owned\s+subsidiary\s+of\s+'
+        rf'([A-Z][A-Za-z0-9&.,\' -]{{1,80}}?)(?:\.|,|;|\s+and\b|\s+\()',
+        # NAME (a wholly-owned subsidiary of PARENT)
+        rf'{escaped}[^.]{{0,120}}?\(\s*(?:an?\s+)?(?:indirect\s+)?'
+        rf'wholly[-\s]owned\s+subsidiary\s+of\s+([^)]+?)\)',
+        # subsidiary of PARENT ("NAME") / (“NAME”)
+        rf'(?:wholly[-\s]owned\s+)?subsidiary\s+of\s+'
+        rf'([A-Z][A-Za-z0-9&.,\' -]{{1,80}}?)\s*\(\s*["\u201c]?{escaped}',
+        # PARENT, through its wholly owned subsidiary NAME
+        rf'([A-Z][A-Za-z0-9&.,\' -]{{1,80}}?),\s+through\s+its\s+'
+        rf'(?:indirect\s+)?(?:wholly[-\s]owned\s+)?subsidiary\s+{escaped}',
+        # a wholly owned subsidiary of PARENT (when NAME is just Purchaser/Merger Sub)
+        rf'(?:an?\s+)?(?:indirect\s+)?wholly[-\s]owned\s+subsidiary\s+of\s+'
+        rf'([A-Z][A-Za-z0-9&.,\' -]{{1,80}}?)',
+    ]
+    for pat in parent_patterns:
+        m = re.search(pat, blob, re.IGNORECASE)
+        if not m:
+            continue
+        parent = normalize_company_name(m.group(1)).strip().rstrip(',')
+        parent = re.sub(r'\s+', ' ', parent)
+        if not parent or is_merger_vehicle_name(parent):
+            continue
+        if match_company_whole_word(parent, name) or match_company_whole_word(name, parent):
+            continue
+        return parent
+    return None
+
+
 def out_of_scope_deal_reason(type_quote: str, filing_text: str) -> str | None:
     """Return a drop reason if the quote's filing context is out of scope.
 
@@ -2427,6 +2499,17 @@ def process_sec_deal(
     if not verify_counterparty_in_quotes(counterparty, counterparty_quote, type_quote, filing_text):
         logging.info("Deal dropped: counterparty '%s' not verified in quotes", counterparty)
         return None
+
+    resolved_cp = resolve_merger_vehicle(counterparty, filing_text, type_quote)
+    if resolved_cp is None or is_merger_vehicle_name(resolved_cp):
+        logging.info("Deal dropped: merger vehicle '%s' has no named parent", counterparty)
+        return None
+    if resolved_cp != counterparty:
+        if not match_company_whole_word(resolved_cp, filing_text):
+            logging.info("Deal dropped: vehicle parent '%s' not in filing", resolved_cp)
+            return None
+        logging.info("Resolved merger vehicle '%s' to parent '%s'", counterparty, resolved_cp)
+        counterparty = resolved_cp
     
     # Verification 3b: counterparty must NOT equal filer (self-deal check)
     filer_normalized = normalize_company_name(filer_name).lower()
