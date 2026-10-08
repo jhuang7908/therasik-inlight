@@ -2005,6 +2005,136 @@ class TestMatcherToleratesFaithfulDrafts(unittest.TestCase):
         self.assertFalse(any("必须包含数字" in p for p in problems), problems)
         self.assertFalse(any("数字 '" in p or "中文数字" in p for p in problems), problems)
 
+    def test_normalize_for_match_th17_emdash_and_zhi_range(self):
+        from inlight_articles import (
+            extract_numbers_with_context,
+            extract_number_core,
+            normalize_for_match,
+            validate_depth,
+        )
+
+        self.assertEqual(normalize_for_match("T H 17").lower(), "th17")
+        self.assertEqual(normalize_for_match("TH17").lower(), "th17")
+        self.assertIn("184973", normalize_for_match("—184,973"))
+        self.assertIn("6", normalize_for_match("随访6至23个月"))
+        self.assertIn("23", normalize_for_match("随访6至23个月"))
+
+        cores = [extract_number_core(n) for n, _ in extract_numbers_with_context("T H 17 亚群升高")]
+        self.assertNotIn("17", cores, cores)
+
+    def test_realistic_oa_results_through_production_validate_depth(self):
+        """End-to-end through validate_depth (the production verifier), not helpers only."""
+        from inlight_articles import validate_depth
+        from tests.test_acir_qc import _deep_art, _results
+
+        source = (
+            _results()
+            + " TH17 cells expanded after treatment. "
+            "Quality-filtered reads totaled —184,973. "
+            "Single-cell analysis identified six kinds of myeloid subsets "
+            "and four types of stromal cells. "
+            "Follow-up ranged from 6 months to 23 months. "
+            "The objective response rate was 64% among 527 women. "
+            "control response rate was 32% hazard ratio 0.50 "
+            "Grade 3+ adverse events 21% median follow-up 18 months. "
+            "tislelizumab 200 mg."
+        )
+        art = _deep_art(
+            results=[
+                "主要终点客观缓解率为64%，对照为32%，风险比0.50，随访6至23个月。",
+                "527例可评估，T H 17亚群升高，可读段—184,973。",
+                "鉴定出六种髓系亚群与四种基质分型，中位随访18个月。",
+                "三级以上不良事件发生率为21%。",
+            ]
+        )
+        problems = validate_depth(art, source)
+        invented = [p for p in problems if "在原始材料中未找到" in p or "标识符" in p or "数字范围" in p]
+        self.assertEqual(invented, [], invented)
+
+        bad = _deep_art(results=["客观缓解率达到99%。", "随访十八个月。", "不良事件21%。"])
+        bad_probs = validate_depth(bad, source)
+        self.assertTrue(
+            any("99" in p and "未找到" in p for p in bad_probs),
+            bad_probs,
+        )
+
+    def test_realistic_pair_through_process_single_article_verifier(self):
+        """Same pair through _process_single_article so validate_depth is not mocked."""
+        import os
+        from unittest.mock import patch
+        from inlight_articles import EnrichedItem, _process_single_article
+        from inlight_qc import GEMINI_SCORE_KEYS, record_fulltext
+        from tests.test_acir_qc import _deep_art, _results
+
+        source = (
+            _results()
+            + " TH17 cells expanded. Mapped reads —184,973. "
+            "six kinds of subsets. Follow-up from 6 months to 23 months. "
+            "objective response rate was 64% control response rate was 32% "
+            "among 527 women hazard ratio 0.50 Grade 3+ adverse events 21% "
+            "median follow-up 18 months. tislelizumab 200 mg."
+        )
+        item = EnrichedItem(
+            url="https://doi.org/10.1/oa-ft", title="T", source="N", date="2026-01-01",
+            pmcid="PMC884973",
+        )
+        record_fulltext(item, source, source_label="PMC PMC884973")
+        art = _deep_art(
+            url=item.url,
+            results=[
+                "主要终点客观缓解率为64%，对照为32%，风险比0.50，随访6至23个月。",
+                "527例可评估，T H 17亚群升高，可读段—184,973。",
+                "鉴定出六种亚群，中位随访18个月。",
+                "三级以上不良事件发生率为21%。",
+            ],
+        )
+
+        def fake_draft(it, tier, config, problems=None):
+            return dict(art)
+
+        with patch.dict(os.environ, {"GEMINI_API_KEY": "test-gemini"}):
+            with patch("inlight_qc.gemini_review_deep", return_value={
+                "pass": True, "scores": {k: 8 for k in GEMINI_SCORE_KEYS},
+                "reasons": "ok", "factual_mismatch": False,
+            }):
+                with patch("inlight_articles.draft_single_article", side_effect=fake_draft):
+                    with patch("inlight_articles.validate_names", return_value=[]):
+                        with patch("inlight_qc.validate_acir_structure", return_value=[]):
+                            with patch("inlight_articles.verify_article_claims", return_value={
+                                "status": "ok", "problems": [], "calls": 1,
+                                "input_tokens": 1, "output_tokens": 1,
+                            }):
+                                out = _process_single_article(
+                                    {"url": item.url, "tier": "deep", "field": "c3"},
+                                    {item.url: item},
+                                    {"min_deep": 3, "acir_qc": True},
+                                )
+        self.assertIsNotNone(out, "faithful OA Results draft was false-dropped")
+        self.assertEqual(out["tier"], "deep")
+
+        bad = dict(art)
+        bad["results"] = ["客观缓解率达到99%。", "随访十八个月。", "不良事件21%。"]
+
+        def fake_bad(it, tier, config, problems=None):
+            return dict(bad)
+
+        stats = {"drops": [], "qc_report": {"articles": []}}
+        with patch.dict(os.environ, {"GEMINI_API_KEY": "test-gemini"}):
+            with patch("inlight_qc.gemini_review_deep", return_value={
+                "pass": True, "scores": {k: 8 for k in GEMINI_SCORE_KEYS},
+                "reasons": "ok", "factual_mismatch": False,
+            }):
+                with patch("inlight_articles.draft_single_article", side_effect=fake_bad):
+                    with patch("inlight_articles.validate_names", return_value=[]):
+                        dropped = _process_single_article(
+                            {"url": item.url, "tier": "deep", "field": "c3"},
+                            {item.url: item},
+                            {"min_deep": 3, "acir_qc": True},
+                            stats=stats,
+                        )
+        self.assertIsNone(dropped)
+        self.assertTrue(any("99" in d.get("reason", "") for d in stats["drops"]))
+
     def test_chinese_numeral_classifier_on_groups(self):
         from inlight_articles import classify_unit_in_context, number_exists_in_source, normalize_source_text
         from inlight_articles import UNIT_COUNT, NOUN_GROUP, classify_noun_after, chinese_numeral_to_arabic
@@ -2735,6 +2865,36 @@ class TestYieldAndSourceFetch(unittest.TestCase):
         warnings = [r.getMessage() for r in records if r.levelno >= logging.WARNING]
         self.assertTrue(any("未放宽核对" in w for w in warnings), warnings)
         self.assertTrue(any("1 < 3" in w for w in warnings), warnings)
+
+
+class TestWeeklyDefaultUsesStrictNewPipeline(unittest.TestCase):
+    """plain `python run_weekly.py` must take the new pipeline + strict gates."""
+
+    def test_production_sources_yaml_default_is_new_and_strict(self):
+        import yaml
+        from pathlib import Path
+        from run_weekly import parse_weekly_args, should_use_new_pipeline
+        from inlight_qc import acir_strict
+
+        cfg = yaml.safe_load(Path("sources.yaml").read_text())
+        args = parse_weekly_args([])
+        self.assertFalse(args.use_new_pipeline)
+        self.assertFalse(args.use_legacy_pipeline)
+        self.assertTrue(should_use_new_pipeline(args, cfg))
+        self.assertTrue(acir_strict(cfg))
+
+    def test_legacy_opt_out_and_fixture_config_stay_old(self):
+        from run_weekly import parse_weekly_args, should_use_new_pipeline
+
+        self.assertFalse(should_use_new_pipeline(parse_weekly_args([]), {}))
+        self.assertFalse(should_use_new_pipeline(
+            parse_weekly_args(["--use-legacy-pipeline"]),
+            {"min_deep": 3},
+        ))
+        self.assertTrue(should_use_new_pipeline(
+            parse_weekly_args(["--use-new-pipeline"]),
+            {},
+        ))
 
 
 if __name__ == "__main__":

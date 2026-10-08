@@ -1333,12 +1333,38 @@ def update_latest(dest: Path) -> None:
     logging.info("已更新 content/latest.json")
 
 
-def main() -> None:
+def should_use_new_pipeline(args, config: dict | None) -> bool:
+    """Weekly default is the new pipeline when sources.yaml has min_deep.
+
+    Acceptance fixtures omit min_deep and keep the recorded legacy path unless
+    they pass --use-new-pipeline. --use-legacy-pipeline is a debug opt-out.
+    """
+    if getattr(args, "use_legacy_pipeline", False):
+        return False
+    if getattr(args, "use_new_pipeline", False):
+        return True
+    cfg = config or {}
+    return "min_deep" in cfg or bool(cfg.get("acir_qc"))
+
+
+def parse_weekly_args(argv: list[str] | None = None):
     parser = argparse.ArgumentParser(description="生成一周的前沿追踪内容")
     parser.add_argument("--dry-run", action="store_true", help="只写到 preview/，不改网站内容目录")
-    parser.add_argument("--use-new-pipeline", action="store_true", 
-                       help="使用新的文章深度管线（enrich + triage + 逐篇生成 + validate）")
-    args = parser.parse_args()
+    parser.add_argument(
+        "--use-new-pipeline",
+        action="store_true",
+        help="强制走新文章深度管线（生产 sources.yaml 有 min_deep 时已是默认）",
+    )
+    parser.add_argument(
+        "--use-legacy-pipeline",
+        action="store_true",
+        help="调试用：强制走旧 claude_draft 路径",
+    )
+    return parser.parse_args(argv)
+
+
+def main() -> None:
+    args = parse_weekly_args()
     log_path = setup_log()
     logging.info("日志 %s", log_path)
     try:
@@ -1355,8 +1381,9 @@ def main() -> None:
             logging.error("最近 %s 天没有抓到条目，不写文件", config.get("window_days", 7))
             raise SystemExit(2)
         logging.info("送去筛选的条目 %d", len(items))
+        use_new = should_use_new_pipeline(args, config) and ARTICLE_MODULE_AVAILABLE
         
-        if args.use_new_pipeline and ARTICLE_MODULE_AVAILABLE:
+        if use_new:
             logging.info("使用新文章深度管线（enrich + triage + 逐篇生成 + validate）")
             new_draft = process_articles(items, config)
             
@@ -1381,7 +1408,7 @@ def main() -> None:
                 "qc_report": (new_draft.get("stats") or {}).get("qc_report") or {},
                 "stats": new_draft.get("stats") or {},
             }
-        elif args.use_new_pipeline and not ARTICLE_MODULE_AVAILABLE:
+        elif should_use_new_pipeline(args, config) and not ARTICLE_MODULE_AVAILABLE:
             logging.warning("新文章管线不可用（inlight_articles.py 导入失败），回退到旧管线")
             draft = claude_draft(items, config)
         else:

@@ -1715,11 +1715,13 @@ def extract_identifiers_from_source(source: str) -> set[str]:
     - Trial IDs: NCT04443907, RPCEC00000444
     """
     identifiers = set()
+    # Collapse spaced labels without lowercasing, so R2 / TH17 stay extractable.
+    source = _collapse_spaced_labels(source or "")
     
-    # Gene names: CD4, CD8, CD 8, CD318, IL-23, IFN-α2, HLA-DP04, NK, NF-κB
+    # Gene names: CD4, CD8, CD 8, CD318, IL-23, IFN-α2, HLA-DP04, NK, NF-κB, TH17
     scan = _identifier_scan_text(source)
     for match in re.finditer(
-        r'\b(?:CD|IL|HLA|IFN|NK|NF|CCR|Th|TAK|CCL|CXCL|CXCR|ROR)[A-Za-zα-ω]?[\s_-]?[A-Za-z0-9αβγδ/-]*\d+[A-Za-z0-9αβγδ/-]*\b',
+        r'\b(?:CD|IL|HLA|IFN|NK|NF|CCR|Th|TH|TAK|CCL|CXCL|CXCR|ROR)[A-Za-zα-ω]?[\s_-]?[A-Za-z0-9αβγδ/-]*\d+[A-Za-z0-9αβγδ/-]*\b',
         scan,
         re.IGNORECASE,
     ):
@@ -1759,7 +1761,7 @@ def extract_identifiers_from_source(source: str) -> set[str]:
 # Do not allow a free letter-run + space + digits ("was 52" is a count).
 _IDENTIFIER_PREFIXES = (
     "CD", "IL", "HLA", "IFN", "NK", "NF", "CCR", "CXCR", "CXCL", "CCL",
-    "Th", "TAK", "ROR", "Dsg", "MK",
+    "Th", "TH", "TAK", "ROR", "Dsg", "MK",
 )
 _IDENTIFIER_TOKEN_RE = re.compile(
     r'(?i)(?:'
@@ -1776,12 +1778,13 @@ _IDENTIFIER_TOKEN_RE = re.compile(
 )
 _SUBSCRIPT_DIGIT_MAP = str.maketrans("₀₁₂₃₄₅₆₇₈₉", "0123456789")
 
-# Taxonomy / kind words: 「六种」「6类」「six kinds」 are qualitative, not counts.
+# Taxonomy / kind words: 「六种」「6类」「six kinds」 / bare six|four are not counts.
 _QUALITATIVE_COUNT_RE = re.compile(
     r'(?i)(?:'
-    r'\d+(?:\.\d+)?\s*(?:种|类)|'
+    r'\d+(?:\.\d+)?\s*(?:种|类|kinds?|types?|subsets?|classes?)|'
     r'[零一二三四五六七八九十两]+\s*(?:种|类)|'
-    r'(?:zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\s+kinds?'
+    r'(?:zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)'
+    r'\s+(?:kinds?|types?|subsets?|classes?)'
     r')'
 )
 
@@ -1801,6 +1804,55 @@ LENGTH_BODY_FIELDS = (
 MISSING_VALUE_MARK = "未给出"
 BRIEF_HAN_MAX = 900
 SEE_BODY_RE = re.compile(r"详见正文")
+
+
+_IDENT_LETTER_SPACE_RE = re.compile(
+    r'(?i)(?<![A-Za-z0-9])([A-Za-z](?:\s+[A-Za-z]){1,6})\s+(\d+[A-Za-z0-9]*)'
+)
+
+
+def _collapse_spaced_labels(text: str) -> str:
+    """T H 17 / CD 8 / Th 17 → TH17 / CD8 / Th17 without changing case otherwise."""
+    t = (text or "").translate(_SUBSCRIPT_DIGIT_MAP)
+    t = _IDENT_LETTER_SPACE_RE.sub(lambda m: re.sub(r"\s+", "", m.group(1)) + m.group(2), t)
+    t = re.sub(
+        r'(?i)(?<![A-Za-z0-9])('
+        + "|".join(_IDENTIFIER_PREFIXES)
+        + r')[ ]+(\d+[A-Za-z0-9]*)',
+        r"\1\2",
+        t,
+    )
+    return t
+
+
+def normalize_for_match(text: str, *, convert_english_words: bool = False) -> str:
+    """Canonical form for number/identifier matching. Apply to draft and source.
+
+    Builds on normalize_source_text, then:
+    - Strip spaces inside alphanumeric labels (T H 17 → TH17, CD 8 → CD8)
+    - Split numbers from adjacent dashes / CJK (—184,973 / 共527例)
+    - Expand 至/到/~ ranges so both endpoints are standalone
+    English number words become digits only when convert_english_words=True
+    (source side). Draft-side words like six/four stay non-claims.
+    """
+    t = _collapse_spaced_labels(
+        normalize_source_text(text or "", convert_english_words=convert_english_words)
+    )
+    # Split a leading dash from a number (—184973) but keep 4-1BB / TAK-981 intact.
+    t = re.sub(r'(?<![A-Za-z0-9])-(?=\d)', "- ", t)
+    t = re.sub(r'(?<=[\u4e00-\u9fff])(?=\d)', " ", t)
+    t = re.sub(r'(?<=\d)(?=[\u4e00-\u9fff])', " ", t)
+    t = re.sub(
+        r'(\d+(?:\.\d+)?)\s*(?:至|到|~|～)\s*(\d+(?:\.\d+)?)',
+        r"\1 \2",
+        t,
+    )
+    t = re.sub(
+        r'(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)(?![A-Za-z])',
+        r"\1 \2",
+        t,
+    )
+    return re.sub(r"\s+", " ", t).strip()
 
 
 def _identifier_scan_text(text: str) -> str:
@@ -2772,7 +2824,8 @@ def extract_numbers_with_context(text: str) -> list[tuple[str, str]]:
     results = []
     
     # Arabic numbers with optional units. Middle-dot decimals (18·9) count.
-    text = (text or "").replace("·", ".").replace("•", ".")
+    # Normalize first so T H 17 / —184,973 / 6至23 are the same tokens as the source.
+    text = normalize_for_match((text or "").replace("·", ".").replace("•", "."), convert_english_words=False)
     number_pattern = r'(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?(?:\s*(?:%|％|倍|年|个月|天|周|小时|例|名|mg|kg|mL|µg|nM|pM|µM|mM|μg|μL))?'
     id_spans = identifier_spans(text)
     for match in re.finditer(number_pattern, text):
@@ -2798,6 +2851,7 @@ def extract_chinese_numbers_with_context(text: str) -> list[tuple[str, str]]:
     With units: 年|倍|%|％|个月|天|周|小时|例|名|位|人|剂|次|万|亿
     """
     results = []
+    text = normalize_for_match(text or "", convert_english_words=False)
     
     # Chinese numerals with units. 一组/两组 are grouping words, not data.
     cn_data_pattern = (
@@ -2833,7 +2887,7 @@ def _is_qualitative_datapoint(value: str, meaning: str) -> bool:
 def _invented_numeric_range(output: str, source: str) -> list[str]:
     """An output interval (CI / dose / time) must appear as a range in the source."""
     problems = []
-    src = normalize_source_text(source, convert_english_words=False)
+    src = normalize_for_match(source, convert_english_words=False)
     src = src.replace('·', '.')
     for m in re.finditer(
         r'(\d+(?:\.\d+)?)\s*[-–—~至到]\s*(\d+(?:\.\d+)?)(\s*(?:%|％|个月|周|天|年|mg|kg))?',
@@ -2877,12 +2931,14 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
     problems = []
     tier = art.get("tier", "brief")
     
-    # Normalize source for comparison
-    source_norm = normalize_source_text(raw_material)
-    source_raw = normalize_source_text(raw_material, convert_english_words=False)
+    # Normalize source AND draft to the same match form before comparing.
+    source_norm = normalize_for_match(raw_material, convert_english_words=True)
+    source_raw = normalize_for_match(raw_material, convert_english_words=False)
     
     # Extract identifiers from source (these are allowed to have digits)
-    source_identifiers = extract_identifiers_from_source(raw_material)
+    source_identifiers = extract_identifiers_from_source(
+        normalize_for_match(raw_material, convert_english_words=False)
+    )
     
     def _text_chunks(val) -> list[str]:
         if isinstance(val, str) and val:
@@ -2929,14 +2985,15 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
     # Identifier tokens in the output (NCT…, IL-6, CD19, …) must occur in
     # the source. Skipping their digits as claimed numbers must not let an
     # invented registry ID through.
-    src_scan = _identifier_scan_text(raw_material)
+    src_scan = _identifier_scan_text(source_raw)
     src_id_keys = {
         re.sub(r'[\s-]+', '', m.group(0).lower())
         for m in _IDENTIFIER_TOKEN_RE.finditer(src_scan)
     }
     src_lower = src_scan.lower()
     seen_ids: set[str] = set()
-    for match in _IDENTIFIER_TOKEN_RE.finditer(_identifier_scan_text(all_text)):
+    draft_scan = _identifier_scan_text(normalize_for_match(all_text, convert_english_words=False))
+    for match in _IDENTIFIER_TOKEN_RE.finditer(draft_scan):
         tok = match.group(0)
         key = re.sub(r'[\s-]+', '', tok.lower())
         if key in seen_ids:
