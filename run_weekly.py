@@ -2002,6 +2002,16 @@ field 必须是：{json.dumps(FIELDS, ensure_ascii=False)}
             steps = [sec_deals.strip_unverified_numbers_from_text(s, source_text) for s in steps]
             steps = [s for s in steps if s.strip()]  # Remove empty steps after stripping
         
+        # H6: Drop articles with empty lead or body after stripping
+        # An article with empty lead should not be published - it means the entire lead
+        # was an invented number that got stripped
+        if not lead.strip():
+            logging.warning("丢弃 lead 为空的文章（stripping后）：%s", url)
+            continue
+        if not body.strip():
+            logging.warning("丢弃 body 为空的文章（stripping后）：%s", url)
+            continue
+        
         # Check steps count AFTER stripping (not before)
         if len(steps) < 3:
             logging.warning("丢弃步骤不足的文章（stripping后）：%s, steps=%d", url, len(steps))
