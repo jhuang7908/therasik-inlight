@@ -1850,6 +1850,236 @@ class TestUpfrontPayerAndTiming:
         assert "15" not in (deal.get("title") or "")
 
 
+class TestDefinedTermsDecideParties:
+    """'the Company' is the filer only when the filing does not define it as someone else."""
+
+    def test_curly_and_combined_parentheticals(self):
+        text = (
+            "Osprey Pharma Inc. (“Parent” and, together with Merger Sub, the “Buyer Parties”) "
+            "and Helios BidCo LLC (“Merger Sub”) agreed to acquire Thistle Rx, Inc. (the “Company”)."
+        )
+        terms = sec_deals.parse_defined_terms(text)
+        assert any("osprey" in n.lower() for n in terms.get("parent", []))
+        assert any("osprey" in n.lower() for n in terms.get("buyer parties", []))
+        assert any("helios" in n.lower() for n in terms.get("merger sub", []))
+        assert any("thistle" in n.lower() for n in terms.get("company", []))
+
+    def test_company_defined_as_target_filer_is_buyer(self):
+        filing = (
+            "Osprey Pharma Inc. (the \"Parent\") entered into a merger agreement "
+            "to acquire Thistle Rx, Inc. (the \"Company\"). Parent will acquire the Company "
+            "for $400 million."
+        )
+        role = sec_deals.detect_role_from_quote(
+            "Parent will acquire the Company for $400 million",
+            "Osprey Pharma Inc.",
+            "Thistle Rx",
+            deal_type=sec_deals.DealType.ACQUISITION,
+            filing_text=filing,
+        )
+        assert role is not None
+        assert role["filer_role"] == "acquirer"
+
+    def test_company_defined_as_other_does_not_make_filer_the_target(self):
+        filing = (
+            "Osprey Pharma Inc. agreed to acquire Thistle Rx, Inc. (the “Company”). "
+            "Merger Sub will merge with and into the Company."
+        )
+        role = sec_deals.detect_role_from_quote(
+            "Merger Sub will merge with and into the Company",
+            "Osprey Pharma Inc.",
+            "Thistle Rx",
+            deal_type=sec_deals.DealType.MERGER,
+            filing_text=filing,
+        )
+        # Filer is the buyer; 'the Company' is the target. Without an explicit
+        # filer-as-buyer clause this is ambiguous → drop.
+        assert role is None or role["filer_role"] != "target"
+
+    def test_ambiguous_company_definition_drops(self):
+        filing = (
+            "Osprey Pharma Inc. (the \"Company\") and Thistle Rx, Inc. (the \"Company\") "
+            "entered into a merger agreement."
+        )
+        role = sec_deals.detect_role_from_quote(
+            "Osprey Pharma Inc. will acquire Thistle Rx, Inc.",
+            "Osprey Pharma Inc.",
+            "Thistle Rx",
+            deal_type=sec_deals.DealType.ACQUISITION,
+            filing_text=filing,
+        )
+        assert role is None
+
+
+class TestEquityNeverADealPayment:
+    def test_private_placement_not_upfront(self):
+        assert sec_deals.is_equity_amount_quote(
+            "the Company completed a private placement of $40 million of common stock",
+            sec_deals.DealType.LICENSE_COLLABORATION,
+        ) is True
+
+    def test_process_omits_equity_from_license(self):
+        filing = (
+            "Nimbus Labs, Inc. granted Harbor Bio AG an exclusive license. "
+            "Harbor Bio AG will pay the Company a $20 million upfront payment. "
+            "The Company also sold shares in a private placement at a share price of $8.50 "
+            "for aggregate proceeds of $40 million."
+        )
+        deal = sec_deals.process_sec_deal(
+            filing_text=filing,
+            filer_name="Nimbus Labs, Inc.",
+            filing_url="https://test",
+            filing_date="2026-10-05",
+            event_date="2026-10-01",
+            claude_response={
+                "deal_type": "license_collaboration",
+                "counterparty_name": "Harbor Bio AG",
+                "type_quote": "Nimbus Labs, Inc. granted Harbor Bio AG an exclusive license",
+                "counterparty_quote": "granted Harbor Bio AG an exclusive license",
+                "amounts": [
+                    {"kind": "upfront", "quote": "Harbor Bio AG will pay the Company a $20 million upfront payment"},
+                    {"kind": "upfront", "quote": "private placement at a share price of $8.50 for aggregate proceeds of $40 million"},
+                    {"kind": "purchase_price", "quote": "sold shares in a private placement at a share price of $8.50"},
+                ],
+            },
+        )
+        assert deal is not None
+        kinds = [a.get("kind") for a in deal.get("verified_amounts", [])]
+        assert kinds == ["upfront"]
+        assert "4,000" not in (deal.get("title") or "")
+        assert "收购对价" not in (deal.get("structure") or "")
+
+
+class TestMilestonesMeanMilestonesOnly:
+    def test_reimbursement_and_combined_total_rejected(self):
+        assert sec_deals.is_valid_milestone_amount(
+            "Harbor Bio will reimburse development costs up to $50 million"
+        ) is False
+        assert sec_deals.is_valid_milestone_amount(
+            "the parties will share costs of up to $15 million"
+        ) is False
+        assert sec_deals.is_valid_milestone_amount(
+            "eligible to receive up to $1.2 billion in total payments including a $100 million upfront"
+        ) is False
+        assert sec_deals.is_valid_milestone_amount(
+            "eligible to receive up to $1.17 billion in development, regulatory, and commercial milestone payments"
+        ) is True
+
+    def test_process_omits_combined_total_milestone(self):
+        filing = (
+            "Nimbus Labs, Inc. granted Harbor Bio AG an exclusive license. "
+            "Harbor Bio AG will pay the Company a $20 million upfront payment "
+            "and up to $200 million in total consideration including the upfront."
+        )
+        deal = sec_deals.process_sec_deal(
+            filing_text=filing,
+            filer_name="Nimbus Labs, Inc.",
+            filing_url="https://test",
+            filing_date="2026-10-05",
+            event_date="2026-10-01",
+            claude_response={
+                "deal_type": "license_collaboration",
+                "counterparty_name": "Harbor Bio AG",
+                "type_quote": "Nimbus Labs, Inc. granted Harbor Bio AG an exclusive license",
+                "counterparty_quote": "granted Harbor Bio AG an exclusive license",
+                "amounts": [
+                    {"kind": "upfront", "quote": "Harbor Bio AG will pay the Company a $20 million upfront payment"},
+                    {"kind": "milestones_total", "quote": "up to $200 million in total consideration including the upfront"},
+                ],
+            },
+        )
+        assert deal is not None
+        kinds = [a.get("kind") for a in deal.get("verified_amounts", [])]
+        assert "milestones_total" not in kinds
+
+
+class TestVehicleNeverBareRoleWord:
+    def test_resolve_does_not_return_parent_word(self):
+        filing = (
+            "Purchaser, a wholly owned subsidiary of Parent, will merge "
+            "with and into the Company."
+        )
+        parent = sec_deals.resolve_merger_vehicle("Purchaser", filing)
+        assert parent is None or not sec_deals._is_bare_role_word(parent)
+
+    def test_maps_parent_term_to_company(self):
+        filing = (
+            "Helios BidCo LLC (“Purchaser”), a wholly owned subsidiary of "
+            "Osprey Pharma Inc. (“Parent”), will merge with and into the Company."
+        )
+        parent = sec_deals.resolve_merger_vehicle("Purchaser", filing)
+        assert parent is not None
+        assert "osprey" in parent.lower()
+        assert not sec_deals._is_bare_role_word(parent)
+
+
+class TestHeadlineOnlyUpfrontOrPurchasePrice:
+    def test_milestone_is_not_headline(self):
+        filing = (
+            "Nimbus Labs, Inc. granted Harbor Bio AG an exclusive license. "
+            "Harbor Bio AG will pay the Company a $20 million upfront payment "
+            "and milestone payments totaling $180 million."
+        )
+        deal = sec_deals.process_sec_deal(
+            filing_text=filing,
+            filer_name="Nimbus Labs, Inc.",
+            filing_url="https://test",
+            filing_date="2026-10-05",
+            event_date="2026-10-01",
+            claude_response={
+                "deal_type": "license_collaboration",
+                "counterparty_name": "Harbor Bio AG",
+                "type_quote": "Nimbus Labs, Inc. granted Harbor Bio AG an exclusive license",
+                "counterparty_quote": "granted Harbor Bio AG an exclusive license",
+                "amounts": [
+                    {"kind": "milestones_total", "quote": "milestone payments totaling $180 million"},
+                ],
+            },
+        )
+        assert deal is not None
+        assert not deal.get("money")
+        assert "（" not in (deal.get("title") or "")
+
+
+class TestRecallPayerLicensorPassiveCurly:
+    def test_company_paid_and_make_upfront_cash_payment(self):
+        assert sec_deals._extract_upfront_payer_payee(
+            "the Company paid Harbor Bio AG a $10 million upfront payment",
+            "Nimbus Labs, Inc.",
+            "Harbor Bio AG",
+        )[0] == "filer"
+        payer, payee = sec_deals._extract_upfront_payer_payee(
+            "the Company will make an upfront cash payment of $30 million to Harbor Bio AG",
+            "Nimbus Labs, Inc.",
+            "Harbor Bio AG",
+        )
+        assert payer == "filer"
+        assert payee == "counterparty"
+
+    def test_licensors_is_licensor_side(self):
+        assert sec_deals._party_is(
+            "Nimbus", "Nimbus Labs, Inc.", "Harbor Bio AG", "the Licensor(s)"
+        ) == "licensor_role"
+
+    def test_passive_company_is_granted_filer_is_licensee(self):
+        assert sec_deals._explicit_grant_licensor_side(
+            "the Company is granted an exclusive license by Harbor Bio AG",
+            "",
+            "Nimbus Labs, Inc.",
+            "Harbor Bio AG",
+        ) == "counterparty"
+
+    def test_curly_defined_term_in_counterparty_check(self):
+        filing = (
+            "the Company entered into a License Agreement with Harbor Bio AG (“Harbor”)."
+        )
+        assert sec_deals.verify_defined_term_in_type_quote(
+            "Harbor Bio AG",
+            "the Company granted Harbor an exclusive license",
+            filing,
+        ) is True
+
+
 # =============================================================================
 # RUN TESTS
 # =============================================================================

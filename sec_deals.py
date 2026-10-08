@@ -820,25 +820,14 @@ _ROLE_NOUNS = (
 def _companies_defined_as_role(role: str, filing_text: str) -> list[str]:
     """Return company names that the filing defines as a role noun.
 
-    Handles both quoted and unquoted forms:
+    Handles straight and curly quotes and unquoted forms:
     - Calloway Therapeutics Ltd. (the Licensee)
-    - Hercules Capital, Inc. ("Hercules")
+    - Hercules Capital, Inc. (“Hercules”)
     - Partner Corp (the "Licensee")
     """
     if not role or not filing_text:
         return []
-    role_re = re.escape(role)
-    pattern = re.compile(
-        rf'([A-Z][A-Za-z0-9&.\' -]{{1,80}}?)\s*\(\s*(?:the\s+)?["\u201c]?{role_re}["\u201d]?\s*\)',
-        re.IGNORECASE,
-    )
-    names = []
-    for match in pattern.finditer(filing_text):
-        name = match.group(1).strip().rstrip(',').strip()
-        name = re.sub(r'\s+', ' ', name)
-        if name:
-            names.append(name)
-    return names
+    return list(parse_defined_terms(filing_text).get(role.lower(), []))
 
 
 def verify_counterparty_in_quotes(
@@ -965,18 +954,23 @@ def _is_merger_or_purchase_quote(text: str) -> bool:
     ))
 
 
-def detect_acquisition_direction(type_quote: str, filer: str) -> str | None:
+def detect_acquisition_direction(
+    type_quote: str,
+    filer: str,
+    filing_text: str = '',
+) -> str | None:
     """Buyer/target from explicit wording only. None if not explicit.
 
-    - 'X will acquire the Company' / 'Merger Sub will merge with and into
-      the Company' → filer is the TARGET.
-    - 'the Company will acquire X' / 'the Company's subsidiary will merge
-      into X' → filer is the BUYER (acquirer).
-    Never infer 'the other company buys the filer' from a leftover party.
+    'the Company' is the filer only when the filing does not define that
+    term as someone else (e.g. the target in the buyer's 8-K).
     """
     if not type_quote or not filer:
         return None
-    noun = _filer_noun_pattern(filer)
+    term_map = parse_defined_terms(f"{type_quote}\n{filing_text or ''}")
+    company_is_filer = _the_company_is_filer(term_map, filer)
+    if company_is_filer is None:
+        return None
+    noun = _filer_ref_pattern(filer, term_map)
     # the Company's X is never the filer
     not_possessive = rf'{noun}\b(?![\'\u2019]s)'
 
@@ -1015,24 +1009,28 @@ def detect_role_from_quote(
     filer: str,
     counterparty: str,
     deal_type: DealType | None = None,
+    filing_text: str = '',
 ) -> dict | None:
     """Detect role/direction from type_quote using fixed pattern set.
     
     Returns dict with 'filer_role' and optionally 'direction' for payment flows.
     Returns None if role cannot be determined (deal should be dropped).
     
-    Note: "the Company" in SEC filings always refers to the filer.
-    Acquisition/merger direction is explicit-wording only; generic
-    'entered into ... Agreement with X' license patterns never assign
-    roles on a merger or purchase agreement.
+    "the Company" is the filer only when the filing does not define that
+    term as another party. Acquisition/merger direction is explicit-wording
+    only; generic 'entered into ... Agreement with X' license patterns never
+    assign roles on a merger or purchase agreement.
     """
     if not type_quote:
         return None
     
     text = type_quote.strip()
+    term_map = parse_defined_terms(f"{text}\n{filing_text or ''}")
+    if _the_company_is_filer(term_map, filer) is None:
+        return None
 
     if deal_type in (DealType.ACQUISITION, DealType.MERGER) or _is_merger_or_purchase_quote(text):
-        direction = detect_acquisition_direction(text, filer)
+        direction = detect_acquisition_direction(text, filer, filing_text)
         if direction:
             return {
                 'filer_role': direction,
@@ -1056,17 +1054,15 @@ def detect_role_from_quote(
                 party1 = normalize_company_name(party1_raw).lower()
                 party2 = normalize_company_name(party2_raw).lower() if party2_raw else None
                 
-                # "the Company" always refers to the filer
-                party1_is_filer = (
-                    'the company' in party1_raw.lower() or
-                    filer_normalized in party1 or 
+                party1_is_filer = _phrase_is_filer(party1_raw, filer, term_map) or (
+                    filer_normalized in party1 or
                     party1 in filer_normalized or
                     _check_alias_match(filer, party1)
                 )
                 
                 party2_is_filer = party2 and (
-                    'the company' in party2_raw.lower() or
-                    filer_normalized in party2 or 
+                    _phrase_is_filer(party2_raw, filer, term_map) or
+                    filer_normalized in party2 or
                     party2 in filer_normalized or
                     _check_alias_match(filer, party2)
                 )
@@ -2112,30 +2108,136 @@ _PARENT_NAME_END = (
 )
 
 
+_DEFINED_TERM_QUOTES = r'["\u201c\u201d\u2018\u2019]'
+_BARE_ROLE_WORDS = frozenset({
+    'parent', 'purchaser', 'buyer', 'buyers', 'buyer parties',
+    'merger sub', 'merger subsidiary', 'acquisition sub',
+    'acquisition subsidiary', 'offeror', 'acquiror', 'acquirer',
+    'company', 'the company', 'registrant', 'licensor', 'licensee',
+    'licensors', 'licensees',
+}) | _VEHICLE_ROLE_TERMS | _PARENT_ROLE_TERMS
+
+
+def _quoted_terms_in(body: str) -> list[str]:
+    return re.findall(rf'{_DEFINED_TERM_QUOTES}([^"\u201c\u201d\u2018\u2019]+){_DEFINED_TERM_QUOTES}', body)
+
+
 def parse_defined_terms(text: str) -> dict[str, list[str]]:
     """Map a defined term (lowercased) to the company names that carry it.
 
-    Handles `XYZ Corp. ("Purchaser")` and `ABC Inc. (the "Parent")`.
+    Handles straight and curly quotes, and combined parentheticals such as
+    `ABC Inc. ("Parent" and, together with Merger Sub, the "Buyer Parties")`.
     """
     mapping: dict[str, list[str]] = {}
     if not text:
         return mapping
-    patterns = (
-        r'([A-Z][A-Za-z0-9&.\' -]{1,80}?)\s*\(\s*(?:the\s+)?["\u201c]([^"\u201d]+)["\u201d]\s*\)',
-        r'([A-Z][A-Za-z0-9&.\' -]{1,80}?)\s*\(\s*(?:the\s+)?'
-        r'(Purchaser|Parent|Merger\s+Sub(?:sidiary)?|Acquisition\s+Sub(?:sidiary)?'
-        r'|Offeror|Buyer|Acquiror|BidCo)\s*\)',
-    )
-    for pat in patterns:
-        for m in re.finditer(pat, text):
-            name = re.sub(r'\s+', ' ', m.group(1).strip().rstrip(',').strip())
-            term = m.group(2).strip().lower()
-            if not name or not term:
-                continue
-            mapping.setdefault(term, [])
-            if name not in mapping[term]:
-                mapping[term].append(name)
+
+    def _add(term: str, name: str) -> None:
+        term = re.sub(r'\s+', ' ', term.strip().lower())
+        name = re.sub(r'\s+', ' ', name.strip().rstrip(',').strip())
+        name = re.sub(r',\s*a(?:n)?\s+[\w\s.\-]+$', '', name, flags=re.IGNORECASE).strip()
+        if not term or not name:
+            return
+        mapping.setdefault(term, [])
+        if name not in mapping[term]:
+            mapping[term].append(name)
+
+    for m in re.finditer(r'\(([^)]{0,240})\)', text):
+        body = m.group(1)
+        quoted = _quoted_terms_in(body)
+        if not quoted:
+            um = re.match(
+                r'(?:the\s+)?(Purchaser|Parent|Company|Registrant|Merger\s+Sub(?:sidiary)?'
+                r'|Acquisition\s+Sub(?:sidiary)?|Offeror|Buyer|Acquiror|Licensor|Licensee)\s*$',
+                body, re.IGNORECASE,
+            )
+            if um:
+                quoted = [um.group(1)]
+        if not quoted:
+            continue
+        before = text[max(0, m.start() - 140):m.start()]
+        # Only strip ", a Delaware corporation" — require the comma so
+        # "Verona Pharma plc" is not eaten at the 'a' in Verona.
+        before = re.sub(
+            r',\s*a(?:n)?\s+(?:indirect\s+)?(?:wholly[-\s]owned\s+)?'
+            r'(?:[\w.\-]+\s+){0,6}[\w.\-]+$',
+            '', before, flags=re.IGNORECASE,
+        ).strip()
+        nm = re.search(
+            r'([A-Z][A-Za-z0-9&.\'-]*(?:\s+[A-Z&][A-Za-z0-9&.\'-]*){0,6}'
+            r'(?:,?\s*(?:Inc|Incorporated|Ltd|LLC|L\.L\.C|plc|AG|Corp|'
+            r'Corporation|Company|Co|Limited|N\.V|GmbH|SE|L\.P|LP)\.?)?)'
+            r'\s*$',
+            before,
+        )
+        if not nm:
+            continue
+        for term in quoted:
+            _add(term, nm.group(1))
     return mapping
+
+
+def _is_bare_role_word(name: str) -> bool:
+    """True for a published name that is only a role noun (Parent, Purchaser…)."""
+    if not name:
+        return True
+    raw = name.strip().lower()
+    raw = raw.strip('"\u201c\u201d\u2018\u2019')
+    raw = re.sub(r'^the\s+', '', raw).strip()
+    if raw in _BARE_ROLE_WORDS:
+        return True
+    n = normalize_company_name(name).lower().strip()
+    n = re.sub(r'^the\s+', '', n).strip()
+    return n in _BARE_ROLE_WORDS
+
+
+def _the_company_is_filer(term_map: dict[str, list[str]], filer: str) -> bool | None:
+    """True if 'the Company' is the filer, False if defined as someone else.
+
+    None means the definitions conflict (drop the deal).
+    When the term is undefined, SEC convention is that it is the filer.
+    """
+    names: list[str] = []
+    for key in ('company', 'the company', 'registrant'):
+        names.extend(term_map.get(key, []))
+    if not names:
+        return True
+    filer_hits = [
+        n for n in names
+        if match_company_whole_word(filer, n) or match_company_whole_word(n, filer)
+    ]
+    others = [n for n in names if n not in filer_hits]
+    if others and not filer_hits:
+        return False
+    if filer_hits and others:
+        return None
+    return True
+
+
+def _filer_ref_pattern(filer: str, term_map: dict[str, list[str]]) -> str:
+    """Regex matching the filer by name or by a defined term that names the filer."""
+    alts = [re.escape(normalize_company_name(filer))]
+    company_is_filer = _the_company_is_filer(term_map, filer)
+    if company_is_filer is True:
+        alts.append(r'the\s+Company')
+        alts.append(r'the\s+Registrant')
+    for term, names in term_map.items():
+        if _is_bare_role_word(term) and _name_matches_any(filer, names):
+            alts.append(re.escape(term))
+    return '(?:' + '|'.join(alts) + ')'
+
+
+def _phrase_is_filer(phrase: str, filer: str, term_map: dict[str, list[str]]) -> bool:
+    if not phrase or not filer:
+        return False
+    if match_company_whole_word(filer, phrase) or match_company_whole_word(phrase, filer):
+        return True
+    if re.search(r'\bthe\s+company\b|\bthe\s+registrant\b', phrase, re.IGNORECASE):
+        return _the_company_is_filer(term_map, filer) is True
+    for term, names in term_map.items():
+        if re.search(rf'\b{re.escape(term)}\b', phrase, re.IGNORECASE) and _name_matches_any(filer, names):
+            return True
+    return False
 
 
 def is_merger_vehicle_name(name: str) -> bool:
@@ -2169,10 +2271,21 @@ def _is_defined_as_vehicle(name: str, term_map: dict[str, list[str]]) -> bool:
     return False
 
 
-def _clean_parent_name(raw: str) -> str | None:
+def _clean_parent_name(raw: str, term_map: dict[str, list[str]] | None = None) -> str | None:
+    if not raw:
+        return None
+    if _is_bare_role_word(raw):
+        if term_map:
+            key = re.sub(r'^the\s+', '', raw.strip().lower())
+            for n in term_map.get(key, []) + term_map.get(raw.strip().lower(), []):
+                if not _is_bare_role_word(n):
+                    cleaned = _clean_parent_name(n, None)
+                    if cleaned:
+                        return cleaned
+        return None
     parent = normalize_company_name(raw).strip().rstrip(',')
     parent = re.sub(r'\s+', ' ', parent)
-    if not parent or is_merger_vehicle_name(parent):
+    if not parent or is_merger_vehicle_name(parent) or _is_bare_role_word(parent):
         return None
     return parent
 
@@ -2180,7 +2293,7 @@ def _clean_parent_name(raw: str) -> str | None:
 def _parent_from_defined_terms(term_map: dict[str, list[str]]) -> str | None:
     for term in _PARENT_ROLE_TERMS:
         for raw in term_map.get(term, []):
-            parent = _clean_parent_name(raw)
+            parent = _clean_parent_name(raw, term_map)
             if parent:
                 return parent
     return None
@@ -2207,7 +2320,7 @@ def _extract_parent_near_name(name: str, blob: str, term_map: dict[str, list[str
         m = re.search(pat, blob, re.IGNORECASE)
         if not m:
             continue
-        parent = _clean_parent_name(m.group(1))
+        parent = _clean_parent_name(m.group(1), term_map)
         if parent and not (
             match_company_whole_word(parent, name) or match_company_whole_word(name, parent)
         ):
@@ -2282,7 +2395,7 @@ def resolve_merger_vehicle(
         name.strip(), re.IGNORECASE,
     )
     if generic_sub:
-        return _clean_parent_name(generic_sub.group(1))
+        return _clean_parent_name(generic_sub.group(1), parse_defined_terms(filing_text or ''))
 
     blob = f"{type_quote}\n{filing_text or ''}"
     term_map = parse_defined_terms(blob)
@@ -2292,7 +2405,7 @@ def resolve_merger_vehicle(
 
     parent = _extract_parent_near_name(name, blob, term_map)
     if parent:
-        return parent
+        return None if _is_bare_role_word(parent) else parent
     # Name is a role noun ("Purchaser") — resolve the company defined as that role,
     # then that company's parent.
     role_key = normalize_company_name(name).lower()
@@ -2310,6 +2423,8 @@ def resolve_merger_vehicle(
     ):
         # Only use the defined Parent when this name is tied to it.
         if _described_as_wholly_owned_sub(name, blob) or is_merger_vehicle_name(name):
+            if _is_bare_role_word(parent):
+                return None
             return parent
     return None
 
@@ -2576,6 +2691,50 @@ def has_role_keyword_for_kind(quote: str, kind: AmountKind) -> bool:
         return False
 
 
+_LICENSE_EQUITY_RE = re.compile(
+    r'\b(?:private\s+placement|equity\s+(?:investment|financing|line)|'
+    r'stock\s+purchase|'
+    r'(?:purchas(?:e|ed|es|ing)|issu(?:e|ed|ance)|subscri(?:be|ption))\s+'
+    r'(?:of\s+|for\s+)?(?:[\d,.]+\s+)?'
+    r'(?:shares?|common\s+stock|preferred\s+stock|equity)|'
+    r'share\s+price|price\s+per\s+share|\bPIPE\b)\b',
+    re.IGNORECASE,
+)
+
+
+def is_equity_amount_quote(quote: str, deal_type: DealType | None) -> bool:
+    """Stock / private-placement amounts are never licence deal payments."""
+    if not quote or deal_type != DealType.LICENSE_COLLABORATION:
+        return False
+    return bool(_LICENSE_EQUITY_RE.search(quote))
+
+
+_MILESTONE_NOT_A_MILESTONE_RE = re.compile(
+    r'\b(?:reimburs(?:e|ement|ed)|cost\s+caps?|cost[\s-]shar(?:e|ing)|'
+    r'shar(?:e|ing)\s+costs?|'
+    r'(?:r(?:and|&)\s*d|research(?:\s+and\s+development)?)\s+funding|'
+    r'development\s+(?:cost|funding|support)s?)\b',
+    re.IGNORECASE,
+)
+_MILESTONE_INCLUDES_UPFRONT_RE = re.compile(
+    r'\b(?:includ(?:e|es|ing|ed)\s+(?:the\s+)?(?:\$[\d,.]+\s+\w+\s+)?'
+    r'(?:up-?front|signing(?:\s+payment)?)|'
+    r'(?:total|aggregate).{0,50}includ(?:e|es|ing).{0,40}(?:up-?front|signing))\b',
+    re.IGNORECASE,
+)
+
+
+def is_valid_milestone_amount(quote: str) -> bool:
+    """Milestones only: no reimbursement, cost cap/share, R&D funding, or combined totals."""
+    if not quote:
+        return False
+    if _MILESTONE_NOT_A_MILESTONE_RE.search(quote):
+        return False
+    if _MILESTONE_INCLUDES_UPFRONT_RE.search(quote):
+        return False
+    return True
+
+
 _UPFRONT_TIMING_RE = re.compile(
     r'\b(?:up-?front|upon\s+(?:the\s+)?'
     r'(?:signing|execution|closing|effective\s+date)|'
@@ -2601,10 +2760,12 @@ _UPFRONT_REIMBURSE_RE = re.compile(
 
 
 def _party_is(name: str, filer: str, counterparty: str, raw: str) -> str | None:
-    """Return 'filer', 'counterparty', or None for a quoted party phrase."""
+    """Return 'filer', 'counterparty', 'licensor_role', or None."""
     if not raw:
         return None
     t = raw.lower()
+    if re.search(r'\b(?:the\s+)?licensors?\b|\blicensor\(s\)\b', t):
+        return 'licensor_role'
     if re.search(r'\bthe\s+company\b', t) or re.search(r'\bthe\s+registrant\b', t):
         return 'filer'
     if filer and (match_company_whole_word(filer, raw) or match_company_whole_word(raw, filer)):
@@ -2614,6 +2775,13 @@ def _party_is(name: str, filer: str, counterparty: str, raw: str) -> str | None:
         or match_company_whole_word(raw, counterparty)
     ):
         return 'counterparty'
+    # Short defined name: "Genentech" vs "Genentech, Inc."
+    if counterparty:
+        short = normalize_company_name(counterparty).lower()
+        raw_n = normalize_company_name(raw).lower()
+        if short and (short == raw_n or short.startswith(raw_n + ' ') or raw_n.startswith(short)):
+            if len(raw_n) >= 3:
+                return 'counterparty'
     return None
 
 
@@ -2639,6 +2807,13 @@ def _extract_upfront_payer_payee(
         # paid by X to Y
         (r'paid\s+by\s+(.+?)\s+to\s+(.+?)(?:\s+of\b|\$|\.|$)',
          'payer', 'payee'),
+        # the Company paid X
+        (r'(.+?)\s+paid\s+(.+?)(?:\s+a\b|\s+an\b|\s+\$|$)',
+         'payer', 'payee'),
+        # will make an upfront cash payment of $X to Y
+        (r'(.+?)\s+(?:will\s+|shall\s+)?make\s+an?\s+(?:up-?front\s+)?'
+         r'(?:cash\s+)?payment\s+(?:of\s+\$[\d,.]+\s+\w+\s+)?to\s+(.+?)(?:\s+of\b|\$|\.|$)',
+         'payer', 'payee'),
     ]
     for pat, role_a, role_b in patterns:
         m = re.search(pat, quote, re.IGNORECASE)
@@ -2659,7 +2834,10 @@ def _explicit_grant_licensor_side(
     if not blob.strip():
         return None
     noun = _filer_noun_pattern(filer) if filer else r'the\s+Company'
-    if re.search(rf'{noun}\s+(?:is\s+)?grant(?:s|ed|ing)\b', blob, re.IGNORECASE):
+    # Passive first: "is granted" is the licensee, not the grantor.
+    if re.search(rf'{noun}\s+is\s+granted\b', blob, re.IGNORECASE):
+        return 'counterparty'
+    if re.search(rf'{noun}\s+(?:is\s+granting|grants|granted)\b', blob, re.IGNORECASE):
         return 'filer'
     if counterparty and re.search(
         rf'{re.escape(counterparty)}\s+(?:is\s+)?grant(?:s|ed|ing)\b',
@@ -2670,6 +2848,9 @@ def _explicit_grant_licensor_side(
         rf'\bgrant(?:s|ed|ing)\s+(?:to\s+)?(?:the\s+Company|{re.escape(filer) if filer else "the Company"})\b',
         blob, re.IGNORECASE,
     ):
+        return 'counterparty'
+    # Passive: the Company is granted … → filer is the licensee
+    if re.search(rf'{noun}\s+is\s+granted\b', blob, re.IGNORECASE):
         return 'counterparty'
     return None
 
@@ -2714,6 +2895,10 @@ def is_valid_upfront_amount(
     licensor_side = _explicit_grant_licensor_side(
         type_quote, quote, filer, counterparty
     )
+    if payer == 'licensor_role':
+        payer = licensor_side
+    if payee == 'licensor_role':
+        payee = licensor_side
     if licensor_side is None:
         return True
     licensee_side = 'counterparty' if licensor_side == 'filer' else 'filer'
@@ -2742,28 +2927,13 @@ def verify_defined_term_in_type_quote(counterparty: str, type_quote: str, filing
     # Direct check
     if match_company_whole_word(counterparty, type_quote):
         return True
-    
-    # Look for defined terms in type_quote and parties clauses
-    # Pattern: "CompanyName" (the "Term") or "CompanyName", as "Term"
-    defined_term_patterns = [
-        r'"([^"]+)"\s*\((?:the\s+)?"([^"]+)"\)',  # "Name" (the "Term")
-        r'"([^"]+)",?\s+as\s+(?:the\s+)?"([^"]+)"',  # "Name", as "Term"
-        r'([A-Z][A-Za-z\s&,.]+),?\s*\((?:the\s+)?"([^"]+)"\)',  # Name (the "Term")
-        r'([A-Z][A-Za-z0-9&.\'\s-]{1,80}?)\s*\(\s*(?:the\s+)?([A-Za-z]+)\s*\)',
-    ]
-    
-    # Search in filing text for counterparty's defined term
-    counterparty_normalized = normalize_company_name(counterparty).lower()
-    for pattern in defined_term_patterns:
-        for m in re.finditer(pattern, filing_text):
-            name = m.group(1).strip()
-            term = m.group(2).strip()
-            name_normalized = normalize_company_name(name).lower()
-            if (counterparty_normalized in name_normalized or 
-                name_normalized in counterparty_normalized):
-                # Found counterparty's defined term - check if term appears in type_quote
-                if re.search(rf'\b{re.escape(term)}\b', type_quote, re.IGNORECASE):
-                    return True
+
+    term_map = parse_defined_terms(filing_text)
+    for term, names in term_map.items():
+        if not _name_matches_any(counterparty, names):
+            continue
+        if re.search(rf'\b{re.escape(term)}\b', type_quote, re.IGNORECASE):
+            return True
     
     return False
 
@@ -2905,6 +3075,9 @@ def process_sec_deal(
             return None
         logging.info("Resolved merger vehicle '%s' to parent '%s'", counterparty, resolved_cp)
         counterparty = resolved_cp
+    if _is_bare_role_word(counterparty):
+        logging.info("Deal dropped: counterparty is a bare role word '%s'", counterparty)
+        return None
     
     # Verification 3b: counterparty must NOT equal filer (self-deal check)
     filer_normalized = normalize_company_name(filer_name).lower()
@@ -2920,7 +3093,9 @@ def process_sec_deal(
         return None
     
     # Verification 5: detect role from type_quote
-    role_info = detect_role_from_quote(type_quote, filer_name, counterparty, deal_type=deal_type)
+    role_info = detect_role_from_quote(
+        type_quote, filer_name, counterparty, deal_type=deal_type, filing_text=filing_text,
+    )
     if not role_info:
         logging.info("Deal dropped: could not determine filer role from type_quote")
         return None
@@ -2968,10 +3143,19 @@ def process_sec_deal(
         if not has_role_keyword_for_kind(quote, kind):
             logging.debug("Amount dropped: quote missing role keyword for kind=%s: %s", kind_str, quote[:80])
             continue
+        if is_equity_amount_quote(quote, deal_type):
+            logging.info("Amount dropped: equity/stock amount is not a deal payment: %s", quote[:80])
+            continue
         if kind == AmountKind.UPFRONT and not is_valid_upfront_amount(
             quote, type_quote, filer_name, counterparty, filer_role
         ):
             logging.info("Amount dropped: upfront lacks timing or licensee→licensor payer: %s", quote[:80])
+            continue
+        if kind == AmountKind.MILESTONES_TOTAL and not is_valid_milestone_amount(quote):
+            logging.info("Amount dropped: not a pure milestone (reimbursement/combined total): %s", quote[:80])
+            continue
+        if deal_type == DealType.LICENSE_COLLABORATION and kind == AmountKind.PURCHASE_PRICE:
+            logging.info("Amount dropped: purchase_price is not a licence payment: %s", quote[:80])
             continue
         
         # Verification: quote must be in filing
@@ -3093,23 +3277,15 @@ def process_sec_deal(
         else:
             logging.debug("Amount dropped: could not parse amount from: %s", quote[:50])
     
-    # Build headline amount (first non-conditional amount)
-    # For in-scope deals: PURCHASE_PRICE or UPFRONT are headline-worthy
-    # MILESTONES_TOTAL only appears in detail lines (conditional/uncertain)
+    # Headline ONLY from a verified non-conditional upfront or purchase price.
+    # No fallback to milestones or any other amount.
     headline_amount = None
     for amount in verified_amounts:
-        # Skip conditional (up_to) amounts for headline - these are uncertain
         if amount.up_to:
             continue
         if amount.kind in (AmountKind.PURCHASE_PRICE, AmountKind.UPFRONT):
             headline_amount = render_amount_chinese(amount)
             break
-    # Fallback to first non-conditional amount
-    if not headline_amount:
-        for amount in verified_amounts:
-            if not amount.up_to:
-                headline_amount = render_amount_chinese(amount)
-                break
     
     # Build title and lines (no model free text)
     # Always show verified amounts regardless of how type was determined
