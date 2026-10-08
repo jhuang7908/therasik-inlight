@@ -2,7 +2,7 @@
 
 仓库：`jhuang7908/therasik-inlight`  
 默认分支：`main`  
-线上：http://inlight.therasik.com/
+线上：https://inlight.therasik.com/
 
 这个仓库没有 GitHub Actions 定时任务。每周由助手在本机跑命令，不要再加 schedule。
 
@@ -41,7 +41,7 @@ python run_weekly.py --dry-run
 
 `--dry-run` 仍会调用 Claude 和 OpenAI（会消耗额度），但只写到 `preview/weekly/日期/`。它不修改 `content/`，也不推送公众号。
 
-确认内容可以上站之后，在仓库里提交并推送 `main`。GitHub Pages 监听 `main` 的根目录，推送后自动重新构建，站点跟着更新。不要打开 Enforce HTTPS，证书目前还是 `*.github.io`，自定义域名用 http://inlight.therasik.com/ 。
+确认内容可以上站之后，在仓库里提交并推送 `main`。GitHub Pages 监听 `main` 的根目录，推送后自动重新构建，站点跟着更新。HTTPS 已启用并强制跳转。
 
 公众号只进草稿箱，不群发：
 

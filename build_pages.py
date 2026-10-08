@@ -19,8 +19,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 PAGES_DIR = ROOT / "pages" / "article"
-# Use http:// until HTTPS is configured
-SITE_URL = "http://inlight.therasik.com"
+# HTTPS is now live and enforced
+SITE_URL = "https://inlight.therasik.com"
 
 FIELDS = {
     "c1": "类器官",
