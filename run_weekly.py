@@ -26,6 +26,12 @@ from pathlib import Path
 import feedparser
 import yaml
 
+try:
+    from inlight_articles import enrich_item, process_articles, wechat_html_full
+    ARTICLE_MODULE_AVAILABLE = True
+except ImportError:
+    ARTICLE_MODULE_AVAILABLE = False
+
 ROOT = Path(__file__).resolve().parent
 FIELDS = {
     "c1": "类器官",
@@ -249,7 +255,7 @@ def fetch_biorxiv_api(start: datetime, limit: int, categories: list[str] | None 
             pub_date = end_date
         
         authors = paper.get("authors") or ""
-        abstract = (paper.get("abstract") or "")[:700]
+        abstract = (paper.get("abstract") or "")[:8000]
         category = paper.get("category") or "bioRxiv"
         
         rows.append({
@@ -297,7 +303,7 @@ def fetch_rss(source: dict, start: datetime, limit: int) -> list[dict]:
         if not url or not title:
             continue
         summary = re.sub(r"<[^>]+>", " ", entry.get("summary") or entry.get("description") or "")
-        summary = re.sub(r"\s+", " ", summary).strip()[:700]
+        summary = re.sub(r"\s+", " ", summary).strip()[:8000]
         rows.append({
             "source": source["name"],
             "kind": source.get("kind") or "academic",
@@ -951,6 +957,8 @@ def update_latest(dest: Path) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description="生成一周的前沿追踪内容")
     parser.add_argument("--dry-run", action="store_true", help="只写到 preview/，不改网站内容目录")
+    parser.add_argument("--use-new-pipeline", action="store_true", 
+                       help="使用新的文章深度管线（enrich + triage + 逐篇生成 + validate）")
     args = parser.parse_args()
     log_path = setup_log()
     logging.info("日志 %s", log_path)
@@ -963,7 +971,16 @@ def main() -> None:
             logging.error("最近 %s 天没有抓到条目，不写文件", config.get("window_days", 7))
             raise SystemExit(2)
         logging.info("送去筛选的条目 %d", len(items))
-        draft = claude_draft(items, config)
+        
+        if args.use_new_pipeline and ARTICLE_MODULE_AVAILABLE:
+            logging.info("使用新文章深度管线（enrich + triage + 逐篇生成 + validate）")
+            draft = process_articles(items, config)
+        elif args.use_new_pipeline and not ARTICLE_MODULE_AVAILABLE:
+            logging.warning("新文章管线不可用（inlight_articles.py 导入失败），回退到旧管线")
+            draft = claude_draft(items, config)
+        else:
+            draft = claude_draft(items, config)
+        
         if not draft["articles"] and not draft["deals"]:
             logging.error("模型没有留下任何来源内的条目")
             raise SystemExit(3)
