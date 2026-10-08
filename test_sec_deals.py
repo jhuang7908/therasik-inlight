@@ -2143,6 +2143,32 @@ class TestDefinedTermsDecideParties:
         )
         assert deal is None
 
+    def test_process_publishes_lowercase_brand_not_bare_suffix(self):
+        filing = (
+            "acme therapeutics BV, a private limited liability company "
+            "organized under Dutch Law (\"Parent\"), agreed that Parent will "
+            "acquire Kestrel Rx, Inc. for $400 million. Kestrel Rx, Inc. is "
+            "the target."
+        )
+        deal = sec_deals.process_sec_deal(
+            filing_text=filing,
+            filer_name="Kestrel Rx, Inc.",
+            filing_url="https://test",
+            filing_date="2026-10-05",
+            event_date="2026-10-01",
+            claude_response={
+                "deal_type": "acquisition",
+                "counterparty_name": "acme therapeutics BV",
+                "type_quote": "Parent will acquire Kestrel Rx, Inc. for $400 million",
+                "counterparty_quote": "acme therapeutics BV, a private limited liability company",
+                "amounts": [{"kind": "purchase_price", "quote": "for $400 million"}],
+            },
+        )
+        assert deal is not None
+        assert "acme" in deal["counterparty"].lower()
+        assert not deal["title"].startswith("BV")
+        assert "BV收购" not in deal["title"]
+
 
 class TestEquityNeverADealPayment:
     def test_private_placement_not_upfront(self):

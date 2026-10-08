@@ -2177,7 +2177,12 @@ _NAME_WALK_STOP = frozenset({
     'organized', 'incorporated', 'existing', 'formed', 'established',
     'laws', 'law', 'exempted',
     'is', 'are', 'was', 'were', 'be', 'been', 'being',
-    'has', 'have', 'had', 'will', 'shall',
+    'has', 'have', 'had', 'will', 'shall', 'may', 'must', 'can',
+    'for', 'million', 'billion', 'thousand', 'hundred',
+    'dollars', 'dollar', 'cash', 'shares', 'stock', 'percent',
+    'approximately', 'about', 'acquire', 'acquired', 'acquiring',
+    'merge', 'merged', 'license', 'licensed', 'granted', 'agreed',
+    'payment', 'price', 'consideration', 'upfront',
     'january', 'february', 'march', 'april', 'may', 'june',
     'july', 'august', 'september', 'october', 'november', 'december',
 })
@@ -2185,6 +2190,7 @@ _NAME_VERB_TOKENS = frozenset({
     'is', 'are', 'was', 'were', 'be', 'been', 'being',
     'has', 'have', 'had', 'will', 'shall',
 })
+_NAME_CONNECTORS = frozenset({'and', '&', 'of', 'the'})
 
 
 def _cut_at_descriptive_clause(text: str) -> str:
@@ -2213,6 +2219,7 @@ def _cut_at_descriptive_clause(text: str) -> str:
         )
         if cut:
             text = text[:cut.start()]
+    text = re.split(r'[\n\r]+', text)[-1].strip()
     return text.rstrip(',').strip()
 
 
@@ -2285,8 +2292,15 @@ def _extract_defined_term_company_name(before: str) -> str | None:
                 break
             continue
         if collected and _looks_like_company_name(' '.join(reversed(collected))):
-            if low in {'and', 'the', 'of'}:
-                break
+            if low in _NAME_CONNECTORS:
+                collected.append(tok)
+                continue
+            if tok[:1].isalpha() and low not in _NAME_WALK_STOP:
+                collected.append(tok)
+                if len(collected) >= 8:
+                    break
+                continue
+            break
         collected.append(tok)
         if len(collected) >= 8:
             break
