@@ -54,18 +54,21 @@ UA = "FrontierDigestWeekly/1.0 (+https://inlight.therasik.com)"
 
 
 def sanitize_image_prompt(prompt: str) -> str:
-    """Remove label-related phrases from the model's image prompt."""
+    """Remove label-related phrases from the model's image prompt.
+    
+    Uses word-boundary patterns to avoid false positives like 'laboured'.
+    """
     patterns = [
-        r'\bwith labels?\b',
-        r'\blabou?r?e?l?e?d\b',
-        r'\bannotated?\b',
-        r'\bwith annotations?\b',
-        r'\bwith captions?\b',
-        r'\bcaptioned\b',
-        r'\bwith text\b',
-        r'\bshowing (?:the )?names?\b',
+        r'\b(labell?ed)\b',           # labeled, labelled (not laboured)
+        r'\bannotated\b',
+        r'\bwith\s+(text\s+)?labels?\s*(showing\s+(the\s+)?names?)?\b',  # with text labels showing names
+        r'\bwith\s+annotations?\b',
+        r'\bwith\s+captions?\b',      # with captions
+        r'\bcaptions?\b',             # standalone captions
+        r'\bwith\s+text\b',
+        r'\bshowing\s+(the\s+)?names?\b',
         r'\bnamed\b',
-        r'"[^"]*"',  # Remove quoted text that might be label requests
+        r'"[^"]*"',                   # Remove quoted text that might be label requests
     ]
     result = prompt
     for pattern in patterns:
@@ -73,6 +76,29 @@ def sanitize_image_prompt(prompt: str) -> str:
     # Clean up extra spaces
     result = re.sub(r'\s+', ' ', result).strip()
     return result
+
+
+def _test_sanitize_image_prompt():
+    """Unit test for sanitize_image_prompt."""
+    tests = [
+        ("A diagram labeled with cell types", "A diagram with cell types"),
+        ("labelled regions of the brain", "regions of the brain"),
+        ("The laboured breathing pattern", "The laboured breathing pattern"),  # Should NOT be removed
+        ("annotated with arrows", "with arrows"),
+        ("with text labels showing names", ""),  # All words are label-related
+        ('A cell "Helper T" diagram', "A cell diagram"),
+        ("simple illustration of cells", "simple illustration of cells"),
+        ("with captions identifying parts", "identifying parts"),
+    ]
+    passed = 0
+    for input_text, expected in tests:
+        result = sanitize_image_prompt(input_text)
+        if result == expected:
+            passed += 1
+        else:
+            print(f"FAIL: '{input_text}' -> '{result}' (expected '{expected}')")
+    print(f"sanitize_image_prompt: {passed}/{len(tests)} tests passed")
+    return passed == len(tests)
 
 
 def setup_log() -> Path:
@@ -166,126 +192,325 @@ BROWSER_UA = (
 )
 
 
-def _fetch_rss_with_retry(feed: str, source_name: str, use_browser_ua: bool, max_attempts: int = 3) -> feedparser.FeedParserDict | None:
-    """Fetch RSS feed with retry logic for transient errors."""
+def _fetch_rss_with_retry(feed: str, source_name: str, use_browser_ua: bool, max_attempts: int = 3) -> tuple[feedparser.FeedParserDict | None, str]:
+    """Fetch RSS feed with retry logic for transient errors.
+    
+    Only retries on:
+    - 5xx server errors
+    - Timeouts
+    - Connection errors  
+    - XML parse errors (e.g., "no element found")
+    
+    Does NOT retry on:
+    - 4xx client errors (permanent failure)
+    
+    Returns:
+        Tuple of (parsed_feed, status) where status is "ok", "failed", or "skipped"
+    """
     import time
     import requests
     
     delays = [2, 5, 10]  # Exponential backoff
     last_error = None
+    should_retry = True
     
     for attempt in range(max_attempts):
         try:
             if use_browser_ua:
                 resp = requests.get(feed, headers={"User-Agent": BROWSER_UA}, timeout=30)
+                
+                # 4xx errors are permanent - don't retry
+                if 400 <= resp.status_code < 500:
+                    logging.warning("%s 返回 %d（客户端错误，不重试）", source_name, resp.status_code)
+                    return None, "failed"
+                
+                # 5xx errors - retry
+                if resp.status_code >= 500:
+                    raise requests.exceptions.HTTPError(f"Server error {resp.status_code}")
+                
                 resp.raise_for_status()
                 parsed = feedparser.parse(resp.content)
             else:
                 parsed = feedparser.parse(feed, agent=UA)
+                
+                # Check HTTP status from feedparser
+                status = getattr(parsed, "status", 200)
+                if 400 <= status < 500:
+                    logging.warning("%s 返回 %d（客户端错误，不重试）", source_name, status)
+                    return None, "failed"
+                if status >= 500:
+                    raise requests.exceptions.HTTPError(f"Server error {status}")
             
             # Check for parse errors (bozo) but allow if we got entries
             if getattr(parsed, "bozo", False) and not parsed.entries:
                 bozo_exc = getattr(parsed, "bozo_exception", None)
+                bozo_str = str(bozo_exc).lower() if bozo_exc else ""
                 # Retry on XML parse errors like "no element found"
-                if bozo_exc and "no element found" in str(bozo_exc).lower():
+                if "no element found" in bozo_str or "not well-formed" in bozo_str:
                     raise ValueError(f"XML parse error: {bozo_exc}")
-                logging.warning("%s 的 feed 解析失败：%s", source_name, bozo_exc)
+                # Other parse errors - don't retry
+                logging.warning("%s 的 feed 解析失败（不重试）：%s", source_name, bozo_exc)
+                return None, "failed"
+            
+            return parsed, "ok"
+            
+        except requests.exceptions.Timeout as e:
+            last_error = e
+            should_retry = True
+        except requests.exceptions.ConnectionError as e:
+            last_error = e
+            should_retry = True
+        except requests.exceptions.HTTPError as e:
+            # Only retry on 5xx (already filtered 4xx above)
+            last_error = e
+            should_retry = "5" in str(e) or "Server error" in str(e)
+        except ValueError as e:
+            # XML parse errors - retry
+            if "XML parse error" in str(e):
+                last_error = e
+                should_retry = True
+            else:
+                logging.warning("%s 抓取失败（不重试）：%s", source_name, e)
+                return None, "failed"
+        except Exception as e:
+            # Other errors - don't retry
+            logging.warning("%s 抓取失败（不重试）：%s", source_name, e)
+            return None, "failed"
+        
+        if should_retry and attempt < max_attempts - 1:
+            delay = delays[min(attempt, len(delays) - 1)]
+            logging.info("%s 抓取失败，%d秒后重试（第%d次）：%s", source_name, delay, attempt + 1, last_error)
+            time.sleep(delay)
+        elif not should_retry:
+            break
+    
+    logging.warning("%s 的 feed 重试后仍失败：%s", source_name, last_error)
+    return None, "failed"
+
+
+def _fetch_with_retry(url: str, source_name: str, max_attempts: int = 3, 
+                      timeout: int = 60, json_response: bool = True) -> dict | bytes | None:
+    """Fetch URL with retry logic for server errors, timeouts, and connection errors.
+    
+    Only retries on:
+    - 5xx server errors
+    - Timeouts
+    - Connection errors
+    - XML parse errors (for RSS)
+    
+    Does NOT retry on 4xx client errors (treat as permanent failure).
+    """
+    import time
+    import requests
+    
+    delays = [2, 5, 10]
+    last_error = None
+    
+    for attempt in range(max_attempts):
+        try:
+            resp = requests.get(url, headers={"User-Agent": UA}, timeout=timeout)
+            
+            # 4xx errors are permanent - don't retry
+            if 400 <= resp.status_code < 500:
+                logging.warning("%s 返回 %d（客户端错误，不重试）", source_name, resp.status_code)
                 return None
             
-            return parsed
+            # 5xx errors - retry
+            if resp.status_code >= 500:
+                raise requests.exceptions.HTTPError(f"Server error {resp.status_code}")
             
-        except Exception as e:
+            resp.raise_for_status()
+            
+            if json_response:
+                return resp.json()
+            return resp.content
+            
+        except (requests.exceptions.Timeout, 
+                requests.exceptions.ConnectionError,
+                requests.exceptions.HTTPError) as e:
             last_error = e
             if attempt < max_attempts - 1:
                 delay = delays[min(attempt, len(delays) - 1)]
-                logging.info("%s 抓取失败，%d秒后重试（第%d次）：%s", source_name, delay, attempt + 1, e)
+                logging.info("%s 请求失败，%d秒后重试（第%d次）：%s", source_name, delay, attempt + 1, e)
                 time.sleep(delay)
+        except Exception as e:
+            # Other errors (JSON decode, etc.) - don't retry
+            logging.warning("%s 请求失败（不重试）：%s", source_name, e)
+            return None
     
-    logging.warning("%s 的 feed 重试后仍失败：%s", source_name, last_error)
+    logging.warning("%s 请求重试后仍失败：%s", source_name, last_error)
     return None
 
 
-def fetch_biorxiv_api(start: datetime, limit: int, categories: list[str] | None = None) -> list[dict]:
-    """Fallback: fetch from bioRxiv details API when RSS fails."""
-    import requests
-    import time
+def fetch_biorxiv_api(start: datetime, limit: int, category: str | None = None) -> list[dict]:
+    """Fallback: fetch from bioRxiv details API when RSS fails.
     
+    Uses the category parameter directly in the API URL to get only papers
+    from the specified subject area, then paginates through results.
+    """
     end_date = datetime.now(timezone.utc).date()
     start_date = start.date()
     
-    api_url = f"https://api.biorxiv.org/details/biorxiv/{start_date.isoformat()}/{end_date.isoformat()}"
-    logging.info("bioRxiv API fallback: %s", api_url)
+    # Build API URL - if category is specified, use the category endpoint
+    if category:
+        # bioRxiv API supports category in the details endpoint
+        base_url = f"https://api.biorxiv.org/details/biorxiv/{start_date.isoformat()}/{end_date.isoformat()}"
+        # Note: bioRxiv details API doesn't support category filter in URL
+        # but we can use the pubs endpoint which does
+        api_url = f"https://api.biorxiv.org/pubs/biorxiv/{start_date.isoformat()}/{end_date.isoformat()}"
+    else:
+        api_url = f"https://api.biorxiv.org/details/biorxiv/{start_date.isoformat()}/{end_date.isoformat()}"
     
-    try:
-        resp = requests.get(api_url, headers={"User-Agent": UA}, timeout=60)
-        resp.raise_for_status()
-        data = resp.json()
-    except Exception as e:
-        logging.warning("bioRxiv API 请求失败：%s", e)
-        return []
-    
-    collection = data.get("collection") or []
-    if not collection:
-        logging.info("bioRxiv API 返回 0 条")
-        return []
-    
-    # Filter by category if specified
-    if categories:
-        categories_lower = [c.lower() for c in categories]
-        collection = [p for p in collection if (p.get("category") or "").lower() in categories_lower]
+    logging.info("bioRxiv API fallback: %s (category=%s)", api_url, category or "all")
     
     rows = []
-    for paper in collection[:limit]:
-        doi = paper.get("doi") or ""
-        title = paper.get("title") or ""
-        if not doi or not title:
-            continue
+    cursor = 0
+    page_size = 100
+    max_pages = 5  # Safety limit
+    
+    for page in range(max_pages):
+        # bioRxiv uses cursor for pagination
+        paginated_url = f"{api_url}/{cursor}"
         
-        # Parse date
-        date_str = paper.get("date") or ""
-        try:
-            pub_date = datetime.strptime(date_str, "%Y-%m-%d").date()
-        except ValueError:
-            pub_date = end_date
+        data = _fetch_with_retry(paginated_url, f"bioRxiv API (page {page+1})", json_response=True)
+        if data is None:
+            break
         
-        authors = paper.get("authors") or ""
-        abstract = (paper.get("abstract") or "")[:700]
-        category = paper.get("category") or "bioRxiv"
+        collection = data.get("collection") or []
+        if not collection:
+            logging.info("bioRxiv API page %d 返回 0 条", page + 1)
+            break
         
-        rows.append({
-            "source": f"bioRxiv {category}",
-            "kind": "academic",
-            "title": title,
-            "url": f"https://doi.org/{doi}",
-            "date": pub_date.isoformat(),
-            "summary": abstract if abstract else f"{authors[:200]}",
-        })
+        # Filter by category if specified (API doesn't filter, we do it client-side)
+        if category:
+            category_lower = category.lower()
+            collection = [p for p in collection if (p.get("category") or "").lower() == category_lower]
+        
+        for paper in collection:
+            doi = paper.get("doi") or ""
+            title = paper.get("title") or ""
+            if not doi or not title:
+                continue
+            
+            # Parse date
+            date_str = paper.get("date") or ""
+            try:
+                pub_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+            except ValueError:
+                pub_date = end_date
+            
+            authors = paper.get("authors") or ""
+            abstract = (paper.get("abstract") or "")[:2500]
+            cat = paper.get("category") or "bioRxiv"
+            
+            rows.append({
+                "source": f"bioRxiv {cat}",
+                "kind": "academic",
+                "title": title,
+                "url": f"https://doi.org/{doi}",
+                "date": pub_date.isoformat(),
+                "summary": abstract if abstract else f"{authors[:200]}",
+                "authors": authors,  # Keep full author list
+            })
+            
+            if len(rows) >= limit:
+                break
+        
+        if len(rows) >= limit:
+            break
+        
+        # Check for more pages
+        messages = data.get("messages") or []
+        total = 0
+        for msg in messages:
+            if msg.get("status") == "ok" and "total" in msg:
+                total = msg.get("total", 0)
+                break
+        
+        cursor += len(data.get("collection") or [])
+        if cursor >= total:
+            break
     
     logging.info("bioRxiv API fallback 得到 %d 条", len(rows))
-    return rows
+    return rows[:limit]
 
 
-def fetch_rss(source: dict, start: datetime, limit: int) -> list[dict]:
+def _strip_tracking_params(url: str) -> str:
+    """Remove common tracking query parameters from URLs."""
+    if "?" not in url:
+        return url
+    
+    # Parameters to strip (tracking, RSS, UTM)
+    tracking_params = {
+        "rss", "utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content",
+        "ref", "source", "mc_cid", "mc_eid", "fbclid", "gclid", "msclkid",
+    }
+    
+    parsed = urllib.parse.urlparse(url)
+    if not parsed.query:
+        return url
+    
+    params = urllib.parse.parse_qs(parsed.query, keep_blank_values=True)
+    # Keep only non-tracking params
+    clean_params = {k: v for k, v in params.items() if k.lower() not in tracking_params}
+    
+    if not clean_params:
+        # All params were tracking - return URL without query
+        return urllib.parse.urlunparse(parsed._replace(query=""))
+    
+    clean_query = urllib.parse.urlencode(clean_params, doseq=True)
+    return urllib.parse.urlunparse(parsed._replace(query=clean_query))
+
+
+def _parse_rss_authors(entry) -> str:
+    """Extract author names from RSS entry's dc:creator or author fields."""
+    # Try dc:creator (Dublin Core) first - common in academic feeds
+    dc_creator = entry.get("dc_creator") or entry.get("author_detail", {}).get("name") or ""
+    if dc_creator:
+        return dc_creator.strip()
+    
+    # Try author field
+    author = entry.get("author") or ""
+    if author:
+        return author.strip()
+    
+    # Try authors list (some feeds provide this)
+    authors_list = entry.get("authors") or []
+    if authors_list:
+        names = [a.get("name", "") for a in authors_list if a.get("name")]
+        if names:
+            return ", ".join(names[:6])
+    
+    return ""
+
+
+def fetch_rss(source: dict, start: datetime, limit: int) -> tuple[list[dict], str]:
+    """Fetch RSS feed and return (items, status).
+    
+    Returns:
+        Tuple of (items_list, status) where status is "ok", "failed", or "skipped"
+    """
     feed = source.get("feed")
     if not feed:
         logging.warning("跳过 %s：没有 feed", source.get("name"))
-        return []
+        return [], "skipped"
     logging.info("抓取 RSS %s", source["name"])
     
     source_name = source.get("name", "unknown")
     use_browser_ua = source.get("needs_browser_ua", False)
     
     # Fetch with retry
-    parsed = _fetch_rss_with_retry(feed, source_name, use_browser_ua)
+    parsed, status = _fetch_rss_with_retry(feed, source_name, use_browser_ua)
     
     # bioRxiv fallback to API
     if parsed is None and "biorxiv" in source_name.lower():
         category = source.get("biorxiv_category") or "immunology"
         logging.info("%s RSS 失败，尝试 API fallback（分类：%s）", source_name, category)
-        return fetch_biorxiv_api(start, limit, categories=[category])
+        items = fetch_biorxiv_api(start, limit, category=category)
+        return items, "ok" if items else "failed"
     
     if parsed is None:
-        return []
+        return [], status
     
     rows = []
     for entry in parsed.entries:
@@ -296,28 +521,47 @@ def fetch_rss(source: dict, start: datetime, limit: int) -> list[dict]:
         title = (entry.get("title") or "").strip()
         if not url or not title:
             continue
+        
+        # Strip tracking parameters from URL
+        url = _strip_tracking_params(url)
+        
+        # Extract summary and clean HTML
         summary = re.sub(r"<[^>]+>", " ", entry.get("summary") or entry.get("description") or "")
-        summary = re.sub(r"\s+", " ", summary).strip()[:700]
-        rows.append({
+        summary = re.sub(r"\s+", " ", summary).strip()[:2500]
+        
+        # Parse authors from RSS
+        authors = _parse_rss_authors(entry)
+        
+        row = {
             "source": source["name"],
             "kind": source.get("kind") or "academic",
             "title": title,
             "url": url,
             "date": when.date().isoformat(),
             "summary": summary,
-        })
+        }
+        if authors:
+            row["authors"] = authors
+        
+        rows.append(row)
         if len(rows) >= limit:
             break
     logging.info("%s 得到 %d 条", source["name"], len(rows))
-    return rows
+    return rows, "ok" if rows else status
 
 
 def fetch_pubmed(source: dict, start: date, end: date, limit: int) -> list[dict]:
+    """Fetch PubMed articles with abstracts using E-utilities (esearch + efetch)."""
+    import time
+    import xml.etree.ElementTree as ET
+    
     query = source.get("query") or ""
     logging.info("检索 PubMed %s", query)
     mindate = start.strftime("%Y/%m/%d")
     maxdate = end.strftime("%Y/%m/%d")
     term = f"({query}) AND ({mindate}:{maxdate}[edat])"
+    
+    # Step 1: Search for PMIDs
     search_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?" + urllib.parse.urlencode({
         "db": "pubmed",
         "term": term,
@@ -326,20 +570,70 @@ def fetch_pubmed(source: dict, start: date, end: date, limit: int) -> list[dict]
         "sort": "pub+date",
     })
     req = urllib.request.Request(search_url, headers={"User-Agent": UA})
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        found = json.loads(resp.read().decode("utf-8"))
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            found = json.loads(resp.read().decode("utf-8"))
+    except Exception as e:
+        logging.warning("PubMed esearch 失败: %s", e)
+        return []
+    
     ids = found.get("esearchresult", {}).get("idlist") or []
     if not ids:
         logging.info("PubMed 没有命中")
         return []
+    
+    # Step 2: Fetch full records with abstracts using efetch
+    time.sleep(0.35)  # Respect NCBI rate limit
+    efetch_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?" + urllib.parse.urlencode({
+        "db": "pubmed",
+        "id": ",".join(ids),
+        "rettype": "xml",
+        "retmode": "xml",
+    })
+    req = urllib.request.Request(efetch_url, headers={"User-Agent": UA})
+    
+    abstracts = {}  # pmid -> abstract text
+    try:
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            xml_data = resp.read().decode("utf-8")
+        
+        root = ET.fromstring(xml_data)
+        for article in root.findall(".//PubmedArticle"):
+            pmid_elem = article.find(".//PMID")
+            if pmid_elem is None:
+                continue
+            pmid = pmid_elem.text
+            
+            # Get abstract - may have multiple AbstractText elements
+            abstract_parts = []
+            for abstract_text in article.findall(".//AbstractText"):
+                label = abstract_text.get("Label", "")
+                text = "".join(abstract_text.itertext()).strip()
+                if label and text:
+                    abstract_parts.append(f"{label}: {text}")
+                elif text:
+                    abstract_parts.append(text)
+            
+            if abstract_parts:
+                abstracts[pmid] = " ".join(abstract_parts)[:2500]
+    except Exception as e:
+        logging.warning("PubMed efetch 失败，使用 esummary fallback: %s", e)
+    
+    # Step 3: Get metadata from esummary (faster than parsing all from efetch XML)
+    time.sleep(0.35)
     sum_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?" + urllib.parse.urlencode({
         "db": "pubmed",
         "id": ",".join(ids),
         "retmode": "json",
     })
     req = urllib.request.Request(sum_url, headers={"User-Agent": UA})
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        summary = json.loads(resp.read().decode("utf-8"))
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            summary = json.loads(resp.read().decode("utf-8"))
+    except Exception as e:
+        logging.warning("PubMed esummary 失败: %s", e)
+        return []
+    
     result = summary.get("result", {})
     rows = []
     for pmid in ids:
@@ -350,15 +644,25 @@ def fetch_pubmed(source: dict, start: date, end: date, limit: int) -> list[dict]
         authors = ", ".join(a.get("name", "") for a in (item.get("authors") or [])[:6])
         journal = item.get("fulljournalname") or item.get("source") or "PubMed"
         raw_day = (item.get("sortpubdate") or "")[:10].replace("/", "-")
+        
+        # Use abstract from efetch if available, otherwise fall back to journal+authors
+        abstract = abstracts.get(pmid, "")
+        if abstract:
+            summary_text = abstract
+        else:
+            summary_text = f"{journal}. {authors}".strip()
+        
         rows.append({
             "source": "PubMed",
             "kind": "academic",
             "title": title,
             "url": f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/",
             "date": raw_day if len(raw_day) == 10 else end.isoformat(),
-            "summary": f"{journal}. {authors}".strip(),
+            "summary": summary_text,
+            "authors": authors,
+            "journal": journal,
         })
-    logging.info("PubMed 得到 %d 条", len(rows))
+    logging.info("PubMed 得到 %d 条（%d 条有摘要）", len(rows), len(abstracts))
     return rows
 
 
@@ -843,8 +1147,9 @@ def fetch_all(config: dict) -> list[dict]:
         try:
             if source.get("type") == "pubmed":
                 batch = fetch_pubmed(source, start.date(), end.date(), limit)
+                fetch_status = "ok" if batch else "failed"
             else:
-                batch = fetch_rss(source, start, limit)
+                batch, fetch_status = fetch_rss(source, start, limit)
         except Exception:
             logging.exception("来源失败：%s", source_name)
             source_stats.append({"name": source_name, "status": "failed", "count": 0})
@@ -861,7 +1166,8 @@ def fetch_all(config: dict) -> list[dict]:
                 logging.debug("跳过已有内容：%s (规范化: %s)", url, normalized)
                 continue
             # Skip academic items with no abstract (can't write good drafts)
-            if row.get("kind") == "academic":
+            # But exempt PubMed items since we can fetch abstracts separately
+            if row.get("kind") == "academic" and row.get("source") != "PubMed":
                 summary = (row.get("summary") or "").strip()
                 # Skip if summary is just author names or very short
                 if len(summary) < 50 or summary.count(",") > 3 and len(summary) < 100:
@@ -874,7 +1180,7 @@ def fetch_all(config: dict) -> list[dict]:
         
         if skipped_no_abstract:
             logging.info("  %s: 跳过 %d 条无摘要条目", source_name, skipped_no_abstract)
-        source_stats.append({"name": source_name, "status": "ok", "count": count})
+        source_stats.append({"name": source_name, "status": fetch_status, "count": count})
     
     # Log per-source summary
     logging.info("=== 来源统计 ===")
@@ -1016,6 +1322,10 @@ authors 必须是真实的作者人名（可以是英文或中文），绝对不
 ## steps 字段
 
 steps 必须是 3-5 个简短步骤（每个≤25字），描述论文的核心方法或发现过程。不能为空。
+
+## 摘要处理
+
+来源摘要已提供最多 2500 字符，足够写作。不要在输出中提及"摘要被截断"或"信息不完整"——如果摘要不足以写解读，就不选这篇。
 
 调用 submit_weekly_digest 工具提交你的筛选结果。
 
