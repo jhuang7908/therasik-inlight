@@ -1,0 +1,275 @@
+8-K
+
+Immunome Inc. NASDAQ false 0001472012 0001472012 2026-10-02 2026-10-02
+
+UNITED STATES
+
+SECURITIES AND EXCHANGE COMMISSION
+
+Washington, D.C. 20549
+
+FORM 8-K
+
+CURRENT REPORT
+
+Pursuant to Section 13 or 15(d)
+
+of the Securities Exchange Act of 1934
+
+Date of Report (Date of earliest event reported): October 2, 2026
+
+Immunome, Inc.
+
+(Exact name of registrant as specified in its charter)
+
+Delaware
+
+001-39580
+
+77-0694340
+
+(State or other jurisdiction
+
+of incorporation)
+
+(Commission
+
+File Number)
+
+(IRS Employer
+
+Identification No.)
+
+18702 N. Creek Parkway , Suite 100
+
+Bothell , Washington
+
+98011
+
+(Address of principal executive offices)
+
+(Zip Code)
+
+Registrant’s telephone number, including area code: ( 425 ) 939-7410
+
+Check the appropriate box below if the Form 8-K filing is intended to simultaneously satisfy the filing obligation of the registrant under any of the following provisions:
+
+☐
+
+Written communications pursuant to Rule 425 under the Securities Act (17 CFR 230.425)
+
+☐
+
+Soliciting material pursuant to Rule 14a-12 under the Exchange Act (17 CFR 240.14a-12)
+
+☐
+
+Pre-commencement communications pursuant to Rule 14d-2(b) under the Exchange Act (17 CFR 240.14d-2(b))
+
+☐
+
+Pre-commencement communications pursuant to Rule 13e-4(c) under the Exchange Act (17 CFR 240.13e-4(c))
+
+Securities registered pursuant to Section 12(b) of the Act:
+
+Title of each class
+
+Trading
+
+Symbol(s)
+
+Name of each exchange
+
+on which registered
+
+Common Stock, $0.0001 par value per share
+
+IMNM
+
+The Nasdaq Capital Market
+
+Indicate by check mark whether the registrant is an emerging growth company as defined in Rule 405 of the Securities Act of 1933 (§230.405 of this chapter) or Rule 12b-2 of the Securities Exchange Act of 1934 (§240.12b-2 of this chapter).
+
+Emerging growth company  ☐
+
+If an emerging growth company, indicate by check mark if the registrant has elected not to use the extended transition period for complying with any new or revised financial accounting standards provided pursuant to Section 13(a) of the Exchange Act. ☐
+
+Item 1.01
+
+Entry into a Material Definitive Agreement.
+
+Amendment to License Agreement
+
+On October 2, 2026, Immunome, Inc. (the “Company”) entered into Amendment No. 4 to License Agreement (the “Amendment”) with Bristol-Myers Squibb Company (“BMS”) to further amend the License Agreement, by and between BMS and the Company (as assignee of Ayala Pharmaceuticals, Inc.), dated as of November 29, 2017 (as amended, the “License Agreement”). The Amendment removes the Company’s obligation to make any milestone and royalty payments under the License Agreement and assigns to the Company patent rights related to varegacestat (formerly AL102) and AL101 that were previously licensed to the Company under the License Agreement.
+
+As consideration for the Amendment, the Company paid BMS $20.0 million in cash and issued 4,425,487 shares of the Company’s common stock (collectively, the “Amendment Consideration”). Following payment of the Amendment Consideration, the Co
+
+8-K
+
+Immunome Inc. NASDAQ false 0001472012 0001472012 2026-10-02 2026-10-02
+
+UNITED STATES
+
+SECURITIES AND EXCHANGE COMMISSION
+
+Washington, D.C. 20549
+
+FORM 8-K
+
+CURRENT REPORT
+
+Pursuant to Section 13 or 15(d)
+
+of the Securities Exchange Act of 1934
+
+Date of Report (Date of earliest event reported): October 2, 2026
+
+Immunome, Inc.
+
+(Exact name of registrant as specified in its charter)
+
+Delaware
+
+001-39580
+
+77-0694340
+
+(State or other jurisdiction
+
+of incorporation)
+
+(Commission
+
+File Number)
+
+(IRS Employer
+
+Identification No.)
+
+18702 N. Creek Parkway , Suite 100
+
+Bothell , Washington
+
+98011
+
+(Address of principal executive offices)
+
+(Zip Code)
+
+Registrant’s telephone number, including area code: ( 425 ) 939-7410
+
+Check the appropriate box below if the Form 8-K filing is intended to simultaneously satisfy the filing obligation of the registrant under any of the following provisions:
+
+☐
+
+Written communications pursuant to Rule 425 under the Securities Act (17 CFR 230.425)
+
+☐
+
+Soliciting material pursuant to Rule 14a-12 under the Exchange Act (17 CFR 240.14a-12)
+
+☐
+
+Pre-commencement communications pursuant to Rule 14d-2(b) under the Exchange Act (17 CFR 240.14d-2(b))
+
+☐
+
+Pre-commencement communications pursuant to Rule 13e-4(c) under the Exchange Act (17 CFR 240.13e-4(c))
+
+Securities registered pursuant to Section 12(b) of the Act:
+
+Title of each class
+
+Trading
+
+Symbol(s)
+
+Name of each exchange
+
+on which registered
+
+Common Stock, $0.0001 par value per share
+
+IMNM
+
+The Nasdaq Capital Market
+
+Indicate by check mark whether the registrant is an emerging growth company as defined in Rule 405 of the Securities Act of 1933 (§230.405 of this chapter) or Rule 12b-2 of the Securities Exchange Act of 1934 (§240.12b-2 of this chapter).
+
+Emerging growth company  ☐
+
+If an emerging growth company, indicate by check mark if the registrant has elected not to use the extended transition period for complying with any new or revised financial accounting standards provided pursuant to Section 13(a) of the Exchange Act. ☐
+
+Item 1.01
+
+Entry into a Material Definitive Agreement.
+
+Amendment to License Agreement
+
+On October 2, 2026, Immunome, Inc. (the “Company”) entered into Amendment No. 4 to License Agreement (the “Amendment”) with Bristol-Myers Squibb Company (“BMS”) to further amend the License Agreement, by and between BMS and the Company (as assignee of Ayala Pharmaceuticals, Inc.), dated as of November 29, 2017 (as amended, the “License Agreement”). The Amendment removes the Company’s obligation to make any milestone and royalty payments under the License Agreement and assigns to the Company patent rights related to varegacestat (formerly AL102) and AL101 that were previously licensed to the Company under the License Agreement.
+
+As consideration for the Amendment, the Company paid BMS $20.0 million in cash and issued 4,425,487 shares of the Company’s common stock (collectively, the “Amendment Consideration”). Following payment of the Amendment Consideration, the Company has no milestone, royalty or other payment obligations to BMS under the License Agreement or the Amendment.
+
+Stock Issuance Agreement
+
+Concurrently with the execution of the Amendment, the Company entered into a stock issuance agreement (the “Stock Issuance Agreement”) with BMS, pursuant to which the Company issued 4,425,487 shares of the Company’s common stock (the “Shares”), as partial consideration for entering into the Amendment.
+
+The Company has agreed to use its commercially reasonable efforts to (x) file a resale registration statement with the Securities and Exchange Commission (the “SEC”) registering the Shares for resale by November 16, 2026 and (y) cause such resale registration statement to be declared effective as soon as practicable after the filing thereof but no later than 60 calendar days after the filing thereof or by 5 business days from when the Company is notified that the SEC will not review the resale registration statement or that it will not be subject to further review.
+
+The Company has also agreed to, among other things, indemnify BMS, its affiliates, partners, members, officers, directors, agents and representatives from certain liabilities and pay all fees and expenses (excluding any legal fees of BMS, and any underwriting discounts and selling commissions) incident to the Company’s obligations under the Stock Issuance Agreement.
+
+The foregoing summary of the Amendment is not complete and is qualified in its entirety by reference to the Amendment, a copy of which is filed as Exhibit 10.1 to this Current Report on Form 8-K, the License Agreement, a copy of which was filed as Exhibit 10.1 to our Current Report on Form 8-K filed on March 26, 2024, the Amendment No. 2 to License Agreement, dated August 7, 2024, a copy of which was filed as Exhibit 10.2 to our Quarterly Report on Form 10-Q filed on November 13, 2024, and Amendment No. 3 to License Agreement, dated March 27, 2026, a copy of which was filed as Exhibit 10.1 to our Quarterly Report on Form 10-Q filed on May 12, 2026. Additionally, the foregoing summary of the Stock Issuance Agreement is not complete and is qualified in its entirety by reference to the Stock Issuance Agreement, a copy of which is filed as Exhibit 4.1 to this Current Report on Form 8-K.
+
+Item 3.02
+
+Unregistered Sales of Equity Securities
+
+See the description set forth under Item 1.01 above with respect to the Stock Issuance Agreement, which is incorporated into this Item 3.02 by reference. The Shares are being issued to BMS pursuant to the exemption from the registration requirements provided in Section 4(a)(2) of the Securities Act of 1933, as amended (the “Securities Act”), for transactions by an issuer not involving any public offering. Accordingly, the Shares have not been registered under the Securities Act and may not be offered or sold in the United States except pursuant to an effective registration statement or an applicable exemption from the registration requirements of the Securities Act.
+
+Item 9.01
+
+Financial Statements and Exhibits
+
+(d)
+
+Exhibit
+
+Number
+
+Description
+
+4.1
+
+Stock Issuance Agreement dated October 2, 2026, by and between the Company and Bristol-Myers Squibb Company
+
+10.1*+
+
+Amendment No. 4 to License Agreement dated October 2, 2026, by and between the Company and Bristol-Myers Squibb Company
+
+104
+
+Cover Page Interactive Data File (embedded within the Inline XBRL document).
+
+*
+
+Certain information in this exhibit is omitted pursuant to Item 601(b)(10)(iv) of Regulation S-K because it is both not material and is the type that the registrant treats as private or confidential.
+
++
+
+Schedules and exhibits to the agreement have been omitted pursuant to Item 601(a)(5) of Regulation S-K.
+
+SIGNATURES
+
+Pursuant to the requirements of the Securities Exchange Act of 1934, the registrant has duly caused this report to be signed on its behalf by the undersigned thereunto duly authorized.
+
+IMMUNOME, INC.
+
+Date: October 5, 2026
+
+By:
+
+/s/ Clay Siegall
+
+Clay Siegall, Ph.D.
+
+President and Chief Executive Officer

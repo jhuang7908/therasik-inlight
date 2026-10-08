@@ -22,6 +22,7 @@ Windows 上如果 `python` 不在 PATH 里，用 `py -3` 代替 `python`。
 | `OPENAI_API_KEY` | `run_weekly.py` 配图和公众号封面 |
 | `ANTHROPIC_MODEL` | 可选，默认 `claude-sonnet-5-5`（脚本启动时会检查模型可用性） |
 | `OPENAI_IMAGE_MODEL` | 可选，默认 `gpt-image-1` |
+| `SEC_USER_AGENT` | 可选，SEC EDGAR 来源需要。格式：`公司名 contact@example.com`。未设置则跳过 SEC 来源 |
 | `WECHAT_APPID` | 只有 `publish_wechat.py` 需要 |
 | `WECHAT_APPSECRET` | 只有 `publish_wechat.py` 需要 |
 
@@ -41,6 +42,16 @@ python run_weekly.py --dry-run
 
 `--dry-run` 仍会调用 Claude 和 OpenAI（会消耗额度），但只写到 `preview/weekly/日期/`。它不修改 `content/`，也不推送公众号。
 
+只输出学术文章，跳过交易提取：
+
+```bash
+python run_weekly.py --no-deals
+# 或通过环境变量
+INLIGHT_NO_DEALS=1 python run_weekly.py
+```
+
+`--no-deals` 跳过 SEC EDGAR 交易提取，只输出学术文章。当没有文章时（退出码 3），不会写任何输出。现有的 `latest.json` 中的交易数据会被保留。
+
 确认内容可以上站之后，在仓库里提交并推送 `main`。GitHub Pages 监听 `main` 的根目录，推送后自动重新构建，站点跟着更新。HTTPS 已启用并强制跳转。
 
 公众号只进草稿箱，不群发：
@@ -55,6 +66,30 @@ python publish_wechat.py --week 2026-10-07
 ## 新闻源
 
 名单在 `sources.yaml`。每条有名称、学术或行业、`rss` 或 `pubmed`、首页和 feed。改来源只改这个文件。
+
+## 交易披露来源（官方公告）
+
+交易数据**仅来自 SEC EDGAR**。所有交易通过 `sec_deals.py` 模块从 SEC 8-K/6-K 文件中提取。
+
+| 来源 | 覆盖范围 | 环境变量 |
+| --- | --- | --- |
+| SEC EDGAR | 美股 8-K/6-K（SIC 2834/2835/2836/8731） | 需要 `SEC_USER_AGENT` |
+
+**交易分类**：
+- `lic`（授权合作）：许可/授权/合作协议
+- `acq`（并购）：收购/并购
+- `inv`（融资/信贷）：股权融资/贷款协议
+
+**严格验证**：
+- 所有引用必须是 SEC 文件的精确子串
+- 交易对手必须出现在引用中
+- 金额必须在包含交易对手的同一段落中
+- 服务协议、办公租约等非交易合同会被过滤
+- 条件性金额（"may receive up to"）不作为标题金额
+
+**金额来源标注**：每条交易标注 `filing`（来自披露文件）。金额字段只填文件里明确写出的数字。
+
+**日期显示**：交易卡片显示的日期是事件发生日期（8-K/6-K 的 "date of earliest event"），而非文件提交日期。
 
 ## 输出文件
 

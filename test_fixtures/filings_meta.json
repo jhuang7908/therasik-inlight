@@ -1,0 +1,34 @@
+[
+ {
+  "display_name": "REGENERON PHARMACEUTICALS, INC.  (REGN)  (CIK 0000872589)",
+  "cik": "872589",
+  "adsh": "0001104659-26-113895",
+  "file_date": "2026-10-06",
+  "event_date": "2026-10-01",
+  "len": 30000
+ },
+ {
+  "display_name": "Alector, Inc.  (ALEC)  (CIK 0001653087)",
+  "cik": "1653087",
+  "adsh": "0001193125-26-413090",
+  "file_date": "2026-10-05",
+  "event_date": "2026-09-30",
+  "len": 18103
+ },
+ {
+  "display_name": "Immunome Inc.  (IMNM)  (CIK 0001472012)",
+  "cik": "1472012",
+  "adsh": "0001193125-26-413217",
+  "file_date": "2026-10-05",
+  "event_date": "2026-10-02",
+  "len": 9967
+ },
+ {
+  "display_name": "ROCKET PHARMACEUTICALS, INC.  (RCKT)  (CIK 0001281895)",
+  "cik": "1281895",
+  "adsh": "0001140361-26-038818",
+  "file_date": "2026-10-06",
+  "event_date": "2026-09-30",
+  "len": 27383
+ }
+]
