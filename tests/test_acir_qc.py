@@ -413,43 +413,55 @@ class TestQcGateAndGemini(unittest.TestCase):
         self.assertNotIn('empty_check("claims", True', src)
         self.assertIn('empty_check("claims", claim_ok', src)
 
-    def test_brief_downgrade_rechecks_brief_limits(self):
+    def test_length_only_deep_redrafts_not_brief(self):
         item = EnrichedItem(
-            url="https://doi.org/10.1/ft-brief",
+            url="https://doi.org/10.1/ft-len",
             title="T", source="N", date="2026-01-01", pmcid="PMC3",
         )
         record_fulltext(item, _results(), source_label="PMC PMC3")
         art = _deep_art()
-        seen = []
+        drafts = []
+        vd_n = {"n": 0}
 
         def vd(draft, src):
-            seen.append(draft.get("tier"))
-            if draft.get("tier") == "deep":
-                return ["deep 档正文 200 汉字，低于下限 450 字"]
+            vd_n["n"] += 1
+            if vd_n["n"] <= 2:
+                return ["background 字数 80，要求 180–240"]
             return []
 
         def fake_draft(it, tier, config, problems=None):
+            drafts.append((tier, problems))
             out = dict(art)
             out["tier"] = tier
             return out
 
         with patch.dict(os.environ, {"GEMINI_API_KEY": "test-gemini"}):
-            with patch("inlight_articles.validate_depth", side_effect=vd):
-                with patch("inlight_articles.validate_names", return_value=[]):
-                    with patch("inlight_qc.validate_acir_structure", return_value=[]):
-                        with patch("inlight_articles.draft_single_article", side_effect=fake_draft):
-                            with patch("inlight_articles.verify_article_claims", return_value={
-                                "status": "ok", "problems": [], "calls": 1,
-                                "input_tokens": 1, "output_tokens": 1,
-                            }):
-                                out = _process_single_article(
-                                    {"url": item.url, "tier": "deep", "field": "c3"},
-                                    {item.url: item},
-                                    {"min_deep": 3, "max_brief": 2, "acir_qc": True},
-                                )
+            with patch("inlight_qc.gemini_review_deep", return_value={
+                "pass": True, "scores": {k: 8 for k in GEMINI_SCORE_KEYS},
+                "reasons": "ok", "factual_mismatch": False,
+            }):
+                with patch("inlight_qc.verified_data_points", return_value=[{}] * 6):
+                    with patch("inlight_articles.validate_depth", side_effect=vd):
+                        with patch("inlight_articles.validate_names", return_value=[]):
+                            with patch("inlight_qc.validate_acir_structure", return_value=[]):
+                                with patch("inlight_articles.draft_single_article", side_effect=fake_draft):
+                                    with patch("inlight_articles.verify_article_claims", return_value={
+                                        "status": "ok", "problems": [], "calls": 1,
+                                        "input_tokens": 1, "output_tokens": 1,
+                                    }):
+                                        out = _process_single_article(
+                                            {"url": item.url, "tier": "deep", "field": "c3"},
+                                            {item.url: item},
+                                            {"min_deep": 3, "max_brief": 2, "acir_qc": True},
+                                        )
         self.assertIsNotNone(out)
-        self.assertEqual(out["tier"], "brief")
-        self.assertIn("brief", seen)
+        self.assertEqual(out["tier"], "deep")
+        self.assertTrue(all(tier == "deep" for tier, _ in drafts))
+        self.assertGreaterEqual(len(drafts), 3)
+        self.assertTrue(any(
+            probs and any("仅因各段字数" in str(p) or "实测差距" in str(p) for p in (probs or []))
+            for _, probs in drafts
+        ))
 
     def test_out_of_scope_field_is_dropped(self):
         item = EnrichedItem(
@@ -480,6 +492,122 @@ class TestQcGateAndGemini(unittest.TestCase):
         self.assertIn("none", rules)
         self.assertEqual(_triage_field_map({"min_deep": 3}), dict(FIELDS))
         self.assertIn("类器官", FIELD_PROMPT_RULES)
+
+
+class TestTriageBackfillAndPublishedQc(unittest.TestCase):
+    def test_triage_backfills_fulltext_to_twice_min_deep(self):
+        from inlight_articles import triage_items
+        from tests.test_e2e import make_triage_response
+
+        def _ft(url, title, extra):
+            item = EnrichedItem(
+                url=url, title=title, source="N", date="2026-01-01", pmcid="PMC1",
+            )
+            record_fulltext(item, _results(extra=extra), source_label="PMC PMC1")
+            return item
+
+        items = [
+            _ft("https://doi.org/10.1/org", "Organoid culture", " human organoid disease modeling "),
+            _ft("https://doi.org/10.1/car", "CAR-T checkpoint", " CAR-T checkpoint PD-1 tumor immunology "),
+            _ft("https://doi.org/10.1/vax", "Vaccine adjuvant", " vaccine adjuvant infection immunity "),
+            _ft("https://doi.org/10.1/lnp", "LNP siRNA", " siRNA ASO LNP gene therapy "),
+            EnrichedItem(
+                url="https://doi.org/10.1/abs",
+                title="Abstract only", source="N", date="2026-01-01",
+                abstract="x" * 200, evidence_level="abstract",
+            ),
+        ]
+        records = []
+
+        class _H(logging.Handler):
+            def emit(self, record):
+                records.append(record.getMessage())
+
+        h = _H()
+        log = logging.getLogger()
+        prev = log.level
+        log.setLevel(logging.INFO)
+        log.addHandler(h)
+        try:
+            with patch("anthropic.Anthropic") as mock_cls:
+                mock_client = mock_cls.return_value
+                mock_client.messages.create.return_value = make_triage_response([
+                    {"url": items[0].url, "tier": "deep", "field": "f1"},
+                ])
+                out = triage_items(items, {"min_deep": 3, "max_deep": 5, "acir_qc": True})
+        finally:
+            log.removeHandler(h)
+            log.setLevel(prev)
+
+        deep_urls = [s["url"] for s in out if s.get("tier") == "deep"]
+        self.assertGreaterEqual(len(deep_urls), 3)
+        self.assertEqual(len(deep_urls), 4)
+        self.assertNotIn(items[4].url, deep_urls)
+        self.assertTrue(any("backfill" in str(s.get("reason") or "") for s in out))
+        skip_txt = "\n".join(records)
+        self.assertIn("no legally accessible full text", skip_txt)
+        self.assertIn("Triage backfill", skip_txt)
+
+    def test_published_qc_has_must_cover_blind_removed(self):
+        from inlight_audit import apply_dual_blind_to_week, BLIND_DIMS
+
+        item = EnrichedItem(
+            url="https://doi.org/10.1/qc-pub",
+            title="T", source="N", date="2026-01-01", pmcid="PMC9",
+        )
+        source = (
+            _results()
+            + " objective response rate was 64% control response rate was 32% "
+            "among 527 women hazard ratio 0.50 Grade 3+ adverse events 21% "
+            "median follow-up 18 months. tislelizumab 200 mg. DCR 80%."
+        )
+        record_fulltext(item, source, source_label="PMC PMC9")
+        art = _deep_art(url=item.url)
+        stats = {"drops": [], "qc_report": {"articles": []}, "published_deep": 0}
+
+        def fake_draft(it, tier, config, problems=None):
+            return dict(art)
+
+        def ok_judge(*_a, **_k):
+            return {
+                "available": True, "pass": True, "judge": "claude",
+                "scores": {k: 8 for k in BLIND_DIMS},
+                "overall": 8, "reasons": "ok cited ORR 64% in Results",
+            }
+
+        with patch.dict(os.environ, {"GEMINI_API_KEY": "test-gemini"}):
+            with patch("inlight_qc.gemini_review_deep", return_value={
+                "pass": True, "scores": {k: 8 for k in GEMINI_SCORE_KEYS},
+                "reasons": "ok", "factual_mismatch": False,
+            }):
+                with patch("inlight_articles.draft_single_article", side_effect=fake_draft):
+                    with patch("inlight_articles.validate_names", return_value=[]):
+                        with patch("inlight_qc.validate_acir_structure", return_value=[]):
+                            with patch("inlight_articles.verify_article_claims", return_value={
+                                "status": "ok", "problems": [], "calls": 1,
+                                "input_tokens": 1, "output_tokens": 1,
+                            }):
+                                out = _process_single_article(
+                                    {"url": item.url, "tier": "deep", "field": "c3"},
+                                    {item.url: item},
+                                    {"min_deep": 3, "acir_qc": True},
+                                    stats=stats,
+                                )
+        self.assertIsNotNone(out)
+        apply_dual_blind_to_week(
+            [out], stats, {"min_deep": 3, "acir_qc": True},
+            {item.url: item},
+            score_claude=ok_judge, score_gemini=ok_judge, redraft=None,
+        )
+        entry = stats["qc_report"]["articles"][0]
+        self.assertTrue(entry.get("published"))
+        self.assertIn("must_cover_list_id", entry)
+        self.assertTrue(entry.get("must_cover_text_hash"))
+        self.assertIn("must_cover_item_count", entry)
+        self.assertIn("must_cover_coverage", entry)
+        self.assertIn("removed_numbers", entry)
+        runs = entry.get("blind_judge_runs") or []
+        self.assertTrue(runs or entry.get("blind_scores"))
 
 
 class TestQcReportWritten(unittest.TestCase):

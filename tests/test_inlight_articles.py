@@ -1090,6 +1090,98 @@ class TestDataPointValidation(unittest.TestCase):
         # Should reject 'nine doses' - no Arabic digits
         no_digit_problems = [p for p in problems if "数字" in p]
         self.assertTrue(len(no_digit_problems) > 0, f"Should reject 'nine doses': {problems}")
+
+    def test_ordinal_time_phrase_not_hard_fail(self):
+        """Source-faithful 'first week' must not hard-fail; invented ordinals must."""
+        from inlight_articles import validate_depth
+
+        pad = "测" * 80
+        art = {
+            "tier": "brief",
+            "title": "测试",
+            "one_liner": pad,
+            "background": pad,
+            "design": pad,
+            "results": [pad + "采样在first week完成。"],
+            "limitations": [pad],
+            "significance": pad,
+            "datacard": {
+                "study_type": "研究", "n": "10", "control": "无",
+                "intervention": "无", "followup": "无",
+                "primary_endpoint": "测试", "primary_endpoint_result": "测试",
+                "statistics": "无", "safety": "无",
+            },
+            "data_points": [
+                {
+                    "value": "first week",
+                    "meaning": "首次采样时间",
+                    "source_quote": "Sampling in the first week showed recovery",
+                },
+            ],
+        }
+        raw = "Sampling in the first week showed recovery in 10 patients."
+        problems = validate_depth(art, raw)
+        self.assertFalse(
+            any("必须包含数字" in p and "first week" in p for p in problems),
+            problems,
+        )
+
+        art["data_points"] = [{
+            "value": "nineteenth week",
+            "meaning": "不存在的周次",
+            "source_quote": "Sampling in the first week showed recovery",
+        }]
+        invented = validate_depth(art, raw)
+        self.assertTrue(
+            any("数字" in p for p in invented),
+            invented,
+        )
+
+    def test_clinical_class_uses_own_sentence(self):
+        """A neighbouring clinical token must not block the minor-number strip."""
+        from inlight_articles import validate_depth
+
+        pad = "测" * 90
+        art = {
+            "tier": "brief",
+            "title": "测试标题",
+            "one_liner": pad,
+            "background": pad,
+            "design": pad,
+            "results": ["第17周完成采样。该队列纳入120例患者，ORR为64%。"],
+            "limitations": [pad],
+            "significance": pad,
+            "mechanism": "",
+            "datacard": {
+                "study_type": "研究", "n": "120", "control": "无",
+                "intervention": "无", "followup": "无",
+                "primary_endpoint": "ORR", "primary_endpoint_result": "64%",
+                "statistics": "无", "safety": "无",
+            },
+            "data_points": [
+                {
+                    "value": "120",
+                    "meaning": "例数",
+                    "source_quote": "120 patients were enrolled for ORR 64%",
+                },
+                {
+                    "value": "64%",
+                    "meaning": "ORR",
+                    "source_quote": "120 patients were enrolled for ORR 64%",
+                },
+            ],
+        }
+        raw = "120 patients were enrolled for ORR 64%. Sampling occurred after induction."
+        problems = validate_depth(art, raw)
+        self.assertFalse(
+            any("数字 '17'" in p or "数字 '17周'" in p for p in problems),
+            problems,
+        )
+        removed = art.get("qc_removed_numbers") or []
+        self.assertTrue(
+            any("17" in str(r.get("number") or "") for r in removed),
+            removed,
+        )
     
     def test_disease_control_rate_not_flagged(self):
         """'疾病控制率' (DCR) is a metric name, not a disease to be flagged."""
@@ -1945,6 +2037,25 @@ class TestNewMaterialDeterministic(unittest.TestCase):
             "Patients were followed from 6 months; VMS fell 64%.",
         )
         self.assertTrue(still_bad)
+
+    def test_range_thousands_and_to_and_connectors(self):
+        from inlight_articles import _invented_numeric_range
+
+        ok_thousands = _invented_numeric_range(
+            "随访1,139 to 2,000例",
+            "The counts were 1,139 and 2,000 in the same row.",
+        )
+        self.assertFalse(ok_thousands, ok_thousands)
+        ok_dash = _invented_numeric_range(
+            "剂量1,139-2,000 mg",
+            "Dose ranged 1139–2000 mg.",
+        )
+        self.assertFalse(ok_dash, ok_dash)
+        invented = _invented_numeric_range(
+            "随访9,999-12,000个月",
+            "Follow-up was 6 months; n=1139.",
+        )
+        self.assertTrue(invented)
 
 
 class TestMatcherToleratesFaithfulDrafts(unittest.TestCase):

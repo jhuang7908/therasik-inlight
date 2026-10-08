@@ -43,7 +43,7 @@ QC_REPORT_FIELDS = (
     "must_cover_list_id", "must_cover_text_hash", "must_cover_item_count",
     "figure_text_consistency", "classification", "boilerplate_count",
     "blind_scores", "blind_judge_runs", "hard_errors", "rewrite_count",
-    "publish_allowed",
+    "publish_allowed", "removed_numbers",
 )
 _MUST_COVER_CACHE: dict[str, dict[str, Any]] = {}
 
@@ -964,6 +964,11 @@ def attach_audit_fields(entry: dict, audit: dict) -> dict:
     entry["hard_errors"] = audit.get("hard_errors") or []
     entry["rewrite_count"] = audit.get("rewrite_count") or 0
     entry["publish_allowed"] = bool(audit.get("publish_allowed"))
+    entry["removed_numbers"] = (
+        entry.get("removed_numbers")
+        or audit.get("removed_numbers")
+        or []
+    )
     if not entry["publish_allowed"]:
         entry["published"] = False
     return entry

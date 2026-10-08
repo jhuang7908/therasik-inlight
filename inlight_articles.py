@@ -1046,6 +1046,30 @@ ENGLISH_NUMBER_WORDS = {
 }
 
 
+_ORDINAL_TIME_RE = re.compile(
+    r'(?i)\b(?:first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|'
+    r'eleventh|twelfth|thirteenth|fourteenth|fifteenth|sixteenth|seventeenth|'
+    r'eighteenth|nineteenth|twentieth|\d+(?:st|nd|rd|th))\s+'
+    r'(?:week|day|month|year|hour)s?\b'
+)
+
+ENGLISH_ORDINALS = {
+    "first": "1", "second": "2", "third": "3", "fourth": "4", "fifth": "5",
+    "sixth": "6", "seventh": "7", "eighth": "8", "ninth": "9", "tenth": "10",
+    "eleventh": "11", "twelfth": "12", "thirteenth": "13", "fourteenth": "14",
+    "fifteenth": "15", "sixteenth": "16", "seventeenth": "17",
+    "eighteenth": "18", "nineteenth": "19", "twentieth": "20",
+}
+
+
+def _english_ordinal_quantity_to_arabic(text: str) -> str:
+    """Map English cardinals and ordinals (first week → 1 week) to digits."""
+    result = english_number_to_arabic(text)
+    for word, digit in sorted(ENGLISH_ORDINALS.items(), key=lambda x: -len(x[0])):
+        result = re.sub(r'\b' + word + r'\b', digit, result, flags=re.IGNORECASE)
+    return re.sub(r'\b(\d+)(?:st|nd|rd|th)\b', r'\1', result, flags=re.IGNORECASE)
+
+
 def english_number_to_arabic(text: str) -> str:
     """Convert English number words to Arabic numerals.
 
@@ -3208,38 +3232,109 @@ def _is_qualitative_datapoint(value: str, meaning: str) -> bool:
     ))
 
 
+_THOUSANDS_IN_NUM_RE = re.compile(r'(?<=\d)[,，\u00a0\u202f\u2009\u2007 ](?=\d{3})')
+_RANGE_TOKEN_RE = re.compile(
+    r'(\d+(?:\.\d+)?)\s*(?:[-–—−~～至到]|to|and|及|与)\s*(\d+(?:\.\d+)?)'
+    r'(\s*(?:%|％|个月|周|天|年|mg|kg))?',
+    re.I,
+)
+_RANGE_WINDOW_RE = re.compile(
+    r'(?i)CI|置信|剂量|随访|个月|周|天|年|mg|range|interval|至|到|\bto\b',
+)
+_RANGE_ID_RE = re.compile(r'(?i)CD\d|IL-?\d|HLA|NCT|p38|MK-\d')
+
+
+def _normalize_thousands_for_ranges(text: str) -> str:
+    """Strip thousands separators before range extraction so 1,139-2,000 parses."""
+    return _THOUSANDS_IN_NUM_RE.sub('', text or '')
+
+
+def _range_spans(text: str) -> list[str]:
+    """Sentences and table rows — a range may be written across one row."""
+    parts = re.split(r'[\n\r]+|[。！？]|[.!?](?=\s|$)|\t', text or '')
+    return [p.strip() for p in parts if p and p.strip()]
+
+
+def _span_has_both_values(span: str, va: float, vb: float) -> bool:
+    vals = [n.value for n in match_document(span, convert_english_words=False).numbers]
+    return (
+        any(values_equivalent(va, x) for x in vals)
+        and any(values_equivalent(vb, x) for x in vals)
+    )
+
+
 def _invented_numeric_range(output: str, source: str) -> list[str]:
     """An output interval (CI / dose / time) must appear as a range in the source."""
     problems = []
-    src = normalize_for_match(source, convert_english_words=False)
-    src = src.replace('·', '.')
-    for m in re.finditer(
-        r'(\d+(?:\.\d+)?)\s*[-–—~至到]\s*(\d+(?:\.\d+)?)(\s*(?:%|％|个月|周|天|年|mg|kg))?',
-        output,
-    ):
+    out_n = _normalize_thousands_for_ranges(output).replace('·', '.')
+    src_n = _normalize_thousands_for_ranges(source).replace('·', '.')
+    src_spans = _range_spans(src_n) + _range_spans(source)
+    for m in _RANGE_TOKEN_RE.finditer(out_n):
         a, b, unit = m.group(1), m.group(2), m.group(3) or ""
-        window = output[max(0, m.start() - 16):m.end() + 12]
-        if not re.search(r'(?i)CI|置信|剂量|随访|个月|周|天|年|mg|range|interval|至|到', window):
+        va, vb = parse_numeric_value(a), parse_numeric_value(b)
+        if va is None or vb is None:
             continue
-        if re.search(r'(?i)CD\d|IL-?\d|HLA|NCT|p38|MK-\d', window):
+        window = out_n[max(0, m.start() - 16):m.end() + 12]
+        if not _RANGE_WINDOW_RE.search(window):
             continue
-        pat = re.compile(
-            rf'(?<![0-9.]){re.escape(a)}\s*[-–—~～to至到]\s*{re.escape(b)}',
-            re.I,
-        )
-        if pat.search(src) or pat.search(source):
+        if _RANGE_ID_RE.search(window):
             continue
-        # Chinese 至/到/～/– ranges: accept when both endpoints appear.
-        if (
-            number_in_text_as_word_boundary(a, src)
-            or number_in_text_as_word_boundary(a, source)
-        ) and (
-            number_in_text_as_word_boundary(b, src)
-            or number_in_text_as_word_boundary(b, source)
-        ):
+        found = False
+        for sm in _RANGE_TOKEN_RE.finditer(src_n):
+            sa, sb = parse_numeric_value(sm.group(1)), parse_numeric_value(sm.group(2))
+            if sa is None or sb is None:
+                continue
+            if (
+                (values_equivalent(va, sa) and values_equivalent(vb, sb))
+                or (values_equivalent(va, sb) and values_equivalent(vb, sa))
+            ):
+                found = True
+                break
+        if found:
+            continue
+        if any(_span_has_both_values(span, va, vb) for span in src_spans):
             continue
         problems.append(f"数字范围 '{a}-{b}{unit}' 在原文中未作为区间出现")
     return problems
+
+
+_SENT_SPLIT_RE = re.compile(r'(?<=[。！？.!?])\s*')
+
+
+def _own_sentence_for_number(text: str, num: str, context: str = "") -> str:
+    """Classify a number from its own sentence, not a ±N token window."""
+    parts = [p.strip() for p in _SENT_SPLIT_RE.split(text or "") if p and p.strip()]
+    if not parts:
+        return (context or "").strip()
+    token = re.escape(str(num or ""))
+    bounded = re.compile(rf'(?<!\d){token}(?!\d)') if token else None
+
+    def _has_num(part: str) -> bool:
+        if bounded and bounded.search(part):
+            return True
+        return bool(num) and source_has_numeric_value(num, part)
+
+    hits = [p for p in parts if _has_num(p)]
+    if context and hits:
+        ctx = context.strip()
+        hits.sort(
+            key=lambda p: (
+                ctx[:12] in p,
+                ctx in p,
+                p in ctx,
+                len(set(p) & set(ctx)),
+            ),
+            reverse=True,
+        )
+        return hits[0]
+    if hits:
+        return hits[0]
+    if context:
+        head = context.strip()[:10]
+        for p in parts:
+            if head and head in p:
+                return p
+    return (context or "").strip()
 
 
 def _strip_unmatched_number_claims(art: dict, nums: list[str]) -> list[dict]:
@@ -3392,8 +3487,27 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
         if not re.search(r'\d', value):
             if _is_qualitative_datapoint(value, meaning):
                 continue
-            problems.append(f"data_point value 必须包含数字：'{value}'")
-            continue
+            # Source-faithful ordinal time phrases ("first week") are not
+            # invented values. Other digit-less strings still hard-fail.
+            if _ORDINAL_TIME_RE.search(value):
+                converted = _english_ordinal_quantity_to_arabic(value)
+                value_norm = normalize_whitespace(value)
+                conv_norm = normalize_whitespace(converted)
+                src_ord = _english_ordinal_quantity_to_arabic(norm)
+                if value_norm and (
+                    value_norm in norm
+                    or value_norm in src_ord
+                    or (conv_norm != value_norm and conv_norm in src_ord)
+                ):
+                    continue
+                if re.search(r'\d', converted):
+                    value = converted
+                else:
+                    problems.append(f"data_point value 必须包含数字：'{value}'")
+                    continue
+            else:
+                problems.append(f"data_point value 必须包含数字：'{value}'")
+                continue
         
         # Check for vague/imprecise quantifiers that lack specific numbers
         vague_patterns = [
@@ -3542,8 +3656,14 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
                     problems.append(meaning_reason)
                     break
 
-    clinical_unmatched = [(n, c) for n, c in unmatched if _CLINICAL_CLAIM_RE.search(c or "")]
-    minor_unmatched = [(n, c) for n, c in unmatched if (n, c) not in clinical_unmatched]
+    clinical_unmatched = []
+    minor_unmatched = []
+    for n, c in unmatched:
+        sent = _own_sentence_for_number(all_text, n, c)
+        if _CLINICAL_CLAIM_RE.search(sent or ""):
+            clinical_unmatched.append((n, c))
+        else:
+            minor_unmatched.append((n, c))
     if clinical_unmatched:
         for num, _ctx in clinical_unmatched:
             problems.append(f"数字 '{num}' 在原始材料中未找到")
@@ -4091,6 +4211,138 @@ def verify_article_claims(
     return result
 
 
+_FIELD_RELEVANCE_TERMS = {
+    "f1": ("organoid", "类器官", "器官芯片", "organ-on-chip", "organ on chip"),
+    "f2": ("humanized", "xenograft", "knockout", "人源化", "动物模型", "建系", "knock-in"),
+    "f3": ("alphafold", "generative", "structure prediction", "ai drug", "生成式", "结构预测", "药效预测"),
+    "f4": ("car-t", "car t", "checkpoint", "pd-1", "pd-l1", "肿瘤免疫", "tme", "til", "tcr-t"),
+    "f5": ("autoimmune", "transplant", "lupus", "自免", "移植", "排斥"),
+    "f6": ("vaccine", "adjuvant", "疫苗", "佐剂", "感染免疫"),
+    "f7": ("nanobody", "adc", "fc engineering", "双抗", "抗体工程", "nanobodies"),
+    "f8": ("sirna", "aso", "lnp", "mrna", "gene therapy", "核酸", "基因治疗"),
+    "f9": ("pdx", "precision oncolog", "药敏", "临床转化", "patient-derived", "basket"),
+    "c1": ("organoid", "类器官", "器官芯片", "organ-on-chip"),
+    "c2": ("alphafold", "generative", "ai drug", "生成式", "结构预测"),
+    "c3": ("car-t", "checkpoint", "pd-1", "肿瘤免疫", "tme"),
+    "c4": ("autoimmune", "lupus", "自免", "移植"),
+    "c5": ("humanized", "xenograft", "动物模型", "人源化"),
+    "c6": ("nanobody", "adc", "抗体工程", "双抗"),
+    "c7": ("car-t", "til", "细胞治疗", "tcr-t"),
+    "c8": ("vaccine", "adjuvant", "疫苗", "佐剂"),
+    "c9": ("sirna", "aso", "lnp", "mrna", "核酸"),
+}
+
+
+def _item_relevance_blob(item: EnrichedItem) -> str:
+    return " ".join(
+        filter(
+            None,
+            [
+                getattr(item, "title", "") or "",
+                getattr(item, "abstract", "") or "",
+                getattr(item, "fulltext_results", "") or "",
+                getattr(item, "fig_captions", "") or "",
+                getattr(item, "methods_design", "") or "",
+                getattr(item, "rss_summary", "") or "",
+            ],
+        )
+    ).lower()
+
+
+def _score_fields_for_item(item: EnrichedItem, config: dict | None) -> tuple[str, int]:
+    """Rank an item against the 9 fields. Returns (best_field, score)."""
+    blob = _item_relevance_blob(item)
+    allowed = _triage_field_map(config)
+    best_k = next(iter(allowed), "f9")
+    best_s = -1
+    for key, name in allowed.items():
+        terms = _FIELD_RELEVANCE_TERMS.get(key) or ()
+        score = sum(1 for t in terms if t and t.lower() in blob)
+        if name and str(name).lower() in blob:
+            score += 2
+        if score > best_s:
+            best_k, best_s = key, score
+    return best_k, max(best_s, 0)
+
+
+def _backfill_deep_selections(
+    items: list[EnrichedItem],
+    selections: list[dict],
+    config: dict,
+) -> list[dict]:
+    """When min_deep is missed, keep unused OA/PMC full-text candidates."""
+    from inlight_qc import acir_strict, item_has_real_fulltext
+
+    cfg = config or {}
+    if not (acir_strict(cfg) or "min_deep" in cfg):
+        for it in items:
+            if it.url not in {s.get("url") for s in selections}:
+                logging.info(
+                    "Triage skip %s: not selected (no min_deep backfill on this path)",
+                    it.url,
+                )
+        return selections
+
+    t = pipeline_targets(cfg)
+    url_to_item = {it.url: it for it in items}
+    selected_urls = {s.get("url") for s in selections if s.get("url")}
+
+    def _is_ft(url: str) -> bool:
+        it = url_to_item.get(url)
+        return bool(it and item_has_real_fulltext(it))
+
+    deep_ft_n = sum(
+        1 for s in selections if s.get("tier") == "deep" and _is_ft(s.get("url") or "")
+    )
+    try_cap = max(int(t["min_deep"]) * 2, int(t["min_deep"]))
+
+    for it in items:
+        if it.url in selected_urls:
+            continue
+        if not item_has_real_fulltext(it):
+            logging.info(
+                "Triage skip %s: no legally accessible full text (OA/PMC/publisher OA)",
+                it.url,
+            )
+
+    if deep_ft_n >= t["min_deep"]:
+        return selections
+
+    unused_ft = [
+        it for it in items
+        if item_has_real_fulltext(it) and it.url not in selected_urls
+    ]
+    ranked = sorted(
+        unused_ft,
+        key=lambda it: _score_fields_for_item(it, cfg)[1],
+        reverse=True,
+    )
+    need = max(0, try_cap - deep_ft_n)
+    out = list(selections)
+    for it in ranked[:need]:
+        field, score = _score_fields_for_item(it, cfg)
+        if field in ("none", "", None):
+            logging.info("Triage skip %s: no matching field among the 9", it.url)
+            continue
+        out.append({
+            "url": it.url,
+            "tier": "deep",
+            "field": field,
+            "reason": f"backfill OA/PMC full text, field={field} score={score}",
+        })
+        selected_urls.add(it.url)
+        logging.info(
+            "Triage backfill %s: unused legally accessible full text, field=%s relevance=%d",
+            it.url, field, score,
+        )
+    for it in ranked[need:]:
+        logging.info(
+            "Triage skip %s: try cap %d reached (ranked below other full-text candidates)",
+            it.url, try_cap,
+        )
+    return out
+
+
 def triage_items(items: list[EnrichedItem], config: dict) -> list[dict]:
     """Run triage to select items and assign tiers.
     
@@ -4116,14 +4368,18 @@ def triage_items(items: list[EnrichedItem], config: dict) -> list[dict]:
         messages=[{"role": "user", "content": prompt}],
     )
     
+    selections: list[dict] = []
     for block in message.content:
         if block.type == "tool_use" and block.name == "submit_triage":
-            selections = block.input.get("selections", [])
-            logging.info("Triage selected %d items", len(selections))
-            return selections
-    
-    logging.warning("Triage did not return tool_use, using fallback")
-    return []
+            selections = list(block.input.get("selections", []) or [])
+            logging.info("Triage model selected %d items", len(selections))
+            break
+    else:
+        logging.warning("Triage did not return tool_use, using fallback")
+
+    selections = _backfill_deep_selections(items, selections, config)
+    logging.info("Triage selected %d items after backfill", len(selections))
+    return selections
 
 
 def _claude_create(client, **kwargs):
@@ -4763,6 +5019,62 @@ def _hard_problems(problems: list[str]) -> list[str]:
     return [p for p in problems if any(m in p for m in markers)]
 
 
+_LENGTH_STRUCTURE_MARKERS = (
+    "字数", "汉字", "上限", "下限",
+    "核心结果须", "段落超过", "数据卡",
+    "局限须至少", "局限条数不足",
+    "deep 正文", "标题连写",
+    "段缺少具体数字",
+)
+_NOT_LENGTH_STRUCTURE = (
+    "source_quote 过短", "必须包含数字", "数字 '", "数字范围",
+    "含义不匹配", "单位不匹配", "主张与原文矛盾", "原文未支持",
+    "标识符", "编造", "无法回溯", "结果字段", "可核实数字",
+)
+
+
+def _is_length_structure_problem(problem: str) -> bool:
+    if any(x in problem for x in _NOT_LENGTH_STRUCTURE):
+        return False
+    return any(m in problem for m in _LENGTH_STRUCTURE_MARKERS)
+
+
+def _length_structure_only(problems: list[str]) -> bool:
+    hard = _hard_problems(problems)
+    return bool(hard) and all(_is_length_structure_problem(p) for p in hard)
+
+
+def _section_length_targets(art: dict, problems: list[str]) -> list[str]:
+    """Explicit per-section targets plus measured overages/shortfalls."""
+    from inlight_qc import SECTION_RANGES, han_len
+
+    lines = [
+        "仅因各段字数或结构未达标，请按下列实测差距重写为 deep，不得改数字或主张：",
+        *problems,
+    ]
+    for name, (lo, hi) in SECTION_RANGES.items():
+        n = han_len(art.get(name) if art else "")
+        if n < lo:
+            lines.append(f"{name} 现 {n} 字，目标 {lo}–{hi}（少 {lo - n} 字）")
+        elif n > hi:
+            lines.append(f"{name} 现 {n} 字，目标 {lo}–{hi}（多 {n - hi} 字）")
+        else:
+            lines.append(f"{name} 现 {n} 字，已在 {lo}–{hi}")
+    body = han_len([
+        (art or {}).get("one_liner"), (art or {}).get("background"),
+        (art or {}).get("design"), (art or {}).get("results"),
+        (art or {}).get("mechanism"), (art or {}).get("limitations"),
+        (art or {}).get("significance"),
+    ])
+    if body < 1400:
+        lines.append(f"正文合计 {body} 字，目标 1400–1900（少 {1400 - body} 字）")
+    elif body > 1900:
+        lines.append(f"正文合计 {body} 字，目标 1400–1900（多 {body - 1900} 字）")
+    else:
+        lines.append(f"正文合计 {body} 字，已在 1400–1900")
+    return lines
+
+
 def _source_bucket(item: EnrichedItem) -> str:
     from inlight_qc import item_has_real_fulltext
     if item_has_real_fulltext(item):
@@ -5065,6 +5377,40 @@ def _process_single_article(
         logging.warning("Accepting %s with soft-only problems: %s", url, first_soft_problems)
         problems = first_soft_problems
 
+    if (
+        first_hard_problems
+        and tier == "deep"
+        and real_ft
+        and _length_structure_only(problems)
+        and strict
+    ):
+        for attempt in (1, 2):
+            targets = _section_length_targets(art, problems)
+            logging.info(
+                "Deep length/structure redraft %d/2 for %s: %s",
+                attempt, url, problems,
+            )
+            retry_len = draft_single_article(enriched_item, "deep", config, problems=targets)
+            if retry_len is None:
+                continue
+            art, problems = _prepare(retry_len)
+            if not _hard_problems(problems):
+                first_hard_problems = []
+                first_soft_problems = problems
+                break
+            if not _length_structure_only(problems):
+                first_hard_problems = _hard_problems(problems)
+                first_soft_problems = [p for p in problems if p not in first_hard_problems]
+                break
+        else:
+            if _hard_problems(problems) and _length_structure_only(problems):
+                return drop(
+                    "deep length/structure still failing after 2 redrafts: "
+                    + "; ".join(_hard_problems(problems)[:4])
+                )
+        first_hard_problems = _hard_problems(problems)
+        first_soft_problems = [p for p in problems if p not in first_hard_problems]
+
     if first_hard_problems:
         logging.warning("Validation issues for %s: %s", url, problems)
 
@@ -5343,7 +5689,8 @@ def _process_single_article(
             ) or ("gates failed" if not writing_audit.get("publish_allowed") else "ok"),
         ))
     failed = [c for c in checks if not c.get("pass")]
-    if failed and strict:
+
+    def _qc_extra(audit=None):
         extra = {
             "tier": art.get("tier"),
             "read_note": enriched_item.read_note,
@@ -5351,27 +5698,27 @@ def _process_single_article(
             "gemini": (gemini_result or {}).get("scores"),
             "id_warnings": art.get("qc_id_warnings") or [],
             "removed_numbers": art.get("qc_removed_numbers") or [],
+            "must_cover_list_id": "",
+            "must_cover_text_hash": "",
+            "must_cover_item_count": 0,
+            "must_cover_coverage": None,
+            "blind_scores": [],
+            "blind_judge_runs": [],
         }
-        if writing_audit:
+        if audit:
             from inlight_audit import attach_audit_fields
-            extra = attach_audit_fields(extra, writing_audit)
+            extra = attach_audit_fields(extra, audit)
+            extra["removed_numbers"] = art.get("qc_removed_numbers") or []
+        return extra
+
+    if failed and strict:
         return drop("QC check failed: " + "; ".join(
             f"{c['name']}: {c.get('reason') or ''}" for c in failed[:4]
-        ), extra)
+        ), _qc_extra(writing_audit))
     if failed:
         logging.warning("QC warnings (non-strict, still publishing): %s",
                         "; ".join(f"{c['name']}: {c.get('reason') or ''}" for c in failed[:4]))
-    extra = {
-        "tier": art.get("tier"),
-        "read_note": enriched_item.read_note,
-        "sections_read": enriched_item.sections_read,
-        "gemini": (gemini_result or {}).get("scores"),
-        "id_warnings": art.get("qc_id_warnings") or [],
-        "removed_numbers": art.get("qc_removed_numbers") or [],
-    }
-    if writing_audit:
-        from inlight_audit import attach_audit_fields
-        extra = attach_audit_fields(extra, writing_audit)
+    extra = _qc_extra(writing_audit)
     if stats is not None:
         stats.setdefault("qc_report", {}).setdefault("articles", []).append(
             assemble_qc_entry(url, True, checks, extra)
