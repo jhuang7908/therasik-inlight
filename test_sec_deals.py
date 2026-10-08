@@ -1552,6 +1552,9 @@ class TestMergerVehicleCounterparty:
         assert sec_deals.is_merger_vehicle_name("Helios Acquisition Corp")
         assert sec_deals.is_merger_vehicle_name("Helios Acquisition Sub")
         assert sec_deals.is_merger_vehicle_name("Holdings Sub")
+        assert sec_deals.is_merger_vehicle_name("Offeror")
+        assert sec_deals.is_merger_vehicle_name("Willow Sub, Inc.")
+        assert sec_deals.is_merger_vehicle_name("Helios Acquisition Co.")
         assert not sec_deals.is_merger_vehicle_name("Juniper Biosciences, Inc.")
         assert not sec_deals.is_merger_vehicle_name("Genentech")
 
@@ -1621,6 +1624,71 @@ class TestMergerVehicleCounterparty:
             },
         )
         assert deal is None
+
+    def test_defined_as_purchaser_is_vehicle_regardless_of_name(self):
+        filing = (
+            "the Company entered into an Agreement and Plan of Merger with "
+            'Helios BidCo LLC ("Purchaser"), a wholly owned subsidiary of '
+            'Osprey Pharma Inc. ("Parent"). Purchaser will merge with and into '
+            "the Company."
+        )
+        assert sec_deals.is_merger_or_tender_vehicle(
+            "Helios BidCo LLC", filing, deal_type=sec_deals.DealType.MERGER
+        )
+        parent = sec_deals.resolve_merger_vehicle(
+            "Helios BidCo LLC", filing, deal_type=sec_deals.DealType.MERGER
+        )
+        assert parent is not None
+        assert "osprey pharma" in parent.lower()
+        assert "helios" not in parent.lower()
+
+    def test_defined_as_offeror_resolves_to_parent(self):
+        filing = (
+            'Willow Sub, Inc. ("Offeror"), a wholly owned subsidiary of '
+            'Quarry Holdings plc ("Parent"), commenced a tender offer.'
+        )
+        parent = sec_deals.resolve_merger_vehicle("Willow Sub, Inc.", filing)
+        assert parent is not None
+        assert "quarry holdings" in parent.lower()
+
+    def test_arbitrary_name_described_as_sub_of_parent_in_merger(self):
+        filing = (
+            "the Company entered into a merger agreement with "
+            "Nimbus Therapeutics Operations LLC, a wholly owned subsidiary of "
+            "Harbor Bio plc. Nimbus Therapeutics Operations LLC will merge "
+            "with and into the Company."
+        )
+        parent = sec_deals.resolve_merger_vehicle(
+            "Nimbus Therapeutics Operations LLC",
+            filing,
+            type_quote="Nimbus Therapeutics Operations LLC will merge with and into the Company",
+            deal_type=sec_deals.DealType.MERGER,
+        )
+        assert parent is not None
+        assert "harbor bio" in parent.lower()
+
+    def test_parent_capture_does_not_overcapture(self):
+        filing = (
+            "Purchaser will merge with and into the Company. "
+            "Separately the Company noted a wholly owned subsidiary of "
+            "Some Unrelated Very Long Name That Must Not Be Treated As Parent Inc."
+        )
+        assert sec_deals.resolve_merger_vehicle("Purchaser", filing) is None
+
+    def test_license_genentech_not_remapped_to_roche(self):
+        filing = (
+            "the Company granted Genentech, Inc., a wholly owned subsidiary of "
+            "Roche Holdings, Inc., an exclusive license."
+        )
+        resolved = sec_deals.resolve_merger_vehicle(
+            "Genentech, Inc.",
+            filing,
+            type_quote="the Company granted Genentech an exclusive license",
+            deal_type=sec_deals.DealType.LICENSE_COLLABORATION,
+        )
+        assert resolved is not None
+        assert "genentech" in resolved.lower()
+        assert "roche" not in resolved.lower()
 
 
 class TestCleanupRelativeCutoffAndGrants:

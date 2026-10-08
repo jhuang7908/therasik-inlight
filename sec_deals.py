@@ -2076,30 +2076,204 @@ def is_divestiture_or_asset_sale(text: str) -> bool:
 
 
 _VEHICLE_NAME_RE = re.compile(
-    r'\b(?:merger\s+sub(?:sidiary)?'
-    r'|purchaser'
-    r'|acquisition\s+(?:corp(?:oration)?|sub(?:sidiary)?)'
-    r'|holdings\s+sub(?:sidiary)?)\b',
+    r'(?:'
+    r'\b(?:merger|acquisition|holdings)\s+'
+    r'(?:sub(?:sidiary)?|co(?:mpany)?\.?|corp(?:oration)?\.?)'
+    r'|\b(?:purchaser|offeror|bidco)\b'
+    r'|\bsub(?:,)?\s+inc\.?'
+    r')',
     re.IGNORECASE,
 )
 
+_VEHICLE_ROLE_TERMS = frozenset({
+    'purchaser', 'merger sub', 'merger subsidiary', 'acquisition sub',
+    'acquisition subsidiary', 'acquisition co', 'acquisition corp',
+    'merger corp', 'offeror', 'bidco', 'holdings sub',
+})
+
+_PARENT_ROLE_TERMS = frozenset({'parent', 'acquiror', 'acquirer'})
+
+# Parent name is bounded: legal suffix optional, then a hard terminator.
+# The old fallback `of ([A-Z].{1,80}?)` had no end point and over-captured.
+_PARENT_NAME_TOKEN = (
+    r'([A-Z][A-Za-z0-9&.\' -]{1,50}?'
+    r'(?:,?\s*(?:Inc|Incorporated|Ltd|LLC|L\.L\.C|plc|AG|Corp|'
+    r'Corporation|Company|Co|Limited|N\.V|GmbH|SE|L\.P|LP)\.?)?)'
+)
+_PARENT_NAME_END = (
+    r'(?=\s*\(\s*["\u201c]?(?:the\s+)?'
+    r'(?:Parent|Buyer|Acquiror|Acquirer)["\u201d]?\s*\)'
+    r'|\s*[,.;]'
+    r'|\s+and\b'
+    r'|\s+will\b'
+    r'|\s+agreed\b'
+    r'|\s+\('
+    r'|$)'
+)
+
+
+def parse_defined_terms(text: str) -> dict[str, list[str]]:
+    """Map a defined term (lowercased) to the company names that carry it.
+
+    Handles `XYZ Corp. ("Purchaser")` and `ABC Inc. (the "Parent")`.
+    """
+    mapping: dict[str, list[str]] = {}
+    if not text:
+        return mapping
+    patterns = (
+        r'([A-Z][A-Za-z0-9&.\' -]{1,80}?)\s*\(\s*(?:the\s+)?["\u201c]([^"\u201d]+)["\u201d]\s*\)',
+        r'([A-Z][A-Za-z0-9&.\' -]{1,80}?)\s*\(\s*(?:the\s+)?'
+        r'(Purchaser|Parent|Merger\s+Sub(?:sidiary)?|Acquisition\s+Sub(?:sidiary)?'
+        r'|Offeror|Buyer|Acquiror|BidCo)\s*\)',
+    )
+    for pat in patterns:
+        for m in re.finditer(pat, text):
+            name = re.sub(r'\s+', ' ', m.group(1).strip().rstrip(',').strip())
+            term = m.group(2).strip().lower()
+            if not name or not term:
+                continue
+            mapping.setdefault(term, [])
+            if name not in mapping[term]:
+                mapping[term].append(name)
+    return mapping
+
 
 def is_merger_vehicle_name(name: str) -> bool:
-    """True for Merger Sub / Purchaser / Acquisition Corp / Holdings Sub vehicles."""
+    """True for Merger Sub / Purchaser / Acquisition Co / Offeror / Sub, Inc."""
     if not name:
         return False
     raw = name.strip()
     n = normalize_company_name(raw).strip()
     if not raw:
         return False
-    return bool(_VEHICLE_NAME_RE.search(raw) or (n and _VEHICLE_NAME_RE.search(n)))
+    if _VEHICLE_NAME_RE.search(raw) or (n and _VEHICLE_NAME_RE.search(n)):
+        return True
+    return n.lower() in _VEHICLE_ROLE_TERMS or raw.lower() in _VEHICLE_ROLE_TERMS
 
 
-def resolve_merger_vehicle(name: str, filing_text: str, type_quote: str = "") -> str | None:
-    """Replace a merger vehicle with the named parent, or None to drop.
+def _name_matches_any(name: str, candidates: list[str]) -> bool:
+    for cand in candidates:
+        if match_company_whole_word(name, cand) or match_company_whole_word(cand, name):
+            return True
+    return False
 
-    Non-vehicle names are returned unchanged. 'a wholly owned subsidiary of
-    Parent' resolves to Parent. If no parent is named, return None.
+
+def _is_defined_as_vehicle(name: str, term_map: dict[str, list[str]]) -> bool:
+    if is_merger_vehicle_name(name):
+        return True
+    for term, names in term_map.items():
+        if term not in _VEHICLE_ROLE_TERMS:
+            continue
+        if _name_matches_any(name, names):
+            return True
+    return False
+
+
+def _clean_parent_name(raw: str) -> str | None:
+    parent = normalize_company_name(raw).strip().rstrip(',')
+    parent = re.sub(r'\s+', ' ', parent)
+    if not parent or is_merger_vehicle_name(parent):
+        return None
+    return parent
+
+
+def _parent_from_defined_terms(term_map: dict[str, list[str]]) -> str | None:
+    for term in _PARENT_ROLE_TERMS:
+        for raw in term_map.get(term, []):
+            parent = _clean_parent_name(raw)
+            if parent:
+                return parent
+    return None
+
+
+def _extract_parent_near_name(name: str, blob: str, term_map: dict[str, list[str]]) -> str | None:
+    """Find the named parent in the same clause as the vehicle."""
+    escaped = re.escape(name)
+    local_patterns = [
+        # NAME, a wholly owned subsidiary of PARENT
+        rf'{escaped}[^.]{{0,200}}?(?:an?\s+)?(?:indirect\s+)?'
+        rf'wholly[-\s]owned\s+subsidiary\s+of\s+{_PARENT_NAME_TOKEN}{_PARENT_NAME_END}',
+        # NAME (a wholly-owned subsidiary of PARENT)
+        rf'{escaped}[^.]{{0,120}}?\(\s*(?:an?\s+)?(?:indirect\s+)?'
+        rf'wholly[-\s]owned\s+subsidiary\s+of\s+([^)]+?)\)',
+        # subsidiary of PARENT ("NAME")
+        rf'(?:wholly[-\s]owned\s+)?subsidiary\s+of\s+'
+        rf'{_PARENT_NAME_TOKEN}\s*\(\s*["\u201c]?{escaped}',
+        # PARENT, through its wholly owned subsidiary NAME
+        rf'{_PARENT_NAME_TOKEN},\s+through\s+its\s+'
+        rf'(?:indirect\s+)?(?:wholly[-\s]owned\s+)?subsidiary\s+{escaped}',
+    ]
+    for pat in local_patterns:
+        m = re.search(pat, blob, re.IGNORECASE)
+        if not m:
+            continue
+        parent = _clean_parent_name(m.group(1))
+        if parent and not (
+            match_company_whole_word(parent, name) or match_company_whole_word(name, parent)
+        ):
+            return parent
+    # "subsidiary of Parent" where Parent is a defined term
+    if re.search(
+        rf'{escaped}[^.]{{0,200}}?subsidiary\s+of\s+(?:the\s+)?Parent\b',
+        blob, re.IGNORECASE,
+    ):
+        return _parent_from_defined_terms(term_map)
+    return None
+
+
+def _described_as_wholly_owned_sub(name: str, blob: str) -> bool:
+    if not name or not blob:
+        return False
+    return bool(re.search(
+        rf'{re.escape(name)}[^.]{{0,200}}?(?:an?\s+)?(?:indirect\s+)?'
+        rf'wholly[-\s]owned\s+subsidiary\s+of\b',
+        blob, re.IGNORECASE,
+    ))
+
+
+def is_merger_or_tender_vehicle(
+    name: str,
+    filing_text: str = '',
+    type_quote: str = '',
+    deal_type: DealType | None = None,
+) -> bool:
+    """True when the party is a merger/tender vehicle by NAME or by ROLE."""
+    if not name:
+        return False
+    if is_merger_vehicle_name(name):
+        return True
+    generic_sub = re.match(
+        r'^(?:an?\s+)?(?:indirect\s+)?wholly[-\s]owned\s+subsidiary\s+of\s+',
+        name.strip(), re.IGNORECASE,
+    )
+    if generic_sub:
+        return True
+    blob = f"{type_quote}\n{filing_text or ''}"
+    term_map = parse_defined_terms(blob)
+    if _is_defined_as_vehicle(name, term_map):
+        return True
+    merger_context = (
+        deal_type in (DealType.ACQUISITION, DealType.MERGER)
+        or _is_merger_or_purchase_quote(type_quote)
+        or bool(re.search(r'\b(?:tender\s+offer|offeror)\b', blob, re.IGNORECASE))
+    )
+    if merger_context and _described_as_wholly_owned_sub(name, blob):
+        return True
+    return False
+
+
+def resolve_merger_vehicle(
+    name: str,
+    filing_text: str,
+    type_quote: str = "",
+    deal_type: DealType | None = None,
+) -> str | None:
+    """Replace a merger/tender vehicle with the named parent, or None to drop.
+
+    Vehicles are identified by role as well as name: a party defined as
+    Purchaser / Merger Sub / Acquisition Sub / Offeror, or described as a
+    wholly owned subsidiary of Parent, whatever its legal name.
+    Non-vehicles are returned unchanged. If no parent is named, return None.
     """
     if not name:
         return None
@@ -2108,42 +2282,35 @@ def resolve_merger_vehicle(name: str, filing_text: str, type_quote: str = "") ->
         name.strip(), re.IGNORECASE,
     )
     if generic_sub:
-        parent = normalize_company_name(generic_sub.group(1)).strip()
-        return parent or None
-    if not is_merger_vehicle_name(name):
-        return name
-    blob = f"{type_quote}\n{filing_text or ''}"
+        return _clean_parent_name(generic_sub.group(1))
 
-    escaped = re.escape(name)
-    parent_patterns = [
-        # NAME, a wholly owned subsidiary of PARENT
-        rf'{escaped}(?:,|\s)+a(?:n)?\s+(?:indirect\s+)?'
-        rf'wholly[-\s]owned\s+subsidiary\s+of\s+'
-        rf'([A-Z][A-Za-z0-9&.,\' -]{{1,80}}?)(?:\.|,|;|\s+and\b|\s+\()',
-        # NAME (a wholly-owned subsidiary of PARENT)
-        rf'{escaped}[^.]{{0,120}}?\(\s*(?:an?\s+)?(?:indirect\s+)?'
-        rf'wholly[-\s]owned\s+subsidiary\s+of\s+([^)]+?)\)',
-        # subsidiary of PARENT ("NAME") / (“NAME”)
-        rf'(?:wholly[-\s]owned\s+)?subsidiary\s+of\s+'
-        rf'([A-Z][A-Za-z0-9&.,\' -]{{1,80}}?)\s*\(\s*["\u201c]?{escaped}',
-        # PARENT, through its wholly owned subsidiary NAME
-        rf'([A-Z][A-Za-z0-9&.,\' -]{{1,80}}?),\s+through\s+its\s+'
-        rf'(?:indirect\s+)?(?:wholly[-\s]owned\s+)?subsidiary\s+{escaped}',
-        # a wholly owned subsidiary of PARENT (when NAME is just Purchaser/Merger Sub)
-        rf'(?:an?\s+)?(?:indirect\s+)?wholly[-\s]owned\s+subsidiary\s+of\s+'
-        rf'([A-Z][A-Za-z0-9&.,\' -]{{1,80}}?)',
-    ]
-    for pat in parent_patterns:
-        m = re.search(pat, blob, re.IGNORECASE)
-        if not m:
-            continue
-        parent = normalize_company_name(m.group(1)).strip().rstrip(',')
-        parent = re.sub(r'\s+', ' ', parent)
-        if not parent or is_merger_vehicle_name(parent):
-            continue
-        if match_company_whole_word(parent, name) or match_company_whole_word(name, parent):
-            continue
+    blob = f"{type_quote}\n{filing_text or ''}"
+    term_map = parse_defined_terms(blob)
+    is_vehicle = is_merger_or_tender_vehicle(name, filing_text, type_quote, deal_type)
+    if not is_vehicle:
+        return name
+
+    parent = _extract_parent_near_name(name, blob, term_map)
+    if parent:
         return parent
+    # Name is a role noun ("Purchaser") — resolve the company defined as that role,
+    # then that company's parent.
+    role_key = normalize_company_name(name).lower()
+    for defined_name in term_map.get(role_key, []):
+        if is_merger_vehicle_name(defined_name) or defined_name.lower() == name.lower():
+            continue
+        nested = _extract_parent_near_name(defined_name, blob, term_map)
+        if nested:
+            return nested
+        # The defined name might itself be the parent if it isn't a vehicle —
+        # but a company defined as Purchaser is the vehicle, not the parent.
+    parent = _parent_from_defined_terms(term_map)
+    if parent and not (
+        match_company_whole_word(parent, name) or match_company_whole_word(name, parent)
+    ):
+        # Only use the defined Parent when this name is tied to it.
+        if _described_as_wholly_owned_sub(name, blob) or is_merger_vehicle_name(name):
+            return parent
     return None
 
 
@@ -2563,8 +2730,19 @@ def process_sec_deal(
         logging.info("Deal dropped: counterparty '%s' not verified in quotes", counterparty)
         return None
 
-    resolved_cp = resolve_merger_vehicle(counterparty, filing_text, type_quote)
-    if resolved_cp is None or is_merger_vehicle_name(resolved_cp):
+    resolved_cp = resolve_merger_vehicle(
+        counterparty, filing_text, type_quote, deal_type=deal_type,
+    )
+    still_vehicle = (
+        resolved_cp is None
+        or is_merger_or_tender_vehicle(resolved_cp, filing_text, type_quote, deal_type)
+    )
+    if still_vehicle and is_merger_or_tender_vehicle(
+        counterparty, filing_text, type_quote, deal_type
+    ):
+        logging.info("Deal dropped: merger vehicle '%s' has no named parent", counterparty)
+        return None
+    if resolved_cp is None:
         logging.info("Deal dropped: merger vehicle '%s' has no named parent", counterparty)
         return None
     if resolved_cp != counterparty:
