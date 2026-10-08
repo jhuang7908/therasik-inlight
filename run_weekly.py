@@ -772,37 +772,66 @@ def draw_image(prompt: str, dest: Path) -> None:
 
 
 def site_article(item: dict, image_rel: str) -> dict:
+    """Convert article item to site format.
+    
+    Handles both new format (with datacard, results, etc.) and legacy format.
+    """
     import hashlib
     stamp = item["date"].replace("-", "")
     # Use stable hash of DOI/URL to avoid collisions (e.g. all nature.com URLs had same ID)
     url_key = normalize_doi(item["url"]) or item["url"]
     url_hash = hashlib.sha1(url_key.encode()).hexdigest()[:10]
     item_id = f"w-{stamp}-{url_hash}"
+    
     result = {
         "id": item_id,
         "f": item["field"],
         "t": item["title"],
         "ds": item["date"],
         "disp": item["date"][:7].replace("-", "."),
-        "j": item["journal"],
+        "j": item.get("journal", item.get("source", "")),
         "url": item["url"],
-        "au": item["authors"] or item["source"],
+        "au": item.get("authors") or item.get("source", ""),
         "tags": [item["field"]],
-        "sum": item["lead"],
-        "lead": item["lead"],
-        "body": item["body"],
-        "discuss": item["discuss"],
-        "steps": item["steps"],
-        "note": f"材料来自 {item['source']}，只写来源里能核对的内容。",
+        "sum": item.get("lead", ""),
+        "lead": item.get("lead", ""),
+        "body": item.get("body", ""),
+        "discuss": item.get("discuss", ""),
+        "steps": item.get("steps", []),
+        "note": f"材料来自 {item.get('source', '')}，只写来源里能核对的内容。",
         "img": image_rel,
     }
-    # Include optional metadata fields if present
+    
+    # Include optional metadata fields if present (legacy)
     if item.get("study_type"):
         result["study_type"] = item["study_type"]
     if item.get("n"):
         result["n"] = item["n"]
     if item.get("evidence_level"):
         result["evidence_level"] = item["evidence_level"]
+    
+    # Include new format fields if present
+    if item.get("tier"):
+        result["tier"] = item["tier"]
+    if item.get("one_liner"):
+        result["one_liner"] = item["one_liner"]
+    if item.get("datacard"):
+        result["datacard"] = item["datacard"]
+    if item.get("background"):
+        result["background"] = item["background"]
+    if item.get("design"):
+        result["design"] = item["design"]
+    if item.get("results"):
+        result["results"] = item["results"]
+    if item.get("mechanism"):
+        result["mechanism"] = item["mechanism"]
+    if item.get("limitations"):
+        result["limitations"] = item["limitations"]
+    if item.get("significance"):
+        result["significance"] = item["significance"]
+    if item.get("source_trace"):
+        result["source_trace"] = item["source_trace"]
+    
     return result
 
 
@@ -925,7 +954,34 @@ def write_output(draft: dict, dest: Path, week: str) -> None:
         logging.exception("封面图失败")
     (dest / "articles.json").write_text(json.dumps(articles, ensure_ascii=False, indent=2), encoding="utf-8")
     (dest / "deals.json").write_text(json.dumps(deals, ensure_ascii=False, indent=2), encoding="utf-8")
-    html = wechat_html(articles, deals, week)
+    
+    # Use wechat_html_full for new format articles (with datacard), wechat_html for legacy
+    has_new_format = any(art.get("datacard") or art.get("results") for art in articles)
+    if has_new_format and ARTICLE_MODULE_AVAILABLE:
+        # Transform articles to the format expected by wechat_html_full
+        wechat_articles = []
+        for art in articles:
+            wechat_art = {
+                "title": art.get("t", art.get("title", "")),
+                "tier": art.get("tier", "brief"),
+                "one_liner": art.get("one_liner", art.get("lead", "")),
+                "datacard": art.get("datacard", {}),
+                "evidence_level": art.get("evidence_level", "abstract"),
+                "background": art.get("background", ""),
+                "design": art.get("design", ""),
+                "results": art.get("results", []),
+                "mechanism": art.get("mechanism", ""),
+                "limitations": art.get("limitations", []),
+                "significance": art.get("significance", ""),
+                "authors": art.get("au", art.get("authors", "")),
+                "journal": art.get("j", art.get("journal", "")),
+                "url": art.get("url", ""),
+                "img": art.get("img", ""),
+            }
+            wechat_articles.append(wechat_art)
+        html = wechat_html_full(wechat_articles, deals, week)
+    else:
+        html = wechat_html(articles, deals, week)
     (dest / "wechat" / "article.html").write_text(html, encoding="utf-8")
     logging.info("写出 %s", dest)
 
@@ -974,7 +1030,22 @@ def main() -> None:
         
         if args.use_new_pipeline and ARTICLE_MODULE_AVAILABLE:
             logging.info("使用新文章深度管线（enrich + triage + 逐篇生成 + validate）")
-            draft = process_articles(items, config)
+            new_draft = process_articles(items, config)
+            
+            # New pipeline handles articles; industry items still use old pipeline
+            # but we pass only industry items to it
+            industry_items = [item for item in items if item.get("kind") != "academic"]
+            if industry_items:
+                logging.info("Processing %d industry items with old pipeline", len(industry_items))
+                old_draft = claude_draft(industry_items, config)
+                deals = old_draft.get("deals", [])
+            else:
+                deals = []
+            
+            draft = {
+                "articles": new_draft.get("articles", []),
+                "deals": deals[:int(config.get("max_industry", 4))],
+            }
         elif args.use_new_pipeline and not ARTICLE_MODULE_AVAILABLE:
             logging.warning("新文章管线不可用（inlight_articles.py 导入失败），回退到旧管线")
             draft = claude_draft(items, config)

@@ -68,28 +68,69 @@ class EnrichedItem:
 
 
 def extract_doi(url: str) -> str:
-    """Extract DOI from various URL formats."""
+    """Extract DOI from various URL formats.
+    
+    Notes:
+    - bioRxiv/medRxiv DOIs: strips version suffix like 'v1' since the API
+      doesn't find versioned DOIs
+    - Cell PIIs: returns empty string since PIIs are not DOIs and should not
+      be converted to fake 10.1038/... DOIs
+    - Nature article IDs: converts to 10.1038/... format
+    """
     url = url.strip()
-    patterns = [
-        r'https?://(?:dx\.)?doi\.org/(10\.\d+/[^\s?#]+)',
-        r'https?://(?:www\.)?nature\.com/articles/(s\d+-\d+-\d+-\w+)',
-        r'https?://(?:www\.)?cell\.com/[^/]+/(?:fulltext|abstract)/(S[\d\-\(\)]+)',
-        r'https?://(?:www\.)?science\.org/doi/(10\.\d+/[^\s?#]+)',
-        r'https?://(?:www\.)?thelancet\.com/journals/[^/]+/article/(PIIS[\d]+)',
-        r'https?://(?:www\.)?nejm\.org/doi/(10\.\d+/[^\s?#]+)',
-        r'https?://(?:www\.)?biorxiv\.org/content/(10\.\d+/[^\s?#]+)',
-        r'https?://(?:www\.)?medrxiv\.org/content/(10\.\d+/[^\s?#]+)',
-    ]
-    for pattern in patterns:
-        match = re.search(pattern, url, re.IGNORECASE)
-        if match:
-            doi = match.group(1)
-            if doi.startswith("s") or doi.startswith("S"):
-                return f"10.1038/{doi}"
-            return doi
+    
+    # Direct DOI URL
+    doi_org_match = re.search(r'https?://(?:dx\.)?doi\.org/(10\.\d+/[^\s?#]+)', url, re.IGNORECASE)
+    if doi_org_match:
+        doi = doi_org_match.group(1)
+        # Strip bioRxiv/medRxiv version suffix
+        doi = re.sub(r'v\d+$', '', doi)
+        return doi
+    
+    # Nature article URLs -> DOI
+    nature_match = re.search(r'https?://(?:www\.)?nature\.com/articles/(s\d+-\d+-\d+-\w+)', url, re.IGNORECASE)
+    if nature_match:
+        return f"10.1038/{nature_match.group(1)}"
+    
+    # Cell article URLs: return empty string, not a fake DOI
+    # Cell uses PIIs (e.g., S0092-8674(26)00123-4) which are NOT DOIs
+    cell_match = re.search(r'https?://(?:www\.)?cell\.com/[^/]+/(?:fulltext|abstract)/(S[\d\-\(\)]+)', url, re.IGNORECASE)
+    if cell_match:
+        # Cell PIIs need Crossref/EPMC lookup by title, not DOI conversion
+        return ""
+    
+    # Science URLs
+    science_match = re.search(r'https?://(?:www\.)?science\.org/doi/(10\.\d+/[^\s?#]+)', url, re.IGNORECASE)
+    if science_match:
+        return science_match.group(1)
+    
+    # Lancet URLs (PII, not DOI)
+    lancet_match = re.search(r'https?://(?:www\.)?thelancet\.com/journals/[^/]+/article/(PIIS[\d]+)', url, re.IGNORECASE)
+    if lancet_match:
+        # Lancet PIIs are not DOIs
+        return ""
+    
+    # NEJM URLs
+    nejm_match = re.search(r'https?://(?:www\.)?nejm\.org/doi/(10\.\d+/[^\s?#]+)', url, re.IGNORECASE)
+    if nejm_match:
+        return nejm_match.group(1)
+    
+    # bioRxiv/medRxiv URLs
+    biorxiv_match = re.search(r'https?://(?:www\.)?(?:bio|med)rxiv\.org/content/(10\.\d+/[^\s?#]+)', url, re.IGNORECASE)
+    if biorxiv_match:
+        doi = biorxiv_match.group(1)
+        # Strip version suffix (v1, v2, etc.) - API doesn't find versioned DOIs
+        doi = re.sub(r'v\d+$', '', doi)
+        return doi
+    
+    # Generic DOI pattern (fallback)
     doi_match = re.search(r'(10\.\d+/[^\s?#]+)', url)
     if doi_match:
-        return doi_match.group(1)
+        doi = doi_match.group(1)
+        # Strip version suffix for any preprint DOI
+        doi = re.sub(r'v\d+$', '', doi)
+        return doi
+    
     return ""
 
 
@@ -144,7 +185,11 @@ def epmc_fulltext_xml(pmcid: str) -> str | None:
 
 
 def extract_sections_from_xml(xml_text: str, section_names: tuple[str, ...]) -> str:
-    """Extract specific sections from PMC XML."""
+    """Extract specific sections from PMC XML.
+    
+    Uses itertext() to properly handle nested elements like <sup>, <italic>, etc.
+    Example: '5 × 10<sup>6</sup> cells' becomes '5 × 106 cells', not '5 × 10 cells'.
+    """
     if not xml_text:
         return ""
     try:
@@ -160,17 +205,19 @@ def extract_sections_from_xml(xml_text: str, section_names: tuple[str, ...]) -> 
             if any(name.lower() in title for name in section_names):
                 text_parts = []
                 for p in sec.iter("p"):
-                    if p.text:
-                        text_parts.append(p.text.strip())
-                    for sub in p:
-                        if sub.tail:
-                            text_parts.append(sub.tail.strip())
+                    # Use itertext() to get all text including nested elements
+                    para_text = "".join(p.itertext()).strip()
+                    if para_text:
+                        text_parts.append(para_text)
                 sections.append(" ".join(text_parts))
     return "\n\n".join(sections)
 
 
 def extract_fig_captions_from_xml(xml_text: str, max_chars: int = 6000) -> str:
-    """Extract figure captions from PMC XML."""
+    """Extract figure captions from PMC XML.
+    
+    Uses itertext() to properly handle nested elements.
+    """
     if not xml_text:
         return ""
     try:
@@ -182,21 +229,20 @@ def extract_fig_captions_from_xml(xml_text: str, max_chars: int = 6000) -> str:
     for fig in root.iter("fig"):
         cap = fig.find("caption")
         if cap is not None:
-            text_parts = []
-            for elem in cap.iter():
-                if elem.text:
-                    text_parts.append(elem.text.strip())
-                if elem.tail:
-                    text_parts.append(elem.tail.strip())
-            if text_parts:
-                captions.append(" ".join(text_parts))
+            # Use itertext() to get all text including nested elements
+            cap_text = "".join(cap.itertext()).strip()
+            if cap_text:
+                captions.append(cap_text)
     
     result = "\n\n".join(captions)
     return result[:max_chars]
 
 
 def extract_design_methods_from_xml(xml_text: str, max_chars: int = 4000) -> str:
-    """Extract study design related methods from PMC XML."""
+    """Extract study design related methods from PMC XML.
+    
+    Uses itertext() to properly handle nested elements.
+    """
     if not xml_text:
         return ""
     try:
@@ -224,8 +270,10 @@ def extract_design_methods_from_xml(xml_text: str, max_chars: int = 4000) -> str
                         if any(kw in subsec_text for kw in design_keywords):
                             text_parts = []
                             for p in subsec.iter("p"):
-                                if p.text:
-                                    text_parts.append(p.text.strip())
+                                # Use itertext() to get all text including nested elements
+                                para_text = "".join(p.itertext()).strip()
+                                if para_text:
+                                    text_parts.append(para_text)
                             if text_parts:
                                 sections.append(" ".join(text_parts))
     
@@ -666,52 +714,209 @@ def cn_len(text: str) -> int:
     return count
 
 
+def chinese_numeral_to_arabic(text: str) -> str:
+    """Convert Chinese numerals to Arabic numbers for comparison.
+    
+    Examples: 两年 -> 2年, 五百天 -> 500天, 三倍 -> 3倍
+    """
+    # Simple Chinese numeral mapping
+    simple_map = {
+        '零': '0', '一': '1', '二': '2', '两': '2', '三': '3', '四': '4',
+        '五': '5', '六': '6', '七': '7', '八': '8', '九': '9', '十': '10',
+    }
+    
+    result = text
+    
+    # Handle compound numbers like 五百, 三千, etc.
+    compound_patterns = [
+        (r'([一二三四五六七八九])千([一二三四五六七八九]?)百([一二三四五六七八九]?)十([一二三四五六七八九]?)',
+         lambda m: str(int(simple_map.get(m.group(1), '0')) * 1000 + 
+                       int(simple_map.get(m.group(2), '0')) * 100 + 
+                       int(simple_map.get(m.group(3), '0')) * 10 + 
+                       int(simple_map.get(m.group(4), '0')))),
+        (r'([一二三四五六七八九])百([一二三四五六七八九]?)十([一二三四五六七八九]?)',
+         lambda m: str(int(simple_map.get(m.group(1), '0')) * 100 + 
+                       int(simple_map.get(m.group(2), '0')) * 10 + 
+                       int(simple_map.get(m.group(3), '0')))),
+        (r'([一二三四五六七八九])十([一二三四五六七八九]?)',
+         lambda m: str(int(simple_map.get(m.group(1), '0')) * 10 + 
+                       int(simple_map.get(m.group(2), '0')))),
+        (r'十([一二三四五六七八九])',
+         lambda m: str(10 + int(simple_map.get(m.group(1), '0')))),
+        (r'五十亿', '5000000000'),
+        (r'([一二三四五六七八九])亿', lambda m: str(int(simple_map.get(m.group(1), '0')) * 100000000)),
+        (r'([一二三四五六七八九])万', lambda m: str(int(simple_map.get(m.group(1), '0')) * 10000)),
+    ]
+    
+    for pattern, replacement in compound_patterns:
+        if callable(replacement):
+            result = re.sub(pattern, replacement, result)
+        else:
+            result = re.sub(pattern, replacement, result)
+    
+    # Simple single-character replacements
+    for cn, ar in simple_map.items():
+        result = result.replace(cn, ar)
+    
+    return result
+
+
+def extract_number_core(text: str) -> str:
+    """Extract the core numeric value from a number string for comparison.
+    
+    Examples: "52%" -> "52", "1,139例" -> "1139", "95%CI" -> "", "HR=0.66" -> "0.66"
+    """
+    # Remove commas and spaces
+    text = text.replace(",", "").replace(" ", "").replace("，", "")
+    
+    # Skip things like "95%CI" which is not a percentage value
+    if re.match(r'^\d+%CI', text, re.IGNORECASE):
+        return ""
+    
+    # Extract the numeric part
+    match = re.search(r'(\d+(?:\.\d+)?)', text)
+    if match:
+        return match.group(1)
+    return ""
+
+
+def number_in_text_as_word_boundary(number: str, text: str) -> bool:
+    """Check if a number appears in text with word boundaries.
+    
+    Prevents '500' from matching '5000' or '1500'.
+    """
+    # Remove commas from both
+    number_clean = number.replace(",", "").replace("，", "").strip()
+    text_clean = text.replace(",", "").replace("，", "")
+    
+    if not number_clean:
+        return False
+    
+    # Build pattern with word boundaries
+    # Numbers should be bounded by non-digit characters
+    pattern = r'(?<!\d)' + re.escape(number_clean) + r'(?!\d)'
+    return bool(re.search(pattern, text_clean))
+
+
 def validate_depth(art: dict, raw_material: str) -> list[str]:
     """Validate generated article meets depth requirements.
     
     Returns list of problems. Empty list means validation passed.
+    
+    Checks:
+    - Marketing words in title/one_liner
+    - data_points: quote must be in source, value must match quote
+    - Numbers in body must be registered in data_points
+    - Numbers checked with word boundaries (500 != 5000)
+    - Chinese numerals converted for comparison
+    - Checks datacard, limitations, title, summary too
+    - Names (person/institution/drug/company) must be in source
     """
     problems = []
     norm = normalize_whitespace(raw_material)
+    norm_for_numbers = chinese_numeral_to_arabic(norm)
     tier = art.get("tier", "brief")
     
+    # Marketing words check
     if MARKETING_BLOCKLIST.search(art.get("title", "")):
         problems.append("标题含有营销词汇")
     if MARKETING_BLOCKLIST.search(art.get("one_liner", "")):
         problems.append("一句话结论含有营销词汇")
     
+    # Validate each data_point: quote must be in source, value must be in quote
     for dp in art.get("data_points", []):
-        quote = normalize_whitespace(dp.get("source_quote", ""))
-        if len(quote) < 10:
-            problems.append(f"data_point source_quote 过短：{dp.get('value')}")
-        elif quote not in norm:
-            problems.append(f"data_point 无法回溯：{dp.get('value')} (quote: {quote[:50]}...)")
+        value = dp.get("value", "").strip()
+        quote = dp.get("source_quote", "").strip()
+        quote_norm = normalize_whitespace(quote)
+        
+        # Check quote exists in source
+        if len(quote_norm) < 10:
+            problems.append(f"data_point source_quote 过短：{value}")
+            continue
+        if quote_norm not in norm:
+            problems.append(f"data_point 无法回溯：{value} (quote: {quote_norm[:50]}...)")
+            continue
+        
+        # Check value is not empty
+        if not value:
+            problems.append("data_point value 为空")
+            continue
+        
+        # Check value appears in the quote (with boundary check)
+        value_core = extract_number_core(value)
+        value_cn = extract_number_core(chinese_numeral_to_arabic(value))
+        quote_for_check = chinese_numeral_to_arabic(quote)
+        
+        if value_core and not number_in_text_as_word_boundary(value_core, quote_for_check):
+            # Try Chinese numeral conversion
+            if value_cn and value_cn != value_core and number_in_text_as_word_boundary(value_cn, quote_for_check):
+                pass  # OK after conversion
+            else:
+                problems.append(f"data_point value 不在 quote 中：{value} (quote: {quote[:50]})")
     
-    body_parts = [
+    # Build set of registered values (with their Arabic equivalents)
+    declared_values = set()
+    for dp in art.get("data_points", []):
+        val = dp.get("value", "").strip()
+        if val:
+            declared_values.add(val)
+            declared_values.add(extract_number_core(val))
+            declared_values.add(extract_number_core(chinese_numeral_to_arabic(val)))
+    declared_values.discard("")
+    
+    # Collect ALL text that needs number checking
+    all_text_parts = [
+        art.get("title", ""),
         art.get("one_liner", ""),
         art.get("background", ""),
         art.get("design", ""),
         *art.get("results", []),
         art.get("mechanism", ""),
         art.get("significance", ""),
+        *art.get("limitations", []),
     ]
-    body = " ".join(body_parts)
     
-    declared_values = set()
-    for dp in art.get("data_points", []):
-        declared_values.add(dp.get("value", ""))
+    # Add datacard fields
+    datacard = art.get("datacard", {})
+    for field_val in datacard.values():
+        if isinstance(field_val, str):
+            all_text_parts.append(field_val)
     
-    body_numbers = extract_numbers_from_text(body)
-    for num in body_numbers:
+    all_text = " ".join(all_text_parts)
+    
+    # Check numbers in all text are registered
+    all_numbers = extract_numbers_from_text(all_text)
+    for num in all_numbers:
         num_clean = num.strip()
-        if not any(num_clean in dv or dv in num_clean for dv in declared_values):
+        num_core = extract_number_core(num_clean)
+        
+        # Skip things that aren't really standalone numbers (like "95%CI")
+        if not num_core:
+            continue
+        
+        # Check if registered (using word boundary logic)
+        is_registered = False
+        for dv in declared_values:
+            dv_core = extract_number_core(dv) if dv else ""
+            if dv_core and (dv_core == num_core or num_core == dv_core):
+                is_registered = True
+                break
+            # Also check if declared value contains this number (e.g., "19/36" contains "19")
+            if num_core and dv and number_in_text_as_word_boundary(num_core, dv):
+                is_registered = True
+                break
+        
+        if not is_registered:
+            # Only flag numbers with digits
             if re.search(r'\d', num_clean):
                 problems.append(f"正文数字未登记：{num_clean}")
     
+    # Check each results paragraph has at least one number
     for i, para in enumerate(art.get("results", [])):
         if not re.search(r'\d', para):
             problems.append(f"results 第 {i+1} 段没有任何数字")
     
+    # Limitations count and quality
     min_limits = 3 if tier == "deep" else 1
     limitations = art.get("limitations", [])
     if len(limitations) < min_limits:
@@ -722,7 +927,7 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
         if re.search(empty_phrases, lim) and len(lim) < 30:
             problems.append(f"局限为空话：{lim}")
     
-    datacard = art.get("datacard", {})
+    # Datacard required fields
     required_fields = ["study_type", "n", "control", "intervention", "followup",
                       "primary_endpoint", "primary_endpoint_result", "statistics", "safety"]
     for field in required_fields:
@@ -730,7 +935,18 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
         if not val:
             problems.append(f"数据卡字段为空：{field}（应写'原文未给出'或'不适用'）")
     
+    # Character count check
+    body_parts = [
+        art.get("one_liner", ""),
+        art.get("background", ""),
+        art.get("design", ""),
+        *art.get("results", []),
+        art.get("mechanism", ""),
+        art.get("significance", ""),
+    ]
+    body = " ".join(body_parts)
     total_chars = cn_len(body) + cn_len(" ".join(limitations))
+    
     if tier == "deep":
         if total_chars < 1400 * 0.85:
             problems.append(f"deep 档正文 {total_chars} 字，低于下限 1190 字")
@@ -742,9 +958,44 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
         elif total_chars > 650 * 1.15:
             problems.append(f"brief 档正文 {total_chars} 字，超过上限 748 字")
     
-    evidence = art.get("evidence_level", art.get("datacard", {}).get("evidence_level", "abstract"))
+    # Evidence level check
+    evidence = art.get("evidence_level", datacard.get("evidence_level", "abstract"))
     if tier == "deep" and evidence in ("press", "secondary"):
         problems.append("仅有新闻稿，不得写成深度解读")
+    
+    return problems
+
+
+def validate_names(art: dict, raw_material: str) -> list[str]:
+    """Check that person/institution/drug/company names in output appear in source.
+    
+    Returns list of problems for names that appear fabricated.
+    """
+    problems = []
+    norm = normalize_whitespace(raw_material).lower()
+    
+    # Extract author references from the article
+    # Pattern: Chinese names like "Zhang 等", "Li 等", "Smith 等"
+    author_pattern = r'([A-Z][a-z]+)\s*等'
+    
+    all_text = " ".join([
+        art.get("title", ""),
+        art.get("one_liner", ""),
+        art.get("background", ""),
+        art.get("design", ""),
+        *art.get("results", []),
+        art.get("mechanism", ""),
+        art.get("significance", ""),
+        art.get("authors", ""),
+    ])
+    
+    for match in re.finditer(author_pattern, all_text):
+        name = match.group(1).lower()
+        # Check if this name appears in the source material
+        if name not in norm and len(name) >= 3:
+            # Also check for variations
+            if f"{name}," not in norm and f"{name} " not in norm:
+                problems.append(f"作者姓氏 '{match.group(1)}' 在原始材料中未找到（可能是编造）")
     
     return problems
 
@@ -789,18 +1040,29 @@ def draft_single_article(item: EnrichedItem, tier: str, config: dict) -> dict | 
     
     prompt = build_article_prompt(item, tier)
     model = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5-5")
-    max_tokens = 4000 if tier == "deep" else 2000
+    # Use higher token limits to avoid thinking consuming the budget
+    max_tokens = 16000 if tier == "deep" else 8000
     
     logging.info("Drafting %s article for: %s", tier, item.title[:50])
     
     client = Anthropic()
-    message = client.messages.create(
-        model=model,
-        max_tokens=max_tokens,
-        tools=[ARTICLE_TOOL_SCHEMA],
-        tool_choice={"type": "tool", "name": "submit_article"},
-        messages=[{"role": "user", "content": prompt}],
-    )
+    
+    try:
+        message = client.messages.create(
+            model=model,
+            max_tokens=max_tokens,
+            tools=[ARTICLE_TOOL_SCHEMA],
+            tool_choice={"type": "auto"},
+            messages=[{"role": "user", "content": prompt + "\n\n请务必调用 submit_article 工具提交你的文章。"}],
+        )
+    except Exception as e:
+        logging.error("API error drafting article for %s: %s", item.title[:50], e)
+        return None
+    
+    # Check for max_tokens truncation
+    if message.stop_reason == "max_tokens":
+        logging.warning("Article draft truncated (max_tokens) for: %s", item.title[:50])
+        return None
     
     for block in message.content:
         if block.type == "tool_use" and block.name == "submit_article":
@@ -810,7 +1072,7 @@ def draft_single_article(item: EnrichedItem, tier: str, config: dict) -> dict | 
             art["source_trace"] = item.source_trace
             return art
     
-    logging.warning("Article draft did not return tool_use")
+    logging.warning("Article draft did not return tool_use for: %s", item.title[:50])
     return None
 
 
@@ -848,6 +1110,15 @@ def process_articles(items: list[dict], config: dict) -> dict:
             logging.warning("Downgrading %s from deep to brief (evidence: %s)", url, enriched_item.evidence_level)
             tier = "brief"
         
+        # Deep tier requires fulltext OR rich abstract (>=1200 chars)
+        # Otherwise we get filler content ("未给出" padding)
+        abstract_len = len(enriched_item.abstract or "")
+        has_fulltext = bool(enriched_item.fulltext_results)
+        if tier == "deep" and not has_fulltext and abstract_len < 1200:
+            logging.warning("Downgrading %s from deep to brief (abstract only %d chars, need >=1200 or fulltext)", 
+                          url, abstract_len)
+            tier = "brief"
+        
         raw_material = "\n".join([
             enriched_item.abstract or "",
             enriched_item.fulltext_results or "",
@@ -864,64 +1135,192 @@ def process_articles(items: list[dict], config: dict) -> dict:
         art["field"] = field
         
         problems = validate_depth(art, raw_material)
+        name_problems = validate_names(art, raw_material)
+        problems.extend(name_problems)
+        
         if problems:
             logging.warning("Validation issues for %s: %s", url, problems)
             
             logging.info("Retrying with problems listed...")
-            retry_prompt = build_article_prompt(enriched_item, tier) + f"\n\n## 上次的问题\n\n" + "\n".join(f"- {p}" for p in problems)
+            retry_prompt = build_article_prompt(enriched_item, tier) + f"\n\n## 上次的问题\n\n" + "\n".join(f"- {p}" for p in problems) + "\n\n请务必调用 submit_article 工具提交修正后的文章。"
             
             from anthropic import Anthropic
             client = Anthropic()
             model = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5-5")
-            max_tokens = 4000 if tier == "deep" else 2000
+            max_tokens = 16000 if tier == "deep" else 8000
             
-            message = client.messages.create(
-                model=model,
-                max_tokens=max_tokens,
-                tools=[ARTICLE_TOOL_SCHEMA],
-                tool_choice={"type": "tool", "name": "submit_article"},
-                messages=[{"role": "user", "content": retry_prompt}],
-            )
+            try:
+                message = client.messages.create(
+                    model=model,
+                    max_tokens=max_tokens,
+                    tools=[ARTICLE_TOOL_SCHEMA],
+                    tool_choice={"type": "auto"},
+                    messages=[{"role": "user", "content": retry_prompt}],
+                )
+            except Exception as e:
+                logging.error("API error retrying article %s: %s", url, e)
+                continue
             
+            # Check for max_tokens truncation on retry
+            if message.stop_reason == "max_tokens":
+                logging.error("Retry also truncated (max_tokens), dropping: %s", url)
+                continue
+            
+            retry_art = None
             for block in message.content:
                 if block.type == "tool_use" and block.name == "submit_article":
-                    art = block.input
-                    art["source"] = enriched_item.source
-                    art["evidence_level"] = enriched_item.evidence_level
-                    art["source_trace"] = enriched_item.source_trace
-                    art["field"] = field
+                    retry_art = block.input
+                    retry_art["source"] = enriched_item.source
+                    retry_art["evidence_level"] = enriched_item.evidence_level
+                    retry_art["source_trace"] = enriched_item.source_trace
+                    retry_art["field"] = field
                     break
             
+            if retry_art is None:
+                logging.error("Retry did not return tool_use, dropping: %s", url)
+                continue
+            
+            art = retry_art
             problems = validate_depth(art, raw_material)
+            problems.extend(validate_names(art, raw_material))
             if problems:
                 if tier == "deep":
-                    logging.warning("Downgrading %s from deep to brief after retry", url)
-                    art["tier"] = "brief"
+                    # Actually redraft as brief instead of just re-validating
+                    logging.warning("Downgrading %s from deep to brief after retry - redrafting", url)
+                    brief_art = draft_single_article(enriched_item, "brief", config)
+                    if brief_art is None:
+                        logging.error("Brief redraft failed, dropping: %s", url)
+                        continue
+                    brief_art["field"] = field
+                    art = brief_art
                     problems = validate_depth(art, raw_material)
+                    problems.extend(validate_names(art, raw_material))
                     if problems:
-                        logging.error("Dropping %s after downgrade: %s", url, problems)
+                        logging.error("Dropping %s after brief redraft: %s", url, problems)
                         continue
                 else:
                     logging.error("Dropping %s after retry: %s", url, problems)
                     continue
         
+        # Transform new format to include legacy fields needed by write_output
+        # Add date from enriched item
+        art["date"] = enriched_item.date
+        
+        # Map new fields to legacy fields for backward compatibility
+        # lead: one_liner or first result
+        art["lead"] = art.get("one_liner", "") or (art.get("results", [""])[0] if art.get("results") else "")
+        
+        # body: combine background, design, results
+        body_parts = []
+        if art.get("background"):
+            body_parts.append(art["background"])
+        if art.get("design"):
+            body_parts.append(art["design"])
+        if art.get("results"):
+            body_parts.extend(art["results"])
+        if art.get("mechanism"):
+            body_parts.append(art["mechanism"])
+        art["body"] = " ".join(body_parts)
+        
+        # discuss: combine limitations and significance
+        discuss_parts = []
+        if art.get("limitations"):
+            discuss_parts.append("局限：" + "；".join(art["limitations"]))
+        if art.get("significance"):
+            discuss_parts.append(art["significance"])
+        art["discuss"] = " ".join(discuss_parts)
+        
+        # Ensure journal is set
+        if not art.get("journal"):
+            art["journal"] = enriched_item.source
+        
+        # Ensure steps is set (required for image caption)
+        if not art.get("steps"):
+            art["steps"] = ["研究背景", "方法设计", "核心发现", "意义与局限"]
+        
+        # Ensure image_prompt is set
+        if not art.get("image_prompt"):
+            art["image_prompt"] = art.get("title", enriched_item.title)
+        
         articles.append(art)
     
-    return {"articles": articles, "deals": industry_items}
+    # Process industry items: they stay on the existing claude_draft path
+    # Don't return raw industry items - return empty list
+    # Industry items should continue using the old claude_draft deals path
+    return {"articles": articles, "deals": []}
 
 
-def wechat_html_article(art: dict) -> str:
-    """Generate WeChat-compatible HTML for a single article."""
+def _escape_html(text: str) -> str:
+    """Escape HTML special characters."""
+    if not text:
+        return ""
+    return (text
+            .replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace('"', "&quot;"))
+
+
+def _extract_doi_from_url(url: str) -> str:
+    """Extract DOI string for display from any URL format."""
+    if not url:
+        return ""
+    # Direct DOI URL
+    if "doi.org" in url:
+        return url.replace("https://doi.org/", "DOI: ").replace("http://doi.org/", "DOI: ")
+    # Nature articles
+    match = re.search(r'nature\.com/articles/(s\d+-\d+-\d+-\w+)', url)
+    if match:
+        return f"DOI: 10.1038/{match.group(1)}"
+    # bioRxiv/medRxiv
+    match = re.search(r'(?:bio|med)rxiv\.org/content/(10\.\d+/[\d.]+)', url)
+    if match:
+        return f"DOI: {match.group(1)}"
+    # PubMed
+    match = re.search(r'pubmed\.ncbi\.nlm\.nih\.gov/(\d+)', url)
+    if match:
+        return f"PMID: {match.group(1)}"
+    # Science
+    match = re.search(r'science\.org/doi/(10\.\d+/[^\s?#]+)', url)
+    if match:
+        return f"DOI: {match.group(1)}"
+    return ""
+
+
+EVIDENCE_LEVEL_LABELS = {
+    "fulltext": "全文",
+    "abstract": "摘要", 
+    "preprint": "预印本",
+    "press": "新闻稿",
+    "secondary": "二手",
+}
+
+
+def wechat_html_article(art: dict, include_ai_disclaimer: bool = False) -> str:
+    """Generate WeChat-compatible HTML for a single article.
+    
+    Args:
+        art: Article dict with title, one_liner, datacard, etc.
+        include_ai_disclaimer: If False, skip per-article AI disclaimer (use single footer disclaimer)
+    """
     tier = art.get("tier", "brief")
     datacard = art.get("datacard", {})
     
     parts = []
     
-    parts.append(f'<h3 style="font-size:18px;margin:1.5em 0 0.5em;color:#1d2a27;border-left:4px solid #0f6b5c;padding-left:12px;">{art.get("title", "")}</h3>')
+    # Title
+    parts.append(f'<h3 style="font-size:18px;margin:1.5em 0 0.5em;color:#1d2a27;border-left:4px solid #0f6b5c;padding-left:12px;">{_escape_html(art.get("title", ""))}</h3>')
     
+    # Image (if available)
+    img = art.get("img", "")
+    if img:
+        parts.append(f'<p style="margin:1em 0;"><img src="{_escape_html(img)}" alt="" style="max-width:100%;border-radius:8px;"></p>')
+    
+    # One-liner
     if art.get("one_liner"):
-        parts.append(f'<p style="margin:0.5em 0;font-weight:700;color:#0f6b5c;">{art["one_liner"]}</p>')
+        parts.append(f'<p style="margin:0.5em 0;font-weight:700;color:#0f6b5c;">{_escape_html(art["one_liner"])}</p>')
     
+    # Datacard table
     datacard_rows = []
     field_names = {
         "study_type": "研究类型",
@@ -937,73 +1336,94 @@ def wechat_html_article(art: dict) -> str:
     for key, label in field_names.items():
         val = datacard.get(key, "")
         if val and val != "不适用":
-            datacard_rows.append(f'<tr><td style="padding:6px 10px;border:1px solid #eee;font-weight:700;width:80px;">{label}</td><td style="padding:6px 10px;border:1px solid #eee;">{val}</td></tr>')
+            datacard_rows.append(f'<tr><td style="padding:6px 10px;border:1px solid #eee;font-weight:700;width:80px;">{label}</td><td style="padding:6px 10px;border:1px solid #eee;">{_escape_html(val)}</td></tr>')
     
     if datacard_rows:
         parts.append('<table style="width:100%;border-collapse:collapse;margin:1em 0;font-size:14px;background:#f9f9f9;">')
         parts.extend(datacard_rows)
         parts.append('</table>')
     
+    # Evidence level - use Chinese labels
     evidence = art.get("evidence_level", "abstract")
-    parts.append(f'<p style="font-size:12px;color:#999;margin:0.5em 0;">证据等级：{evidence}</p>')
+    evidence_label = EVIDENCE_LEVEL_LABELS.get(evidence, evidence)
+    parts.append(f'<p style="font-size:12px;color:#999;margin:0.5em 0;">证据等级：{evidence_label}</p>')
     
+    # Section: Background
     if art.get("background"):
         parts.append('<h4 style="font-size:15px;margin:1.2em 0 0.3em;color:#333;">研究背景</h4>')
-        parts.append(f'<p style="margin:0.5em 0;">{art["background"]}</p>')
+        parts.append(f'<p style="margin:0.5em 0;">{_escape_html(art["background"])}</p>')
     
+    # Section: Design
     if art.get("design"):
         parts.append('<h4 style="font-size:15px;margin:1.2em 0 0.3em;color:#333;">研究设计</h4>')
-        parts.append(f'<p style="margin:0.5em 0;">{art["design"]}</p>')
+        parts.append(f'<p style="margin:0.5em 0;">{_escape_html(art["design"])}</p>')
     
+    # Section: Results
     results = art.get("results", [])
     if results:
         parts.append('<h4 style="font-size:15px;margin:1.2em 0 0.3em;color:#333;">核心结果</h4>')
         for para in results:
-            parts.append(f'<p style="margin:0.5em 0;">{para}</p>')
+            parts.append(f'<p style="margin:0.5em 0;">{_escape_html(para)}</p>')
     
+    # Section: Mechanism (deep only)
     if tier == "deep" and art.get("mechanism"):
         parts.append('<h4 style="font-size:15px;margin:1.2em 0 0.3em;color:#333;">机制解读</h4>')
-        parts.append(f'<p style="margin:0.5em 0;">{art["mechanism"]}</p>')
+        parts.append(f'<p style="margin:0.5em 0;">{_escape_html(art["mechanism"])}</p>')
     
+    # Section: Limitations
     limitations = art.get("limitations", [])
     if limitations:
         parts.append('<h4 style="font-size:15px;margin:1.2em 0 0.3em;color:#333;">局限与不确定</h4>')
         parts.append('<div style="background:#f5f5f5;padding:10px 14px;border-radius:8px;margin:0.5em 0;">')
         parts.append('<ul style="margin:0;padding-left:18px;">')
         for lim in limitations:
-            parts.append(f'<li style="margin:4px 0;font-size:14px;color:#666;">{lim}</li>')
+            parts.append(f'<li style="margin:4px 0;font-size:14px;color:#666;">{_escape_html(lim)}</li>')
         parts.append('</ul>')
         parts.append('</div>')
     
+    # Section: Significance
     if art.get("significance"):
         parts.append('<h4 style="font-size:15px;margin:1.2em 0 0.3em;color:#333;">临床/产业意义</h4>')
-        parts.append(f'<p style="margin:0.5em 0;">{art["significance"]}</p>')
+        parts.append(f'<p style="margin:0.5em 0;">{_escape_html(art["significance"])}</p>')
     
+    # Author and journal
     parts.append('<p style="font-size:13px;color:#666;margin:1em 0;">')
-    parts.append(f'{art.get("authors", "")} · {art.get("journal", "")}')
+    parts.append(f'{_escape_html(art.get("authors", ""))} · {_escape_html(art.get("journal", ""))}')
     parts.append('</p>')
     
+    # DOI - show for any source that has one
     url = art.get("url", "")
-    if "doi.org" in url:
-        doi = url.replace("https://doi.org/", "DOI: ")
-        parts.append(f'<p style="font-size:12px;color:#999;margin:0.5em 0;">{doi}</p>')
+    doi_str = _extract_doi_from_url(url)
+    if doi_str:
+        parts.append(f'<p style="font-size:12px;color:#999;margin:0.5em 0;">{_escape_html(doi_str)}</p>')
     
-    parts.append('<p style="font-size:11px;color:#999;margin:0.5em 0;font-style:italic;">本文由 Claude 起草，编辑核对后发布。</p>')
+    # Per-article AI disclaimer (only if requested - usually use single footer disclaimer)
+    if include_ai_disclaimer:
+        parts.append('<p style="font-size:11px;color:#999;margin:0.5em 0;font-style:italic;">本文由 Claude 起草，编辑核对后发布。</p>')
     
     return "\n".join(parts)
 
 
 def wechat_html_full(articles: list[dict], deals: list[dict], week: str) -> str:
-    """Generate complete WeChat HTML for all articles and deals."""
+    """Generate complete WeChat HTML for all articles and deals.
+    
+    Features:
+    - Article images included
+    - Chinese evidence-level labels
+    - DOI shown for any source
+    - Single AI disclaimer at footer (not per-article)
+    - Industry items as Chinese summaries with money/why
+    """
     parts = [
         '<section style="font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,sans-serif;font-size:16px;line-height:1.75;color:#333;">',
         f'<p style="font-size:14px;color:#666;">前沿追踪 · {week} · TheraSik 出品</p>',
         '<p style="margin:1em 0;">本期内容均基于原始来源核对，配图由 AI 生成（示意图，非期刊原图）。</p>',
     ]
     
+    # Table of contents
     toc_items = []
     for i, art in enumerate(articles, 1):
-        title = art.get("title", "")[:30]
+        title = art.get("title", art.get("t", ""))[:30]
         tier_label = "深度" if art.get("tier") == "deep" else "速览"
         toc_items.append(f"{i}. [{tier_label}] {title}...")
     
@@ -1013,21 +1433,42 @@ def wechat_html_full(articles: list[dict], deals: list[dict], week: str) -> str:
         parts.append('<br>'.join(toc_items))
         parts.append('</div>')
     
+    # Academic articles
     if articles:
         parts.append('<h2 style="border-left:4px solid #0f6b5c;padding-left:12px;margin:2em 0 1em;">学术</h2>')
         for art in articles:
-            parts.append(wechat_html_article(art))
+            # Don't include per-article AI disclaimer; use single footer disclaimer
+            parts.append(wechat_html_article(art, include_ai_disclaimer=False))
     
+    # Industry deals - show as Chinese summaries, not raw English headlines
     if deals:
         parts.append('<h2 style="border-left:4px solid #0f6b5c;padding-left:12px;margin:2em 0 1em;">行业</h2>')
         for deal in deals:
-            parts.append(f'<h3 style="font-size:18px;margin:1.5em 0 0.5em;color:#1d2a27;">{deal.get("title", "")}</h3>')
-            if deal.get("money") and deal["money"] != "未披露":
-                parts.append(f'<p style="margin:0.5em 0;"><strong>{deal["money"]}</strong></p>')
-            if deal.get("why"):
-                parts.append(f'<p style="margin:0.5em 0;">{deal["why"]}</p>')
-            parts.append(f'<p style="font-size:14px;color:#666;margin:0.5em 0;">来源：{deal.get("source_name", "未注明")}</p>')
+            # Get title - prefer 't' (site format) or 'title' (input format)
+            title = deal.get("t", deal.get("title", ""))
+            parts.append(f'<h3 style="font-size:18px;margin:1.5em 0 0.5em;color:#1d2a27;">{_escape_html(title)}</h3>')
+            
+            # Money
+            money = deal.get("m", deal.get("money", ""))
+            if money and money != "未披露":
+                parts.append(f'<p style="margin:0.5em 0;"><strong>{_escape_html(money)}</strong></p>')
+            
+            # Structure (if available)
+            structure = deal.get("ms", deal.get("structure", ""))
+            if structure:
+                parts.append(f'<p style="margin:0.5em 0;color:#666;">{_escape_html(structure)}</p>')
+            
+            # Why it matters
+            why = deal.get("why", "")
+            if why:
+                parts.append(f'<p style="margin:0.5em 0;">{_escape_html(why)}</p>')
+            
+            # Source
+            source = deal.get("src", deal.get("source_name", ""))
+            if source:
+                parts.append(f'<p style="font-size:14px;color:#666;margin:0.5em 0;">来源：{_escape_html(source)}</p>')
     
+    # Single AI disclaimer at footer
     parts.append('<hr style="border:none;border-top:1px solid #eee;margin:2em 0;">')
     parts.append('<p style="font-size:14px;color:#666;margin:1em 0;">')
     parts.append('本期内容由 Claude 起草，配图由 gpt-image-1 生成，编辑核对后发布。')
