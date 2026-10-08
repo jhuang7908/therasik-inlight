@@ -45,17 +45,18 @@ FIELDS = {
     "c9": "小核酸与 LNP",
 }
 DEAL_KINDS = {"acq", "lic", "newco", "clin", "inv", "policy"}
-IMAGE_PREFIX = (
-    "Flat BioRender-style scientific illustration on white background, "
-    "thin gray outlines, soft teal, coral, gold and blue-gray palette. "
-    "Minimalist, clean, diagrammatic. Show biological molecules, cells, or mechanisms. "
-    "No 3D effects, no glow, no gradients, no photorealism, no shadows. "
-    "Simple shapes only. The subject fills the frame. "
-)
-IMAGE_SUFFIX = (
-    " No text, no letters, no words, no labels, no captions, no numbers, "
-    "no watermarks, no annotations anywhere in the image; purely visual illustration."
-)
+try:
+    from inlight_qc import IMAGE_PREFIX, IMAGE_SUFFIX, IMAGE_REGEN_LIMIT
+except ImportError:
+    IMAGE_PREFIX = (
+        "Polished BioRender-style scientific schematic, noticeably THICKER "
+        "dark slate-green outlines, solid-filled terracotta #C0492F occupying "
+        "about 3 to 6 percent of the frame. "
+    )
+    IMAGE_SUFFIX = (
+        " Absolutely no text, no letters, no numbers, no labels, no logos."
+    )
+    IMAGE_REGEN_LIMIT = 2
 UA = "FrontierDigestWeekly/1.0 (+https://inlight.therasik.com)"
 
 
@@ -516,8 +517,12 @@ def fetch_all(config: dict) -> list[dict]:
         academic = [r for r in rows if r.get("kind") == "academic"]
         industry = [r for r in rows if r.get("kind") != "academic"]
         if len(academic) > max_candidates:
-            logging.info("候选池 academic %d → %d (max_candidates)", len(academic), max_candidates)
-            academic = academic[:max_candidates]
+            if ARTICLE_MODULE_AVAILABLE:
+                from inlight_articles import balance_academic_candidates
+                academic = balance_academic_candidates(academic, max_candidates)
+            else:
+                academic = academic[:max_candidates]
+            logging.info("候选池 academic %d → %d (max_candidates, 来源均衡)", len(academic), max_candidates)
         rows = academic + industry
         logging.info("送去管线的学术候选 %d，行业 %d", len(academic), len(industry))
     
@@ -782,13 +787,20 @@ steps 必须是 3-5 个简短步骤（每个≤25字），描述论文的核心�
     return {"articles": articles[:cap_a], "deals": deals[:cap_d]}
 
 
+def compose_image_prompt(prompt: str) -> str:
+    """Wrap a subject line in the house-style prefix/suffix unless already wrapped."""
+    clean_prompt = sanitize_image_prompt(prompt or "")
+    marker = "Polished BioRender-style scientific schematic"
+    if marker in clean_prompt:
+        return clean_prompt
+    return IMAGE_PREFIX + clean_prompt[:1000] + IMAGE_SUFFIX
+
+
 def draw_image(prompt: str, dest: Path) -> None:
     from openai import OpenAI
 
     model = os.environ.get("OPENAI_IMAGE_MODEL", "gpt-image-1")
-    # Sanitize model prompt to remove label requests, then add prefix and suffix
-    clean_prompt = sanitize_image_prompt(prompt)
-    full_prompt = IMAGE_PREFIX + clean_prompt[:1000] + IMAGE_SUFFIX
+    full_prompt = compose_image_prompt(prompt)
     logging.info("画图 %s -> %s", model, dest.name)
     result = OpenAI().images.generate(
         model=model,
@@ -798,6 +810,51 @@ def draw_image(prompt: str, dest: Path) -> None:
     )
     raw = result.data[0].b64_json
     dest.write_bytes(base64.b64decode(raw))
+
+
+def generate_article_image(prompt: str, dest: Path, qc_enabled: bool = True) -> dict:
+    """Generate a house-style figure, QC it, regenerate at most twice, else fallback."""
+    from inlight_qc import qc_image, write_fallback_cover
+
+    dest = Path(dest)
+    if not qc_enabled:
+        draw_image(prompt, dest)
+        return {"pass": True, "fallback": False, "attempts": 1, "reasons": []}
+
+    attempts: list[dict] = []
+    for i in range(IMAGE_REGEN_LIMIT + 1):
+        try:
+            draw_image(prompt, dest)
+            result = qc_image(str(dest))
+        except Exception as exc:
+            result = {
+                "pass": False,
+                "ocr_text": False,
+                "accent_frac": 0.0,
+                "fill_frac": 0.0,
+                "reasons": [f"generate error: {type(exc).__name__}"],
+            }
+        attempts.append(result)
+        if result.get("pass"):
+            result["attempts"] = i + 1
+            result["fallback"] = False
+            return result
+        logging.warning(
+            "Image QC failed attempt %d/%d for %s: %s",
+            i + 1, IMAGE_REGEN_LIMIT + 1, dest.name, result.get("reasons"),
+        )
+    write_fallback_cover(str(dest))
+    last = attempts[-1] if attempts else {"reasons": ["no image"]}
+    logging.error("Image QC exhausted retries; fallback cover %s", dest.name)
+    return {
+        "pass": False,
+        "fallback": True,
+        "attempts": len(attempts),
+        "reasons": last.get("reasons") or ["qc failed"],
+        "ocr_text": last.get("ocr_text", False),
+        "accent_frac": last.get("accent_frac", 0.0),
+        "fill_frac": last.get("fill_frac", 0.0),
+    }
 
 
 def site_article(item: dict, image_rel: str) -> dict:
@@ -955,15 +1012,40 @@ def write_output(draft: dict, dest: Path, week: str) -> None:
     img_dir = dest / "images"
     img_dir.mkdir(parents=True, exist_ok=True)
     articles = []
-    for index, item in enumerate(draft["articles"], start=1):
+    incoming = draft.get("articles") or []
+    qc = draft.get("qc_report") or (draft.get("stats") or {}).get("qc_report")
+    qc_enabled = bool(qc)
+    image_qc_log: list[dict] = []
+    need_images = bool(incoming) and any(item.get("skip_mechanism_figure") is not True for item in incoming)
+    if not incoming:
+        logging.info("本期无发表文章，跳过全部配图")
+    elif not need_images:
+        logging.info("本期无全文深度解读，跳过全部配图")
+
+    for index, item in enumerate(incoming, start=1):
         filename = f"a{index}.png"
         rel = ""
         if item.get("skip_mechanism_figure") is True:
             logging.info("跳过机制图（无全文或不为深度解读）：%s", item.get("title", index))
-        else:
+        elif need_images:
             try:
-                draw_image(item.get("image_prompt", ""), img_dir / filename)
-                rel = f"{dest.relative_to(ROOT).as_posix()}/images/{filename}"
+                dest_img = img_dir / filename
+                if qc_enabled:
+                    qc_img = generate_article_image(item.get("image_prompt", ""), dest_img, True)
+                    image_qc_log.append({
+                        "title": item.get("title", ""),
+                        "url": item.get("url", ""),
+                        "file": filename,
+                        **{k: qc_img.get(k) for k in (
+                            "pass", "fallback", "attempts", "reasons",
+                            "ocr_text", "accent_frac", "fill_frac",
+                        )},
+                    })
+                    if dest_img.exists():
+                        rel = f"{dest.relative_to(ROOT).as_posix()}/images/{filename}"
+                else:
+                    draw_image(item.get("image_prompt", ""), dest_img)
+                    rel = f"{dest.relative_to(ROOT).as_posix()}/images/{filename}"
             except Exception:
                 logging.exception("配图失败：%s", item.get("title", index))
                 rel = ""
@@ -986,21 +1068,36 @@ def write_output(draft: dict, dest: Path, week: str) -> None:
         seen_ids[art["id"]] = art["url"]
     
     deals = [site_deal(item) for item in draft["deals"]]
-    cover_prompt = (
-        "A calm cluster of immune cells, one lipid nanoparticle and one organoid, "
-        "arranged for a weekly science digest cover, left side left empty."
-    )
     cover = dest / "wechat" / "cover.png"
     cover.parent.mkdir(parents=True, exist_ok=True)
-    try:
-        draw_image(cover_prompt, cover)
-    except Exception:
-        logging.exception("封面图失败")
+    if need_images:
+        cover_prompt = (
+            "A calm cluster of immune cells, one lipid nanoparticle and one organoid, "
+            "arranged for a weekly science digest cover, left side left empty."
+        )
+        try:
+            if qc_enabled:
+                qc_cover = generate_article_image(cover_prompt, cover, True)
+                image_qc_log.append({
+                    "title": "wechat-cover",
+                    "url": "",
+                    "file": "wechat/cover.png",
+                    **{k: qc_cover.get(k) for k in (
+                        "pass", "fallback", "attempts", "reasons",
+                        "ocr_text", "accent_frac", "fill_frac",
+                    )},
+                })
+            else:
+                draw_image(cover_prompt, cover)
+        except Exception:
+            logging.exception("封面图失败")
     (dest / "articles.json").write_text(json.dumps(articles, ensure_ascii=False, indent=2), encoding="utf-8")
     (dest / "deals.json").write_text(json.dumps(deals, ensure_ascii=False, indent=2), encoding="utf-8")
-    qc = draft.get("qc_report") or (draft.get("stats") or {}).get("qc_report")
     if qc:
-        (dest / "qc_report.json").write_text(json.dumps(qc, ensure_ascii=False, indent=2), encoding="utf-8")
+        qc_out = dict(qc)
+        if image_qc_log:
+            qc_out["images"] = image_qc_log
+        (dest / "qc_report.json").write_text(json.dumps(qc_out, ensure_ascii=False, indent=2), encoding="utf-8")
     
     # Use wechat_html_full for new format articles (with datacard), wechat_html for legacy
     has_new_format = any(art.get("datacard") or art.get("results") for art in articles)

@@ -2021,6 +2021,34 @@ class TestClaimVerifier(unittest.TestCase):
         self.assertIn("submit_claim_audit", names)
         self.assertIn("test_tool", names)
 
+    def test_verifier_fail_closed_on_api_error(self):
+        from inlight_articles import verify_article_claims
+
+        with patch("anthropic.Anthropic", side_effect=RuntimeError("boom")):
+            out = verify_article_claims(_skilight_brief(), _SKYLIGHT, fail_closed=True)
+        self.assertEqual(out["status"], "error")
+        self.assertTrue(any("API error" in p for p in out["problems"]))
+
+    def test_verifier_fail_closed_on_missing_tool_call(self):
+        from inlight_articles import verify_article_claims
+
+        msg = MagicMock()
+        msg.content = []
+        msg.usage = MagicMock(input_tokens=10, output_tokens=4)
+        with patch("anthropic.Anthropic") as cls:
+            cls.return_value.messages.create.return_value = msg
+            out = verify_article_claims(_skilight_brief(), _SKYLIGHT, fail_closed=True)
+        self.assertEqual(out["status"], "error")
+        self.assertTrue(any("submit_claim_audit" in p for p in out["problems"]))
+
+    def test_verifier_fail_open_when_requested(self):
+        from inlight_articles import verify_article_claims
+
+        with patch("anthropic.Anthropic", side_effect=RuntimeError("boom")):
+            out = verify_article_claims(_skilight_brief(), _SKYLIGHT, fail_closed=False)
+        self.assertEqual(out["status"], "ok")
+        self.assertEqual(out["problems"], [])
+
     def test_contradicted_stage_drops_article(self):
         from inlight_articles import EnrichedItem, _process_single_article
 
@@ -2194,6 +2222,64 @@ class TestYieldAndSourceFetch(unittest.TestCase):
         self.assertLessEqual(int(cfg["min_deep"]), int(cfg["max_deep"]))
         self.assertEqual(int(cfg["max_brief"]), 0)
         self.assertGreaterEqual(int(cfg["max_candidates"]), 10)
+
+    def test_balance_academic_candidates_before_cap(self):
+        from inlight_articles import balance_academic_candidates, publisher_family, process_articles, EnrichedItem
+
+        rows = (
+            [{"source": "Nature", "url": f"https://www.nature.com/articles/s{i}", "kind": "academic",
+              "title": f"N{i}", "date": "2026-01-01", "summary": "x" * 80} for i in range(20)]
+            + [{"source": "Cell", "url": f"https://www.cell.com/fulltext/S{i}", "kind": "academic",
+                "title": f"C{i}", "date": "2026-01-01", "summary": "x" * 80} for i in range(8)]
+            + [{"source": "PubMed", "url": f"https://pubmed.ncbi.nlm.nih.gov/{1000+i}/", "kind": "academic",
+                "title": f"P{i}", "date": "2026-01-01", "summary": "x" * 80} for i in range(8)]
+        )
+        balanced = balance_academic_candidates(rows, 12)
+        families = [publisher_family(r) for r in balanced]
+        self.assertEqual(len(balanced), 12)
+        self.assertGreaterEqual(families.count("nature"), 1)
+        self.assertGreaterEqual(families.count("cell"), 1)
+        self.assertGreaterEqual(families.count("pubmed"), 1)
+        self.assertLess(families.count("nature"), 12)
+        sliced = rows[:12]
+        self.assertTrue(all(publisher_family(r) == "nature" for r in sliced))
+
+        seen = []
+
+        def fake_enrich(row):
+            seen.append(row["url"])
+            return EnrichedItem(
+                url=row["url"], title=row["title"], source=row["source"],
+                date="2026-01-01", abstract="x" * 80, evidence_level="abstract",
+            )
+
+        with patch("inlight_articles.enrich_item", side_effect=fake_enrich):
+            with patch("inlight_articles.triage_items", return_value=[]):
+                process_articles(rows, {"max_candidates": 12})
+        enriched_families = []
+        by_url = {r["url"]: r for r in rows}
+        for url in seen:
+            enriched_families.append(publisher_family(by_url[url]))
+        self.assertEqual(len(seen), 12)
+        self.assertGreaterEqual(enriched_families.count("cell"), 1)
+        self.assertGreaterEqual(enriched_families.count("pubmed"), 1)
+
+    def test_press_url_is_not_bare_search_path(self):
+        from inlight_articles import fetch_press_coverage
+
+        seen = []
+
+        def http(url, timeout=30):
+            seen.append(url)
+            return None
+
+        with patch("inlight_articles._http_get", side_effect=http):
+            fetch_press_coverage("Organoid immune synapse unique title 98765", "")
+        ea = [u for u in seen if "eurekalert.org" in u]
+        self.assertTrue(ea)
+        self.assertTrue(all("/search/" not in u.split("?", 1)[0] or "?" in u for u in ea))
+        self.assertFalse(any("/search/Organoid" in u for u in ea))
+        self.assertTrue(any("news-releases" in u and "?" in u for u in ea))
 
     def test_triage_prompt_asks_for_depth_and_quantity(self):
         from inlight_articles import build_triage_prompt, EnrichedItem

@@ -77,18 +77,17 @@ nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:color-
 .sechead h2{font-size:18px}
 .sechead span{font-size:12.5px;color:var(--muted)}
 
-/* Unified card grid: 4 cols ≥1024px, 3 cols 769-1023, 2 cols ≤768 */
+/* Card grid: 4 cols desktop, 2 cols mobile. Covers are 1.618:1, unclipped. */
 .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;align-items:stretch}
-@media (max-width:1023px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (max-width:768px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;display:grid;grid-template-columns:1fr;gap:0;align-content:start;overflow:hidden;color:inherit}
 .card:hover{border-color:color-mix(in srgb,var(--dc,var(--accent)) 45%,var(--line))}
-.cover{display:block;width:100%;aspect-ratio:2/1;height:auto;overflow:hidden;background:#f4f1ea;position:relative}
-.cover .coverimg{position:absolute;inset:0;width:100%;height:100%;max-width:none;object-fit:cover;object-position:center;display:block;z-index:1}
+.cover{display:block;width:100%;aspect-ratio:1.618/1;height:auto;overflow:hidden;background:#eef2f0;position:relative}
+.cover .coverimg{position:absolute;inset:0;width:100%;height:100%;max-width:none;object-fit:contain;object-position:center;display:block;z-index:1}
 .item h3 a{color:inherit}
 .paperfig{max-width:none}
-.paperfig img{display:block;width:100%;height:auto;max-height:none;object-fit:cover}
+.paperfig img{display:block;width:100%;height:auto;max-height:none;object-fit:contain}
 .cover svg{display:block;width:100%;height:100%}
 .cbody{display:flex;flex-direction:column;gap:4px;min-width:0;padding:8px 10px 9px}
 .cbody h3{flex:0 0 auto}
@@ -147,8 +146,8 @@ article .ahead{display:grid;gap:11px;padding-bottom:18px;border-bottom:1px solid
 .meta .k{color:var(--muted);font-size:12.5px}
 .amain{display:grid;gap:16px;min-width:0}
 .fig{display:grid;gap:10px}
-.fig-scroll{overflow:hidden;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
-.fig img,.fig svg{display:block;width:100%;height:auto;max-width:100%}
+.fig-scroll{overflow:visible;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.fig img,.fig svg{display:block;width:100%;height:auto;max-width:100%;object-fit:contain}
 .figsteps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0;padding:0;list-style:none}
 .figsteps li{background:var(--raise);border-radius:8px;padding:8px 10px;font-size:12.5px;line-height:1.45}
 .figsteps b{display:block;color:var(--accent);margin-bottom:2px}
@@ -414,7 +413,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
   .grid,.feed{gap:8px}
   /* Compact cards */
   .grid .item,.grid .card{grid-template-rows:auto 1fr}
-  .grid .item .cover,.grid .card .cover{display:block;aspect-ratio:3/2;min-height:auto;height:auto}
+  .grid .item .cover,.grid .card .cover{display:block;aspect-ratio:1.618/1;min-height:auto;height:auto}
   .item h3,.card h3{font-size:12px;-webkit-line-clamp:2;min-height:calc(2 * 1.45 * 12px)}
   .cbody{padding:6px 8px 8px;gap:3px}
   /* Tags: max 1 visible, truncate */
@@ -958,8 +957,8 @@ const ICONS={
 function cover(kind,cvar,img){
   const c=`var(--${cvar})`;
   if(img) return `<div class="cover" aria-hidden="true"><img class="coverimg" src="${img}" alt="" loading="lazy" onerror="this.remove()"></div>`;
-  return `<div class="cover" aria-hidden="true"><svg viewBox="0 0 300 150" preserveAspectRatio="xMidYMid slice">
-    <rect width="300" height="150" fill="${c}" opacity=".08"/>
+  return `<div class="cover" aria-hidden="true"><svg viewBox="0 0 323 200" preserveAspectRatio="xMidYMid meet">
+    <rect width="323" height="200" fill="${c}" opacity=".08"/>
     <circle cx="266" cy="20" r="42" fill="${c}" opacity=".07"/>
     <circle cx="30" cy="136" r="32" fill="${c}" opacity=".06"/>
     <g transform="translate(150 75) scale(1.75) translate(-24 -24)" fill="none"
@@ -1082,11 +1081,11 @@ function renderPaper(id){
     const legacyOpen = a.lead || legacyBits[0] || a.sum || '';
     const legacyWalk = a.body || legacyBits.slice(1, Math.max(1, legacyBits.length - 1)).join('');
     const legacyClose = a.discuss || (legacyBits.length > 1 ? legacyBits[legacyBits.length - 1] : '');
-    let html = `<div class="sec"><h2>这篇在解决什么</h2><p>${legacyOpen}</p></div>`;
+    let html = `<div class="sec"><h2>这篇在解决什么</h2><p>${escHtml(legacyOpen)}</p></div>`;
     if (legacyWalk) {
-      html += `<div class="sec"><h2>他们怎么做、看到了什么</h2><p>${legacyWalk}</p></div>`;
+      html += `<div class="sec"><h2>他们怎么做、看到了什么</h2><p>${escHtml(legacyWalk)}</p></div>`;
     }
-    html += `<div class="sec"><h2>讨论</h2><p>${legacyClose || legacyOpen}</p></div>`;
+    html += `<div class="sec"><h2>讨论</h2><p>${escHtml(legacyClose || legacyOpen)}</p></div>`;
     return html;
   }
   
@@ -1098,7 +1097,7 @@ function renderPaper(id){
       <div class="related-cards">${related.map(r => `
         <a class="related-card" href="${paperHref(r)}">
           <span class="rc-field" style="color:var(--${r.f})">${FNAMES[r.f] || ''}</span>
-          <span class="rc-title">${r.t}</span>
+          <span class="rc-title">${escHtml(r.t)}</span>
           <span class="rc-date">${r.disp}</span>
         </a>`).join('')}
       </div>
@@ -1112,25 +1111,25 @@ function renderPaper(id){
     <article>
       <div class="ahead">
         <div class="eyebrow">${FNAMES[a.f]||''} · ${a.ds?cnDate(a.ds):a.disp}${tier==='deep'?' · <span class="tier-badge deep">深度解读</span>':' · <span class="tier-badge brief">速览</span>'}</div>
-        <div class="zh-title">${isNewFormat?escHtml(a.t):a.t}</div>
+        <div class="zh-title">${escHtml(a.t)}</div>
         ${a.secondhand_label ? `<p class="secondhand-banner">${escHtml(a.secondhand_label)}</p>` : ''}
         ${open && isNewFormat ? `<p class="one-liner">${escHtml(open)}</p>` : ''}
         <div class="tags">${tags}${a.sec?'<span class="tag" style="--tc:var(--c4)">二手核实</span>':''}</div>
       </div>
       <div class="abody">
         <aside class="meta">
-          ${datacardHtml || `<div><span class="k">文献出处</span><p><b>${a.j||''}</b>${a.ds?'<br>'+cnDate(a.ds):''}<br><a href="${a.url}" target="_blank" rel="noopener">原文</a></p></div>`}
+          ${datacardHtml || `<div><span class="k">文献出处</span><p><b>${escHtml(a.j||'')}</b>${a.ds?'<br>'+cnDate(a.ds):''}<br><a href="${a.url}" target="_blank" rel="noopener">原文</a></p></div>`}
           ${!datacardHtml ? `<div><span class="k">领域</span><p>${(a.tags||[]).map(t=>FNAMES[t]||'').filter(Boolean).join('、')}</p></div>` : ''}
         </aside>
         <div class="amain">
           ${a.skip_mechanism_figure ? '' : `<div class="fig paperfig">
             <div class="fig-scroll"><img src="${a.img||('img/papers/'+a.id+'.jpg?v=5')}" alt="" onerror="this.remove()"></div>
-            <ol class="figsteps">${steps.map((s,i)=>`<li><b>${i+1}</b>${isNewFormat?escHtml(s):s}</li>`).join('')}</ol>
+            <ol class="figsteps">${steps.map((s,i)=>`<li><b>${i+1}</b>${escHtml(s)}</li>`).join('')}</ol>
             <p class="cap">${escHtml(a.fig_caption || '示意图由 AI 生成，依据原文结果绘制，非期刊原图，不代表分子比例。')}</p>
           </div>`}
           ${bodyHtml}
-          <details class="sec meet"><summary>编辑备注</summary><p>${isNewFormat?escHtml(a.au||'论文页面没有给出可核对的通讯作者。'):(a.au||'论文页面没有给出可核对的通讯作者。')}</p>${a.note?`<p>${isNewFormat?escHtml(a.note):a.note}</p>`:''}<p>这里没有采访，只写论文或新闻稿里能核对的作者、身份和单位。页面没标通讯作者时，按末位或资深作者写明，不另编履历。</p></details>
-          <div class="sec"><h2>出处</h2><p class="src">${a.citation ? escHtml(a.citation) + '<br>' : ''}<b>原文</b>：${isNewFormat?escHtml(a.j||''):(a.j||'')}。 <a href="${a.url}" target="_blank" rel="noopener">打开原文</a>${a.read_note ? '<br>'+escHtml(a.read_note) : ''}</p></div>
+          <details class="sec meet"><summary>编辑备注</summary><p>${escHtml(a.au||'论文页面没有给出可核对的通讯作者。')}</p>${a.note?`<p>${escHtml(a.note)}</p>`:''}<p>这里没有采访，只写论文或新闻稿里能核对的作者、身份和单位。页面没标通讯作者时，按末位或资深作者写明，不另编履历。</p></details>
+          <div class="sec"><h2>出处</h2><p class="src">${a.citation ? escHtml(a.citation) + '<br>' : ''}<b>原文</b>：${escHtml(a.j||'')}。 <a href="${a.url}" target="_blank" rel="noopener">打开原文</a>${a.read_note ? '<br>'+escHtml(a.read_note) : ''}</p></div>
           <p class="note" style="margin-top:1em;font-size:13px;">本文初稿由 Claude 起草，配图由 gpt-image-1 生成，编辑核对后发布。TheraSik · 启曜生科 出品。</p>
           ${renderRelated()}
         </div>
@@ -1141,9 +1140,9 @@ function setHtml(el,html){ el.innerHTML=html; }
 function arcRow(a){
   return `<a class="arow" style="--dc:var(--${a.f})" href="${a.deep?('#'+a.deep):('#p-'+a.id)}">
     <span class="adate">${a.disp}</span>
-    <span class="atitle">${a.t}</span>
+    <span class="atitle">${escHtml(a.t)}</span>
     <span class="atags">${(a.tags||[]).slice(0,2).map(t=>`<span class="tag" style="--tc:var(--${t})">${FNAMES[t]||''}</span>`).join('')}</span>
-    <span class="asrc">${a.j}</span></a>`;
+    <span class="asrc">${escHtml(a.j)}</span></a>`;
 }
 function artsOf(k){return CAT.filter(a=>a.tags.includes(k))}
 document.querySelectorAll('.tabs .chip').forEach(b=>b.onclick=()=>{
@@ -1217,8 +1216,8 @@ function dealCard(x,i){
   return `<div class="item" style="--kc:${kc}">
     ${cover(KIND_MOTIF[k0],KIND_CVAR[k0],`img/kinds/${k0}.jpg?v=4`)}
     <div class="cbody">
-      <h3>${x.t}</h3>
-      <div class="money">${x.m}</div>
+      <h3>${escHtml(x.t)}</h3>
+      <div class="money">${escHtml(x.m)}</div>
       <div class="metarow"><span class="idate">${y}.${String(+mo).padStart(2,'0')}</span>
         <span class="tagrow">${tags}</span>
         <button class="expbtn" type="button" aria-expanded="false" data-key="${escAttr(dealKey(x))}">详情 ↓</button></div>
@@ -1245,9 +1244,9 @@ function insertDetailsPanel(card,grid,dealData,panelId){
   panel.setAttribute('role','region');
   panel.setAttribute('aria-label',dealData.t);
   panel.innerHTML=`<div class="panel-tags">${tags}</div>
-    ${dealData.ms?`<p class="msline">${dealData.ms}</p>`:''}
-    <p>${dealData.why}</p>
-    <div class="foot"><a href="${dealData.url}" target="_blank" rel="noopener">出处：${dealData.src}</a>${dealData.art?`<a href="#${dealData.art}">${dealData.artt} →</a>`:''}<button class="close-btn" type="button">收起 ↑</button></div>`;
+    ${dealData.ms?`<p class="msline">${escHtml(dealData.ms)}</p>`:''}
+    <p>${escHtml(dealData.why)}</p>
+    <div class="foot"><a href="${dealData.url}" target="_blank" rel="noopener">出处：${escHtml(dealData.src)}</a>${dealData.art?`<a href="#${dealData.art}">${escHtml(dealData.artt)} →</a>`:''}<button class="close-btn" type="button">收起 ↑</button></div>`;
   insertAfter.after(panel);
   return panel;
 }

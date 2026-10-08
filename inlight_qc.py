@@ -11,9 +11,12 @@ import json
 import logging
 import os
 import re
+import struct
 import urllib.error
 import urllib.parse
 import urllib.request
+import zlib
+from pathlib import Path
 from typing import Any
 
 HAN_RE = re.compile(r"[\u4e00-\u9fff]")
@@ -52,13 +55,61 @@ SECTION_RANGES = {
     "significance": (150, 220),
     "citation": (80, 140),
 }
-HOUSE_STYLE = (
-    "journal-grade semi-realistic 3D scientific illustration, "
-    "palette #EEF2F0 #0F6B5C #9FD8CB #D6DEDB #5C6B67 accent #C0492F, "
-    "subject occupies about 72 percent of the frame, visual weight on "
-    "the 0.382 or 0.618 line, no text, no labels, no words, no letters"
+# House style v3 (BioRender). Prefix/suffix are the reusable prompt wraps.
+# Owner adjustments: noticeably THICKER outlines; LARGE solid terracotta accent (3–6%).
+IMAGE_PREFIX = (
+    "Polished BioRender-style scientific schematic, the quality of a graphical "
+    "abstract or mechanism figure in a Nature or Cell paper. Standard crisp "
+    "scientific icons (cells, membranes, receptors, Y-shaped antibodies, DNA, "
+    "organoids, mice, organ-on-chips) drawn with smooth flat fills, gentle soft "
+    "gradients and subtle shading, noticeably THICKER dark slate-green outlines "
+    "of one consistent bold line weight (not hairline; thick enough to stay "
+    "strong at 390px phone card size), crisp vector edges. Plain pure white "
+    "background (#FFFFFF), completely empty: no scene, no floor, no shadows on "
+    "a ground, no vignette, no panels or boxes behind the figure. The figure "
+    "explains one mechanism as a clear process of 2 to 4 stages connected by "
+    "simple slate-grey arrows (#5C6B67). Colour palette strictly limited to the "
+    "house greens - deep green #0F6B5C, mid green #2F7D6D, pale mint #9FD8CB, "
+    "light grey-green #D6DEDB, slate grey #5C6B67 - plus neutral light greys "
+    "and white; exactly ONE key element is terracotta #C0492F (lighter "
+    "terracotta #E07A5F only for its shading); it is drawn LARGE, solid-filled "
+    "(not outline-only) and boldly filled - the largest and heaviest single "
+    "object in the figure - occupying about 3 to 6 percent of the whole image "
+    "area, while the green parts stay lighter and more delicate. "
+)
+IMAGE_SUFFIX = (
+    " Composition: one cohesive figure group spanning about three quarters of "
+    "the image width and kept inside the central 85 percent of the canvas, "
+    "every cell and object drawn complete with generous empty white margins on "
+    "every side, nothing touching or cut by the image edge, no stray elements "
+    "near the edges. Professional, precise, restrained and scientifically "
+    "accurate, like a figure made by a professional scientific illustrator in "
+    "BioRender. Not childish clip art, no cartoon characters, no faces or "
+    "eyes, not photorealistic, not a 3D render, no glossy product shot, no "
+    "dramatic lighting, no glow, no dark background. No other hues anywhere: "
+    "no red, orange, pink, yellow, blue or purple except the single terracotta "
+    "element. Absolutely no text, no letters, no numbers, no symbols, no plus "
+    "or minus signs, no labels, no legends, no titles, no panel letters, no "
+    "logos, no watermark, no frame, no border."
+)
+HOUSE_STYLE = IMAGE_PREFIX + IMAGE_SUFFIX
+GOLDEN_PLACEMENTS = (
+    "upper-right (x=0.618, y=0.382)",
+    "lower-left (x=0.382, y=0.618)",
+    "lower-middle (x=0.500, y=0.618)",
+    "right-middle (x=0.618, y=0.500)",
+    "top-middle (x=0.500, y=0.382)",
+    "bottom-middle (x=0.500, y=0.618)",
+    "upper-left (x=0.382, y=0.382)",
+    "lower-right (x=0.618, y=0.618)",
 )
 FIG_DISCLAIMER = "示意图由 AI 生成，依据原文结果绘制，非期刊原图，不代表分子比例。"
+ACCENT_RGB = (0xC0, 0x49, 0x2F)
+ACCENT_SHADE_RGB = (0xE0, 0x7A, 0x5F)
+FILL_RANGE = (0.68, 0.78)
+ACCENT_RANGE = (0.03, 0.06)
+IMAGE_REGEN_LIMIT = 2
+FALLBACK_COVER_SIZE = (1600, 989)  # 1.618:1
 
 
 def acir_strict(config: dict | None) -> bool:
@@ -228,17 +279,32 @@ def apply_extra_env_gemini_key(config: dict | None = None) -> bool:
     return False
 
 
-def mechanism_image_prompt(results_text: str, mechanism: str = "") -> str:
-    """House-style mechanism figure prompt from full-text Results, not the abstract."""
+def mechanism_image_prompt(
+    results_text: str,
+    mechanism: str = "",
+    placement_index: int | None = None,
+) -> str:
+    """House-style mechanism figure prompt from full-text Results, not the paper abstract."""
     blob = f"{results_text or ''} {mechanism or ''}"
     words = [w for w in WORD_RE.findall(blob) if len(w) >= 4]
     stop = {
         "this", "that", "with", "from", "were", "been", "have", "that",
         "study", "result", "results", "using", "these", "those", "into",
+        "graphical", "abstract",
     }
     keys = [w for w in words if w.lower() not in stop][:8]
     subject = ", ".join(keys) if keys else "cellular signaling cascade"
-    return f"{subject}, {HOUSE_STYLE}"
+    if placement_index is None:
+        placement_index = sum(ord(c) for c in subject)
+    placement = GOLDEN_PLACEMENTS[placement_index % len(GOLDEN_PLACEMENTS)]
+    return (
+        f"{IMAGE_PREFIX}"
+        f"Subject: {subject}. "
+        f"Place the visual centre of the solid terracotta key element on the "
+        f"{placement} golden line (0.382 or 0.618). The subject fills about "
+        f"72 percent of the 1.618:1 card. "
+        f"{IMAGE_SUFFIX}"
+    )
 
 
 def secondhand_label(item: Any) -> str:
@@ -536,3 +602,143 @@ def assemble_qc_entry(
     if extra:
         entry.update(extra)
     return entry
+
+
+def _rgb_dist(a: tuple[int, int, int], b: tuple[int, int, int]) -> float:
+    return ((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2) ** 0.5
+
+
+def _letterlike_components(im: Any) -> bool:
+    """Conservative ink-blob detector used when tesseract is unavailable."""
+    g = im.convert("L")
+    max_w = 360
+    if g.width > max_w:
+        g = g.resize((max_w, max(1, int(g.height * max_w / g.width))))
+    w, h = g.size
+    pix = g.load()
+    visited = [[False] * w for _ in range(h)]
+    letterish = 0
+    for y in range(h):
+        for x in range(w):
+            if visited[y][x] or pix[x, y] > 90:
+                continue
+            stack = [(x, y)]
+            visited[y][x] = True
+            minx = maxx = x
+            miny = maxy = y
+            n = 0
+            while stack:
+                cx, cy = stack.pop()
+                n += 1
+                for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                    nx, ny = cx + dx, cy + dy
+                    if 0 <= nx < w and 0 <= ny < h and not visited[ny][nx] and pix[nx, ny] <= 90:
+                        visited[ny][nx] = True
+                        stack.append((nx, ny))
+                        minx = min(minx, nx)
+                        maxx = max(maxx, nx)
+                        miny = min(miny, ny)
+                        maxy = max(maxy, ny)
+            bw, bh = maxx - minx + 1, maxy - miny + 1
+            if bh < 10 or bh > 36 or n < 16:
+                continue
+            aspect = bw / max(bh, 1)
+            if 0.18 <= aspect <= 1.15:
+                letterish += 1
+            if letterish >= 5:
+                return True
+    return False
+
+
+def image_has_ocr_text(im: Any) -> bool:
+    """True when the figure contains readable letters/digits."""
+    try:
+        import pytesseract  # type: ignore
+
+        text = pytesseract.image_to_string(im, config="--psm 6")
+        tokens = re.findall(r"[A-Za-z]{3,}|\d{2,}|[\u4e00-\u9fff]{2,}", text or "")
+        if tokens:
+            return True
+    except Exception:
+        pass
+    return _letterlike_components(im)
+
+
+def qc_image(path: str) -> dict[str, Any]:
+    """Automated image QC: no OCR text, accent 3–6%, subject fill 68–78%."""
+    reasons: list[str] = []
+    result: dict[str, Any] = {
+        "pass": False,
+        "ocr_text": False,
+        "accent_frac": 0.0,
+        "fill_frac": 0.0,
+        "reasons": reasons,
+    }
+    try:
+        from PIL import Image
+    except ImportError:
+        reasons.append("Pillow missing; cannot QC image")
+        return result
+    try:
+        im = Image.open(path).convert("RGB")
+    except Exception as exc:
+        reasons.append(f"unreadable image: {type(exc).__name__}")
+        return result
+
+    w, h = im.size
+    total = max(w * h, 1)
+    fill = 0
+    accent = 0
+    for r, g, b in im.getdata():  # RGB triples; get_flattened_data is a flat byte stream
+        if r >= 245 and g >= 245 and b >= 245:
+            continue
+        fill += 1
+        rgb = (r, g, b)
+        if min(_rgb_dist(rgb, ACCENT_RGB), _rgb_dist(rgb, ACCENT_SHADE_RGB)) <= 58:
+            accent += 1
+    fill_frac = fill / total
+    accent_frac = accent / total
+    ocr_text = image_has_ocr_text(im)
+    result["fill_frac"] = round(fill_frac, 4)
+    result["accent_frac"] = round(accent_frac, 4)
+    result["ocr_text"] = bool(ocr_text)
+    if ocr_text:
+        reasons.append("ocr text detected")
+    lo_a, hi_a = ACCENT_RANGE
+    if not (lo_a <= accent_frac <= hi_a):
+        reasons.append(f"accent {accent_frac:.3f} outside {lo_a:.2f}-{hi_a:.2f}")
+    lo_f, hi_f = FILL_RANGE
+    if not (lo_f <= fill_frac <= hi_f):
+        reasons.append(f"fill {fill_frac:.3f} outside {lo_f:.2f}-{hi_f:.2f}")
+    result["pass"] = not reasons
+    result["reasons"] = reasons
+    return result
+
+
+def write_fallback_cover(path: str) -> None:
+    """Neutral house-style cover: white + site greens, no text, no terracotta."""
+    w, h = FALLBACK_COVER_SIZE
+    try:
+        from PIL import Image, ImageDraw
+
+        im = Image.new("RGB", (w, h), (255, 255, 255))
+        draw = ImageDraw.Draw(im)
+        draw.ellipse([int(w * 0.12), int(h * 0.18), int(w * 0.46), int(h * 0.82)], fill=(159, 216, 203))
+        draw.ellipse([int(w * 0.52), int(h * 0.16), int(w * 0.88), int(h * 0.84)], fill=(15, 107, 92))
+        draw.ellipse([int(w * 0.60), int(h * 0.30), int(w * 0.80), int(h * 0.70)], fill=(47, 125, 109))
+        im.save(path, "PNG")
+        return
+    except Exception:
+        logging.warning("Pillow fallback cover failed; writing minimal PNG")
+
+    def _chunk(tag: bytes, data: bytes) -> bytes:
+        return struct.pack(">I", len(data)) + tag + data + struct.pack(">I", zlib.crc32(tag + data) & 0xFFFFFFFF)
+
+    raw = b"\x00" + b"\xff\xff\xff"
+    png = (
+        b"\x89PNG\r\n\x1a\n"
+        + _chunk(b"IHDR", struct.pack(">IIBBBBB", 1, 1, 8, 2, 0, 0, 0))
+        + _chunk(b"IDAT", zlib.compress(raw))
+        + _chunk(b"IEND", b"")
+    )
+    Path(path).write_bytes(png)

@@ -170,6 +170,61 @@ def pipeline_targets(config: dict | None) -> dict:
     }
 
 
+_PUBLISHER_MARKERS = (
+    ("nature", ("nature", "10.1038", "nature.com")),
+    ("cell", ("cell.com", "cell press", "cell ")),
+    ("science", ("science.org", "sciencemag", "science ")),
+    ("lancet", ("lancet", "thelancet")),
+    ("nejm", ("nejm", "new england journal")),
+    ("wiley", ("wiley", "onlinelibrary")),
+    ("springer", ("springer", "link.springer")),
+    ("biorxiv", ("biorxiv",)),
+    ("medrxiv", ("medrxiv",)),
+    ("pubmed", ("pubmed", "nih.gov")),
+)
+
+
+def publisher_family(row: dict | None) -> str:
+    """Bucket a candidate by publisher family so one RSS feed cannot fill the cap."""
+    row = row or {}
+    src = str(row.get("source") or "")
+    url = str(row.get("url") or "")
+    journal = str(row.get("journal") or "")
+    blob = f"{src} {url} {journal}".lower()
+    for family, markers in _PUBLISHER_MARKERS:
+        if any(m in blob for m in markers):
+            return family
+    if src.strip():
+        return src.strip().lower()
+    host = urllib.parse.urlparse(url).netloc.lower()
+    return host or "other"
+
+
+def balance_academic_candidates(rows: list[dict], n: int) -> list[dict]:
+    """Round-robin by publisher family before applying the candidate cap."""
+    if n <= 0 or len(rows) <= n:
+        return list(rows)
+    from collections import defaultdict, deque
+
+    buckets: dict[str, deque] = defaultdict(deque)
+    order: list[str] = []
+    for row in rows:
+        fam = publisher_family(row)
+        if fam not in buckets:
+            order.append(fam)
+        buckets[fam].append(row)
+    out: list[dict] = []
+    while len(out) < n and any(buckets.values()):
+        progressed = False
+        for fam in order:
+            if buckets[fam] and len(out) < n:
+                out.append(buckets[fam].popleft())
+                progressed = True
+        if not progressed:
+            break
+    return out
+
+
 def extract_doi(url: str) -> str:
     """Extract DOI from various URL formats.
     
@@ -724,9 +779,8 @@ def fetch_press_coverage(title: str, doi: str) -> str:
             if len(text) >= 80:
                 return text[:8000]
     if title:
-        ea = (
-            "https://www.eurekalert.org/search/"
-            + urllib.parse.quote(title[:80])
+        ea = "https://www.eurekalert.org/news-releases?" + urllib.parse.urlencode(
+            {"kw": title[:80]}
         )
         visible = _html_visible_text(_http_get(ea))
         if len(visible) >= 400 and re.search(r"(?i)press release|embargo|researchers", visible):
@@ -3324,15 +3378,24 @@ def build_claim_audit_prompt(art: dict, raw_material: str, item: EnrichedItem | 
 """
 
 
-def verify_article_claims(art: dict, raw_material: str, item: EnrichedItem | None = None) -> dict:
+def verify_article_claims(
+    art: dict,
+    raw_material: str,
+    item: EnrichedItem | None = None,
+    fail_closed: bool | None = None,
+) -> dict:
     """Claim-level semantic audit. Never pass temperature.
 
     Returns {status, problems, claims, calls, input_tokens, output_tokens}.
-    status: ok | contradicted | not_in_source
-    Fail-open (ok) on missing tool_use, harness test_tool, or any exception.
+    status: ok | contradicted | not_in_source | error
+    Default fail_closed=True: API errors or a missing submit_claim_audit
+    are status=error. The weekly stage passes acir_strict(config) so the
+    locked replay harness (no min_deep) stays fail-open.
     A label is trusted only when its source_span actually occurs in the source
     (NOT_IN_SOURCE may have an empty span).
     """
+    if fail_closed is None:
+        fail_closed = True
     result = {
         "status": "ok",
         "problems": [],
@@ -3342,6 +3405,17 @@ def verify_article_claims(art: dict, raw_material: str, item: EnrichedItem | Non
         "output_tokens": 0,
     }
     LAST_CLAIM_AUDIT.update(result)
+
+    def _fail(reason: str, exc: Exception | None = None) -> dict:
+        if fail_closed:
+            result["status"] = "error"
+            result["problems"] = [reason]
+            logging.error("Claim verifier failed closed: %s", exc or reason)
+        else:
+            logging.warning("Claim verifier failed open: %s", exc or reason)
+        LAST_CLAIM_AUDIT.update(result)
+        return result
+
     try:
         from anthropic import Anthropic
 
@@ -3355,8 +3429,7 @@ def verify_article_claims(art: dict, raw_material: str, item: EnrichedItem | Non
             messages=[{"role": "user", "content": build_claim_audit_prompt(art, raw_material, item)}],
         )
     except Exception as exc:
-        logging.warning("Claim verifier failed open: %s", exc)
-        return result
+        return _fail(f"claim verifier API error: {type(exc).__name__}", exc)
 
     result["calls"] = 1
     usage = getattr(message, "usage", None)
@@ -3374,19 +3447,14 @@ def verify_article_claims(art: dict, raw_material: str, item: EnrichedItem | Non
                 payload = getattr(block, "input", None) or {}
                 break
     except Exception as exc:
-        logging.warning("Claim verifier parse failed open: %s", exc)
-        LAST_CLAIM_AUDIT.update(result)
-        return result
+        return _fail(f"claim verifier parse error: {type(exc).__name__}", exc)
 
     if not isinstance(payload, dict):
-        logging.info("Claim verifier: no submit_claim_audit (fail-open)")
-        LAST_CLAIM_AUDIT.update(result)
-        return result
+        return _fail("claim verifier missing submit_claim_audit")
 
     claims = payload.get("claims") or []
     if not isinstance(claims, list):
-        LAST_CLAIM_AUDIT.update(result)
-        return result
+        return _fail("claim verifier invalid claims payload")
     result["claims"] = claims
 
     contradicted: list[str] = []
@@ -3904,14 +3972,15 @@ def _run_claim_verifier_stage(
         probs.extend(validate_names(draft, raw_material))
         return draft, probs
 
-    from inlight_qc import verifier_source_text
+    from inlight_qc import acir_strict, verifier_source_text
     audit_src = verifier_source_text(enriched_item, raw_material)
-    audit = verify_article_claims(art, audit_src, enriched_item)
+    closed = acir_strict(config)
+    audit = verify_article_claims(art, audit_src, enriched_item, fail_closed=closed)
     extra_calls = audit.get("calls", 0)
     extra_in = audit.get("input_tokens", 0)
     extra_out = audit.get("output_tokens", 0)
-    if audit["status"] == "contradicted":
-        logging.error("Dropping %s: claim verifier CONTRADICTED %s", enriched_item.url, audit["problems"])
+    if audit["status"] in ("contradicted", "error"):
+        logging.error("Dropping %s: claim verifier %s %s", enriched_item.url, audit["status"].upper(), audit["problems"])
         logging.info(
             "Claim verifier extra per article %s: calls=%d tokens_in=%d tokens_out=%d",
             enriched_item.url, extra_calls, extra_in, extra_out,
@@ -3935,7 +4004,7 @@ def _run_claim_verifier_stage(
         if not retry or _hard_problems(retry_probs):
             logging.error("NOT_IN_SOURCE redraft still hard, dropping: %s", enriched_item.url)
             return None, True
-        audit2 = verify_article_claims(retry, raw_material, enriched_item)
+        audit2 = verify_article_claims(retry, raw_material, enriched_item, fail_closed=closed)
         extra_calls += audit2.get("calls", 0)
         extra_in += audit2.get("input_tokens", 0)
         extra_out += audit2.get("output_tokens", 0)
@@ -4030,10 +4099,10 @@ def process_articles(items: list[dict], config: dict) -> dict:
     academic_items = [item for item in items if item.get("kind") == "academic"]
     if t["max_candidates"] and len(academic_items) > t["max_candidates"]:
         logging.info(
-            "Capping academic candidates %d → %d for enrich/triage",
+            "Capping academic candidates %d → %d for enrich/triage (来源均衡)",
             len(academic_items), t["max_candidates"],
         )
-        academic_items = academic_items[: t["max_candidates"]]
+        academic_items = balance_academic_candidates(academic_items, t["max_candidates"])
     
     logging.info("Enriching %d academic items", len(academic_items))
     enriched = [enrich_item(item) for item in academic_items]

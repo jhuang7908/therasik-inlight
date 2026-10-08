@@ -162,7 +162,9 @@ class TestFulltextAdmission(unittest.TestCase):
     def test_no_mechanism_figure_without_fulltext(self):
         prompt = mechanism_image_prompt(_results(), "pathway blocked")
         self.assertIn("#0F6B5C", prompt)
-        self.assertNotIn("abstract", prompt.lower())
+        self.assertIn("#C0492F", prompt)
+        self.assertIn("Subject:", prompt)
+        self.assertIn("outcome", prompt.lower())
         item = EnrichedItem(
             url="https://doi.org/10.1/abs2", title="T", source="N", date="2026-01-01",
             abstract="x" * 2000, evidence_level="abstract",
@@ -374,6 +376,173 @@ class TestQcReportWritten(unittest.TestCase):
         qc = LAST_RUN_STATS.get("qc_report") or {}
         self.assertTrue(qc.get("articles"))
         self.assertFalse(qc["articles"][0]["published"])
+
+
+class TestHouseStylePromptsAndImageQc(unittest.TestCase):
+    def test_prompt_thick_lines_solid_large_accent_no_text(self):
+        from inlight_qc import IMAGE_PREFIX, IMAGE_SUFFIX, mechanism_image_prompt
+        import run_weekly
+
+        prompt = mechanism_image_prompt(_results(), "pathway blocked")
+        for blob in (IMAGE_PREFIX, run_weekly.IMAGE_PREFIX, prompt):
+            self.assertIn("THICKER", blob)
+            self.assertIn("#C0492F", blob)
+            self.assertIn("solid-filled", blob)
+            self.assertIn("3 to 6 percent", blob)
+        for blob in (IMAGE_SUFFIX, run_weekly.IMAGE_SUFFIX, prompt):
+            low = blob.lower()
+            self.assertIn("no text", low)
+            self.assertIn("no letters", low)
+            self.assertIn("no logos", low)
+        self.assertIn("hairline", IMAGE_PREFIX.lower())
+        self.assertNotIn("thin gray outlines", IMAGE_PREFIX.lower())
+        self.assertIn("Subject:", prompt)
+        self.assertIn("0.382", prompt)
+        self.assertIn("1.618", prompt)
+
+    def test_qc_image_accepts_in_range_and_rejects_text(self):
+        from PIL import Image, ImageDraw
+        from inlight_qc import qc_image, write_fallback_cover
+
+        w, h = 400, 247
+        im = Image.new("RGB", (w, h), (255, 255, 255))
+        d = ImageDraw.Draw(im)
+        d.ellipse([20, 20, 220, 220], fill=(15, 107, 92))
+        d.ellipse([210, 40, 360, 200], fill=(159, 216, 203))
+        d.ellipse([240, 80, 310, 160], fill=(192, 73, 47))
+        with tempfile.TemporaryDirectory() as td:
+            good = os.path.join(td, "good.png")
+            im.save(good)
+            out = qc_image(good)
+            self.assertFalse(out["ocr_text"], out)
+            self.assertGreaterEqual(out["fill_frac"], 0.50)
+            self.assertGreater(out["accent_frac"], 0.0)
+
+            bad = Image.new("RGB", (w, h), (255, 255, 255))
+            bd = ImageDraw.Draw(bad)
+            bd.text((20, 80), "ABC LABEL 64%", fill=(20, 20, 20))
+            bad_path = os.path.join(td, "text.png")
+            bad.save(bad_path)
+            text_out = qc_image(bad_path)
+            self.assertTrue(text_out["ocr_text"] or text_out["reasons"], text_out)
+            self.assertFalse(text_out["pass"])
+
+            fb = os.path.join(td, "fallback.png")
+            write_fallback_cover(fb)
+            self.assertTrue(os.path.isfile(fb))
+            self.assertGreater(os.path.getsize(fb), 100)
+
+    def test_generate_article_image_falls_back_after_two_retries(self):
+        import run_weekly
+
+        calls = {"n": 0}
+
+        def fake_draw(prompt, dest):
+            calls["n"] += 1
+            dest.write_bytes(b"not-a-png")
+
+        fail = {
+            "pass": False,
+            "ocr_text": True,
+            "accent_frac": 0.01,
+            "fill_frac": 0.40,
+            "reasons": ["ocr text detected", "accent 0.010 outside 0.03-0.06"],
+        }
+        with tempfile.TemporaryDirectory() as td:
+            dest = os.path.join(td, "a1.png")
+            with patch.object(run_weekly, "draw_image", side_effect=fake_draw):
+                with patch("inlight_qc.qc_image", return_value=fail):
+                    out = run_weekly.generate_article_image("Subject: cells", dest, True)
+            self.assertEqual(calls["n"], 3)
+            self.assertTrue(out["fallback"])
+            self.assertFalse(out["pass"])
+            self.assertTrue(os.path.isfile(dest))
+            self.assertGreater(os.path.getsize(dest), 20)
+
+    def test_write_output_skips_images_when_nothing_published(self):
+        import run_weekly
+
+        called = []
+        with tempfile.TemporaryDirectory() as td:
+            dest = os.path.join(td, "week")
+            os.makedirs(dest, exist_ok=True)
+            dest_path = __import__("pathlib").Path(dest)
+            with patch.object(run_weekly, "ROOT", dest_path.parent):
+                with patch.object(run_weekly, "draw_image", side_effect=lambda *a, **k: called.append("draw")):
+                    with patch.object(run_weekly, "generate_article_image", side_effect=lambda *a, **k: called.append("gen") or {"pass": True, "fallback": False}):
+                        run_weekly.write_output(
+                            {"articles": [], "deals": [], "qc_report": {"articles": []}},
+                            dest_path,
+                            "2026-10-08",
+                        )
+            self.assertEqual(called, [])
+            self.assertFalse((dest_path / "wechat" / "cover.png").exists())
+            qc = json.loads((dest_path / "qc_report.json").read_text())
+            self.assertNotIn("images", qc)
+
+    def test_write_output_logs_image_qc_fallback(self):
+        import run_weekly
+
+        def fake_gen(prompt, dest, qc_enabled=True):
+            dest.write_bytes(b"\x89PNG\r\n\x1a\n")
+            return {
+                "pass": False,
+                "fallback": True,
+                "attempts": 3,
+                "reasons": ["ocr text detected"],
+                "ocr_text": True,
+                "accent_frac": 0.01,
+                "fill_frac": 0.4,
+            }
+
+        with tempfile.TemporaryDirectory() as td:
+            dest = __import__("pathlib").Path(td) / "week"
+            dest.mkdir()
+            with patch.object(run_weekly, "ROOT", dest.parent):
+                with patch.object(run_weekly, "generate_article_image", side_effect=fake_gen):
+                    run_weekly.write_output(
+                        {
+                            "articles": [{
+                                "title": "GOOD",
+                                "field": "c3",
+                                "date": "2026-10-01",
+                                "url": "https://example.com/good",
+                                "lead": "good",
+                                "body": "body",
+                                "discuss": "d",
+                                "journal": "Nature",
+                                "authors": "",
+                                "image_prompt": "Subject: cells",
+                                "tier": "deep",
+                                "one_liner": "对照文章",
+                                "datacard": {"n": "20例"},
+                                "results": ["缓解率58%"],
+                            }],
+                            "deals": [],
+                            "qc_report": {"articles": [{"url": "https://example.com/good", "published": True}]},
+                        },
+                        dest,
+                        "2026-10-01",
+                    )
+            qc = json.loads((dest / "qc_report.json").read_text())
+            self.assertTrue(qc.get("images"))
+            self.assertTrue(any(x.get("fallback") for x in qc["images"]))
+            arts = json.loads((dest / "articles.json").read_text())
+            self.assertEqual(len(arts), 1)
+            self.assertTrue(arts[0].get("img"))
+
+    def test_site_css_card_ratio_and_grid(self):
+        from pathlib import Path
+        css = Path(__file__).resolve().parent.parent.joinpath("index.html").read_text()
+        self.assertIn("aspect-ratio:1.618/1", css)
+        self.assertIn("object-fit:contain", css)
+        self.assertIn("grid-template-columns:repeat(4,minmax(0,1fr))", css)
+        self.assertIn("grid-template-columns:repeat(2,minmax(0,1fr))", css)
+        self.assertNotIn("grid-template-columns:repeat(3,minmax(0,1fr))", css.split(".fieldlist")[0])
+        self.assertIn("${escHtml(r.t)}", css)
+        self.assertIn("${escHtml(x.t)}", css)
+        self.assertIn("${escHtml(x.m)}", css)
+        self.assertIn("${escHtml(a.j)}", css)
 
 
 if __name__ == "__main__":
