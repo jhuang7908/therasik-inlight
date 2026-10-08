@@ -2817,7 +2817,7 @@ def _is_qualitative_datapoint(value: str, meaning: str) -> bool:
         r'genotype|biomarker|high|low|mild|moderate|severe|'
         r'阳性|阴性|野生型|突变型|组织分型|瘤种|内型|分型|'
         r'高|低|轻|中|重|'
-        r'(?:种|类|kinds?)',
+        r'(?:\d+\s*(?:种|类)|[零一二三四五六七八九十两]+\s*(?:种|类)|kinds?)',
         blob,
     ))
 
