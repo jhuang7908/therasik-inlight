@@ -941,18 +941,106 @@ ROLE_PATTERNS: list[tuple[str, str, str | None]] = [
 ]
 
 
-def detect_role_from_quote(type_quote: str, filer: str, counterparty: str) -> dict | None:
+def _filer_noun_pattern(filer: str) -> str:
+    """Regex for the filer as a grammatical party: 'the Company' or its name.
+
+    Possessive 'the Company's X' is intentionally excluded — that is property
+    of the filer, not the filer itself.
+    """
+    name = re.escape(normalize_company_name(filer))
+    return rf'(?:the\s+Company|the\s+Registrant|{name})'
+
+
+def _is_merger_or_purchase_quote(text: str) -> bool:
+    """True when the quote is about a merger or purchase, not a license."""
+    if not text:
+        return False
+    return bool(re.search(
+        r'\b(?:agreement\s+and\s+plan\s+of\s+merger|plan\s+of\s+merger|'
+        r'merger\s+agreement|purchase\s+agreement|'
+        r'will\s+acquire|has\s+agreed\s+to\s+acquire|agreed\s+to\s+acquire|'
+        r'merge\s+with\s+and\s+into|to\s+be\s+acquired)\b',
+        text, re.IGNORECASE,
+    ))
+
+
+def detect_acquisition_direction(type_quote: str, filer: str) -> str | None:
+    """Buyer/target from explicit wording only. None if not explicit.
+
+    - 'X will acquire the Company' / 'Merger Sub will merge with and into
+      the Company' → filer is the TARGET.
+    - 'the Company will acquire X' / 'the Company's subsidiary will merge
+      into X' → filer is the BUYER (acquirer).
+    Never infer 'the other company buys the filer' from a leftover party.
+    """
+    if not type_quote or not filer:
+        return None
+    noun = _filer_noun_pattern(filer)
+    # the Company's X is never the filer
+    not_possessive = rf'{noun}\b(?![\'\u2019]s)'
+
+    target_patterns = [
+        rf'(?:will|has\s+agreed\s+to|agreed\s+to|to)\s+acquire\s+'
+        rf'(?:all\s+(?:of\s+)?(?:the\s+)?(?:outstanding\s+)?(?:shares?|stock|equity)\s+of\s+)?'
+        rf'{not_possessive}',
+        rf'merge(?:s|d)?\s+with\s+and\s+into\s+{not_possessive}',
+        rf'{not_possessive}\s+will\s+be\s+acquired\b',
+        rf'{not_possessive}\s+will\s+be\s+merged\b',
+        rf'acquisition\s+of\s+{not_possessive}',
+    ]
+    buyer_patterns = [
+        rf'{not_possessive}\s+(?:and\s+(?:its|their)\s+\w+\s+)?'
+        rf'(?:will|has\s+agreed\s+to|agreed\s+to)\s+acquire\b',
+        rf'{not_possessive}\s+acquir(?:es|ed|ing)\b',
+        rf"{noun}['\u2019]s\s+(?:indirect\s+)?"
+        rf'(?:wholly[-\s]owned\s+)?subsidiary\s+(?:will\s+)?'
+        rf'(?:merge\s+(?:with\s+and\s+)?into|acquir)',
+        rf'{not_possessive}\s+(?:will\s+)?merge\s+(?:with\s+and\s+)?into\b'
+        rf'(?!\s+{noun})',
+        rf'acquisition\s+of\s+.{{1,80}}?\s+by\s+{not_possessive}',
+    ]
+
+    is_target = any(re.search(p, type_quote, re.IGNORECASE) for p in target_patterns)
+    is_buyer = any(re.search(p, type_quote, re.IGNORECASE) for p in buyer_patterns)
+    if is_target and not is_buyer:
+        return 'target'
+    if is_buyer and not is_target:
+        return 'acquirer'
+    return None
+
+
+def detect_role_from_quote(
+    type_quote: str,
+    filer: str,
+    counterparty: str,
+    deal_type: DealType | None = None,
+) -> dict | None:
     """Detect role/direction from type_quote using fixed pattern set.
     
     Returns dict with 'filer_role' and optionally 'direction' for payment flows.
     Returns None if role cannot be determined (deal should be dropped).
     
     Note: "the Company" in SEC filings always refers to the filer.
+    Acquisition/merger direction is explicit-wording only; generic
+    'entered into ... Agreement with X' license patterns never assign
+    roles on a merger or purchase agreement.
     """
     if not type_quote:
         return None
     
     text = type_quote.strip()
+
+    if deal_type in (DealType.ACQUISITION, DealType.MERGER) or _is_merger_or_purchase_quote(text):
+        direction = detect_acquisition_direction(text, filer)
+        if direction:
+            return {
+                'filer_role': direction,
+                'counterparty_role': 'acquirer' if direction == 'target' else 'target',
+                'direction': None,
+            }
+        if deal_type in (DealType.ACQUISITION, DealType.MERGER) or _is_merger_or_purchase_quote(text):
+            return None
+
     filer_normalized = normalize_company_name(filer).lower()
     counterparty_normalized = normalize_company_name(counterparty).lower() if counterparty else ""
     
@@ -2326,7 +2414,7 @@ def process_sec_deal(
         return None
     
     # Verification 5: detect role from type_quote
-    role_info = detect_role_from_quote(type_quote, filer_name, counterparty)
+    role_info = detect_role_from_quote(type_quote, filer_name, counterparty, deal_type=deal_type)
     if not role_info:
         logging.info("Deal dropped: could not determine filer role from type_quote")
         return None

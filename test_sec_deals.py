@@ -1380,6 +1380,79 @@ class TestIndependentVerifier:
 
 
 # =============================================================================
+# ACQUISITION DIRECTION (explicit wording only)
+# =============================================================================
+
+class TestAcquisitionDirection:
+    """Buyer/target must come from explicit acquire/merge grammar, never a default."""
+
+    def test_x_will_acquire_the_company_filer_is_target(self):
+        role = sec_deals.detect_role_from_quote(
+            "Osprey Pharma plc will acquire the Company for $18.50 per share",
+            "Verdant Bio, Inc.",
+            "Osprey Pharma",
+            deal_type=sec_deals.DealType.ACQUISITION,
+        )
+        assert role is not None
+        assert role["filer_role"] == "target"
+
+    def test_merger_sub_into_the_company_filer_is_target(self):
+        role = sec_deals.detect_role_from_quote(
+            "Merger Sub will merge with and into the Company",
+            "Thistle Pharma, Inc.",
+            "Quarry Holdings",
+            deal_type=sec_deals.DealType.MERGER,
+        )
+        assert role is not None
+        assert role["filer_role"] == "target"
+
+    def test_company_will_acquire_x_filer_is_buyer(self):
+        role = sec_deals.detect_role_from_quote(
+            "the Company will acquire Juniper Biosciences, Inc. for $250 million",
+            "Kestrel Rx, Inc.",
+            "Juniper Biosciences",
+            deal_type=sec_deals.DealType.ACQUISITION,
+        )
+        assert role is not None
+        assert role["filer_role"] == "acquirer"
+
+    def test_company_subsidiary_merges_into_x_filer_is_buyer(self):
+        role = sec_deals.detect_role_from_quote(
+            "the Company's subsidiary will merge into Juniper Biosciences, Inc.",
+            "Kestrel Rx, Inc.",
+            "Juniper Biosciences",
+            deal_type=sec_deals.DealType.MERGER,
+        )
+        assert role is not None
+        assert role["filer_role"] == "acquirer"
+
+    def test_generic_merger_agreement_with_x_is_dropped(self):
+        role = sec_deals.detect_role_from_quote(
+            "the Company entered into an Agreement and Plan of Merger with Osprey Pharma plc",
+            "Verdant Bio, Inc.",
+            "Osprey Pharma",
+            deal_type=sec_deals.DealType.MERGER,
+        )
+        assert role is None, "generic 'entered into ... Agreement with X' must not assign merger roles"
+
+    def test_license_pattern_does_not_assign_purchase_agreement_roles(self):
+        role = sec_deals.detect_role_from_quote(
+            "the Company entered into a Purchase Agreement with Arbor Partners LLC",
+            "Lumen Diagnostics, Inc.",
+            "Arbor Partners",
+            deal_type=sec_deals.DealType.ACQUISITION,
+        )
+        assert role is None
+
+    def test_no_default_other_company_buys_filer(self):
+        role = sec_deals.detect_acquisition_direction(
+            "Partner Corp signed the closing documents with TargetCo",
+            "Filer Inc.",
+        )
+        assert role is None
+
+
+# =============================================================================
 # RUN TESTS
 # =============================================================================
 
