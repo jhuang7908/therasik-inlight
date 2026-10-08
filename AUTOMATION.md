@@ -20,7 +20,7 @@ Windows 上如果 `python` 不在 PATH 里，用 `py -3` 代替 `python`。
 | --- | --- |
 | `ANTHROPIC_API_KEY` | `run_weekly.py` 筛选和写中文 |
 | `OPENAI_API_KEY` | `run_weekly.py` 配图和公众号封面 |
-| `ANTHROPIC_MODEL` | 可选，默认 `claude-sonnet-4-5` |
+| `ANTHROPIC_MODEL` | 可选，默认 `claude-sonnet-4-20250514` |
 | `OPENAI_IMAGE_MODEL` | 可选，默认 `gpt-image-1` |
 | `WECHAT_APPID` | 只有 `publish_wechat.py` 需要 |
 | `WECHAT_APPSECRET` | 只有 `publish_wechat.py` 需要 |
@@ -70,6 +70,20 @@ python publish_wechat.py --week 2026-10-07
 预览运行：同样的结构在 `preview/weekly/YYYY-MM-DD/`。`preview/` 不进 git。
 
 文章只保留来源列表里出现过的链接。模型补出来的地址会被丢掉，并写进日志。
+
+## 去重
+
+脚本会自动跳过已有内容：
+
+1. `content/latest.json` 里的文章和动态 URL
+2. `index.html` 里 CAT 数组中的 DOI 链接
+
+这样避免重复抓取同一篇论文。如果一篇文章从不同来源抓到（例如 Nature RSS 和 PubMed），会保留先到的那条。
+
+## AI 工具使用
+
+- Claude：使用 tool_use 模式返回结构化 JSON，避免解析错误
+- 图像生成：使用 gpt-image-1，提示词强调 BioRender 风格、无文字无标签
 
 ## 出错时看哪里
 

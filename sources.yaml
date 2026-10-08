@@ -13,7 +13,7 @@ sources:
     kind: academic
     type: rss
     url: https://acir.org
-    feed: https://acir.org/rss
+    feed: https://acir.org/weekly-digests/rss.xml
 
   - name: Nature
     kind: academic
@@ -85,16 +85,16 @@ sources:
     kind: industry
     type: rss
     url: https://www.fda.gov/news-events/fda-newsroom/press-announcements
-    feed: https://www.fda.gov/about-fda/contact-fda/stay-informed/rss-feeds/press-releases/rss.xml
+    feed: https://www.fda.gov/rss/press-releases.xml
 
   - name: EMA
     kind: industry
     type: rss
     url: https://www.ema.europa.eu/en/news
-    feed: https://www.ema.europa.eu/en/news-events/whats-new.xml
+    feed: https://www.ema.europa.eu/en/rss/news.xml
 
   - name: EurekAlert
     kind: industry
     type: rss
     url: https://www.eurekalert.org
-    feed: https://www.eurekalert.org/rss.xml
+    feed: https://www.eurekalert.org/api/rss.xml

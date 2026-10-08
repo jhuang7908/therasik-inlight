@@ -40,9 +40,12 @@ FIELDS = {
 }
 DEAL_KINDS = {"acq", "lic", "newco", "clin", "inv", "policy"}
 IMAGE_PREFIX = (
-    "Flat BioRender scientific illustration on white, thin gray outlines, "
-    "soft teal, coral, gold and blue-gray. No 3D, no glow, no photorealism, "
-    "no text, no letters, no numbers, no watermark. The subject fills the frame. "
+    "Flat BioRender-style scientific illustration on white background, "
+    "thin gray outlines, soft teal, coral, gold and blue-gray palette. "
+    "Minimalist, clean, diagrammatic. Show biological molecules, cells, or mechanisms. "
+    "No 3D effects, no glow, no gradients, no photorealism, no shadows. "
+    "No text, no letters, no numbers, no labels, no watermark, no annotations. "
+    "Simple shapes only. The subject fills the frame. "
 )
 UA = "FrontierDigestWeekly/1.0 (+https://inlight.therasik.com)"
 
@@ -179,6 +182,38 @@ def fetch_pubmed(source: dict, start: date, end: date, limit: int) -> list[dict]
     return rows
 
 
+def load_existing_urls() -> set[str]:
+    """Load URLs and DOIs from existing content to avoid duplicates."""
+    existing = set()
+    latest_path = ROOT / "content" / "latest.json"
+    if latest_path.exists():
+        try:
+            data = json.loads(latest_path.read_text(encoding="utf-8"))
+            for art in data.get("articles") or []:
+                if art.get("url"):
+                    existing.add(art["url"])
+            for deal in data.get("deals") or []:
+                if deal.get("url"):
+                    existing.add(deal["url"])
+        except (json.JSONDecodeError, OSError):
+            pass
+    
+    # Also check index.html for DOIs in CAT array
+    index_path = ROOT / "index.html"
+    if index_path.exists():
+        try:
+            content = index_path.read_text(encoding="utf-8")
+            # Extract DOIs from url fields
+            doi_pattern = r"url:'(https://doi\.org/[^']+)'"
+            for match in re.finditer(doi_pattern, content):
+                existing.add(match.group(1))
+        except OSError:
+            pass
+    
+    logging.info("已有 %d 个去重 URL/DOI", len(existing))
+    return existing
+
+
 def fetch_all(config: dict) -> list[dict]:
     days = int(config.get("window_days") or 7)
     limit = int(config.get("max_per_source") or 6)
@@ -186,6 +221,8 @@ def fetch_all(config: dict) -> list[dict]:
     start = end - timedelta(days=days)
     rows: list[dict] = []
     seen = set()
+    existing = load_existing_urls()
+    
     for source in config["sources"]:
         try:
             if source.get("type") == "pubmed":
@@ -196,54 +233,106 @@ def fetch_all(config: dict) -> list[dict]:
             logging.exception("来源失败：%s", source.get("name"))
             continue
         for row in batch:
-            if row["url"] in seen:
+            url = row["url"]
+            if url in seen:
                 continue
-            seen.add(row["url"])
+            if url in existing:
+                logging.debug("跳过已有内容：%s", url)
+                continue
+            seen.add(url)
             rows.append(row)
     return rows
 
 
 def claude_draft(items: list[dict], config: dict) -> dict:
+    """Use Claude with tool_use for reliable JSON output."""
     from anthropic import Anthropic
 
-    academic = [x for x in items if x["kind"] == "academic"]
-    industry = [x for x in items if x["kind"] != "academic"]
+    tool_schema = {
+        "name": "submit_weekly_digest",
+        "description": "Submit the curated articles and deals for the weekly digest",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "articles": {
+                    "type": "array",
+                    "description": "Academic articles to include",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "url": {"type": "string", "description": "Original URL from input, copied exactly"},
+                            "field": {"type": "string", "enum": list(FIELDS.keys()), "description": "Primary field"},
+                            "title": {"type": "string", "description": "Chinese title"},
+                            "journal": {"type": "string", "description": "Journal name"},
+                            "authors": {"type": "string", "description": "Author names if available"},
+                            "lead": {"type": "string", "description": "Why this matters, 1-2 sentences in Chinese"},
+                            "body": {"type": "string", "description": "What the source says, in Chinese"},
+                            "discuss": {"type": "string", "description": "Limitations and what we don't know"},
+                            "steps": {"type": "array", "items": {"type": "string"}, "description": "Up to 4 short steps for mechanism diagram"},
+                            "image_prompt": {"type": "string", "description": "English prompt for mechanism diagram, no text/labels"},
+                        },
+                        "required": ["url", "field", "title", "lead"],
+                    },
+                },
+                "deals": {
+                    "type": "array",
+                    "description": "Industry deals and news",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "url": {"type": "string", "description": "Original URL from input"},
+                            "title": {"type": "string", "description": "Chinese title"},
+                            "kinds": {"type": "array", "items": {"type": "string", "enum": list(DEAL_KINDS)}},
+                            "money": {"type": "string", "description": "Deal value or '未披露'"},
+                            "structure": {"type": "string", "description": "Deal structure details"},
+                            "why": {"type": "string", "description": "Why this deal matters"},
+                            "source_name": {"type": "string", "description": "Source name"},
+                        },
+                        "required": ["url", "title", "kinds"],
+                    },
+                },
+            },
+            "required": ["articles", "deals"],
+        },
+    }
+
     prompt = f"""你是前沿追踪的编辑。下面是过去 {config.get('window_days', 7)} 天从固定来源抓到的条目，每条只有标题、链接、日期和来源摘要。
 
 只许使用这些条目里已经写明的事实。没有的数字、作者、适应症、金额不要编。一条材料不够写成解读，就不要选它。
 学术最多 {config.get('max_academic', 6)} 篇，行业最多 {config.get('max_industry', 4)} 条。
-每篇的 url 必须从输入里原样复制。
+每篇的 url 必须从输入里原样复制，不能修改。
 领域 field 只能是：{json.dumps(FIELDS, ensure_ascii=False)}
 行业 kinds 只能是这些词的子集：acq 收购、lic 授权、newco NewCo、clin 临床进展、inv 投资融资、policy 监管政策。
 
-学术文章用中文，分 lead（为什么重要，一两句）、body（来源里写了什么）、discuss（来源能支持的限度，不知道就写还缺什么）、steps（最多 4 条短句，供机制图）、image_prompt（英文，描述一张没有文字的机制图）。
-行业动态用中文：title、money、structure、why。金额没写就写「未披露」。
+学术文章用中文写 lead、body、discuss。image_prompt 用英文，描述一张没有任何文字和标签的机制图。
+行业动态用中文。金额没写就写「未披露」。
 
-只输出 JSON，不要 Markdown。格式：
-{{"articles":[{{"url":"","field":"c3","title":"","journal":"","authors":"","lead":"","body":"","discuss":"","steps":[],"image_prompt":""}}],"deals":[{{"url":"","title":"","kinds":["lic"],"money":"","structure":"","why":"","source_name":""}}]}}
+调用 submit_weekly_digest 工具提交你的筛选结果。
 
 输入：
 {json.dumps(items, ensure_ascii=False)}
 """
-    model = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-5")
-    logging.info("调用 Claude %s", model)
+    model = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-20250514")
+    logging.info("调用 Claude %s (tool_use)", model)
+    
     message = Anthropic().messages.create(
         model=model,
         max_tokens=8000,
+        tools=[tool_schema],
+        tool_choice={"type": "tool", "name": "submit_weekly_digest"},
         messages=[{"role": "user", "content": prompt}],
     )
-    text = "".join(block.text for block in message.content if getattr(block, "text", None))
-    text = text.strip()
-    if text.startswith("```"):
-        text = re.sub(r"^```(?:json)?", "", text).strip()
-        text = re.sub(r"```$", "", text).strip()
-    try:
-        data = json.loads(text)
-    except json.JSONDecodeError:
-        start, end = text.find("{"), text.rfind("}")
-        if start < 0 or end <= start:
-            raise
-        data = json.loads(text[start:end + 1])
+    
+    # Extract tool use result
+    data = None
+    for block in message.content:
+        if block.type == "tool_use" and block.name == "submit_weekly_digest":
+            data = block.input
+            break
+    
+    if data is None:
+        logging.error("Claude did not return tool_use block")
+        raise ValueError("No tool_use response from Claude")
     allowed = {row["url"] for row in items}
     by_url = {row["url"]: row for row in items}
     articles = []

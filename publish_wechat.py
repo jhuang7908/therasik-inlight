@@ -153,10 +153,46 @@ def main() -> None:
         html = (week / "wechat" / "article.html").read_text(encoding="utf-8")
         html = rewrite_images(html, week, access)
         articles = json.loads((week / "articles.json").read_text(encoding="utf-8"))
-        title = f"前沿追踪 {week.name}"
+        deals = json.loads((week / "deals.json").read_text(encoding="utf-8")) if (week / "deals.json").exists() else []
+        
+        # Build a descriptive title from top article topics
+        topics = []
+        for art in articles[:3]:
+            if art.get("t"):
+                # Extract key topic from title
+                t = art["t"]
+                if "CAR-T" in t:
+                    topics.append("CAR-T")
+                elif "类器官" in t:
+                    topics.append("类器官")
+                elif "mRNA" in t or "LNP" in t:
+                    topics.append("mRNA")
+                elif "抗体" in t or "双抗" in t:
+                    topics.append("抗体")
+                elif "AI" in t or "机器学习" in t:
+                    topics.append("AI")
+        
+        # Format date nicely
+        week_parts = week.name.split("-")
+        if len(week_parts) == 3:
+            date_str = f"{week_parts[0]}年{int(week_parts[1])}月{int(week_parts[2])}日"
+        else:
+            date_str = week.name
+        
+        # Build title with topics
+        if topics:
+            unique_topics = list(dict.fromkeys(topics))[:3]  # dedupe, keep order
+            title = f"前沿追踪 | {date_str}：{'、'.join(unique_topics)}等"
+        else:
+            title = f"前沿追踪 | {date_str}周报"
+        
         digest = ""
         if articles:
-            digest = (articles[0].get("lead") or articles[0].get("t") or "")[:120]
+            digest = (articles[0].get("lead") or articles[0].get("t") or "")[:116] + "…"
+        
+        # content_source_url for "阅读原文" link
+        content_url = "https://inlight.therasik.com/#home"
+        
         draft = api_json(
             f"{API}/cgi-bin/draft/add?access_token={access}",
             {"articles": [{
@@ -165,7 +201,8 @@ def main() -> None:
                 "digest": digest,
                 "content": html,
                 "thumb_media_id": media_id,
-                "need_open_comment": 0,
+                "content_source_url": content_url,
+                "need_open_comment": 1,
                 "only_fans_can_comment": 0,
             }]},
         )
