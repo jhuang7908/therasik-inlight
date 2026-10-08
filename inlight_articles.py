@@ -685,7 +685,7 @@ def fetch_press_coverage(title: str, doi: str) -> str:
             if doi and hit_doi == doi.lower():
                 continue
             text = (hit.get("abstractText") or "").strip()
-            if len(text) >= 200:
+            if len(text) >= 80:
                 return text[:8000]
     if title:
         ea = (

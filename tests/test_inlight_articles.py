@@ -2194,15 +2194,16 @@ class TestYieldAndSourceFetch(unittest.TestCase):
                 "doi": "10.9999/press-item",
                 "abstractText": (
                     "In a press briefing researchers said fezolinetant 45 mg cut "
-                    "hot-flash frequency by 64 percent in 527 women at week 12."
+                    "hot-flash frequency by 64 percent in 527 women at week 12, "
+                    "matching the SKYLIGHT 1 readout presented to reporters."
                 ),
             }]},
         }).encode()
 
         def http(url, timeout=30):
-            if "europepmc.org" in url and "press release" in url:
+            if "europepmc" in url and ("press" in url.lower() or "eurekalert" in url.lower()):
                 return press_epmc
-            if "europepmc.org" in url:
+            if "europepmc" in url:
                 return epmc
             if "openalex.org" in url:
                 return openalex
