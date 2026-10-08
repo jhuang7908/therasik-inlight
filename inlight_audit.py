@@ -7,6 +7,7 @@ Does not replace them. Style or 'resembles ACIR' is never a fail condition.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
 import os
@@ -39,10 +40,12 @@ BOILERPLATE_MAX = 2
 QC_REPORT_FIELDS = (
     "gate_fulltext", "structure", "number_trace", "claim_support_rate",
     "headline_ok", "endpoint_hierarchy", "must_cover_coverage",
+    "must_cover_list_id", "must_cover_text_hash", "must_cover_item_count",
     "figure_text_consistency", "classification", "boilerplate_count",
     "blind_scores", "blind_judge_runs", "hard_errors", "rewrite_count",
     "publish_allowed",
 )
+_MUST_COVER_CACHE: dict[str, dict[str, Any]] = {}
 
 BOILERPLATE_RE = re.compile(r"原文未报告|原文未给出")
 UNTESTED_RE = re.compile(
@@ -334,6 +337,83 @@ def extract_must_cover(
     return items
 
 
+def generate_must_cover(
+    abstract: str = "",
+    results: str = "",
+    fig_captions: str = "",
+) -> list[dict[str, str]]:
+    """Build a must-cover list. Call only on cache miss or full-text change."""
+    return extract_must_cover(abstract, results, fig_captions)
+
+
+def must_cover_source_id(art: dict | None = None, *, doi: str = "", url: str = "", pmid: str = "") -> str:
+    """DOI, else PMID, else URL. Stable across rewrites of the same paper."""
+    url = url or (art or {}).get("url") or ""
+    doi = doi or (art or {}).get("doi") or ""
+    pmid = pmid or (art or {}).get("pmid") or ""
+    if not doi and url:
+        try:
+            from inlight_articles import extract_doi
+            doi = extract_doi(url) or ""
+        except Exception:
+            m = re.search(r"(10\.\d+/[^\s?#]+)", url)
+            doi = m.group(1) if m else ""
+    if doi:
+        return "doi:" + re.sub(r"v\d+$", "", doi.strip().lower())
+    if pmid:
+        return "pmid:" + str(pmid).strip()
+    return f"url:{url}" if url else "unknown"
+
+
+def fulltext_must_cover_hash(abstract: str = "", results: str = "", fig_captions: str = "") -> str:
+    blob = "\n".join((abstract or "", results or "", fig_captions or ""))
+    return hashlib.sha256(blob.encode("utf-8")).hexdigest()
+
+
+def freeze_must_cover(
+    art: dict,
+    *,
+    abstract: str = "",
+    results_src: str = "",
+    fig_captions: str = "",
+    cache: dict[str, dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """Return the frozen must-cover list for this source + full-text hash.
+
+    Generated once. Later rewrite / retry / re-verification loads the same
+    record unless the full-text hash changes.
+    """
+    store = _MUST_COVER_CACHE if cache is None else cache
+    source_id = must_cover_source_id(art)
+    text_hash = fulltext_must_cover_hash(abstract, results_src, fig_captions)
+    list_id = f"{source_id}#{text_hash}"
+
+    existing = art.get("qc_must_cover")
+    if (
+        isinstance(existing, dict)
+        and existing.get("id") == list_id
+        and isinstance(existing.get("items"), list)
+    ):
+        store[list_id] = existing
+        return existing
+    cached = store.get(list_id)
+    if isinstance(cached, dict) and isinstance(cached.get("items"), list):
+        art["qc_must_cover"] = cached
+        return cached
+
+    items = generate_must_cover(abstract, results_src, fig_captions)
+    rec = {
+        "id": list_id,
+        "source_id": source_id,
+        "text_hash": text_hash,
+        "item_count": len(items),
+        "items": items,
+    }
+    store[list_id] = rec
+    art["qc_must_cover"] = rec
+    return rec
+
+
 def must_cover_coverage(art: dict, items: list[dict]) -> tuple[float, list[str]]:
     """Fraction covered in body, or named as 未写入 in limitations."""
     if not items:
@@ -530,7 +610,10 @@ def run_automated_audit(
             if not dp.get("basis"):
                 dp["basis"] = "abstract" if loc == "Abstract" else "body"
 
-    must = extract_must_cover(abstract, results_src, fig_captions)
+    frozen = freeze_must_cover(
+        art, abstract=abstract, results_src=results_src, fig_captions=fig_captions,
+    )
+    must = list(frozen.get("items") or [])
     cover, uncovered = must_cover_coverage(art, must)
     loc_ok = True
     for dp in art.get("data_points") or []:
@@ -598,6 +681,9 @@ def run_automated_audit(
     return {
         **gates,
         "must_cover": must,
+        "must_cover_list_id": frozen.get("id") or "",
+        "must_cover_text_hash": frozen.get("text_hash") or "",
+        "must_cover_item_count": int(frozen.get("item_count") or len(must)),
         "must_cover_uncovered": uncovered,
         "hard_errors": hs,
         "blind_scores": [],
@@ -867,6 +953,9 @@ def attach_audit_fields(entry: dict, audit: dict) -> dict:
     entry["headline_ok"] = audit.get("headline_ok")
     entry["endpoint_hierarchy"] = audit.get("endpoint_hierarchy")
     entry["must_cover_coverage"] = audit.get("must_cover_coverage")
+    entry["must_cover_list_id"] = audit.get("must_cover_list_id") or ""
+    entry["must_cover_text_hash"] = audit.get("must_cover_text_hash") or ""
+    entry["must_cover_item_count"] = audit.get("must_cover_item_count") or 0
     entry["figure_text_consistency"] = audit.get("figure_text_consistency")
     entry["classification"] = audit.get("classification")
     entry["boilerplate_count"] = audit.get("boilerplate_count")

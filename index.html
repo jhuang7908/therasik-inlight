@@ -1044,6 +1044,20 @@ function renderPaper(id){
   const steps=(Array.isArray(a.steps)&&a.steps.length)?a.steps:bits.slice(0,4);
   const tags=(a.tags||[]).map(t=>`<span class="tag" style="--tc:var(--${t})">${FNAMES[t]||''}</span>`).join('');
   
+  function stripLead(text, heading) {
+    if (!text) return text;
+    const aliases = Array.isArray(heading) ? heading : [heading];
+    let t = String(text);
+    for (const h of aliases) {
+      const escaped = h.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const labeled = t.match(new RegExp('^' + escaped + '(?:[，,].{0,40})?\\s*[:：]\\s*'));
+      if (labeled) return t.slice(labeled[0].length);
+      const period = t.match(new RegExp('^' + escaped + '\\s*[。.]+\\s*'));
+      if (period) return t.slice(period[0].length);
+    }
+    return t;
+  }
+
   function renderDatacard(dc) {
     if (!dc) return '';
     const fields = [
@@ -1059,7 +1073,7 @@ function renderPaper(id){
       ['read_note', '核对记录'],
     ];
     const rows = fields.filter(([k]) => dc[k] && dc[k] !== '不适用' && !String(dc[k]).includes('未给出'))
-      .map(([k, label]) => `<div><span class="k">${label}</span><p>${escHtml(dc[k])}</p></div>`).join('');
+      .map(([k, label]) => `<div><span class="k">${label}</span><p>${escHtml(stripLead(dc[k], label))}</p></div>`).join('');
     const evidence = a.evidence_level || dc.evidence_level || 'abstract';
     const evidenceLabels = {fulltext: '全文', abstract: '摘要', preprint: '预印本', press: '新闻稿', secondary: '二手'};
     const readNote = a.read_note || dc.read_note || '';
@@ -1071,32 +1085,36 @@ function renderPaper(id){
   
   function renderNewFormatBody() {
     let html = '';
-    if (a.background) {
-      html += `<div class="sec"><h2>研究背景</h2><p>${escHtml(a.background)}</p></div>`;
+    const background = stripLead(a.background, ['研究背景与待解问题', '研究背景']);
+    if (background) {
+      html += `<div class="sec"><h2>研究背景</h2><p>${escHtml(background)}</p></div>`;
     }
-    if (a.design) {
-      html += `<div class="sec"><h2>研究设计</h2><p>${escHtml(a.design)}</p></div>`;
+    const design = stripLead(a.design, '研究设计');
+    if (design) {
+      html += `<div class="sec"><h2>研究设计</h2><p>${escHtml(design)}</p></div>`;
     }
     if (a.results && a.results.length) {
-      const primaryResult = a.datacard?.primary_endpoint_result;
+      const primaryResult = stripLead(a.datacard?.primary_endpoint_result, ['主要结果', '主要终点']);
       html += `<div class="sec"><h2>核心结果</h2>`;
       if (primaryResult && primaryResult !== '原文未给出' && !String(primaryResult).includes('未给出')) {
         html += `<div class="primary-endpoint-block"><span class="pe-label">主要终点</span><span class="pe-value">${escHtml(primaryResult)}</span></div>`;
       }
-      html += a.results.map(p => `<p>${escHtml(p)}</p>`).join('');
+      html += a.results.map(p => `<p>${escHtml(stripLead(p, '核心结果'))}</p>`).join('');
       if (a.data_chart_svg) {
         html += `<div class="data-chart-wrap">${a.data_chart_svg}</div>`;
       }
       html += `</div>`;
     }
-    if (tier === 'deep' && a.mechanism) {
-      html += `<div class="sec"><h2>机制解读</h2><p>${escHtml(a.mechanism)}</p></div>`;
+    const mechanism = stripLead(a.mechanism, '机制解读');
+    if (tier === 'deep' && mechanism) {
+      html += `<div class="sec"><h2>机制解读</h2><p>${escHtml(mechanism)}</p></div>`;
     }
     if (a.limitations && a.limitations.length) {
-      html += `<div class="sec"><h2>局限与不确定</h2><ul class="limitations-list">${a.limitations.map(l => `<li>${escHtml(l)}</li>`).join('')}</ul></div>`;
+      html += `<div class="sec"><h2>局限与不确定</h2><ul class="limitations-list">${a.limitations.map(l => `<li>${escHtml(stripLead(l, ['局限与不确定', '局限']))}</li>`).join('')}</ul></div>`;
     }
-    if (a.significance) {
-      html += `<div class="sec"><h2>临床/产业意义</h2><p>${escHtml(a.significance)}</p></div>`;
+    const significance = stripLead(a.significance, ['临床/产业意义', '临床意义', '产业意义']);
+    if (significance) {
+      html += `<div class="sec"><h2>临床/产业意义</h2><p>${escHtml(significance)}</p></div>`;
     }
     return html;
   }

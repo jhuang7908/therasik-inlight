@@ -161,6 +161,49 @@ class TestMustCover(unittest.TestCase):
         self.assertEqual(cover2, 1.0)
         self.assertEqual(uncovered2, [])
 
+    def test_second_verification_reuses_frozen_list(self):
+        """Same source reuses the frozen list; changed full text makes a new one."""
+        from inlight_audit import _MUST_COVER_CACHE, extract_must_cover
+
+        _MUST_COVER_CACHE.clear()
+        abstract = "Primary endpoint ORR was 64% in 527 women."
+        results = "Median PFS was 13.8 months in the treated arm.\n\nOS was immature."
+        figs = "Figure 2. Median OS 22.4 months. Freeze-thaw control tumor volume 257.8 mm3."
+        art = _deep_art()
+        with patch("inlight_audit.generate_must_cover", wraps=extract_must_cover) as gen:
+            first = run_automated_audit(
+                art, abstract=abstract, results_src=results, fig_captions=figs,
+                real_fulltext=True, structure_ok=True, number_ok=True,
+            )
+            self.assertEqual(gen.call_count, 1)
+            list_id = first["must_cover_list_id"]
+            items = list(first["must_cover"])
+            self.assertTrue(list_id)
+            self.assertEqual(first["must_cover_item_count"], len(items))
+            self.assertTrue(first["must_cover_text_hash"])
+
+            retry = _deep_art()
+            second = run_automated_audit(
+                retry, abstract=abstract, results_src=results, fig_captions=figs,
+                real_fulltext=True, structure_ok=True, number_ok=True,
+            )
+            self.assertEqual(gen.call_count, 1)
+            self.assertEqual(second["must_cover_list_id"], list_id)
+            self.assertEqual(second["must_cover"], items)
+            self.assertEqual(second["must_cover_item_count"], first["must_cover_item_count"])
+            self.assertIs(retry.get("qc_must_cover"), art.get("qc_must_cover"))
+
+            changed = _deep_art()
+            third = run_automated_audit(
+                changed, abstract=abstract,
+                results_src=results + " New PFS was 99.1 months in the expansion cohort.",
+                fig_captions=figs,
+                real_fulltext=True, structure_ok=True, number_ok=True,
+            )
+            self.assertEqual(gen.call_count, 2)
+            self.assertNotEqual(third["must_cover_list_id"], list_id)
+            self.assertNotEqual(third["must_cover_text_hash"], first["must_cover_text_hash"])
+
 
 class TestLocationBasisAndFigure(unittest.TestCase):
     def test_pass_inferred_location_and_matching_figure(self):

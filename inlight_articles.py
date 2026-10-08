@@ -3639,6 +3639,7 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
             problems.append("结果字段应包含至少一个可核实的数字（来自原文）")
 
     problems.extend(check_comparison_direction(all_text, raw_material))
+    problems.extend(duplicate_heading_problems(art))
     
     return problems
 
@@ -4564,6 +4565,7 @@ def sanitize_published_article(art: dict, enriched: EnrichedItem | None = None) 
     for key in visible_keys:
         if key in art:
             art[key] = _walk_omit_missing(art[key])
+    strip_article_field_headings(art)
 
     # Journal and authors come from source metadata. The model never
     # supplies a journal for a preprint, and never supplies authors
@@ -4752,6 +4754,7 @@ def _hard_problems(problems: list[str]) -> list[str]:
         "必须包含数字", "必须使用阿拉伯", "过于模糊",
         "不是数值数据", "注册了标识符",
         "作者", "术语翻译", "过短", "过长", "结果字段",
+        "标题连写",
         "比较方向", "机构", "基因", "药物", "蛋白质",
         "预印本正文", "同行评议", "主张与原文矛盾", "原文未支持",
         "数字范围", "字数", "要求", "核心结果", "局限须", "数据卡",
@@ -5328,6 +5331,7 @@ def _process_single_article(
         )
         art["writing_audit"] = {k: writing_audit.get(k) for k in (
             "headline_ok", "endpoint_hierarchy", "must_cover_coverage",
+            "must_cover_list_id", "must_cover_text_hash", "must_cover_item_count",
             "boilerplate_count", "hard_errors", "publish_allowed",
         )}
         checks.append(empty_check(
@@ -5479,6 +5483,107 @@ EVIDENCE_LEVEL_LABELS = {
     "secondary": "二手",
 }
 
+# Schema descriptions / renderer headings the model copies into the value.
+# Longer aliases first so "研究背景与待解问题" wins over "研究背景".
+FIELD_HEADING_ALIASES = {
+    "one_liner": ("一句话结论",),
+    "background": ("研究背景与待解问题", "研究背景"),
+    "design": ("研究设计",),
+    "results": ("核心结果",),
+    "mechanism": ("机制解读",),
+    "limitations": ("局限与不确定", "局限"),
+    "significance": ("临床/产业意义", "临床意义", "产业意义"),
+}
+DATACARD_HEADING_ALIASES = {
+    "study_type": ("研究类型",),
+    "n": ("样本量",),
+    "control": ("对照",),
+    "intervention": ("干预/剂量", "药名/剂量/途径/频次/疗程"),
+    "followup": ("随访",),
+    "primary_endpoint": ("主要终点", "终点名称与定义"),
+    "primary_endpoint_result": ("主要结果", "数值 + 对照值"),
+    "statistics": ("统计量",),
+    "safety": ("安全性",),
+    "read_note": ("核对记录",),
+}
+
+
+def _heading_style_prefix(text: str, aliases: tuple[str, ...]) -> re.Match | None:
+    """Match a leading 'Label: ...' / 'Label，…：' copied from the schema."""
+    if not text or not aliases:
+        return None
+    for alias in aliases:
+        m = re.match(
+            rf"^{re.escape(alias)}(?:[，,].{{0,40}})?\s*[:：]\s*",
+            text,
+        )
+        if m:
+            return m
+        m = re.match(rf"^{re.escape(alias)}\s*[。.]+\s*", text)
+        if m:
+            return m
+    return None
+
+
+def strip_leading_field_heading(text: str, field: str = "", aliases: tuple[str, ...] | None = None) -> str:
+    """Remove one leading copy of the field heading the renderer will add."""
+    if not isinstance(text, str) or not text:
+        return text
+    names = aliases or FIELD_HEADING_ALIASES.get(field) or ()
+    hit = _heading_style_prefix(text, names)
+    if not hit:
+        return text
+    return text[hit.end():].lstrip()
+
+
+def strip_article_field_headings(art: dict) -> dict:
+    """Strip schema/renderer headings from body and datacard values."""
+    for field in FIELD_HEADING_ALIASES:
+        val = art.get(field)
+        if isinstance(val, list):
+            art[field] = [strip_leading_field_heading(str(x), field) if x else x for x in val]
+        elif isinstance(val, str) and val:
+            art[field] = strip_leading_field_heading(val, field)
+    datacard = art.get("datacard")
+    if isinstance(datacard, dict):
+        for key, aliases in DATACARD_HEADING_ALIASES.items():
+            val = datacard.get(key)
+            if isinstance(val, str) and val:
+                datacard[key] = strip_leading_field_heading(val, aliases=aliases)
+    return art
+
+
+def duplicate_heading_problems(art: dict) -> list[str]:
+    """Fail when the same heading appears twice in a row in a field value."""
+    problems: list[str] = []
+
+    def _dup(text: str, aliases: tuple[str, ...], label: str) -> None:
+        if not text:
+            return
+        for alias in aliases:
+            if text.startswith(alias + alias) or re.match(
+                rf"^{re.escape(alias)}\s*[:：]?\s*{re.escape(alias)}", text
+            ):
+                problems.append(f"标题连写：{label}")
+                return
+        once = strip_leading_field_heading(text, aliases=aliases)
+        if once != text and _heading_style_prefix(once, aliases):
+            problems.append(f"标题连写：{label}")
+
+    for field, aliases in FIELD_HEADING_ALIASES.items():
+        val = art.get(field)
+        chunks = val if isinstance(val, list) else [val]
+        for chunk in chunks:
+            if isinstance(chunk, str):
+                _dup(chunk.strip(), aliases, aliases[0])
+    datacard = art.get("datacard")
+    if isinstance(datacard, dict):
+        for key, aliases in DATACARD_HEADING_ALIASES.items():
+            val = datacard.get(key)
+            if isinstance(val, str):
+                _dup(val.strip(), aliases, aliases[0])
+    return problems
+
 
 def wechat_html_article(art: dict, include_ai_disclaimer: bool = False) -> str:
     """Generate WeChat-compatible HTML for a single article.
@@ -5508,8 +5613,9 @@ def wechat_html_article(art: dict, include_ai_disclaimer: bool = False) -> str:
         parts.append(f'<p style="font-size:12px;color:#999;margin:0.3em 0;">{_escape_html(cap)}</p>')
     
     # One-liner
-    if art.get("one_liner"):
-        parts.append(f'<p style="margin:0.5em 0;font-weight:700;color:#0f6b5c;">{_escape_html(art["one_liner"])}</p>')
+    one_liner = strip_leading_field_heading(str(art.get("one_liner") or ""), "one_liner")
+    if one_liner:
+        parts.append(f'<p style="margin:0.5em 0;font-weight:700;color:#0f6b5c;">{_escape_html(one_liner)}</p>')
     
     # Datacard table
     datacard_rows = []
@@ -5528,6 +5634,8 @@ def wechat_html_article(art: dict, include_ai_disclaimer: bool = False) -> str:
     }
     for key, label in field_names.items():
         val = datacard.get(key, "")
+        if isinstance(val, str):
+            val = strip_leading_field_heading(val, aliases=DATACARD_HEADING_ALIASES.get(key) or (label,))
         if val and val != "不适用" and MISSING_VALUE_MARK not in str(val):
             datacard_rows.append(f'<tr><td style="padding:6px 10px;border:1px solid #eee;font-weight:700;width:80px;">{label}</td><td style="padding:6px 10px;border:1px solid #eee;">{_escape_html(val)}</td></tr>')
     
@@ -5544,17 +5652,24 @@ def wechat_html_article(art: dict, include_ai_disclaimer: bool = False) -> str:
                  f'{" · " + _escape_html(read_note) if read_note else ""}</p>')
     
     # Section: Background
-    if art.get("background"):
+    background = strip_leading_field_heading(str(art.get("background") or ""), "background")
+    if background:
         parts.append('<h4 style="font-size:15px;margin:1.2em 0 0.3em;color:#333;">研究背景</h4>')
-        parts.append(f'<p style="margin:0.5em 0;">{_escape_html(art["background"])}</p>')
+        parts.append(f'<p style="margin:0.5em 0;">{_escape_html(background)}</p>')
     
     # Section: Design
-    if art.get("design"):
+    design = strip_leading_field_heading(str(art.get("design") or ""), "design")
+    if design:
         parts.append('<h4 style="font-size:15px;margin:1.2em 0 0.3em;color:#333;">研究设计</h4>')
-        parts.append(f'<p style="margin:0.5em 0;">{_escape_html(art["design"])}</p>')
+        parts.append(f'<p style="margin:0.5em 0;">{_escape_html(design)}</p>')
     
     # Section: Results
-    results = art.get("results", [])
+    results = [
+        strip_leading_field_heading(str(para), "results")
+        for para in (art.get("results") or [])
+        if para
+    ]
+    results = [p for p in results if p]
     if results:
         parts.append('<h4 style="font-size:15px;margin:1.2em 0 0.3em;color:#333;">核心结果</h4>')
         for para in results:
@@ -5563,12 +5678,18 @@ def wechat_html_article(art: dict, include_ai_disclaimer: bool = False) -> str:
             parts.append(f'<div style="margin:0.8em 0;overflow-x:auto;">{art["data_chart_svg"]}</div>')
     
     # Section: Mechanism (deep only)
-    if tier == "deep" and art.get("mechanism"):
+    mechanism = strip_leading_field_heading(str(art.get("mechanism") or ""), "mechanism")
+    if tier == "deep" and mechanism:
         parts.append('<h4 style="font-size:15px;margin:1.2em 0 0.3em;color:#333;">机制解读</h4>')
-        parts.append(f'<p style="margin:0.5em 0;">{_escape_html(art["mechanism"])}</p>')
+        parts.append(f'<p style="margin:0.5em 0;">{_escape_html(mechanism)}</p>')
     
     # Section: Limitations
-    limitations = art.get("limitations", [])
+    limitations = [
+        strip_leading_field_heading(str(lim), "limitations")
+        for lim in (art.get("limitations") or [])
+        if lim
+    ]
+    limitations = [lim for lim in limitations if lim]
     if limitations:
         parts.append('<h4 style="font-size:15px;margin:1.2em 0 0.3em;color:#333;">局限与不确定</h4>')
         parts.append('<div style="background:#f5f5f5;padding:10px 14px;border-radius:8px;margin:0.5em 0;">')
@@ -5579,9 +5700,10 @@ def wechat_html_article(art: dict, include_ai_disclaimer: bool = False) -> str:
         parts.append('</div>')
     
     # Section: Significance
-    if art.get("significance"):
+    significance = strip_leading_field_heading(str(art.get("significance") or ""), "significance")
+    if significance:
         parts.append('<h4 style="font-size:15px;margin:1.2em 0 0.3em;color:#333;">临床/产业意义</h4>')
-        parts.append(f'<p style="margin:0.5em 0;">{_escape_html(art["significance"])}</p>')
+        parts.append(f'<p style="margin:0.5em 0;">{_escape_html(significance)}</p>')
     
     # Author and journal - skip if "原文未给出" 
     authors = str(art.get("authors", "") or "")
