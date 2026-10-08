@@ -1,0 +1,131 @@
+{
+ "recorded": "2026-10-08, ~03:47-03:49 ET (Hetzner, PR #7 head ac66a9c), run2",
+ "how": "real Anthropic API responses to production sec_deals.extract_deals_from_filings on the 4 live EDGAR filings; recorded fields: model, stop_reason, usage, content blocks (type + tool input). Tool-use ids were not recorded and are synthesized; thinking-block contents/signatures were not recorded and are replayed empty (production ignores non-tool_use blocks). No keys or headers.",
+ "responses": {
+  "REGN": {
+   "model": "claude-sonnet-5-5",
+   "stop_reason": "tool_use",
+   "usage": {
+    "input_tokens": 14547,
+    "output_tokens": 478
+   },
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "toolu_replay_pr7d_ac66a9c_run2_REGN_0",
+     "name": "extract_deal",
+     "input": {
+      "deal_type": "license_collaboration",
+      "counterparty_name": "Sanofi",
+      "counterparty_quote": "Sanofi Biotechnology SAS, a société par actions simplifée organized under the laws of France (“ Sanofi\nBiotechnology ”), and Sanofi, a société anonyme organized under the laws of France (“ Sanofi Parent ”\nand, with Sanofi Biotechnology, “ Sanofi ”), entered into the Sixth Amendment to the Amended and Restated License and\nCollaboration Agreement",
+      "type_quote": "Pursuant to the Sixth Amendment, the parties have agreed to co-develop\nand co-commercialize four new long-acting, Regeneron-invented antibodies",
+      "amounts": [
+       {
+        "kind": "upfront",
+        "quote": "Sanofi will make an upfront payment to Regeneron of $1.0 billion."
+       },
+       {
+        "kind": "milestones_total",
+        "quote": "Regeneron will be entitled to receive up to an additional $7.0 billion of payments in the aggregate upon the achievement of certain development,\nregulatory, and commercial milestones"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  "ALEC": {
+   "model": "claude-sonnet-5-5",
+   "stop_reason": "tool_use",
+   "usage": {
+    "input_tokens": 7205,
+    "output_tokens": 641
+   },
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "toolu_replay_pr7d_ac66a9c_run2_ALEC_0",
+     "name": "extract_deal",
+     "input": {
+      "deal_type": "license_collaboration",
+      "counterparty_name": "Genentech, Inc.",
+      "counterparty_quote": "On September 30, 2026, Alector, Inc. and Alector LLC (collectively, “Alector” or the “Company”) entered into a License Agreement (the “Genentech License Agreement”) with Genentech, Inc. (“Genentech”), pursuant to which Alector is granting Genentech exclusive worldwide rights to develop and commercialize Alector’s AL050 program, which is a brain penetrant engineered glucocerebrosidase (“GCase”) enzyme replacement therapy (the “GCase Candidates”).",
+      "type_quote": "On September 30, 2026, Alector, Inc. and Alector LLC (collectively, “Alector” or the “Company”) entered into a License Agreement (the “Genentech License Agreement”) with Genentech, Inc. (“Genentech”), pursuant to which Alector is granting Genentech exclusive worldwide rights to develop and commercialize Alector’s AL050 program, which is a brain penetrant engineered glucocerebrosidase (“GCase”) enzyme replacement therapy (the “GCase Candidates”).",
+      "amounts": [
+       {
+        "kind": "upfront",
+        "quote": "Alector will receive a $100 million upfront payment from Genentech under the Genentech License Agreement."
+       },
+       {
+        "kind": "milestones_total",
+        "quote": "In addition, Alector will be eligible to receive up to an additional $1.17 billion in development, regulatory, and commercial success-related milestone payments related to the GCase Candidates."
+       }
+      ]
+     }
+    }
+   ]
+  },
+  "IMNM": {
+   "model": "claude-sonnet-5-5",
+   "stop_reason": "tool_use",
+   "usage": {
+    "input_tokens": 4897,
+    "output_tokens": 783
+   },
+   "content": [
+    {
+     "type": "thinking",
+     "thinking": "",
+     "signature": ""
+    },
+    {
+     "type": "tool_use",
+     "id": "toolu_replay_pr7d_ac66a9c_run2_IMNM_1",
+     "name": "extract_deal",
+     "input": {
+      "deal_type": "obligation_buyout",
+      "counterparty_name": "Bristol-Myers Squibb Company",
+      "counterparty_quote": "On October 2, 2026, Immunome, Inc. (the “Company”) entered into Amendment No. 4 to License Agreement (the “Amendment”) with Bristol-Myers Squibb Company (“BMS”) to further amend the License Agreement",
+      "type_quote": "On October 2, 2026, Immunome, Inc. (the “Company”) entered into Amendment No. 4 to License Agreement (the “Amendment”) with Bristol-Myers Squibb Company (“BMS”) to further amend the License Agreement",
+      "amounts": [
+       {
+        "kind": "purchase_price",
+        "quote": "the Company paid BMS $20.0 million in cash and issued 4,425,487 shares of the Company’s common stock"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  "RCKT": {
+   "model": "claude-sonnet-5-5",
+   "stop_reason": "tool_use",
+   "usage": {
+    "input_tokens": 11166,
+    "output_tokens": 409
+   },
+   "content": [
+    {
+     "type": "tool_use",
+     "id": "toolu_replay_pr7d_ac66a9c_run2_RCKT_0",
+     "name": "extract_deal",
+     "input": {
+      "deal_type": "debt_facility",
+      "counterparty_name": "Hercules Capital, Inc.",
+      "counterparty_quote": "Hercules Capital, Inc., a Maryland corporation (“Hercules”), in its capacity as administrative agent and collateral agent for itself and the Lenders (in such capacities, the “Agent”), providing for up to five tranches of senior secured term loans",
+      "type_quote": "entered into a Loan and Security Agreement (the “Loan Agreement”) with the several banks and other financial institutions or entities from time to time party thereto (collectively, the “Lenders”) and",
+      "amounts": [
+       {
+        "kind": "facility_size",
+        "quote": "in an aggregate principal amount of up to $150.0 million (the “Term Loans”)"
+       },
+       {
+        "kind": "drawn",
+        "quote": "a Tranche 1-A advance of $35.0 million, which was funded in full on September 30, 2026"
+       }
+      ]
+     }
+    }
+   ]
+  }
+ }
+}
