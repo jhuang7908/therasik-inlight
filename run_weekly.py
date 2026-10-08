@@ -508,7 +508,7 @@ def fetch_all(config: dict) -> list[dict]:
     return rows
 
 
-def claude_draft(items: list[dict], config: dict) -> dict:
+def claude_draft(items: list[dict], config: dict, no_deals: bool = False) -> dict:
     """Use Claude with tool_use for reliable JSON output."""
     from anthropic import Anthropic
 
@@ -565,17 +565,25 @@ def claude_draft(items: list[dict], config: dict) -> dict:
                     },
                 },
             },
-            "required": ["articles", "deals"],
+            "required": ["articles"] if no_deals else ["articles", "deals"],
         },
     }
+
+    deals_instruction = ""
+    if no_deals:
+        deals_instruction = """
+
+## 重要：本期不收录行业动态
+
+本期只收录学术文章，不收录任何行业动态。deals 数组必须为空 []。"""
 
     prompt = f"""你是前沿追踪的编辑。下面是过去 {config.get('window_days', 7)} 天从固定来源抓到的条目，每条只有标题、链接、日期和来源摘要。
 
 ## 规则
 
 只许使用这些条目里已经写明的事实。没有的数字、作者、适应症、金额不要编。一条材料不够写成解读，就不要选它。
-学术最多 {config.get('max_academic', 6)} 篇，行业最多 {config.get('max_industry', 4)} 条。
-每篇的 url 必须从输入里原样复制，不能修改。
+学术最多 {config.get('max_academic', 6)} 篇，行业最多 {config.get('max_industry', 4) if not no_deals else 0} 条。
+每篇的 url 必须从输入里原样复制，不能修改。{deals_instruction}
 
 ## 领域分类规则
 
@@ -813,7 +821,7 @@ def site_deal(item: dict) -> dict:
     }
 
 
-def wechat_html(articles: list[dict], deals: list[dict], week: str) -> str:
+def wechat_html(articles: list[dict], deals: list[dict], week: str, no_deals: bool = False) -> str:
     """Generate WeChat-compatible HTML with inline styles."""
     
     # Build table of contents
@@ -855,7 +863,7 @@ def wechat_html(articles: list[dict], deals: list[dict], week: str) -> str:
                 doi = url.replace("https://doi.org/", "DOI: ")
                 parts.append(f'<p style="font-size:12px;color:#999;margin:0.5em 0;">{doi}</p>')
     
-    if deals:
+    if deals and not no_deals:
         parts.append('<h2 style="border-left:4px solid #0f6b5c;padding-left:12px;margin:2em 0 1em;">行业</h2>')
         for deal in deals:
             parts.append(f'<h3 style="font-size:18px;margin:1.5em 0 0.5em;color:#1d2a27;">{deal["t"]}</h3>')
@@ -880,7 +888,7 @@ def wechat_html(articles: list[dict], deals: list[dict], week: str) -> str:
     return "\n".join(parts)
 
 
-def write_output(draft: dict, dest: Path, week: str) -> None:
+def write_output(draft: dict, dest: Path, week: str, no_deals: bool = False) -> None:
     img_dir = dest / "images"
     img_dir.mkdir(parents=True, exist_ok=True)
     articles = []
@@ -919,12 +927,12 @@ def write_output(draft: dict, dest: Path, week: str) -> None:
         logging.exception("封面图失败")
     (dest / "articles.json").write_text(json.dumps(articles, ensure_ascii=False, indent=2), encoding="utf-8")
     (dest / "deals.json").write_text(json.dumps(deals, ensure_ascii=False, indent=2), encoding="utf-8")
-    html = wechat_html(articles, deals, week)
+    html = wechat_html(articles, deals, week, no_deals=no_deals)
     (dest / "wechat" / "article.html").write_text(html, encoding="utf-8")
     logging.info("写出 %s", dest)
 
 
-def update_latest(dest: Path) -> None:
+def update_latest(dest: Path, no_deals: bool = False) -> None:
     articles = json.loads((dest / "articles.json").read_text(encoding="utf-8"))
     deals = json.loads((dest / "deals.json").read_text(encoding="utf-8"))
     latest_path = ROOT / "content" / "latest.json"
@@ -935,9 +943,15 @@ def update_latest(dest: Path) -> None:
         except json.JSONDecodeError:
             logging.warning("content/latest.json 无法解析，将覆盖")
     seen_a = {a.get("id") for a in articles}
-    seen_d = {d.get("url") for d in deals}
     merged_a = articles + [a for a in previous.get("articles") or [] if a.get("id") not in seen_a]
-    merged_d = deals + [d for d in previous.get("deals") or [] if d.get("url") not in seen_d]
+    
+    if no_deals:
+        merged_d = previous.get("deals") or []
+        logging.info("--no-deals 已启用：保留现有 %d 条行业动态", len(merged_d))
+    else:
+        seen_d = {d.get("url") for d in deals}
+        merged_d = deals + [d for d in previous.get("deals") or [] if d.get("url") not in seen_d]
+    
     payload = {
         "generated": dest.name,
         "articles": merged_a[:40],
@@ -951,7 +965,10 @@ def update_latest(dest: Path) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description="生成一周的前沿追踪内容")
     parser.add_argument("--dry-run", action="store_true", help="只写到 preview/，不改网站内容目录")
+    parser.add_argument("--no-deals", action="store_true", help="不收集行业动态，只输出学术文章")
     args = parser.parse_args()
+    
+    no_deals = args.no_deals or os.environ.get("INLIGHT_NO_DEALS") == "1"
     log_path = setup_log()
     logging.info("日志 %s", log_path)
     try:
@@ -963,20 +980,30 @@ def main() -> None:
             logging.error("最近 %s 天没有抓到条目，不写文件", config.get("window_days", 7))
             raise SystemExit(2)
         logging.info("送去筛选的条目 %d", len(items))
-        draft = claude_draft(items, config)
-        if not draft["articles"] and not draft["deals"]:
-            logging.error("模型没有留下任何来源内的条目")
-            raise SystemExit(3)
+        draft = claude_draft(items, config, no_deals=no_deals)
+        
+        if no_deals:
+            draft["deals"] = []
+            logging.info("--no-deals 已启用：强制清空行业动态")
+        
+        if no_deals:
+            if not draft["articles"]:
+                logging.error("模型没有留下任何来源内的文章")
+                raise SystemExit(3)
+        else:
+            if not draft["articles"] and not draft["deals"]:
+                logging.error("模型没有留下任何来源内的条目")
+                raise SystemExit(3)
         week = date.today().isoformat()
         dest = (ROOT / "preview" / "weekly" / week) if args.dry_run else (ROOT / "content" / "weekly" / week)
         if dest.exists():
             logging.error("目录已存在，避免覆盖：%s", dest)
             raise SystemExit(4)
-        write_output(draft, dest, week)
+        write_output(draft, dest, week, no_deals=no_deals)
         if args.dry_run:
             logging.info("dry-run 完成，没有改 content/，也没有调用公众号")
         else:
-            update_latest(dest)
+            update_latest(dest, no_deals=no_deals)
             logging.info("网站内容已写入。提交并推送 main 后，GitHub Pages 会更新。公众号请另跑 publish_wechat.py")
     except SystemExit:
         raise
