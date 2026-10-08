@@ -374,6 +374,7 @@ def verify_counterparty_in_quotes(
         return True
     
     # If not direct match, check for defined terms that could refer to counterparty
+    # Task 2: STRICT - must be via definition sentence itself, NOT paragraph co-occurrence
     if type_quote and filing_text:
         # Common defined terms in SEC filings
         defined_term_patterns = [
@@ -392,35 +393,30 @@ def verify_counterparty_in_quotes(
         
         for pattern in defined_term_patterns:
             if re.search(pattern, type_quote_lower):
-                # Check if counterparty is defined in the filing
-                # Look for patterns like: 'Sanofi ("Sanofi")' or 'Sanofi (the "Licensor")'
-                # or counterparty appearing near the defined term
+                # STRICT: Only accept via DEFINITION SENTENCE patterns
+                # Must have explicit definition: 'Sanofi ("Sanofi")' or 'Hercules Capital, Inc. (the "Lender")'
+                # DO NOT accept paragraph co-occurrence
                 counterparty_normalized = normalize_company_name(counterparty).lower()
                 filing_lower = filing_text.lower()
                 
-                # Check for definition patterns
+                # Definition sentence patterns ONLY
+                # Pattern: 'Company Name ("Defined Term")' or 'Company Name (the "Defined Term")'
                 def_patterns = [
-                    rf'{re.escape(counterparty_normalized)}.*?\(["\']?(?:the\s+)?{pattern[2:-2]}["\']?\)',
-                    rf'\(["\']?(?:the\s+)?{pattern[2:-2]}["\']?\).*?{re.escape(counterparty_normalized)}',
-                    rf'{re.escape(counterparty_normalized)}.*?(?:herein|hereinafter).*?{pattern[2:-2]}',
+                    # Company ("Company") or Company (the "Lender") - defined term in parens right after company
+                    rf'{re.escape(counterparty_normalized)}\s*\(\s*["\u201c]?(?:the\s+)?(?:{pattern[2:-2]}|{re.escape(counterparty_normalized)})["\u201d]?\s*\)',
+                    # With additional text between: Company, a corporation ("Company")
+                    rf'{re.escape(counterparty_normalized)}[^()]*\(\s*["\u201c]?(?:the\s+)?(?:{pattern[2:-2]}|{re.escape(counterparty_normalized)})["\u201d]?\s*\)',
+                    # Herein/hereinafter patterns
+                    rf'{re.escape(counterparty_normalized)}\s*(?:,\s*)?(?:herein|hereinafter)\s+(?:referred\s+to\s+as\s+)?["\u201c]?(?:the\s+)?{pattern[2:-2]}["\u201d]?',
                 ]
                 
                 for def_pattern in def_patterns:
-                    if re.search(def_pattern, filing_lower, re.IGNORECASE | re.DOTALL):
-                        logging.debug("Counterparty '%s' verified via defined term resolution", counterparty)
+                    if re.search(def_pattern, filing_lower, re.IGNORECASE):
+                        logging.debug("Counterparty '%s' verified via definition sentence", counterparty)
                         return True
                 
-                # Also accept if counterparty appears in the same paragraph as the defined term
-                # in the filing (indicating the term refers to them)
-                if match_company_whole_word(counterparty, filing_text):
-                    # Check if counterparty and defined term appear in same paragraph
-                    paragraphs = split_into_paragraphs(filing_text)
-                    for _, _, para_text in paragraphs:
-                        para_lower = para_text.lower()
-                        if (match_company_whole_word(counterparty, para_text) and 
-                            re.search(pattern, para_lower)):
-                            logging.debug("Counterparty '%s' verified via paragraph proximity", counterparty)
-                            return True
+                # DO NOT fall back to paragraph proximity - that was the bug
+                # Paragraph co-occurrence is NOT sufficient for defined term resolution
     
     # No type_quote means we can't verify
     if not type_quote:
@@ -606,6 +602,91 @@ def _get_payment_direction(role: str) -> str | None:
     if role in ('payer', 'licensee', 'borrower', 'acquirer', 'target'):
         return 'payer' if role == 'payer' else ('receiver' if role in ('licensor', 'lender', 'target') else None)
     return None
+
+
+def validate_investment_direction(
+    type_quote: str, 
+    filer: str, 
+    counterparty: str,
+    filer_role: str
+) -> tuple[bool, str | None]:
+    """Validate investment direction for equity_financing deals (X1v2 rule).
+    
+    X获Y投资 ONLY emitted when quote grammar explicitly shows Y investing in X:
+    - "[Y] (purchased|acquired|subscribed for) ... shares/stock of [X]"
+    - "[X] (sold|issued) ... to [Y]"
+    
+    If filer would be the investor → drop.
+    Any other phrasing → drop.
+    
+    Returns:
+        (True, None) if valid "X获Y投资" direction
+        (False, reason) if should be dropped
+    """
+    if not type_quote or not filer or not counterparty:
+        return False, "missing type_quote, filer, or counterparty"
+    
+    text_lower = type_quote.lower()
+    filer_lower = normalize_company_name(filer).lower()
+    counterparty_lower = normalize_company_name(counterparty).lower()
+    
+    # Pattern 1: "[Y] (purchased|acquired|subscribed for) ... shares/stock of [X]"
+    # Y is investor (counterparty), X is investee (filer)
+    pattern1 = re.compile(
+        r'([\w\s&,\.]+?)\s+(?:purchased?|acquired?|subscribed?\s+for)\s+.*?(?:shares?|stock|equity)\s+(?:of|from|in)\s+([\w\s&,\.]+)',
+        re.IGNORECASE
+    )
+    match1 = pattern1.search(type_quote)
+    if match1:
+        investor_raw = match1.group(1).strip().lower()
+        investee_raw = match1.group(2).strip().lower()
+        
+        investor_is_counterparty = (
+            counterparty_lower in investor_raw or 
+            investor_raw in counterparty_lower or
+            'the company' not in investor_raw
+        )
+        investee_is_filer = (
+            'the company' in investee_raw or
+            filer_lower in investee_raw or
+            investee_raw in filer_lower
+        )
+        
+        if investor_is_counterparty and investee_is_filer:
+            return True, None
+        if 'the company' in investor_raw:
+            return False, "filer is investor, not investee"
+    
+    # Pattern 2: "[X] (sold|issued) ... to [Y]"
+    # X is investee (filer), Y is investor (counterparty)
+    pattern2 = re.compile(
+        r'(the\s+company|[\w\s&,\.]+?)\s+(?:sold|issued)\s+.*?(?:shares?|stock|equity).*?\bto\s+([\w\s&,\.]+)',
+        re.IGNORECASE
+    )
+    match2 = pattern2.search(type_quote)
+    if match2:
+        issuer_raw = match2.group(1).strip().lower()
+        buyer_raw = match2.group(2).strip().lower()
+        
+        issuer_is_filer = (
+            'the company' in issuer_raw or
+            filer_lower in issuer_raw or
+            issuer_raw in filer_lower
+        )
+        buyer_is_counterparty = (
+            counterparty_lower in buyer_raw or
+            buyer_raw in counterparty_lower
+        )
+        
+        if issuer_is_filer and buyer_is_counterparty:
+            return True, None
+    
+    # If we get here, no valid pattern matched
+    # Check if filer appears to be investor (should drop)
+    if filer_role == 'investor':
+        return False, "filer is investor, cannot emit X获Y投资"
+    
+    return False, "investment direction not clearly established by grammar"
 
 
 # =============================================================================
@@ -1088,6 +1169,61 @@ EQUITY_FINANCING_REJECT_PATTERNS = [
     r'\bamendment\s+consideration\b',
 ]
 
+# LICENSE GRANT patterns - explicit license/licence grant language
+LICENSE_GRANT_PATTERNS = [
+    r'\bgrants?\s+.*\b(?:an?\s+)?(?:exclusive\s+)?licen[sc]e\b',
+    r'\bexclusive\s+(?:worldwide\s+)?licen[sc]e\b',
+    r'\blicen[sc]e\s+agreement\b',
+    r'\blicen[sc]e\s+to\s+develop\b',
+    r'\bgranting\s+.*\blicen[sc]e\b',
+    r'\blicen[sc]ed?\s+(?:rights?|technology|ip|patents?)\b',
+]
+
+# BUYOUT/TERMINATION patterns - obligation termination language
+BUYOUT_TERMINATION_PATTERNS = [
+    r'\bin\s+full\s+satisfaction\b',
+    r'\bterminat(?:e|ed?|ion|ing)\s+.*\b(?:royalt|milestone|payment|obligation)s?\b',
+    r'\bbuy[\s-]?out\b',
+    r'\brelease\s+of\s+.*\bobligations?\b',
+    r'\bextinguish\b.*\bobligations?\b',
+    r'\bhas\s+no\s+(?:further\s+)?(?:milestone|royalt|payment|obligation)s?\b',
+    r'\bno\s+(?:further\s+)?(?:milestone|royalt|payment)\s+obligations?\b',
+    r'\bremoves?\s+.*\b(?:royalt|milestone|payment|obligation)s?\b',
+]
+
+
+def disambiguate_license_vs_buyout(type_quote: str) -> tuple[DealType | None, str | None]:
+    """Disambiguate between license and buyout based on explicit language.
+    
+    Returns:
+        (DealType, None) if clear determination
+        (None, reason) if ambiguous and should be dropped
+    
+    Rules:
+    - License ONLY if has license grant language AND no buyout language
+    - Buyout if has buyout language (regardless of other language)
+    - If both or neither → drop with reason
+    """
+    if not type_quote:
+        return None, "empty type_quote"
+    
+    text_lower = type_quote.lower()
+    
+    has_license_grant = any(re.search(p, text_lower) for p in LICENSE_GRANT_PATTERNS)
+    has_buyout = any(re.search(p, text_lower) for p in BUYOUT_TERMINATION_PATTERNS)
+    
+    if has_buyout and not has_license_grant:
+        return DealType.OBLIGATION_BUYOUT, None
+    
+    if has_license_grant and not has_buyout:
+        return DealType.LICENSE_COLLABORATION, None
+    
+    if has_buyout and has_license_grant:
+        return None, "ambiguous: both license grant and buyout language present"
+    
+    # Neither - could still be a valid deal of another type
+    return None, None  # Return None,None to allow other type detection
+
 
 def is_non_deal_agreement(type_quote: str) -> bool:
     """Check if the type_quote describes a non-deal agreement (services, lease, etc.)."""
@@ -1115,7 +1251,7 @@ def validate_deal_type_from_quote(
     
     Rules:
     - Acquisition requires explicit acquire/merger/purchase language with acquirer as subject
-    - License/collaboration is the default for "Agreement" without more specific language
+    - License vs buyout: disambiguate using explicit patterns (A6a/A6d rule)
     - Equity financing allowed only for investment-specific language
     - Debt facility requires credit/loan language
     - Obligation buyout requires explicit buyout/termination of obligations
@@ -1124,6 +1260,20 @@ def validate_deal_type_from_quote(
         return None
     
     text_lower = type_quote.lower()
+    
+    # A6a/A6d: License vs buyout disambiguation - strict rule
+    # If claim is license or buyout, use disambiguation
+    if claimed_type in (DealType.LICENSE_COLLABORATION, DealType.OBLIGATION_BUYOUT):
+        resolved_type, drop_reason = disambiguate_license_vs_buyout(type_quote)
+        if drop_reason and "ambiguous" in drop_reason:
+            logging.info("Deal dropped: %s", drop_reason)
+            return None
+        if resolved_type is not None:
+            if resolved_type != claimed_type:
+                logging.info("Deal type corrected from %s to %s via disambiguation", 
+                            claimed_type.value, resolved_type.value)
+            return resolved_type
+        # Neither license nor buyout detected - fall through to other validation
     
     # Check for validators if the claimed type has specific requirements
     if claimed_type in DEAL_TYPE_VALIDATORS:
@@ -1161,14 +1311,21 @@ def infer_deal_type_from_quote(type_quote: str) -> DealType | None:
     
     text_lower = type_quote.lower()
     
+    # A6a/A6d: First try license vs buyout disambiguation
+    resolved_type, drop_reason = disambiguate_license_vs_buyout(type_quote)
+    if drop_reason and "ambiguous" in drop_reason:
+        logging.info("Deal dropped in infer: %s", drop_reason)
+        return None
+    if resolved_type is not None:
+        return resolved_type
+    
     # Check each type's validators in order of specificity
     for deal_type, patterns in DEAL_TYPE_VALIDATORS.items():
         if any(re.search(p, text_lower) for p in patterns):
+            # Skip license/buyout - already handled by disambiguation
+            if deal_type in (DealType.LICENSE_COLLABORATION, DealType.OBLIGATION_BUYOUT):
+                continue
             return deal_type
-    
-    # License/collaboration is the catch-all for agreements
-    if re.search(r'\b(?:licen[sc]e|collaboration|partnership|co-?develop|exclusive\s+rights?)\b', text_lower):
-        return DealType.LICENSE_COLLABORATION
     
     # Equity financing
     if re.search(r'\b(?:financ|invest|series\s+[a-z]|equity\s+(?:investment|financing))\b', text_lower):
@@ -1452,6 +1609,14 @@ def process_sec_deal(
         return None
     
     filer_role = role_info['filer_role']
+    
+    # Verification 5b: X1v2 - For equity_financing, validate investment direction strictly
+    # Only emit "X获Y投资" when grammar explicitly shows Y investing in X
+    if deal_type == DealType.EQUITY_FINANCING:
+        is_valid, drop_reason = validate_investment_direction(type_quote, filer_name, counterparty, filer_role)
+        if not is_valid:
+            logging.info("Deal dropped: investment direction validation failed: %s", drop_reason)
+            return None
     
     # Verification 6: nonprofit/government check
     if detect_nonprofit_or_government(filing_text):

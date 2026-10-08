@@ -1068,7 +1068,7 @@ def _fetch_sec_filing_text(cik: str, accession: str, sec_ua: str, primary_doc_na
     
     Fix B6: Keep full primary doc cover page for event date extraction.
     The cover page (first ~3000 chars) contains the event date.
-    Then extract windows around deal keywords for amounts.
+    Task 3: Select relevant Items/exhibits BEFORE the 30k cap.
     """
     import time
     import requests
@@ -1082,6 +1082,56 @@ def _fetch_sec_filing_text(cik: str, accession: str, sec_ua: str, primary_doc_na
     
     cover_page_text = ""  # Fix B6: Keep cover page for event date extraction
     text_parts = []
+    
+    # Task 3: Select relevant Item sections BEFORE any character cap
+    def select_relevant_sections(full_text: str) -> str:
+        """Select only deal-relevant Item sections from the filing.
+        
+        8-K Item sections that may contain deals:
+        - Item 1.01: Entry into a Material Definitive Agreement
+        - Item 2.01: Completion of Acquisition or Disposition
+        - Item 3.02: Unregistered Sales of Equity Securities
+        
+        This is done BEFORE the 30k cap to ensure we get complete Item sections.
+        """
+        # Split into Item sections
+        item_pattern = re.compile(r'(Item\s+\d+\.\d+[^\n]*)', re.IGNORECASE)
+        sections = item_pattern.split(full_text)
+        
+        if len(sections) <= 1:
+            # No Item sections found - return as-is
+            return full_text
+        
+        # Relevant Item numbers for deals
+        relevant_items = {'1.01', '2.01', '3.02', '8.01', '9.01'}
+        
+        selected_parts = []
+        i = 0
+        while i < len(sections):
+            section = sections[i]
+            
+            # Check if this is an Item header
+            item_match = re.search(r'Item\s+(\d+\.\d+)', section, re.IGNORECASE)
+            if item_match:
+                item_num = item_match.group(1)
+                # Get the section content (next element if available)
+                section_header = section
+                section_content = sections[i + 1] if i + 1 < len(sections) else ""
+                
+                if item_num in relevant_items:
+                    selected_parts.append(section_header + section_content)
+                    i += 2
+                else:
+                    i += 2
+            else:
+                # Not an Item section - include if it's before Item 1 (cover page)
+                if not selected_parts and not any('item' in s.lower() for s in sections[:i]):
+                    selected_parts.append(section)
+                i += 1
+        
+        if selected_parts:
+            return '\n\n'.join(selected_parts)
+        return full_text
     
     # Helper to extract deal-relevant windows from text
     def extract_deal_windows(full_text: str, window_size: int = 2000) -> str:
@@ -1167,7 +1217,9 @@ def _fetch_sec_filing_text(cik: str, accession: str, sec_ua: str, primary_doc_na
                     if len(text) > 100:
                         # Fix B6: Keep cover page (first 3000 chars) for event date extraction
                         cover_page_text = text[:3000]
-                        text_parts.append(extract_deal_windows(text))
+                        # Task 3: Select relevant sections BEFORE applying window extraction
+                        selected_text = select_relevant_sections(text)
+                        text_parts.append(extract_deal_windows(selected_text))
             
             # Fix #5(d): ALSO fetch EX-99.1 press release (not "instead of")
             ex_matches = re.finditer(
@@ -1193,6 +1245,7 @@ def _fetch_sec_filing_text(cik: str, accession: str, sec_ua: str, primary_doc_na
                 if ex_resp.status_code == 200:
                     text = _strip_html(ex_resp.text)
                     if len(text) > 100:
+                        # EX-99 press releases don't have Item sections, use window extraction directly
                         text_parts.append(extract_deal_windows(text))
                         break  # Just get the first EX-99
     except Exception as e:
@@ -1207,7 +1260,8 @@ def _fetch_sec_filing_text(cik: str, accession: str, sec_ua: str, primary_doc_na
             if doc_resp.status_code == 200:
                 text = _strip_html(doc_resp.text)
                 if len(text) > 100:
-                    text_parts.append(extract_deal_windows(text))
+                    selected_text = select_relevant_sections(text)
+                    text_parts.append(extract_deal_windows(selected_text))
         except Exception as e:
             logging.debug("SEC primary doc fetch failed: %s", e)
     
@@ -1221,7 +1275,8 @@ def _fetch_sec_filing_text(cik: str, accession: str, sec_ua: str, primary_doc_na
                 if resp.status_code == 200:
                     text = _strip_html(resp.text)
                     if len(text) > 100:
-                        text_parts.append(extract_deal_windows(text))
+                        selected_text = select_relevant_sections(text)
+                        text_parts.append(extract_deal_windows(selected_text))
                         break
             except Exception as e:
                 logging.debug("SEC fallback fetch failed: %s", e)
