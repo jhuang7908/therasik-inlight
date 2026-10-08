@@ -153,10 +153,31 @@ def main() -> None:
         html = (week / "wechat" / "article.html").read_text(encoding="utf-8")
         html = rewrite_images(html, week, access)
         articles = json.loads((week / "articles.json").read_text(encoding="utf-8"))
-        title = f"前沿追踪 {week.name}"
+        deals = json.loads((week / "deals.json").read_text(encoding="utf-8")) if (week / "deals.json").exists() else []
+        
+        # Count issues (basic numbering based on existing weekly dirs)
+        weekly_root = ROOT / "content" / "weekly"
+        issue_num = len([p for p in weekly_root.glob("*") if p.is_dir()]) if weekly_root.exists() else 1
+        
+        # Use lead article headline for title
+        lead_headline = ""
+        if articles:
+            lead_headline = articles[0].get("t", "")[:25]
+        
+        title = f"前沿追踪｜第{issue_num}期：{lead_headline}" if lead_headline else f"前沿追踪｜第{issue_num}期"
+        
         digest = ""
         if articles:
-            digest = (articles[0].get("lead") or articles[0].get("t") or "")[:120]
+            digest = (articles[0].get("lead") or articles[0].get("t") or "")[:116] + "…"
+        
+        # 阅读原文 points at this issue's lead article. HTTPS cert is not ready.
+        lead_id = articles[0].get("id") if articles else ""
+        content_url = (
+            f"https://inlight.therasik.com/#p-{lead_id}"
+            if lead_id
+            else "https://inlight.therasik.com/#archive"
+        )
+        
         draft = api_json(
             f"{API}/cgi-bin/draft/add?access_token={access}",
             {"articles": [{
@@ -165,7 +186,8 @@ def main() -> None:
                 "digest": digest,
                 "content": html,
                 "thumb_media_id": media_id,
-                "need_open_comment": 0,
+                "content_source_url": content_url,
+                "need_open_comment": 1,
                 "only_fans_can_comment": 0,
             }]},
         )

@@ -1,7 +1,8 @@
 # 每周抓取的固定来源。改名单只改这个文件，不要改 Python。
 # kind: academic 学术 / industry 行业
-# type: rss 或 pubmed
+# type: rss 或 pubmed 或 manual (manual 不自动抓)
 # feed 或 query 必填。url 是给人看的站点首页。
+# needs_browser_ua: true 表示需要用浏览器 User-Agent 抓取
 
 window_days: 7
 max_per_source: 6
@@ -9,11 +10,12 @@ max_academic: 6
 max_industry: 4
 
 sources:
+  # ACIR 没有 RSS，需要人工录入或专门爬虫
   - name: ACIR 周报
     kind: academic
-    type: rss
-    url: https://acir.org
-    feed: https://acir.org/rss
+    type: manual
+    url: https://acir.org/weekly-digests
+    note: "ACIR has no RSS feed. Check weekly-digests page manually or scrape."
 
   - name: Nature
     kind: academic
@@ -50,6 +52,7 @@ sources:
     type: rss
     url: https://www.biorxiv.org/collection/immunology
     feed: https://connect.biorxiv.org/biorxiv_xml.php?subject=immunology
+    needs_browser_ua: true
 
   - name: PubMed
     kind: academic
@@ -62,12 +65,14 @@ sources:
     type: rss
     url: https://endpts.com
     feed: https://endpts.com/feed/
+    needs_browser_ua: true
 
   - name: Fierce Biotech
     kind: industry
     type: rss
-    url: https://www.fiercebiotech.com
-    feed: https://www.fiercebiotech.com/rss/xml
+    url: https://news.google.com
+    feed: https://news.google.com/rss/search?q=site:fiercebiotech.com+when:7d&hl=en-US&gl=US&ceid=US:en
+    note: "Fierce Biotech blocks server IPs. Using Google News RSS as proxy."
 
   - name: BioPharma Dive
     kind: industry
@@ -84,17 +89,12 @@ sources:
   - name: FDA 公告
     kind: industry
     type: rss
-    url: https://www.fda.gov/news-events/fda-newsroom/press-announcements
-    feed: https://www.fda.gov/about-fda/contact-fda/stay-informed/rss-feeds/press-releases/rss.xml
+    url: https://www.federalregister.gov
+    feed: https://www.federalregister.gov/api/v1/documents.rss?conditions%5Bagencies%5D%5B%5D=food-and-drug-administration
+    note: "FDA direct feeds blocked. Using Federal Register API."
 
   - name: EMA
     kind: industry
     type: rss
     url: https://www.ema.europa.eu/en/news
-    feed: https://www.ema.europa.eu/en/news-events/whats-new.xml
-
-  - name: EurekAlert
-    kind: industry
-    type: rss
-    url: https://www.eurekalert.org
-    feed: https://www.eurekalert.org/rss.xml
+    feed: https://www.ema.europa.eu/en/news.xml

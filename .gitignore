@@ -1,6 +1,27 @@
+# Environment and secrets
 .env
+.env.local
+*.secret
+
+# Build artifacts
 .wrangler/
 preview/
 logs/
 __pycache__/
 *.pyc
+.pytest_cache/
+*.egg-info/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Generated content (committed separately)
+content/weekly/*/images/
+content/weekly/*/wechat/
