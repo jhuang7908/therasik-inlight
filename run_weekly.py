@@ -73,7 +73,7 @@ def check_anthropic_model() -> str:
     """Verify the Anthropic model is available before proceeding."""
     from anthropic import Anthropic, NotFoundError, APIError
     
-    model = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-20250514")
+    model = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5-5")
     logging.info("检查 Anthropic 模型可用性：%s", model)
     
     try:
@@ -87,7 +87,7 @@ def check_anthropic_model() -> str:
         return model
     except NotFoundError:
         logging.error("模型 %s 不存在或已下线。请设置 ANTHROPIC_MODEL 环境变量为可用模型。", model)
-        logging.error("可选模型包括：claude-sonnet-4-20250514, claude-opus-4-20250514, claude-haiku-3-5-20241022 等。")
+        logging.error("可选模型包括：claude-sonnet-5-5, claude-opus-5-5, claude-haiku-5-5, claude-sonnet-4-6 等。")
         raise SystemExit(1)
     except APIError as e:
         logging.error("Anthropic API 错误：%s", e)
@@ -458,7 +458,7 @@ steps 必须是 3-5 个简短步骤（每个≤25字），描述论文的核心�
 输入：
 {json.dumps(items, ensure_ascii=False)}
 """
-    model = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-20250514")
+    model = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5-5")
     logging.info("调用 Claude %s (tool_use)", model)
     
     message = Anthropic().messages.create(
