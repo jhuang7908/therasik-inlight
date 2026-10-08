@@ -4069,13 +4069,22 @@ def is_merger_or_tender_vehicle(
 
 
 def _acceptable_merger_parent(name: str, filing_text: str = '') -> bool:
-    """Parent must be a legal entity, never a holders' rep or earlier role."""
+    """Parent must be a legal entity, never a holders' rep or role noun.
+
+    Do not use proximity to a holders' representative named earlier in the
+    same paragraph — that earlier role is not this name.
+    """
     if not name:
         return False
     if _is_bare_role_word(name) or _is_capacity_role_term(name):
         return False
-    if _is_holders_representative_name(name, filing_text):
+    if _HOLDERS_REP_RE.search(name or ''):
         return False
+    if filing_text:
+        key = re.sub(r'^the\s+', '', name.strip().lower())
+        for n in parse_defined_terms(filing_text).get(key, []):
+            if _HOLDERS_REP_RE.search(n):
+                return False
     return True
 
 
