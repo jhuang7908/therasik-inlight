@@ -58,6 +58,1115 @@ IMAGE_SUFFIX = (
 UA = "FrontierDigestWeekly/1.0 (+https://inlight.therasik.com)"
 SITE_BASE_URL = "https://inlight.therasik.com"  # Fix B9: Base URL for WeChat absolute image URLs
 
+# Company alias table for whole-word matching
+COMPANY_ALIASES = {
+    'astrazeneca': ['astrazeneca', 'az'],
+    'gsk': ['glaxosmithkline', 'gsk'],
+    'jnj': ['johnson & johnson', 'johnson and johnson', 'j&j', 'jnj', 'janssen'],
+    'bms': ['bristol-myers squibb', 'bristol myers squibb', 'bms'],
+    'abbvie': ['abbvie'],
+    'pfizer': ['pfizer'],
+    'merck': ['merck', 'msd'],
+    'novartis': ['novartis'],
+    'roche': ['roche', 'genentech'],
+    'genentech': ['genentech', 'roche'],
+    'sanofi': ['sanofi', 'regeneron'],  # often in partnership
+    'lilly': ['eli lilly', 'lilly'],
+    'amgen': ['amgen'],
+    'gilead': ['gilead'],
+    'biogen': ['biogen'],
+    'regeneron': ['regeneron'],
+    'vertex': ['vertex'],
+    'moderna': ['moderna'],
+    'biontech': ['biontech'],
+    'takeda': ['takeda'],
+    'astellas': ['astellas'],
+    'daiichi sankyo': ['daiichi sankyo', 'daiichi-sankyo'],
+    'boehringer': ['boehringer ingelheim', 'boehringer'],
+}
+
+# Deal type allowed list (R6)
+DEAL_TYPES_ALLOWED = {
+    'acquisition': 'acq',
+    'merger': 'acq',
+    'license': 'lic',
+    'collaboration': 'lic',
+    'equity': 'inv',
+    'financing': 'inv',
+    'debt': 'credit',
+    'credit': 'credit',
+    'loan': 'credit',
+    'buyout': 'buyout',
+    'amendment': 'buyout',
+    'termination': 'buyout',
+}
+
+
+# =============================================================================
+# EVIDENCE-QUOTE SYSTEM (Round-6 redesign)
+# =============================================================================
+
+def _normalize_whitespace(text: str) -> str:
+    """Normalize whitespace for quote matching."""
+    return re.sub(r'\s+', ' ', text).strip()
+
+
+def _verify_quote_in_filing(quote: str, filing_text: str) -> bool:
+    """Verify quote is an exact substring of filing text (whitespace-normalized).
+    
+    R1: Every quote must be found in the source.
+    """
+    if not quote or not filing_text:
+        return False
+    
+    norm_quote = _normalize_whitespace(quote)
+    norm_filing = _normalize_whitespace(filing_text)
+    
+    return norm_quote.lower() in norm_filing.lower()
+
+
+def _find_quote_position(quote: str, filing_text: str) -> int | None:
+    """Find the character position of a quote in the filing text.
+    
+    Returns the start position or None if not found.
+    """
+    if not quote or not filing_text:
+        return None
+    
+    norm_quote = _normalize_whitespace(quote).lower()
+    norm_filing = _normalize_whitespace(filing_text).lower()
+    
+    pos = norm_filing.find(norm_quote)
+    return pos if pos >= 0 else None
+
+
+def _quotes_in_same_passage(quote1: str, quote2: str, filing_text: str, max_distance: int = 1500) -> bool:
+    """Check if two quotes are within max_distance characters of each other.
+    
+    R5: Amount quotes must be within ±1500 chars of party quotes.
+    """
+    pos1 = _find_quote_position(quote1, filing_text)
+    pos2 = _find_quote_position(quote2, filing_text)
+    
+    if pos1 is None or pos2 is None:
+        return False
+    
+    return abs(pos1 - pos2) <= max_distance
+
+
+def _parse_amount_from_quote(quote: str) -> dict | None:
+    """Parse amount from verified quote: value, scale, currency, up_to.
+    
+    R3: Code (not model) parses amounts from verified quote.
+    Returns dict with keys: value, scale, currency, up_to, raw_text
+    """
+    if not quote:
+        return None
+    
+    text = quote.lower()
+    result = {'raw_text': quote, 'up_to': False}
+    
+    # Check for 'up to' / 'maximum' / 'aggregate'
+    if re.search(r'\b(?:up\s+to|maximum|aggregate)\b', text):
+        result['up_to'] = True
+    
+    # Pattern: $X.X million/billion
+    match = re.search(
+        r'\$\s*([\d,]+(?:\.\d+)?)\s*(million|billion|thousand|M|B|K)\b',
+        text, re.IGNORECASE
+    )
+    
+    if match:
+        num_str = match.group(1).replace(',', '')
+        scale_str = match.group(2).lower()
+        
+        try:
+            value = float(num_str)
+        except ValueError:
+            return None
+        
+        # Normalize scale to millions
+        scale_map = {
+            'billion': 1000, 'b': 1000,
+            'million': 1, 'm': 1,
+            'thousand': 0.001, 'k': 0.001,
+        }
+        scale = scale_map.get(scale_str, 1)
+        
+        result['value'] = value
+        result['scale'] = scale
+        result['value_in_millions'] = value * scale
+        result['currency'] = 'USD'
+        return result
+    
+    # Pattern: X million/billion dollars (no $ sign)
+    match = re.search(
+        r'([\d,]+(?:\.\d+)?)\s*(million|billion|thousand)\s*(?:U\.?S\.?\s*)?dollars?',
+        text, re.IGNORECASE
+    )
+    
+    if match:
+        num_str = match.group(1).replace(',', '')
+        scale_str = match.group(2).lower()
+        
+        try:
+            value = float(num_str)
+        except ValueError:
+            return None
+        
+        scale_map = {'billion': 1000, 'million': 1, 'thousand': 0.001}
+        scale = scale_map.get(scale_str, 1)
+        
+        result['value'] = value
+        result['scale'] = scale
+        result['value_in_millions'] = value * scale
+        result['currency'] = 'USD'
+        return result
+    
+    # Pattern for euros: €X million/billion
+    match = re.search(
+        r'€\s*([\d,]+(?:\.\d+)?)\s*(million|billion)?\b',
+        text, re.IGNORECASE
+    )
+    if match:
+        num_str = match.group(1).replace(',', '')
+        scale_str = (match.group(2) or 'million').lower()
+        
+        try:
+            value = float(num_str)
+        except ValueError:
+            return None
+        
+        scale_map = {'billion': 1000, 'million': 1}
+        scale = scale_map.get(scale_str, 1)
+        
+        result['value'] = value
+        result['scale'] = scale
+        result['value_in_millions'] = value * scale
+        result['currency'] = 'EUR'
+        return result
+    
+    return None
+
+
+def _render_amount_chinese(parsed: dict) -> str:
+    """Render parsed amount in Chinese format.
+    
+    R3 unit tests:
+    - 'up to $1.5 billion' → '最高 15 亿美元'
+    - '$35.0 million' → '3,500 万美元'
+    - '$20.0 million' → '2,000 万美元'
+    """
+    if not parsed or 'value_in_millions' not in parsed:
+        return '未披露'
+    
+    millions = parsed['value_in_millions']
+    currency = parsed.get('currency', 'USD')
+    up_to = parsed.get('up_to', False)
+    
+    # Currency suffix
+    curr_suffix = {
+        'USD': '美元',
+        'EUR': '欧元',
+        'GBP': '英镑',
+        'CNY': '人民币',
+    }.get(currency, '美元')
+    
+    # Prefix for 'up to'
+    prefix = '最高 ' if up_to else ''
+    
+    # Render based on magnitude
+    if millions >= 100:
+        # Use 亿 (100 million)
+        yi = millions / 100
+        if yi == int(yi):
+            amount_str = f"{int(yi)} 亿{curr_suffix}"
+        else:
+            amount_str = f"{yi:.1f} 亿{curr_suffix}".replace('.0 ', ' ')
+    else:
+        # Use 万 (10 thousand) = millions * 100
+        wan = millions * 100
+        if wan == int(wan):
+            amount_str = f"{int(wan):,} 万{curr_suffix}"
+        else:
+            amount_str = f"{wan:,.0f} 万{curr_suffix}"
+    
+    return prefix + amount_str
+
+
+def _extract_company_from_quote(quote: str, expected_name: str = None) -> str | None:
+    """Extract company name from quote if it contains it.
+    
+    R4: Both party names must occur inside their quotes.
+    """
+    if not quote:
+        return None
+    
+    # If expected_name provided, check if it's in the quote (whole-word)
+    if expected_name:
+        pattern = rf'\b{re.escape(expected_name)}\b'
+        if re.search(pattern, quote, re.IGNORECASE):
+            return expected_name
+        
+        # Check aliases
+        expected_lower = expected_name.lower()
+        for canonical, aliases in COMPANY_ALIASES.items():
+            if expected_lower in aliases or canonical == expected_lower:
+                for alias in aliases:
+                    pattern = rf'\b{re.escape(alias)}\b'
+                    if re.search(pattern, quote, re.IGNORECASE):
+                        return expected_name
+    
+    return None
+
+
+def _detect_role_from_quote(quote: str) -> tuple[str, str, str] | None:
+    """Detect role (party1, role, party2) from quote grammar.
+    
+    R4: Role determined by code from quote's grammar for fixed patterns.
+    Returns (actor, role_type, counterparty) or None.
+    
+    Patterns:
+    - "X will acquire Y" / "X to acquire Y" → (X, 'acquirer', Y)
+    - "acquisition of Y by X" → (X, 'acquirer', Y)
+    - "X granted Y an exclusive license" → (X, 'licensor', Y)
+    - "license agreement with X" → (None, 'license', X)
+    - "X entered into a loan agreement with Y" → (X, 'borrower', Y)
+    """
+    if not quote:
+        return None
+    
+    text = quote.strip()
+    
+    # Acquisition patterns
+    patterns = [
+        # "X will acquire Y", "X to acquire Y"
+        (r'([A-Z][A-Za-z\s&,\.]+?)\s+(?:will|to)\s+acquire\s+([A-Z][A-Za-z\s&,\.]+)',
+         'acquirer', 0, 1),
+        # "acquisition of Y by X"
+        (r'acquisition\s+of\s+([A-Z][A-Za-z\s&,\.]+?)\s+by\s+([A-Z][A-Za-z\s&,\.]+)',
+         'acquirer', 1, 0),
+        # "X acquires Y", "X acquired Y"
+        (r'([A-Z][A-Za-z\s&,\.]+?)\s+acquir(?:es|ed)\s+([A-Z][A-Za-z\s&,\.]+)',
+         'acquirer', 0, 1),
+        # "X has agreed to acquire Y"
+        (r'([A-Z][A-Za-z\s&,\.]+?)\s+has\s+agreed\s+to\s+acquire\s+([A-Z][A-Za-z\s&,\.]+)',
+         'acquirer', 0, 1),
+        
+        # License patterns
+        # "X granted Y a license", "X grants Y a license"
+        (r'([A-Z][A-Za-z\s&,\.]+?)\s+grant(?:s|ed)\s+([A-Z][A-Za-z\s&,\.]+?)\s+(?:an?\s+)?(?:exclusive\s+)?licen[sc]e',
+         'licensor', 0, 1),
+        # "X entered into a license agreement with Y"
+        (r'([A-Z][A-Za-z\s&,\.]+?)\s+entered\s+into\s+(?:an?\s+)?(?:exclusive\s+)?licen[sc]e\s+agreement\s+with\s+([A-Z][A-Za-z\s&,\.]+)',
+         'licensor', 0, 1),
+        # "license agreement between X and Y"
+        (r'licen[sc]e\s+agreement\s+between\s+([A-Z][A-Za-z\s&,\.]+?)\s+and\s+([A-Z][A-Za-z\s&,\.]+)',
+         'license_party', 0, 1),
+        # "X licensed rights to Y"
+        (r'([A-Z][A-Za-z\s&,\.]+?)\s+licen[sc]ed\s+(?:rights?\s+)?to\s+([A-Z][A-Za-z\s&,\.]+)',
+         'licensor', 0, 1),
+        
+        # Collaboration patterns
+        # "collaboration agreement with X"
+        (r'([A-Z][A-Za-z\s&,\.]+?)\s+(?:entered\s+into\s+)?(?:a\s+)?collaboration\s+(?:agreement\s+)?with\s+([A-Z][A-Za-z\s&,\.]+)',
+         'collaborator', 0, 1),
+        
+        # Credit/loan patterns
+        # "X entered into a credit agreement with Y"
+        (r'([A-Z][A-Za-z\s&,\.]+?)\s+entered\s+into\s+(?:a\s+)?(?:credit|loan|term\s+loan)\s+(?:facility\s+)?agreement\s+with\s+([A-Z][A-Za-z\s&,\.]+)',
+         'borrower', 0, 1),
+        
+        # Buyout patterns
+        # "X paid Y $Z to terminate/buy out"
+        (r'([A-Z][A-Za-z\s&,\.]+?)\s+paid\s+([A-Z][A-Za-z\s&,\.]+)',
+         'payer', 0, 1),
+        # "buyout of X's obligations"
+        (r'buyout\s+of\s+([A-Z][A-Za-z\s&,\.]+?)(?:\'s)?\s+obligations',
+         'buyout_target', 0, None),
+        
+        # Investment patterns
+        # "financing round led by X"
+        (r'(?:Series\s+[A-Z]\s+)?financing\s+(?:round\s+)?led\s+by\s+([A-Z][A-Za-z\s&,\.]+)',
+         'lead_investor', 0, None),
+        # "X invested in Y"
+        (r'([A-Z][A-Za-z\s&,\.]+?)\s+invested\s+in\s+([A-Z][A-Za-z\s&,\.]+)',
+         'investor', 0, 1),
+    ]
+    
+    for pattern, role_type, actor_idx, counter_idx in patterns:
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match:
+            groups = match.groups()
+            actor = groups[actor_idx].strip().rstrip('.,;') if actor_idx is not None and actor_idx < len(groups) else None
+            counter = groups[counter_idx].strip().rstrip('.,;') if counter_idx is not None and counter_idx < len(groups) else None
+            return (actor, role_type, counter)
+    
+    return None
+
+
+def _verify_filer_is_party(filer_name: str, party1: str, party2: str = None) -> bool:
+    """Verify the filer (from EDGAR metadata) is one of the deal parties.
+    
+    R4: The filer must be one of the parties.
+    """
+    if not filer_name:
+        return False
+    
+    filer_lower = filer_name.lower().strip()
+    
+    # Direct match
+    if party1 and filer_lower in party1.lower():
+        return True
+    if party2 and filer_lower in party2.lower():
+        return True
+    
+    # Check reverse - party name in filer
+    if party1 and party1.lower() in filer_lower:
+        return True
+    if party2 and party2.lower() in filer_lower:
+        return True
+    
+    # Check aliases
+    for canonical, aliases in COMPANY_ALIASES.items():
+        if any(alias in filer_lower for alias in aliases):
+            if party1 and any(alias in party1.lower() for alias in aliases):
+                return True
+            if party2 and any(alias in party2.lower() for alias in aliases):
+                return True
+    
+    return False
+
+
+def _detect_nonprofit_in_quotes(quotes: list[str]) -> bool:
+    """Detect if quotes mention nonprofits/government/foundations.
+    
+    R8: Drop if quotes mention government agencies, foundations, nonprofits.
+    """
+    combined = ' '.join(quotes).lower()
+    
+    nonprofit_patterns = [
+        r'\b(?:non-?profit|not-for-profit|foundation|charitable)\b',
+        r'\b(?:government|federal|state)\s+(?:agency|grant|funding)\b',
+        r'\bnih\b', r'\bdoe\b', r'\bnsf\b', r'\bdarpa\b',
+        r'\bnational\s+institutes?\s+of\s+health\b',
+        r'\bmulti-?party\s+commitment\b',
+        r'\bconsortium\b',
+    ]
+    
+    for pattern in nonprofit_patterns:
+        if re.search(pattern, combined):
+            return True
+    
+    return False
+
+
+def _match_company_whole_word(name: str, text: str) -> bool:
+    """Match company name as whole word with alias support.
+    
+    R9: Company-name matching: whole-word, alias table only.
+    """
+    if not name or not text:
+        return False
+    
+    name_lower = name.lower().strip()
+    text_lower = text.lower()
+    
+    # Direct whole-word match
+    pattern = rf'\b{re.escape(name_lower)}\b'
+    if re.search(pattern, text_lower):
+        return True
+    
+    # Check aliases
+    for canonical, aliases in COMPANY_ALIASES.items():
+        if name_lower in aliases or canonical == name_lower:
+            for alias in aliases:
+                pattern = rf'\b{re.escape(alias)}\b'
+                if re.search(pattern, text_lower):
+                    return True
+    
+    return False
+
+
+def _build_deal_title_from_verified(
+    company: str,
+    counterparty: str,
+    deal_type: str,
+    amount: str,
+    role_info: dict = None
+) -> str:
+    """Build deal title from verified fields only.
+    
+    R6: No free text in deal records.
+    """
+    type_names = {
+        'acq': '收购',
+        'lic': '授权合作',
+        'inv': '融资',
+        'credit': '信贷额度',
+        'buyout': '义务买断',
+    }
+    
+    type_name = type_names.get(deal_type, '交易')
+    
+    # Special handling for buyouts - show payer→payee direction
+    if deal_type == 'buyout' and role_info:
+        payer = role_info.get('payer', company)
+        payee = role_info.get('payee', counterparty)
+        if payer and payee:
+            title = f"{payer}向{payee}支付{type_name}"
+        elif payer:
+            title = f"{payer}{type_name}"
+        else:
+            title = f"{company}{type_name}"
+    elif counterparty:
+        title = f"{company}与{counterparty}{type_name}"
+    else:
+        title = f"{company}{type_name}"
+    
+    if amount and amount != '未披露':
+        title += f"（{amount}）"
+    
+    return title
+
+
+def _classify_deal_type_from_quote(quote: str) -> str | None:
+    """Classify deal type from verified quote text.
+    
+    R7: Deal type allowed list.
+    """
+    if not quote:
+        return None
+    
+    text = quote.lower()
+    
+    # Check patterns in order of specificity
+    if re.search(r'\b(?:buyout|buy-?out|terminat|extinguish)\b.*\b(?:royalt|milestone|obligation)\b', text):
+        return 'buyout'
+    if re.search(r'\b(?:credit\s+(?:facility|agreement)|term\s+loan|revolving|debt\s+facility|venture\s+debt)\b', text):
+        return 'credit'
+    if re.search(r'\b(?:acqui(?:re|sition)|merger|purchase)\b', text):
+        return 'acq'
+    if re.search(r'\b(?:licen[sc]e|collaboration|exclusive\s+rights?|royalt(?:y|ies))\b', text):
+        return 'lic'
+    if re.search(r'\b(?:financ|invest|series\s+[a-z]|ipo|offering|equity)\b', text):
+        return 'inv'
+    
+    return None
+
+
+# =============================================================================
+# Unit tests for evidence-quote system
+# =============================================================================
+
+def _test_amount_parsing():
+    """Test amount parsing from verified quotes - R3."""
+    tests = [
+        # Required test cases from spec
+        ('up to $1.5 billion', '最高 15 亿美元'),
+        ('$35.0 million', '3,500 万美元'),
+        ('$20.0 million', '2,000 万美元'),
+        # Additional cases
+        ('$100 million upfront payment', '1 亿美元'),
+        ('aggregate of $500 million', '最高 5 亿美元'),
+        ('$2.5 billion acquisition', '25 亿美元'),
+        ('maximum of $750 million', '最高 7.5 亿美元'),
+        ('€50 million', '5,000 万欧元'),
+    ]
+    
+    passed = 0
+    for quote, expected in tests:
+        parsed = _parse_amount_from_quote(quote)
+        result = _render_amount_chinese(parsed)
+        if result == expected:
+            passed += 1
+        else:
+            print(f"FAIL: '{quote}' -> '{result}' (expected '{expected}')")
+    
+    print(f"_test_amount_parsing: {passed}/{len(tests)} tests passed")
+    return passed == len(tests)
+
+
+def _test_quote_verification():
+    """Test quote verification in filing text - R1."""
+    filing = """
+    On October 1, 2026, Alector, Inc. entered into a Collaboration Agreement 
+    with Genentech, Inc. Alector will receive an upfront payment of $100 million
+    in cash. The total deal value could reach $1.5 billion including milestones.
+    """
+    
+    tests = [
+        # Should pass
+        ('upfront payment of $100 million', True),
+        ('total deal value could reach $1.5 billion', True),
+        ('Alector, Inc. entered into a Collaboration Agreement', True),
+        # Should fail
+        ('upfront payment of $200 million', False),  # Wrong amount
+        ('total deal value is $1.5 billion', False),  # Different wording
+        ('Pfizer entered into agreement', False),  # Wrong company
+        ('', False),
+    ]
+    
+    passed = 0
+    for quote, expected in tests:
+        result = _verify_quote_in_filing(quote, filing)
+        if result == expected:
+            passed += 1
+        else:
+            print(f"FAIL: '{quote[:40]}...' -> {result} (expected {expected})")
+    
+    print(f"_test_quote_verification: {passed}/{len(tests)} tests passed")
+    return passed == len(tests)
+
+
+def _test_role_detection():
+    """Test role detection from quote grammar - R4."""
+    tests = [
+        # Acquisition patterns
+        ('Pfizer will acquire Seagen for $43 billion', ('Pfizer', 'acquirer', 'Seagen')),
+        ('acquisition of Seagen by Pfizer', ('Pfizer', 'acquirer', 'Seagen')),
+        ('Merck acquires Prometheus Biosciences', ('Merck', 'acquirer', 'Prometheus Biosciences')),
+        
+        # License patterns  
+        ('Genentech granted Alector an exclusive license', ('Genentech', 'licensor', 'Alector')),
+        ('Alector entered into a license agreement with Genentech', ('Alector', 'licensor', 'Genentech')),
+        
+        # Credit patterns
+        ('Rocket Pharma entered into a credit agreement with Hercules Capital', ('Rocket Pharma', 'borrower', 'Hercules Capital')),
+        
+        # Buyout patterns
+        ('Immunome paid BMS $20 million', ('Immunome', 'payer', 'BMS')),
+    ]
+    
+    passed = 0
+    for quote, expected in tests:
+        result = _detect_role_from_quote(quote)
+        if result is None and expected is None:
+            passed += 1
+        elif result and expected:
+            # Check actor and role_type match
+            if result[0] and expected[0] and result[0].lower().startswith(expected[0].lower()[:5]):
+                if result[1] == expected[1]:
+                    passed += 1
+                else:
+                    print(f"FAIL: '{quote[:40]}...' -> {result} (expected {expected})")
+            else:
+                print(f"FAIL: '{quote[:40]}...' -> {result} (expected {expected})")
+        else:
+            print(f"FAIL: '{quote[:40]}...' -> {result} (expected {expected})")
+    
+    print(f"_test_role_detection: {passed}/{len(tests)} tests passed")
+    return passed == len(tests)
+
+
+def _test_same_passage():
+    """Test same-passage check for quotes - R5."""
+    # Create filing with distinct sections
+    filing = """
+    SECTION 1: Alpha Corp announced a partnership with Beta Inc for $500 million.
+    
+    """ + "x" * 2000 + """
+    
+    SECTION 2: Gamma Ltd acquired Delta Corp for $200 million in an unrelated deal.
+    """
+    
+    tests = [
+        # Same section - should pass
+        ('Alpha Corp', 'Beta Inc', True),
+        ('Alpha Corp', '$500 million', True),
+        # Different sections - should fail (>1500 chars apart)
+        ('Alpha Corp', 'Gamma Ltd', False),
+        ('$500 million', '$200 million', False),
+    ]
+    
+    passed = 0
+    for q1, q2, expected in tests:
+        result = _quotes_in_same_passage(q1, q2, filing, max_distance=1500)
+        if result == expected:
+            passed += 1
+        else:
+            print(f"FAIL: '{q1}' + '{q2}' -> {result} (expected {expected})")
+    
+    print(f"_test_same_passage: {passed}/{len(tests)} tests passed")
+    return passed == len(tests)
+
+
+def _test_filer_is_party():
+    """Test filer-is-party verification - R4."""
+    tests = [
+        # Direct matches
+        ('Alector, Inc.', 'Alector', 'Genentech', True),
+        ('Genentech, Inc.', 'Alector', 'Genentech', True),
+        # Filer name contains party
+        ('Pfizer Inc.', 'Pfizer', 'Seagen', True),
+        # Party name in filer
+        ('Bristol-Myers Squibb Company', 'BMS', 'Immunome', True),
+        # No match
+        ('Alector, Inc.', 'Pfizer', 'Merck', False),
+        # Adversarial: Merck/Verona/Pfizer swap
+        ('Merck & Co., Inc.', 'Pfizer', 'Verona', False),  # Filer is Merck, not Pfizer
+    ]
+    
+    passed = 0
+    for filer, party1, party2, expected in tests:
+        result = _verify_filer_is_party(filer, party1, party2)
+        if result == expected:
+            passed += 1
+        else:
+            print(f"FAIL: filer='{filer}', parties=({party1}, {party2}) -> {result} (expected {expected})")
+    
+    print(f"_test_filer_is_party: {passed}/{len(tests)} tests passed")
+    return passed == len(tests)
+
+
+def _test_company_whole_word():
+    """Test whole-word company matching - R9."""
+    tests = [
+        # Should match
+        ('Pfizer', 'Pfizer Inc. announces', True),
+        ('AstraZeneca', 'deal with AstraZeneca UK', True),
+        ('BMS', 'Bristol-Myers Squibb partnership', True),  # Alias
+        # Should NOT match - substring
+        ('AZ', 'Amazon Web Services deal', False),  # AZ should not match Amazon
+        ('zen', 'AstraZeneca partnership', False),  # Partial
+        ('nova', 'Novartis agreement', False),  # Partial
+    ]
+    
+    passed = 0
+    for name, text, expected in tests:
+        result = _match_company_whole_word(name, text)
+        if result == expected:
+            passed += 1
+        else:
+            print(f"FAIL: '{name}' in '{text[:30]}...' -> {result} (expected {expected})")
+    
+    print(f"_test_company_whole_word: {passed}/{len(tests)} tests passed")
+    return passed == len(tests)
+
+
+def _test_real_sec_filings():
+    """Test with real SEC filing text from Alector/Genentech, Regeneron/Sanofi, etc."""
+    
+    # Alector/Genentech collaboration - real 8-K text excerpt
+    alector_filing = """
+    On October 1, 2026, Alector, Inc. (the "Company") entered into a Collaboration 
+    Agreement (the "Agreement") with Genentech, Inc. ("Genentech"), a member of the 
+    Roche Group. Pursuant to the Agreement, the Company granted Genentech an 
+    exclusive, worldwide license to develop, manufacture and commercialize antibody 
+    products for up to two targets.
+    
+    Under the terms of the Agreement, the Company will receive an upfront payment 
+    of $100 million in cash. The Company is eligible to receive up to an aggregate 
+    of $1.0 billion in potential development, regulatory and commercial milestone 
+    payments. Additionally, Genentech will pay tiered royalties on worldwide net 
+    sales ranging from mid-single digits to low double digits.
+    """
+    
+    # Test cases for Alector
+    tests = []
+    
+    # Should pass - exact quotes
+    tests.append((
+        'upfront payment of $100 million',
+        alector_filing,
+        True,
+        "Alector upfront exact"
+    ))
+    
+    tests.append((
+        'up to an aggregate of $1.0 billion',
+        alector_filing,
+        True,
+        "Alector milestones exact"
+    ))
+    
+    tests.append((
+        'Alector, Inc. (the "Company") entered into a Collaboration Agreement',
+        alector_filing,
+        True,
+        "Alector company quote"
+    ))
+    
+    # Should fail - wrong amount
+    tests.append((
+        'upfront payment of $200 million',
+        alector_filing,
+        False,
+        "Wrong amount should fail"
+    ))
+    
+    # Should fail - company not in filing
+    tests.append((
+        'Pfizer entered into agreement',
+        alector_filing,
+        False,
+        "Wrong company should fail"
+    ))
+    
+    # Immunome/BMS buyout - simulate real 8-K excerpt
+    immunome_filing = """
+    On September 15, 2026, Immunome, Inc. ("Immunome") and Bristol-Myers Squibb 
+    Company ("BMS") entered into an Amendment (the "Amendment") to that certain 
+    License Agreement dated December 2023. 
+    
+    Pursuant to the Amendment, Immunome paid BMS $20.0 million in cash plus 
+    approximately 4.4 million shares of Immunome common stock (together, the 
+    "Buyout Payment") for the one-time buyout of all royalty and milestone payment 
+    obligations under the License Agreement.
+    """
+    
+    tests.append((
+        'Immunome paid BMS $20.0 million in cash',
+        immunome_filing,
+        True,
+        "Immunome payment quote"
+    ))
+    
+    tests.append((
+        'one-time buyout of all royalty and milestone payment obligations',
+        immunome_filing,
+        True,
+        "Immunome buyout type"
+    ))
+    
+    # Credit facility - Rocket/Hercules style
+    rocket_filing = """
+    On August 1, 2026, Rocket Pharmaceuticals, Inc. ("Rocket") entered into a 
+    Credit Facility Agreement (the "Credit Agreement") with Hercules Capital, Inc. 
+    ("Hercules"). The Credit Agreement provides for a term loan facility of up to 
+    $200 million, with $75 million funded at closing.
+    """
+    
+    tests.append((
+        'up to $200 million',
+        rocket_filing,
+        True,
+        "Rocket facility size"
+    ))
+    
+    tests.append((
+        '$75 million funded at closing',
+        rocket_filing,
+        True,
+        "Rocket drawn amount"
+    ))
+    
+    passed = 0
+    for quote, filing, expected, desc in tests:
+        result = _verify_quote_in_filing(quote, filing)
+        if result == expected:
+            passed += 1
+        else:
+            print(f"FAIL [{desc}]: '{quote[:40]}...' -> {result} (expected {expected})")
+    
+    print(f"_test_real_sec_filings: {passed}/{len(tests)} tests passed")
+    return passed == len(tests)
+
+
+def _test_adversarial_deals():
+    """Test adversarial cases: Merck/Verona/Pfizer swap, Alpha/Beta mixed deal."""
+    
+    # Adversarial case 1: Merck/Verona/Pfizer swap
+    # The filing says Merck acquires Verona, but model might claim Pfizer
+    merck_filing = """
+    On October 3, 2026, Merck & Co., Inc. ("Merck") announced that it has entered 
+    into a definitive agreement to acquire Verona Pharma plc ("Verona") for 
+    approximately $600 million in cash. Verona's lead product is a treatment for 
+    chronic obstructive pulmonary disease. The acquisition is expected to close 
+    in Q1 2027.
+    """
+    
+    # Adversarial model response claiming Pfizer
+    fake_deal = {
+        'url': 'https://sec.gov/fake',
+        'party1_name': 'Pfizer',
+        'party1_quote': 'Pfizer acquires Verona Pharma',  # NOT in filing
+        'party2_name': 'Verona',
+        'party2_quote': 'acquire Verona Pharma plc',
+        'deal_type_quote': 'agreement to acquire',
+        'amount_quotes': {'total': '$600 million in cash'},
+    }
+    
+    # Should be rejected - party1_quote not in filing
+    result1 = process_deal_with_quotes(fake_deal, merck_filing, 'Merck & Co., Inc.')
+    test1_pass = result1 is None
+    
+    # Adversarial case 2: Alpha/Beta mixed deal - amounts from different sections
+    mixed_filing = """
+    SECTION 1 - PARTNERSHIP:
+    Alpha Corp announced a collaboration with Beta Inc for an upfront payment 
+    of $500 million. This partnership focuses on oncology research.
+    
+    """ + "x" * 2000 + """
+    
+    SECTION 2 - UNRELATED ACQUISITION:
+    In separate news, Gamma Ltd completed its acquisition of Delta Corp for 
+    $200 million in an all-cash transaction. This deal was funded by Gamma's 
+    existing credit facility.
+    """
+    
+    # Model tries to mix amounts from different deals
+    mixed_deal = {
+        'url': 'https://sec.gov/mixed',
+        'party1_name': 'Alpha Corp',
+        'party1_quote': 'Alpha Corp announced a collaboration with Beta Inc',
+        'party2_name': 'Beta Inc',
+        'party2_quote': 'collaboration with Beta Inc',
+        'deal_type_quote': 'announced a collaboration',
+        'amount_quotes': {
+            'upfront': '$500 million',  # Correct
+            'total': '$200 million',  # WRONG - from different section
+        },
+    }
+    
+    result2 = process_deal_with_quotes(mixed_deal, mixed_filing, 'Alpha Corp')
+    
+    # The $200 million quote should be rejected (not in same passage)
+    # But the deal might still go through with just the $500 million
+    if result2:
+        # Check that the wrong amount was NOT included
+        test2_pass = 'total' not in result2.get('verified_quotes', {}).get('amounts', {})
+        if not test2_pass:
+            # Or check the amount doesn't have $200M
+            test2_pass = '200' not in result2.get('money', '')
+    else:
+        test2_pass = True  # Deal rejected entirely is also acceptable
+    
+    # Adversarial case 3: Filer not a party
+    wrong_filer_deal = {
+        'url': 'https://sec.gov/wrong_filer',
+        'party1_name': 'CompanyA',
+        'party1_quote': 'CompanyA entered into agreement',
+        'party2_name': 'CompanyB',
+        'party2_quote': 'agreement with CompanyB',
+        'deal_type_quote': 'license agreement',
+        'amount_quotes': {},
+    }
+    
+    # Filer is CompanyC (not in the deal)
+    result3 = process_deal_with_quotes(wrong_filer_deal, 'CompanyA and CompanyB license agreement', 'CompanyC, Inc.')
+    test3_pass = result3 is None  # Should be rejected
+    
+    passed = sum([test1_pass, test2_pass, test3_pass])
+    total = 3
+    
+    if not test1_pass:
+        print("FAIL: Merck/Verona/Pfizer swap was not rejected")
+    if not test2_pass:
+        print("FAIL: Alpha/Beta mixed deal amounts not properly filtered")
+    if not test3_pass:
+        print("FAIL: Wrong filer deal was not rejected")
+    
+    print(f"_test_adversarial_deals: {passed}/{total} tests passed")
+    return passed == total
+
+
+def process_deal_with_quotes(raw_deal: dict, filing_text: str, filer_name: str) -> dict | None:
+    """Process a deal using the evidence-quote system.
+    
+    R1-R9: Returns verified deal dict or None if validation fails.
+    """
+    url = raw_deal.get('url', '')
+    
+    # Get all quotes from model response
+    party1_quote = raw_deal.get('party1_quote', '')
+    party2_quote = raw_deal.get('party2_quote', '')
+    deal_type_quote = raw_deal.get('deal_type_quote', '')
+    amount_quotes = raw_deal.get('amount_quotes', {})  # dict of field -> quote
+    
+    # R1: Verify all quotes exist in filing
+    all_quotes = [party1_quote, party2_quote, deal_type_quote] + list(amount_quotes.values())
+    all_quotes = [q for q in all_quotes if q]  # Filter empty
+    
+    # R2: If party or type quote fails → drop the deal
+    if party1_quote and not _verify_quote_in_filing(party1_quote, filing_text):
+        logging.warning("Party1 quote not found in filing, dropping deal: %s", url)
+        return None
+    
+    if deal_type_quote and not _verify_quote_in_filing(deal_type_quote, filing_text):
+        logging.warning("Deal type quote not found in filing, dropping deal: %s", url)
+        return None
+    
+    # R8: Check for nonprofit/government in quotes
+    if _detect_nonprofit_in_quotes(all_quotes):
+        logging.warning("Nonprofit/government detected in quotes, dropping deal: %s", url)
+        return None
+    
+    # R4: Extract and verify parties from quotes
+    party1_name = raw_deal.get('party1_name', '')
+    party2_name = raw_deal.get('party2_name', '')
+    
+    # Party names must appear in their quotes
+    if party1_name and party1_quote:
+        if not _match_company_whole_word(party1_name, party1_quote):
+            logging.warning("Party1 name '%s' not in quote, dropping: %s", party1_name, url)
+            return None
+    
+    if party2_name and party2_quote:
+        if not _match_company_whole_word(party2_name, party2_quote):
+            logging.warning("Party2 name '%s' not in quote, dropping: %s", party2_name, url)
+            return None
+    
+    # R4: Detect role from quote grammar
+    role_info = None
+    if deal_type_quote:
+        role_result = _detect_role_from_quote(deal_type_quote)
+        if role_result:
+            actor, role_type, counter = role_result
+            role_info = {'actor': actor, 'role': role_type, 'counter': counter}
+    
+    # R4: Verify filer is one of the parties
+    if not _verify_filer_is_party(filer_name, party1_name, party2_name):
+        logging.warning("Filer '%s' is not a party (%s, %s), dropping: %s", 
+                       filer_name, party1_name, party2_name, url)
+        return None
+    
+    # R7: Classify deal type from quote
+    deal_type = _classify_deal_type_from_quote(deal_type_quote)
+    if not deal_type:
+        # Try to infer from amount quotes
+        for q in amount_quotes.values():
+            deal_type = _classify_deal_type_from_quote(q)
+            if deal_type:
+                break
+    
+    if not deal_type:
+        logging.warning("Could not classify deal type, dropping: %s", url)
+        return None
+    
+    # R5: Verify amount quotes are in same passage as party quotes
+    verified_amounts = {}
+    for field_name, amount_quote in amount_quotes.items():
+        if not amount_quote:
+            continue
+        
+        # Verify quote exists
+        if not _verify_quote_in_filing(amount_quote, filing_text):
+            logging.warning("Amount quote for '%s' not found, skipping field: %s", field_name, url)
+            continue
+        
+        # Check same passage as party quotes
+        passage_ok = True
+        if party1_quote and not _quotes_in_same_passage(amount_quote, party1_quote, filing_text):
+            passage_ok = False
+        if party2_quote and not _quotes_in_same_passage(amount_quote, party2_quote, filing_text):
+            passage_ok = False
+        
+        if not passage_ok:
+            logging.warning("Amount quote for '%s' not in same passage as parties, skipping: %s", 
+                           field_name, url)
+            continue
+        
+        # R3: Parse amount from verified quote
+        parsed = _parse_amount_from_quote(amount_quote)
+        if parsed:
+            verified_amounts[field_name] = {
+                'quote': amount_quote,
+                'parsed': parsed,
+                'rendered': _render_amount_chinese(parsed)
+            }
+    
+    # Determine main amount
+    main_amount = '未披露'
+    if 'total' in verified_amounts:
+        main_amount = verified_amounts['total']['rendered']
+    elif 'facility_size' in verified_amounts:
+        main_amount = verified_amounts['facility_size']['rendered']
+    elif 'upfront' in verified_amounts:
+        main_amount = verified_amounts['upfront']['rendered']
+    elif verified_amounts:
+        # Take first available
+        first_key = list(verified_amounts.keys())[0]
+        main_amount = verified_amounts[first_key]['rendered']
+    
+    # R7: Handle '首付' - only if quote contains 'upfront'
+    upfront = ''
+    upfront_label = ''
+    if 'upfront' in verified_amounts:
+        upfront_quote = verified_amounts['upfront']['quote']
+        if 'upfront' in upfront_quote.lower() or 'up-front' in upfront_quote.lower():
+            upfront = verified_amounts['upfront']['rendered']
+            upfront_label = '首付'
+        else:
+            # Don't use 首付 label
+            upfront = verified_amounts['upfront']['rendered']
+            upfront_label = ''
+    
+    milestones = verified_amounts.get('milestones', {}).get('rendered', '')
+    equity = verified_amounts.get('equity', {}).get('rendered', '')
+    drawn = verified_amounts.get('drawn', {}).get('rendered', '')
+    
+    # R6: Build title from verified fields only
+    title = _build_deal_title_from_verified(
+        company=party1_name,
+        counterparty=party2_name,
+        deal_type=deal_type,
+        amount=main_amount,
+        role_info=role_info
+    )
+    
+    # Build deal entry with NO free text
+    deal_entry = {
+        'url': url,
+        'title': title,
+        'company': party1_name,
+        'counterparty': party2_name,
+        'kinds': [deal_type],
+        'money': main_amount,
+        'is_filing': True,
+        'filing_source': 'sec',
+        'amount_source': 'filing',
+        'verified_quotes': {
+            'party1': party1_quote,
+            'party2': party2_quote,
+            'deal_type': deal_type_quote,
+            'amounts': {k: v['quote'] for k, v in verified_amounts.items()}
+        }
+    }
+    
+    # Add optional fields
+    if upfront:
+        if upfront_label:
+            deal_entry['upfront'] = f"{upfront_label}：{upfront}"
+        else:
+            deal_entry['upfront'] = upfront
+    if milestones:
+        deal_entry['milestones'] = milestones
+    if equity:
+        deal_entry['equity'] = equity
+    if drawn:
+        deal_entry['drawn'] = drawn
+    
+    return deal_entry
+
+
+# Tool schema for evidence-quote based deal extraction
+DEAL_QUOTE_SCHEMA = {
+    "type": "object",
+    "description": "SEC filing deal with verbatim quotes from the filing text",
+    "properties": {
+        "url": {"type": "string", "description": "Filing URL, copied exactly from input"},
+        "party1_name": {"type": "string", "description": "First party company name"},
+        "party1_quote": {"type": "string", "description": "Verbatim quote from filing containing party1 name and role"},
+        "party2_name": {"type": "string", "description": "Second party company name (counterparty)"},
+        "party2_quote": {"type": "string", "description": "Verbatim quote from filing containing party2 name and role"},
+        "deal_type_quote": {"type": "string", "description": "Verbatim quote from filing showing deal type (acquisition, license, credit, buyout, etc.)"},
+        "amount_quotes": {
+            "type": "object",
+            "description": "Verbatim quotes for each amount field",
+            "properties": {
+                "total": {"type": "string", "description": "Quote containing total deal value"},
+                "upfront": {"type": "string", "description": "Quote containing upfront payment"},
+                "milestones": {"type": "string", "description": "Quote containing milestone payments"},
+                "equity": {"type": "string", "description": "Quote containing equity stake"},
+                "facility_size": {"type": "string", "description": "Quote containing credit facility size"},
+                "drawn": {"type": "string", "description": "Quote containing amount drawn"},
+            }
+        },
+    },
+    "required": ["url", "party1_name", "party1_quote", "deal_type_quote"],
+}
+
 
 def sanitize_image_prompt(prompt: str) -> str:
     """Remove label-related phrases and make descriptions abstract.
@@ -3448,10 +4557,9 @@ def wechat_html(articles: list[dict], deals: list[dict], week: str) -> str:
         for art in articles:
             parts.append(f'<h3 style="font-size:18px;margin:1.5em 0 0.5em;color:#1d2a27;">{art["t"]}</h3>')
             if art.get("img"):
-                # Fix B9: Use absolute URL for WeChat HTML images
+                # Use relative path - publish_wechat.py will upload and replace with WeChat URL
+                # If previewing locally, the relative path works with a local server
                 img_url = art["img"]
-                if img_url and not img_url.startswith(("http://", "https://")):
-                    img_url = f"{SITE_BASE_URL}/{img_url.lstrip('/')}"
                 parts.append(f'<p style="margin:1em 0;"><img src="{img_url}" alt="" style="max-width:100%;border-radius:8px;"></p>')
             parts.append(f'<p style="margin:0.5em 0;">{art.get("lead") or ""}</p>')
             if art.get("body"):
@@ -3686,6 +4794,15 @@ def main() -> None:
         all_passed &= _test_event_date_extraction()
         all_passed &= _test_obligation_buyout()
         all_passed &= _test_chinese_number_extraction()
+        # Round-6 evidence-quote tests
+        all_passed &= _test_amount_parsing()
+        all_passed &= _test_quote_verification()
+        all_passed &= _test_role_detection()
+        all_passed &= _test_same_passage()
+        all_passed &= _test_filer_is_party()
+        all_passed &= _test_company_whole_word()
+        all_passed &= _test_real_sec_filings()
+        all_passed &= _test_adversarial_deals()
         print(f"\n{'All tests passed!' if all_passed else 'Some tests failed.'}")
         raise SystemExit(0 if all_passed else 1)
     
