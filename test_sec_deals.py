@@ -845,6 +845,24 @@ class TestNumberStripping:
         )
         assert "一点五亿美元" in one_point_five
 
+    def test_cheng_and_bei_match_by_value(self):
+        """三成 = 30% and 两倍 = 2-fold; invented ones strip."""
+        numbers = sec_deals.extract_numbers_from_text("缓解率约三成，表达升高两倍。")
+        assert "30%" in numbers or "30" in numbers
+        assert "2" in numbers or "2x" in numbers
+        honest = sec_deals.strip_unverified_numbers_from_text(
+            "缓解率约三成，表达升高两倍。",
+            "The response rate was about 30% and expression rose 2-fold.",
+        )
+        assert "三成" in honest
+        assert "两倍" in honest
+        invented = sec_deals.strip_unverified_numbers_from_text(
+            "缓解率约三成，表达升高两倍。",
+            "The study enrolled 120 patients.",
+        )
+        assert "三成" not in invented
+        assert "两倍" not in invented
+
 
 # =============================================================================
 # END-TO-END MAIN() TESTS (Task 4)
@@ -1741,6 +1759,95 @@ class TestCleanupRelativeCutoffAndGrants:
         assert deal is not None
         assert deal["deal_type"] == "license_collaboration"
         assert "Genentech" in deal["counterparty"]
+
+
+class TestUpfrontPayerAndTiming:
+    """Upfront is licensee→licensor at signing/closing, never later-event one-time."""
+
+    def test_one_time_on_anniversary_is_not_upfront(self):
+        assert sec_deals.is_valid_upfront_amount(
+            "Genentech will pay Alector a one-time payment on the third anniversary",
+            "Alector is granting Genentech exclusive worldwide rights",
+            "Alector, Inc.",
+            "Genentech",
+            "licensor",
+        ) is False
+
+    def test_reimbursement_is_never_upfront(self):
+        assert sec_deals.is_valid_upfront_amount(
+            "Genentech will pay Alector $20 million as development cost reimbursement",
+            "Alector is granting Genentech exclusive worldwide rights",
+            "Alector, Inc.",
+            "Genentech",
+            "licensor",
+        ) is False
+
+    def test_licensor_paying_licensee_is_not_upfront(self):
+        assert sec_deals.is_valid_upfront_amount(
+            "Alector will pay Genentech a $15 million upfront payment",
+            "Alector is granting Genentech exclusive worldwide rights",
+            "Alector, Inc.",
+            "Genentech",
+            "licensor",
+        ) is False
+
+    def test_unclear_payer_is_omitted(self):
+        assert sec_deals.is_valid_upfront_amount(
+            "an upfront payment of $100 million",
+            "Alector is granting Genentech exclusive worldwide rights",
+            "Alector, Inc.",
+            "Genentech",
+            "licensor",
+        ) is False
+
+    def test_inlicense_filer_pays_partner_is_valid(self):
+        assert sec_deals.is_valid_upfront_amount(
+            "the Company will pay Hansoh an upfront payment of $30.0 million",
+            "entered into an Exclusive License Agreement with Hansoh",
+            "Pinecrest Bio, Inc.",
+            "Hansoh",
+            "licensor",
+        ) is True
+
+    def test_honest_alector_upfront_passes(self):
+        assert sec_deals.is_valid_upfront_amount(
+            "Alector will receive a $100 million upfront payment from Genentech",
+            "Alector is granting Genentech exclusive worldwide rights",
+            "Alector, Inc.",
+            "Genentech",
+            "licensor",
+        ) is True
+
+    def test_process_omits_reverse_or_late_upfront_from_grants_rights(self):
+        filing = (
+            "Alector, Inc. (the \"Company\") entered into a License Agreement with "
+            "Genentech, Inc. Alector is granting Genentech exclusive worldwide rights "
+            "to develop and commercialize. Alector will pay Genentech a $15 million "
+            "upfront payment. Genentech will also pay Alector a one-time payment of "
+            "$25 million on the third anniversary."
+        )
+        deal = sec_deals.process_sec_deal(
+            filing_text=filing,
+            filer_name="Alector, Inc.",
+            filing_url="https://test",
+            filing_date="2026-10-05",
+            event_date="2026-10-01",
+            claude_response={
+                "deal_type": "license_collaboration",
+                "counterparty_name": "Genentech",
+                "type_quote": "Alector is granting Genentech exclusive worldwide rights to develop and commercialize",
+                "counterparty_quote": "entered into a License Agreement with Genentech, Inc.",
+                "amounts": [
+                    {"kind": "upfront", "quote": "Alector will pay Genentech a $15 million upfront payment"},
+                    {"kind": "upfront", "quote": "a one-time payment of $25 million on the third anniversary"},
+                ],
+            },
+        )
+        assert deal is not None
+        kinds = [a.get("kind") for a in deal.get("verified_amounts", [])]
+        assert "upfront" not in kinds
+        assert "1,500" not in (deal.get("money") or "")
+        assert "15" not in (deal.get("title") or "")
 
 
 # =============================================================================

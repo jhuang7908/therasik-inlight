@@ -2555,7 +2555,9 @@ def has_role_keyword_for_kind(quote: str, kind: AmountKind) -> bool:
     text = quote.lower()
     
     if kind == AmountKind.UPFRONT:
-        return bool(re.search(r'\b(upfront|up-front|one-time|signing|initial)\b', text))
+        return bool(re.search(
+            r'\b(upfront|up-front|upon\s+signing|at\s+closing|signing)\b', text
+        ))
     elif kind == AmountKind.PURCHASE_PRICE:
         # Explicit price keywords
         if re.search(r'\b(purchase\s+price|per\s+share|consideration|merger\s+consideration)\b', text):
@@ -2572,6 +2574,158 @@ def has_role_keyword_for_kind(quote: str, kind: AmountKind) -> bool:
     else:
         # Out of scope kinds never have valid role keywords
         return False
+
+
+_UPFRONT_TIMING_RE = re.compile(
+    r'\b(?:up-?front|upon\s+(?:the\s+)?'
+    r'(?:signing|execution|closing|effective\s+date)|'
+    r'at\s+(?:the\s+)?closing|'
+    r'in\s+connection\s+with\s+(?:the\s+)?'
+    r'(?:signing|execution|closing|entry\s+into))\b',
+    re.IGNORECASE,
+)
+_UPFRONT_LATER_EVENT_RE = re.compile(
+    r'\b(?:anniversary|milestone|'
+    r'year\s+(?:two|three|2|3)|'
+    r'(?:second|third|fourth|\d+(?:st|nd|rd|th))\s+(?:anniversary|year)|'
+    r'upon\s+(?:the\s+)?(?:achievement|approval|first\s+commercial)|'
+    r'within\s+\d+\s+years?|'
+    r'(?:due|payable)\s+(?:on|after)\b)',
+    re.IGNORECASE,
+)
+_UPFRONT_REIMBURSE_RE = re.compile(
+    r'\b(?:reimburs(?:e|ement|ed)|development\s+costs?|'
+    r'research\s+(?:funding|support)|funding)\b',
+    re.IGNORECASE,
+)
+
+
+def _party_is(name: str, filer: str, counterparty: str, raw: str) -> str | None:
+    """Return 'filer', 'counterparty', or None for a quoted party phrase."""
+    if not raw:
+        return None
+    t = raw.lower()
+    if re.search(r'\bthe\s+company\b', t) or re.search(r'\bthe\s+registrant\b', t):
+        return 'filer'
+    if filer and (match_company_whole_word(filer, raw) or match_company_whole_word(raw, filer)):
+        return 'filer'
+    if counterparty and (
+        match_company_whole_word(counterparty, raw)
+        or match_company_whole_word(raw, counterparty)
+    ):
+        return 'counterparty'
+    return None
+
+
+def _extract_upfront_payer_payee(
+    quote: str, filer: str, counterparty: str
+) -> tuple[str | None, str | None]:
+    """Return ('filer'|'counterparty'|None, same) for payer and payee."""
+    if not quote:
+        return None, None
+    patterns = [
+        # X will receive ... from Y
+        (r'(.+?)\s+(?:will\s+|shall\s+)?receiv(?:e|es|ed)\b.{0,80}?\bfrom\s+(.+?)(?:\s+of\b|\s+a\b|\s+an\b|\$|\.|$)',
+         'payee', 'payer'),
+        # X will pay Y / X will make a payment to Y
+        (r'(.+?)\s+(?:will\s+|shall\s+)?(?:pay|make\s+(?:an?\s+)?(?:up-?front\s+)?payment\s+to)\s+(.+?)(?:\s+of\b|\s+a\b|\$|\.|$)',
+         'payer', 'payee'),
+        # payment to Y from X
+        (r'payment\s+to\s+(.+?)\s+from\s+(.+?)(?:\s+of\b|\$|\.|$)',
+         'payee', 'payer'),
+        # payment from X to Y
+        (r'payment\s+from\s+(.+?)\s+to\s+(.+?)(?:\s+of\b|\$|\.|$)',
+         'payer', 'payee'),
+        # paid by X to Y
+        (r'paid\s+by\s+(.+?)\s+to\s+(.+?)(?:\s+of\b|\$|\.|$)',
+         'payer', 'payee'),
+    ]
+    for pat, role_a, role_b in patterns:
+        m = re.search(pat, quote, re.IGNORECASE)
+        if not m:
+            continue
+        a = _party_is(filer, filer, counterparty, m.group(1))
+        b = _party_is(filer, filer, counterparty, m.group(2))
+        roles = {role_a: a, role_b: b}
+        return roles.get('payer'), roles.get('payee')
+    return None, None
+
+
+def _explicit_grant_licensor_side(
+    type_quote: str, amount_quote: str, filer: str, counterparty: str
+) -> str | None:
+    """Who granted the rights, from explicit grant grammar only. None if unknown."""
+    blob = f"{type_quote or ''}\n{amount_quote or ''}"
+    if not blob.strip():
+        return None
+    noun = _filer_noun_pattern(filer) if filer else r'the\s+Company'
+    if re.search(rf'{noun}\s+(?:is\s+)?grant(?:s|ed|ing)\b', blob, re.IGNORECASE):
+        return 'filer'
+    if counterparty and re.search(
+        rf'{re.escape(counterparty)}\s+(?:is\s+)?grant(?:s|ed|ing)\b',
+        blob, re.IGNORECASE,
+    ):
+        return 'counterparty'
+    if re.search(
+        rf'\bgrant(?:s|ed|ing)\s+(?:to\s+)?(?:the\s+Company|{re.escape(filer) if filer else "the Company"})\b',
+        blob, re.IGNORECASE,
+    ):
+        return 'counterparty'
+    return None
+
+
+def is_valid_upfront_amount(
+    quote: str,
+    type_quote: str,
+    filer: str,
+    counterparty: str,
+    filer_role: str | None,
+) -> bool:
+    """Upfront must have signing/closing timing AND licensee→licensor direction.
+
+    'One-time' alone is not enough when the payment is due on a later event.
+    Reimbursement / funding / development costs are never the upfront.
+    Unclear timing or payer → reject (omit the field).
+    Grant direction is taken only from explicit 'grants' wording, never from
+    a generic 'entered into … Agreement with X' role assignment.
+    """
+    if not quote:
+        return False
+    if _UPFRONT_REIMBURSE_RE.search(quote):
+        return False
+    has_timing = bool(_UPFRONT_TIMING_RE.search(quote))
+    has_later = bool(_UPFRONT_LATER_EVENT_RE.search(quote))
+    if has_later and not has_timing:
+        return False
+    if not has_timing:
+        return False
+
+    license_like = (
+        filer_role in ('licensor', 'licensee', 'filer_is_licensor', 'license_party')
+        or has_license_grant_language(type_quote or '')
+    )
+    if not license_like:
+        return True
+
+    payer, payee = _extract_upfront_payer_payee(quote, filer, counterparty)
+    if payer is None and payee is None:
+        return False
+
+    licensor_side = _explicit_grant_licensor_side(
+        type_quote, quote, filer, counterparty
+    )
+    if licensor_side is None:
+        return True
+    licensee_side = 'counterparty' if licensor_side == 'filer' else 'filer'
+    if payer == licensor_side:
+        return False
+    if payee == licensee_side:
+        return False
+    if payer and payer != licensee_side:
+        return False
+    if payee and payee != licensor_side:
+        return False
+    return True
 
 
 def verify_defined_term_in_type_quote(counterparty: str, type_quote: str, filing_text: str) -> bool:
@@ -2813,6 +2967,11 @@ def process_sec_deal(
         # PRECISION-FIRST: Amount quote must contain role keyword for its kind
         if not has_role_keyword_for_kind(quote, kind):
             logging.debug("Amount dropped: quote missing role keyword for kind=%s: %s", kind_str, quote[:80])
+            continue
+        if kind == AmountKind.UPFRONT and not is_valid_upfront_amount(
+            quote, type_quote, filer_name, counterparty, filer_role
+        ):
+            logging.info("Amount dropped: upfront lacks timing or licensee→licensor payer: %s", quote[:80])
             continue
         
         # Verification: quote must be in filing
@@ -3496,6 +3655,35 @@ def extract_numbers_from_text(text: str) -> set[str]:
                 continue
         numbers.add(_fmt_num(parsed))
     
+    # 成: 三成 = 30%. Do not record the bare coefficient (三 ≠ 30).
+    cn_cheng_pattern = r'([零一二三四五六七八九十两〇\d]+)\s*成'
+    for m in re.finditer(cn_cheng_pattern, text):
+        parsed = chinese_to_number(m.group(1))
+        if parsed is None:
+            try:
+                parsed = float(m.group(1))
+            except ValueError:
+                continue
+        if parsed <= 0:
+            continue
+        pct = parsed * 10
+        numbers.add(f"{_fmt_num(pct)}%")
+        numbers.add(_fmt_num(pct))
+        numbers.add(f"{m.group(1)}成")
+
+    # 倍: 两倍 = 2x / 2-fold. Do not treat 一倍 as a real multiple.
+    cn_bei_pattern = r'([二三四五六七八九十两〇][零一二三四五六七八九十两〇]*|\d+)\s*倍'
+    for m in re.finditer(cn_bei_pattern, text):
+        parsed = chinese_to_number(m.group(1))
+        if parsed is None:
+            try:
+                parsed = float(m.group(1))
+            except ValueError:
+                continue
+        numbers.add(_fmt_num(parsed))
+        numbers.add(f"{_fmt_num(parsed)}x")
+        numbers.add(f"{m.group(1)}倍")
+
     # Percentages
     for m in re.finditer(r'\d+(?:\.\d+)?%', text):
         numbers.add(m.group())
@@ -3505,6 +3693,14 @@ def extract_numbers_from_text(text: str) -> set[str]:
         numbers.add(f"{m.group(1)}/{m.group(2)}")
         _add_exact(m.group(1))
         _add_exact(m.group(2))
+
+    # English multiples: 2-fold, twofold, 2x, twice
+    for m in re.finditer(r'(\d+(?:\.\d+)?)\s*[-]?\s*fold\b', text, re.IGNORECASE):
+        _add_exact(m.group(1))
+    for m in re.finditer(r'(\d+(?:\.\d+)?)\s*x\b', text, re.IGNORECASE):
+        _add_exact(m.group(1))
+    if re.search(r'\btwice\b', text, re.IGNORECASE):
+        numbers.add('2')
     
     return numbers
 
@@ -3536,6 +3732,11 @@ def _quantity_value(token: str) -> float | None:
     if token.endswith('万'):
         coeff = _as_plain_number(token[:-1])
         return None if coeff is None else coeff * 1e4
+    if token.endswith('成'):
+        coeff = _as_plain_number(token[:-1])
+        return None if coeff is None else coeff * 10
+    if token.endswith('倍') or token.endswith('x'):
+        return _as_plain_number(token[:-1])
     return _as_plain_number(token)
 
 
