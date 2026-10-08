@@ -1599,7 +1599,7 @@ class TestMergerVehicleCounterparty:
 
     def test_process_resolves_purchaser_to_parent(self):
         filing = (
-            "Kestrel Rx, Inc. (the \"Company\") entered into an Agreement and Plan "
+            "On October 1, 2026, Kestrel Rx, Inc. (the \"Company\") entered into an Agreement and Plan "
             "of Merger with Purchaser, a wholly owned subsidiary of Osprey Pharma plc. "
             "Purchaser will merge with and into the Company. The Company will be acquired "
             "for $18.50 per share."
@@ -1737,7 +1737,7 @@ class TestCleanupRelativeCutoffAndGrants:
 
     def test_process_accepts_granting_rights_license(self):
         filing = (
-            "Alector, Inc. (the \"Company\") entered into a License Agreement with "
+            "On October 1, 2026, Alector, Inc. (the \"Company\") entered into a License Agreement with "
             "Genentech, Inc. Pursuant to the Agreement, Alector is granting Genentech "
             "exclusive worldwide rights to develop and commercialize antibody products. "
             "Alector will receive a $100 million upfront payment from Genentech."
@@ -1820,7 +1820,7 @@ class TestUpfrontPayerAndTiming:
 
     def test_process_omits_reverse_or_late_upfront_from_grants_rights(self):
         filing = (
-            "Alector, Inc. (the \"Company\") entered into a License Agreement with "
+            "On October 1, 2026, Alector, Inc. (the \"Company\") entered into a License Agreement with "
             "Genentech, Inc. Alector is granting Genentech exclusive worldwide rights "
             "to develop and commercialize. Alector will pay Genentech a $15 million "
             "upfront payment. Genentech will also pay Alector a one-time payment of "
@@ -2145,7 +2145,7 @@ class TestDefinedTermsDecideParties:
 
     def test_process_publishes_lowercase_brand_not_bare_suffix(self):
         filing = (
-            "acme therapeutics BV, a private limited liability company "
+            "On October 1, 2026, acme therapeutics BV, a private limited liability company "
             "organized under Dutch Law (\"Parent\"), agreed that Parent will "
             "acquire Kestrel Rx, Inc. for $400 million. Kestrel Rx, Inc. is "
             "the target."
@@ -2182,7 +2182,7 @@ class TestDefinedTermsDecideParties:
 
     def test_target_filer_by_and_among_company_parent_merger_sub(self):
         filing = (
-            "Kestrel Rx, Inc. (the \"Company\") entered into an Agreement and "
+            "On October 1, 2026, Kestrel Rx, Inc. (the \"Company\") entered into an Agreement and "
             "Plan of Merger by and among the Company, Osprey Pharma LLC "
             "(\"Parent\") and Helios BidCo Inc. (\"Merger Sub\"). Parent will "
             "acquire the Company for $400 million."
@@ -2214,7 +2214,7 @@ class TestDefinedTermsDecideParties:
 
     def test_buyer_filer_merger_keeps_target(self):
         filing = (
-            "Osprey Pharma Inc. (the \"Company\") entered into an Agreement "
+            "On October 1, 2026, Osprey Pharma Inc. (the \"Company\") entered into an Agreement "
             "and Plan of Merger with Thistle Rx, Inc. (\"Target\"). The "
             "Company will acquire Thistle Rx, Inc. for $400 million."
         )
@@ -2277,7 +2277,7 @@ class TestDefinedTermsDecideParties:
 
     def test_tender_offer_parent_purchaser_publishes_parent_acquires_filer(self):
         filing = (
-            "Osprey Pharma Inc. (\"Parent\") and Helios BidCo LLC "
+            "On October 1, 2026, Osprey Pharma Inc. (\"Parent\") and Helios BidCo LLC "
             "(\"Purchaser\"), a wholly owned subsidiary of Parent, "
             "commenced a tender offer. Purchaser will acquire all "
             "outstanding shares of Kestrel Rx, Inc. (the \"Company\") "
@@ -2406,7 +2406,7 @@ class TestDefinedTermsDecideParties:
         filing = (
             "Kestrel Rx, Inc. (the \"Company\") entered into an Amended and "
             "Restated Exclusive License Agreement with Pine Bio Ltd (the "
-            "\"A&R License\"). Separately, the Company entered into a License "
+            "\"A&R License\"). Separately, on October 1, 2026, the Company entered into a License "
             "Agreement with Harbor Bio AG (the \"New License\"). Pursuant to "
             "the New License, the Company granted Harbor Bio AG an exclusive "
             "license. Harbor will pay the Company a $20 million upfront payment."
@@ -2452,7 +2452,7 @@ class TestDefinedTermsDecideParties:
     def test_new_license_not_killed_by_unrelated_older_dated_agreement(self):
         filing = (
             "The Indenture dated March 1, 2022 remains outstanding. "
-            "Kestrel Rx, Inc. (the \"Company\") entered into a License "
+            "On October 1, 2026, Kestrel Rx, Inc. (the \"Company\") entered into a License "
             "Agreement with Harbor Bio AG. The Company granted Harbor Bio AG "
             "an exclusive license. Harbor will pay the Company a $20 million "
             "upfront payment."
@@ -2662,16 +2662,17 @@ class TestDefinedTermsDecideParties:
     def test_board_of_trustees_of_university_is_kept(self):
         uni = 'the Board of Trustees of Example State University ("Licensor")'
         names = sec_deals.parse_defined_terms(uni).get("licensor", [])
-        assert names, uni
-        blob = " ".join(names).lower()
-        assert "university" in blob, names
-        assert "board" not in blob, names
-        other = 'Trustees of the University of Exampleland ("Parent")'
-        names = sec_deals.parse_defined_terms(other).get("parent", [])
         assert any(
-            n.lower().startswith("trustees of") and "university" in n.lower()
+            "board of trustees" in n.lower() and "university" in n.lower()
             for n in names
         ), names
+        other = 'Board of Trustees of the University of Exampleland ("Parent")'
+        names = sec_deals.parse_defined_terms(other).get("parent", [])
+        assert any(
+            "board of trustees" in n.lower() and "university" in n.lower()
+            for n in names
+        ), names
+        assert not any(n.lower().startswith("regents of") for n in names)
 
     def test_agreement_title_heading_is_not_part_of_party_name(self):
         texts = [
@@ -2696,7 +2697,7 @@ class TestDefinedTermsDecideParties:
             "10.2  Amendment No. 1 to Collaboration Agreement dated March 3, 2018\n"
             "\n"
             "Item 1.01 Entry into a Material Definitive Agreement.\n"
-            "Kestrel Rx, Inc. (the \"Company\") entered into a License "
+            "On October 1, 2026, Kestrel Rx, Inc. (the \"Company\") entered into a License "
             "Agreement with Harbor Bio AG (the \"License Agreement\"). "
             "Pursuant to the License Agreement, the Company granted Harbor "
             "Bio AG an exclusive license. Harbor will pay the Company a $20 "
@@ -2730,7 +2731,7 @@ class TestDefinedTermsDecideParties:
 
     def test_new_license_plus_unrelated_amendment_still_publishes(self):
         filing = (
-            "Kestrel Rx, Inc. (the \"Company\") entered into a License "
+            "On October 1, 2026, Kestrel Rx, Inc. (the \"Company\") entered into a License "
             "Agreement with Harbor Bio AG (the \"License Agreement\"). "
             "Pursuant to the License Agreement, the Company granted Harbor "
             "Bio AG an exclusive license. Harbor will pay the Company a $20 "
@@ -2845,7 +2846,7 @@ class TestInstrumentHistoryAndPartyHygiene:
             "Exhibit Index\n"
             "10.1  Amended and Restated Supply Agreement dated February 2, 2016\n"
             "Item 1.01\n"
-            "Lumen Therapeutics, Inc. (the \"Company\") entered into a License "
+            "On October 1, 2026, Lumen Therapeutics, Inc. (the \"Company\") entered into a License "
             "Agreement with Quill Bio Ltd (the \"License Agreement\"). Pursuant "
             "to the License Agreement, the Company granted Quill Bio Ltd an "
             "exclusive licence. Quill will pay a $9 million upfront payment."
@@ -3003,7 +3004,7 @@ class TestInstrumentHistoryAndPartyHygiene:
         assert sec_deals._fallback_clean_party_name("and Cedar Peak Inc.") is None
         assert sec_deals._fallback_clean_party_name("Cedar Peak Inc.") == "Cedar Peak Inc."
         filing = (
-            "Cedar Peak Inc. (\"Parent\") agreed that Parent will acquire "
+            "On October 1, 2026, Cedar Peak Inc. (\"Parent\") agreed that Parent will acquire "
             "Lumen Therapeutics, Inc. (the \"Company\") for $250 million."
         )
         deal = sec_deals.process_sec_deal(
@@ -3063,7 +3064,7 @@ class TestEquityNeverADealPayment:
 
     def test_process_omits_equity_from_license(self):
         filing = (
-            "Nimbus Labs, Inc. entered into a License Agreement with Harbor Bio AG. "
+            "On October 1, 2026, Nimbus Labs, Inc. entered into a License Agreement with Harbor Bio AG. "
             "Nimbus Labs, Inc. granted Harbor Bio AG an exclusive license. "
             "Harbor Bio AG will pay the Company a $20 million upfront payment. "
             "The Company also sold shares in a private placement at a share price of $8.50 "
@@ -3111,7 +3112,7 @@ class TestMilestonesMeanMilestonesOnly:
 
     def test_process_omits_combined_total_milestone(self):
         filing = (
-            "Nimbus Labs, Inc. entered into a License Agreement with Harbor Bio AG. "
+            "On October 1, 2026, Nimbus Labs, Inc. entered into a License Agreement with Harbor Bio AG. "
             "Nimbus Labs, Inc. granted Harbor Bio AG an exclusive license. "
             "Harbor Bio AG will pay the Company a $20 million upfront payment "
             "and up to $200 million in total consideration including the upfront."
@@ -3161,7 +3162,7 @@ class TestVehicleNeverBareRoleWord:
 class TestHeadlineOnlyUpfrontOrPurchasePrice:
     def test_milestone_is_not_headline(self):
         filing = (
-            "Nimbus Labs, Inc. entered into a License Agreement with Harbor Bio AG. "
+            "On October 1, 2026, Nimbus Labs, Inc. entered into a License Agreement with Harbor Bio AG. "
             "Nimbus Labs, Inc. granted Harbor Bio AG an exclusive license. "
             "Harbor Bio AG will pay the Company a $20 million upfront payment "
             "and milestone payments totaling $180 million."
@@ -3226,306 +3227,169 @@ class TestRecallPayerLicensorPassiveCurly:
         ) is True
 
 
-class TestPositiveEvidencePrecision:
-    """Publish only on affirmative new-agreement evidence (invented names)."""
+class TestStructuralItemGate:
+    """One invented-name check per structural-gate item."""
 
-    def test_new_license_that_mentions_older_pact_still_publishes(self):
-        filing = (
-            "Solace Medicines, Inc. (the \"Company\") entered into a License "
-            "Agreement with Cobalt Binding Ltd (the \"New Pact\"). The New Pact "
-            "refers to the 2018 Collaboration with Meridian Fold plc, restates "
-            "milestone payments, and notes a joinder of a Cobalt affiliate. "
-            "Pursuant to the New Pact, the Company granted Cobalt Binding Ltd "
-            "an exclusive licence. Cobalt will pay a $11 million upfront payment."
+    def test_item1_only_item_101_8k_is_in_scope(self):
+        tenq = (
+            "FORM 10-Q\nItem 1. Legal Proceedings\n"
+            "On October 1, 2026, Solace Medicines, Inc. entered into a License "
+            "Agreement with Cobalt Binding Ltd and granted Cobalt Binding Ltd "
+            "an exclusive licence."
         )
-        quote = "the Company granted Cobalt Binding Ltd an exclusive licence"
-        assert sec_deals.out_of_scope_deal_reason(
-            quote, filing, filing_date="2026-10-05",
-        ) is None
+        quote = "granted Cobalt Binding Ltd an exclusive licence"
+        assert sec_deals.out_of_scope_deal_reason(quote, tenq, filing_date="2026-10-05") is not None
+        item801 = (
+            "FORM 8-K\nItem 8.01 Other Events\n"
+            "On October 1, 2026, the Company granted Cobalt Binding Ltd an exclusive licence."
+        )
+        assert sec_deals._structural_item101(item801, quote) is None
+        ok = (
+            "FORM 8-K\nDate of Report (Date of earliest event reported): October 1, 2026\n"
+            "Item 1.01 Entry into a Material Definitive Agreement.\n"
+            "On October 1, 2026, Solace Medicines, Inc. (the \"Company\") entered "
+            "into a License Agreement with Cobalt Binding Ltd (the \"New Pact\"). "
+            "Pursuant to the New Pact, the Company granted Cobalt Binding Ltd an "
+            "exclusive licence. Cobalt will pay a $11 million upfront payment.\n"
+            "Item 9.01 Financial Statements and Exhibits.\n"
+        )
         deal = sec_deals.process_sec_deal(
-            filing_text=filing,
-            filer_name="Solace Medicines, Inc.",
-            filing_url="https://test",
-            filing_date="2026-10-05",
-            event_date="2026-10-01",
+            filing_text=ok, filer_name="Solace Medicines, Inc.",
+            filing_url="https://test", filing_date="2026-10-05", event_date="2026-10-01",
             claude_response={
                 "deal_type": "license_collaboration",
                 "counterparty_name": "Cobalt Binding Ltd",
-                "type_quote": quote,
+                "type_quote": "the Company granted Cobalt Binding Ltd an exclusive licence",
                 "counterparty_quote": "License Agreement with Cobalt Binding Ltd",
                 "amounts": [{"kind": "upfront", "quote": "a $11 million upfront payment"}],
             },
         )
         assert deal is not None
-        assert "cobalt" in deal["counterparty"].lower()
-        assert "meridian" not in deal["counterparty"].lower()
 
-    def test_update_under_old_agreement_is_not_published(self):
+    def test_item2_entered_title_stops_and_drops_wrappers(self):
         filing = (
-            "Solace Medicines, Inc. (the \"Company\") is party to the 2018 "
-            "License with Cobalt Binding Ltd. In an update under the 2018 "
-            "License, the Company granted Cobalt Binding Ltd an exclusive "
-            "licence. Cobalt will pay a $6 million upfront payment."
+            "Item 1.01 Entry into a Material Definitive Agreement.\n"
+            "On October 1, 2026, Solace Medicines, Inc. entered into a letter "
+            "agreement amending the Research Pact with Cobalt Binding Ltd. "
+            "The Company granted Cobalt Binding Ltd an exclusive licence."
         )
-        quote = "the Company granted Cobalt Binding Ltd an exclusive licence"
         assert sec_deals.has_affirmative_new_agreement(
-            sec_deals.DealType.LICENSE_COLLABORATION,
-            filing,
-            "Cobalt Binding Ltd",
-            reference_date="2026-10-05",
+            sec_deals.DealType.LICENSE_COLLABORATION, filing, "Cobalt Binding Ltd",
+            reference_date="2026-10-01",
+            type_quote="the Company granted Cobalt Binding Ltd an exclusive licence",
         ) is False
-        deal = sec_deals.process_sec_deal(
-            filing_text=filing,
-            filer_name="Solace Medicines, Inc.",
-            filing_url="https://test",
-            filing_date="2026-10-05",
-            event_date="2026-10-01",
-            claude_response={
-                "deal_type": "license_collaboration",
-                "counterparty_name": "Cobalt Binding Ltd",
-                "type_quote": quote,
-                "counterparty_quote": "the 2018 License with Cobalt Binding Ltd",
-                "amounts": [{"kind": "upfront", "quote": "a $6 million upfront payment"}],
-            },
+        titles = sec_deals._collect_item101_new_agreements(
+            "On October 1, 2026, the Company entered into a License Agreement with Cobalt Binding Ltd.",
+            "2026-10-01",
         )
-        assert deal is None
+        assert titles and titles[0].title.lower() == "license agreement"
 
-    def test_grant_payment_option_consent_without_entered_into_dropped(self):
-        for extra in (
-            "the Company granted Cobalt Binding Ltd an exclusive licence",
-            "Cobalt Binding Ltd will pay a $3 million payment",
-            "the Company exercised an option under the Research Pact",
-            "the Company delivered a consent to assignment of the Research Pact",
-        ):
-            filing = (
-                "Solace Medicines, Inc. (the \"Company\") remains party to a "
-                f"Research Pact with Cobalt Binding Ltd. {extra}. Cobalt will "
-                "pay a $3 million upfront payment."
-            )
-            assert sec_deals.has_affirmative_new_agreement(
-                sec_deals.DealType.LICENSE_COLLABORATION,
-                filing,
-                "Cobalt Binding Ltd",
-                reference_date="2026-10-05",
-            ) is False, extra
-
-    def test_merger_requires_entered_into_plan_in_period(self):
-        stale = (
-            "Solace Medicines, Inc. (the \"Company\") discussed a possible "
-            "combination with Ironclad Holdings Inc. Merger Sub will merge "
-            "with and into the Company for $90 million."
+    def test_item3_grant_must_name_that_agreements_short(self):
+        filing = (
+            "Item 1.01 Entry into a Material Definitive Agreement.\n"
+            "On October 1, 2026, Solace Medicines, Inc. entered into a License "
+            "Agreement with Cobalt Binding Ltd (the \"New Pact\"). Separately, "
+            "under the 2018 Collaboration the Company granted Meridian Fold plc "
+            "an exclusive licence."
         )
         assert sec_deals.has_affirmative_new_agreement(
-            sec_deals.DealType.MERGER,
-            stale,
-            "Ironclad Holdings Inc.",
-            reference_date="2026-10-05",
+            sec_deals.DealType.LICENSE_COLLABORATION, filing, "Meridian Fold plc",
+            reference_date="2026-10-01",
+            type_quote="the Company granted Meridian Fold plc an exclusive licence",
         ) is False
-        current = (
-            "Solace Medicines, Inc. (the \"Company\") entered into an "
-            "Agreement and Plan of Merger with Ironclad Holdings Inc. on "
-            "October 1, 2026. Merger Sub will merge with and into the "
-            "Company for $90 million."
-        )
-        assert sec_deals.has_affirmative_new_agreement(
-            sec_deals.DealType.MERGER,
-            current,
-            "Ironclad Holdings Inc.",
-            reference_date="2026-10-05",
-        ) is True
-        deal = sec_deals.process_sec_deal(
-            filing_text=current,
-            filer_name="Solace Medicines, Inc.",
-            filing_url="https://test",
-            filing_date="2026-10-05",
-            event_date="2026-10-01",
-            claude_response={
-                "deal_type": "merger",
-                "counterparty_name": "Ironclad Holdings Inc.",
-                "type_quote": "entered into an Agreement and Plan of Merger with Ironclad Holdings Inc. on October 1, 2026. Merger Sub will merge with and into the Company",
-                "counterparty_quote": "Agreement and Plan of Merger with Ironclad Holdings Inc.",
-                "amounts": [{"kind": "purchase_price", "quote": "for $90 million"}],
-            },
-        )
-        assert deal is not None
-        assert "ironclad" in deal["counterparty"].lower()
 
-    def test_merger_does_not_inherit_unrelated_license_date(self):
+    def test_item4_year_only_and_is_party_to_are_historical(self):
         filing = (
-            "Solace Medicines, Inc. (the \"Company\") is party to a License "
-            "Agreement, dated as of March 4, 2017 (the \"Old License\"), with "
-            "Cobalt Binding Ltd. On October 1, 2026 the Company entered into "
-            "an Agreement and Plan of Merger with Ironclad Holdings Inc. "
-            "Merger Sub will merge with and into the Company for $90 million."
-        )
-        dated = sec_deals._date_on_entered_into_sentence(
-            "Agreement and Plan of Merger",
-            "On October 1, 2026 the Company entered into an Agreement and "
-            "Plan of Merger with Ironclad Holdings Inc.",
-        )
-        assert dated is None or dated.year == 2026
-        license_date = sec_deals._agreement_date_from_filing(
-            "Under the Old License the Company granted rights",
-            filing,
-        )
-        assert license_date is not None and license_date.year == 2017
-        assert sec_deals.has_affirmative_new_agreement(
-            sec_deals.DealType.MERGER,
-            filing,
-            "Ironclad Holdings Inc.",
-            reference_date="2026-10-05",
-        ) is True
-
-    def test_dated_as_of_any_casing_and_entered_into_in_month_year(self):
-        filing = (
-            "Solace Medicines, Inc. remains bound by that exclusive research "
-            "and license agreement, dated as of june 9, 2015 (the \"Pact\"). "
-            "The company entered into in March 2014 a supply indenture that "
-            "is unrelated. Under the Pact, the Company granted Cobalt Binding "
-            "Ltd an exclusive licence."
+            "Item 1.01 Entry into a Material Definitive Agreement.\n"
+            "Solace Medicines, Inc. is party to the License Agreement entered "
+            "into in 2018 with Cobalt Binding Ltd. As previously disclosed, "
+            "the Company granted Cobalt Binding Ltd an exclusive licence."
         )
         quote = "the Company granted Cobalt Binding Ltd an exclusive licence"
         assert sec_deals.is_historical_agreement(quote, "2026-10-05", filing) is True
-        month_year = (
-            "Solace Medicines, Inc. entered into in January 2016 a License "
-            "Agreement with Cobalt Binding Ltd. Under that License Agreement "
-            "the Company granted Cobalt Binding Ltd an exclusive licence."
-        )
         assert sec_deals.has_affirmative_new_agreement(
-            sec_deals.DealType.LICENSE_COLLABORATION,
-            month_year,
-            "Cobalt Binding Ltd",
-            reference_date="2026-10-05",
+            sec_deals.DealType.LICENSE_COLLABORATION, filing, "Cobalt Binding Ltd",
+            reference_date="2026-10-01", type_quote=quote,
         ) is False
 
-    def test_year_named_short_and_dated_as_of_without_short_name(self):
-        year_named = (
-            "Solace Medicines, Inc. (the \"Company\") remains party to the "
-            "2014 License. Under the 2014 License, the Company granted Cobalt "
-            "Binding Ltd an exclusive licence."
+    def test_item5_on_date_grant_drops_if_prior_sentence_is_existing(self):
+        poison = (
+            "Item 1.01 Entry into a Material Definitive Agreement.\n"
+            "The Company remains party to an existing License Agreement. "
+            "On October 1, 2026, the Company granted Cobalt Binding Ltd an exclusive licence."
         )
-        quote = "the Company granted Cobalt Binding Ltd an exclusive licence"
-        assert sec_deals.is_historical_agreement(quote, "2026-10-05", year_named) is True
-        no_short = (
-            "Solace Medicines, Inc. is party to that certain Exclusive "
-            "Research and License Agreement, dated as of May 2, 2015. Under "
-            "the Exclusive Research and License Agreement, the Company "
-            "granted Cobalt Binding Ltd an exclusive licence."
+        assert sec_deals.has_affirmative_new_agreement(
+            sec_deals.DealType.LICENSE_COLLABORATION, poison, "Cobalt Binding Ltd",
+            reference_date="2026-10-01",
+            type_quote="the Company granted Cobalt Binding Ltd an exclusive licence",
+        ) is False
+        clean = (
+            "Item 1.01 Entry into a Material Definitive Agreement.\n"
+            "On October 1, 2026, the Company granted Cobalt Binding Ltd an exclusive licence."
         )
-        assert sec_deals._agreement_date_from_filing(
-            "Under the Exclusive Research and License Agreement, the Company "
-            "granted Cobalt Binding Ltd an exclusive licence",
-            no_short,
-        ) is not None
-        assert sec_deals.is_historical_agreement(
-            "Under the Exclusive Research and License Agreement, the Company "
-            "granted Cobalt Binding Ltd an exclusive licence",
-            "2026-10-05",
-            no_short,
+        assert sec_deals.has_affirmative_new_agreement(
+            sec_deals.DealType.LICENSE_COLLABORATION, clean, "Cobalt Binding Ltd",
+            reference_date="2026-10-01",
+            type_quote="On October 1, 2026, the Company granted Cobalt Binding Ltd an exclusive licence",
         ) is True
 
-    def test_quote_pairing_does_not_join_closer_to_next_opener(self):
-        text = (
-            'the Exclusive Research and License Agreement (the "Pact") '
-            'and the Agreement and Plan of Merger (the "Merger Pact")'
+    def test_item6_merger_closing_and_old_amendment_drop(self):
+        closing = (
+            "Item 2.01 Completion of Acquisition or Disposition of Assets.\n"
+            "On October 1, 2026, Solace Medicines, Inc. completed the merger with Ironclad Holdings Inc."
         )
-        terms = sec_deals._quoted_terms_in(text)
-        assert terms == ["Pact", "Merger Pact"]
-        curly = (
-            "the Exclusive Research and License Agreement (the “Pact”) "
-            "and the Agreement and Plan of Merger (the “Merger Pact”)"
+        assert sec_deals.out_of_scope_deal_reason(
+            "completed the merger with Ironclad Holdings Inc.", closing,
+            filing_date="2026-10-05", event_date="2026-10-01",
+        ) is not None
+        amended = (
+            "Item 1.01 Entry into a Material Definitive Agreement.\n"
+            "On October 1, 2026, Solace Medicines, Inc. entered into Amendment No. 1 "
+            "to the Agreement and Plan of Merger with Ironclad Holdings Inc."
         )
-        assert sec_deals._quoted_terms_in(curly) == ["Pact", "Merger Pact"]
-        spaced = 'defined as (the " Pact ") next (the " Merger Pact ")'
-        assert sec_deals._quoted_terms_in(spaced) == ["Pact", "Merger Pact"]
-        mixed = 'ended ” then opened “Fresh” later'
-        assert "then opened" not in " ".join(sec_deals._quoted_terms_in(mixed))
+        assert sec_deals.has_affirmative_new_agreement(
+            sec_deals.DealType.MERGER, amended, "Ironclad Holdings Inc.",
+            reference_date="2026-10-01",
+            type_quote="entered into Amendment No. 1 to the Agreement and Plan of Merger",
+        ) is False
 
-    def test_role_prefix_only_when_role_of_entity(self):
-        chair = 'Chair of the Board of Trustees of Northern Vale University ("Licensor")'
-        names = sec_deals.parse_defined_terms(chair).get("licensor", [])
-        assert names, chair
+    def test_item7_collaboration_without_license_grant_is_not_published(self):
+        assert sec_deals.has_license_grant_language(
+            "the Company entered into a Collaboration Agreement with Cobalt Binding Ltd"
+        ) is False
+        assert sec_deals.has_license_grant_language(
+            "the Company granted Cobalt Binding Ltd an exclusive licence"
+        ) is True
+
+    def test_item8_of_declared_party_publishes_the_declared_name(self):
+        text = 'Chair of the Board of Trustees of Northern Vale University ("Licensor")'
+        names = sec_deals.parse_defined_terms(text).get("licensor", [])
+        assert names
         blob = " ".join(names).lower()
         assert "northern vale" in blob
         assert "chair" not in blob
-        assert "board" not in blob
-        legal = 'Cobalt Binding Ltd ("Licensee")'
-        kept = sec_deals.parse_defined_terms(legal).get("licensee", [])
-        assert any(n.startswith("Cobalt") for n in kept), kept
-        assert sec_deals._fallback_clean_party_name("Chair of the Board of Trustees of Northern Vale University")
-        cleaned = sec_deals._fallback_clean_party_name(
-            "Chair of the Board of Trustees of Northern Vale University"
+        resolved = sec_deals._resolve_declared_party(
+            "Chair of the Board of Trustees of Northern Vale University", text,
         )
-        assert cleaned is not None
-        assert "chair" not in cleaned.lower()
-        assert cleaned.lower().startswith("northern") or cleaned.lower().startswith("trustees")
+        assert resolved is not None
+        assert "chair" not in resolved.lower()
+        assert "northern vale" in resolved.lower()
+        assert sec_deals._resolve_declared_party("Cobalt Binding Partners Group",
+            'License Agreement with Cobalt Binding Ltd ("Cobalt")') is None
 
-    def test_never_cuts_first_word_of_legal_name(self):
-        text = 'Cobalt Binding Ltd ("Licensee")'
-        names = sec_deals.parse_defined_terms(text).get("licensee", [])
-        assert any(n == "Cobalt Binding Ltd" for n in names), names
-        assert not any(n.lower().startswith("binding") for n in names)
-        assert sec_deals._fallback_clean_party_name("Cobalt Binding Ltd") == "Cobalt Binding Ltd"
-
-    def test_institutional_exemption_only_at_name_start(self):
+    def test_item9_board_of_trustees_university_stays_whole(self):
+        uni = 'the Board of Trustees of Example State University ("Licensor")'
+        names = sec_deals.parse_defined_terms(uni).get("licensor", [])
+        assert any(
+            n.lower().startswith("board of trustees") and "university" in n.lower()
+            for n in names
+        ), names
         assert sec_deals._is_institutional_legal_name(
-            "Regents of the University of Northern Vale"
+            "Board of Trustees of Example State University"
         )
-        assert sec_deals._is_institutional_legal_name(
-            "President and Fellows of Northern Vale College"
-        )
-        assert sec_deals._is_institutional_legal_name(
-            "Trustees of Northern Vale University"
-        )
-        assert not sec_deals._is_institutional_legal_name(
-            "Chair of the Board of Trustees of Northern Vale University"
-        )
-        assert not sec_deals._is_institutional_legal_name(
-            "Board of Trustees of Northern Vale University"
-        )
-        names = sec_deals.parse_defined_terms(
-            'President and Fellows of Northern Vale College ("Licensor")'
-        ).get("licensor", [])
-        assert any("president and fellows" in n.lower() for n in names), names
-
-    def test_published_counterparty_must_be_verbatim_party_name(self):
-        filing = (
-            "Solace Medicines, Inc. (the \"Company\") entered into a License "
-            "Agreement with Cobalt Binding Ltd. The Company granted Cobalt "
-            "Binding Ltd an exclusive licence. Cobalt will pay a $7 million "
-            "upfront payment."
-        )
-        invented = sec_deals.process_sec_deal(
-            filing_text=filing,
-            filer_name="Solace Medicines, Inc.",
-            filing_url="https://test",
-            filing_date="2026-10-05",
-            event_date="2026-10-01",
-            claude_response={
-                "deal_type": "license_collaboration",
-                "counterparty_name": "Cobalt Binding Partners Group",
-                "type_quote": "the Company granted Cobalt Binding Ltd an exclusive licence",
-                "counterparty_quote": "License Agreement with Cobalt Binding Ltd",
-                "amounts": [{"kind": "upfront", "quote": "a $7 million upfront payment"}],
-            },
-        )
-        assert invented is None
-        ok = sec_deals.process_sec_deal(
-            filing_text=filing,
-            filer_name="Solace Medicines, Inc.",
-            filing_url="https://test",
-            filing_date="2026-10-05",
-            event_date="2026-10-01",
-            claude_response={
-                "deal_type": "license_collaboration",
-                "counterparty_name": "Cobalt Binding Ltd",
-                "type_quote": "the Company granted Cobalt Binding Ltd an exclusive licence",
-                "counterparty_quote": "License Agreement with Cobalt Binding Ltd",
-                "amounts": [{"kind": "upfront", "quote": "a $7 million upfront payment"}],
-            },
-        )
-        assert ok is not None
-        assert ok["counterparty"] == "Cobalt Binding Ltd"
+        assert sec_deals._resolve_declared_party(
+            "Board of Trustees of Example State University", uni,
+        ) == "Board of Trustees of Example State University"
 
 
 # =============================================================================

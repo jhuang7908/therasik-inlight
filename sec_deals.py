@@ -656,14 +656,17 @@ def _split_sentences(text: str) -> list[str]:
         '. ',
         text,
     )
+    # Case-fold only the abbreviation; (?!\\s+[A-Z]) must stay case-sensitive
+    # or "Inc. and" is treated as a sentence end.
     protected = re.sub(
-        _ABBREV_PERIOD_RE.pattern + r'(?!\s+[A-Z])',
+        r'(?i:\b(?:Inc|Incorporated|Ltd|LLC|L\.L\.C|Corp|Corporation|Co|Limited|'
+        r'plc|AG|GmbH|S\.r\.l|S\.A|SA|SAS|N\.V|B\.V|K\.K|LP|L\.P|Pte|Pty|'
+        r'A/S|AB|NV|BV|KK|SE)\.)(?!\s+[A-Z])',
         lambda m: m.group(0)[:-1] + '\u0000',
         text,
-        flags=re.IGNORECASE,
     )
     parts = re.split(
-        r'(?<=[。！？])|(?<=(?<!\d)\.(?!\d))\s+|(?<=\d{4}\.)\s+',
+        r'(?<=[。！？])|(?<=(?<!\d)\.(?!\d))\s+|(?<=\d{4}\.)\s+|(?<=\d)\.\s+(?=[A-Z][a-z])',
         protected,
     )
     return [p.replace('\u0000', '.').strip() for p in parts if p.strip()]
@@ -1958,7 +1961,8 @@ _MONTH_NAME_TO_NUM = {
     'december': 12,
 }
 
-_OLD_EVENT_CUTOFF = timedelta(days=365)
+_OLD_EVENT_CUTOFF = timedelta(days=21)
+_NEAR_PERIOD = timedelta(days=21)
 
 
 def _parse_loose_date(value: str | None) -> date | None:
@@ -2243,13 +2247,28 @@ def is_historical_agreement(
 
     historical_patterns = [
         r'\bpreviously\s+(?:entered|agreed|executed|signed|disclosed|announced)\b',
-        r'\boriginal\s+agreement\b',
+        r'\bas\s+previously\s+(?:disclosed|reported|announced)\b',
+        r'\boriginal\s+(?:agreement|licen[sc]e|collaboration)\b',
+        r'\bexisting\s+(?:agreement|licen[sc]e|collaboration|pact|indenture)\b',
+        r'\bis\s+party\s+to\b',
+        r'\beffective\s+as\s+of\b',
+        r'\bin\s+(?:january|february|march|april|may|june|july|august|september|october|november|december)\s+(?:19|20)\d{2}\b',
+        r'\bin\s+(?:19|20)\d{2}\b',
         r'\bas\s+amended\s+(?:and\s+restated\s+)?(?:from\s+time\s+to\s+time\s+)?(?:through|prior\s+to)\b',
         r'\bhad\s+granted\b',
         r'\bhad\s+entered\b',
     ]
     if any(re.search(p, text_lower) for p in historical_patterns):
         return True
+    if _HISTORICAL_MARKER_RE.search(type_quote):
+        return True
+    if filing_text:
+        passage = _containing_passage(type_quote, filing_text)
+        if passage:
+            if any(re.search(p, passage.lower()) for p in historical_patterns):
+                return True
+            if _HISTORICAL_MARKER_RE.search(passage):
+                return True
 
     dated = _dated_clause_date(type_quote)
     if dated is None and filing_text:
@@ -2808,6 +2827,7 @@ _INSTITUTIONAL_LEGAL_NAME_RE = re.compile(
     r'(?ix)^\s*(?:the\s+)?'
     r'(?:'
     r'president\s+and\s+fellows\s+of\s+\S'
+    r'|board\s+of\s+(?:trustees|regents)\s+of\s+'
     r'|regents\s+of\s+(?:the\s+)?\S'
     r'|trustees\s+of\s+(?:the\s+)?.{0,80}'
     r'(?:university|college|institute|institution|foundation|hospital|academy|school)'
@@ -2942,6 +2962,8 @@ def _is_jurisdiction_or_legal_form_name(name: str) -> bool:
 
 def _looks_like_company_name(name: str) -> bool:
     """True for a legal-style name. Suffix-only and place names are not."""
+    if _board_institution_span(name) or _is_institutional_legal_name(name or ''):
+        return True
     if not name or _is_bare_role_word(name) or _is_jurisdiction_or_legal_form_name(name):
         return False
     if _is_suffix_only_name(name):
@@ -3050,6 +3072,16 @@ def _is_unpublishable_party_name(name: str) -> bool:
     return False
 
 
+def _board_institution_span(name: str) -> str | None:
+    if not name:
+        return None
+    m = re.search(
+        r'(?i)\bboard\s+of\s+(?:trustees|regents)\s+of\s+(?:the\s+)?.+',
+        name.strip(),
+    )
+    return re.sub(r'\s+', ' ', m.group(0)).strip().rstrip(',') if m else None
+
+
 def _fallback_clean_party_name(name: str) -> str | None:
     """Strip leading governance/title units; keep a full legal entity or drop.
 
@@ -3060,6 +3092,9 @@ def _fallback_clean_party_name(name: str) -> str | None:
         return None
     name = re.sub(r'\s+', ' ', name.strip().rstrip(','))
     name = _strip_agreement_title_from_name(name)
+    board = _board_institution_span(name)
+    if board:
+        return board
     if _is_institutional_legal_name(name):
         return name if _looks_like_company_name(name) else None
     while True:
@@ -3119,7 +3154,7 @@ def _of_extend_allowed(word: str, rest: str) -> bool:
     if _is_institutional_legal_name(rest):
         return False
     if _INSTITUTION_NAME_RE.search(rest) and low in {
-        'president', 'fellows', 'regents', 'trustees',
+        'president', 'fellows', 'regents', 'trustees', 'board',
     }:
         return True
     return not bool(_GOVERNANCE_TOKEN_RE.match(low))
@@ -3210,6 +3245,81 @@ def _name_appears_verbatim(name: str, filing_text: str) -> bool:
         return True
     compact = re.sub(r'\s+', ' ', name).strip()
     return compact in re.sub(r'\s+', ' ', filing_text)
+
+
+def _declared_party_names(filing_text: str) -> list[str]:
+    """Full party names: text before a defined-term parenthetical, or with/between slots."""
+    names: list[str] = []
+    if not filing_text:
+        return names
+    for vals in parse_defined_terms(filing_text).values():
+        names.extend(vals)
+    for m in re.finditer(
+        r'(?i)\b(?:with|between|among)\s+'
+        r'((?:[A-Z][A-Za-z0-9&.\'-]+(?:\s+(?:and|&|of|the|[A-Z][A-Za-z0-9&.\'-]+)){0,8})'
+        r'(?:,?\s*(?:Inc|Incorporated|Ltd|LLC|plc|AG|Corp|Corporation|Company|Limited)\.?)?)',
+        filing_text,
+    ):
+        names.append(m.group(1).strip().rstrip(','))
+    for m in re.finditer(
+        r'\b(?:[Gg]ranted?|[Gg]ranting)\s+'
+        r'((?:[A-Z][A-Za-z0-9&.\'-]+(?:\s+(?:and|&|of|[A-Z][A-Za-z0-9&.\'-]+)){0,6})'
+        r'(?:,?\s*(?:Inc|Incorporated|Ltd|LLC|plc|AG|Corp|Corporation|Company|Limited)\.?)?)',
+        filing_text,
+    ):
+        names.append(m.group(1).strip().rstrip(','))
+    skip_declared = {
+        'company', 'the company', 'parent', 'purchaser', 'registrant',
+        'licensee', 'licensor', 'merger sub', 'target',
+    }
+    seen: set[str] = set()
+    out: list[str] = []
+    for n in names:
+        n = re.sub(r'\s+', ' ', n).strip()
+        key = n.lower()
+        if not n or key in seen or key in skip_declared:
+            continue
+        seen.add(key)
+        out.append(n)
+    return out
+
+
+def _resolve_declared_party(claimed: str, filing_text: str) -> str | None:
+    """Publish the declared full party name. A substring match is not enough."""
+    if not claimed or not filing_text:
+        return None
+    claimed_n = re.sub(r'\s+', ' ', claimed).strip()
+    board = _board_institution_span(claimed_n)
+    if board and _name_appears_verbatim(board, filing_text):
+        return board
+    declared = _declared_party_names(filing_text)
+    for d in declared:
+        if d.lower() == claimed_n.lower():
+            return d
+        if re.search(rf'(?i).+\sof\s+{re.escape(d)}$', claimed_n):
+            return d
+    term_map = parse_defined_terms(filing_text)
+    key = re.sub(r'^the\s+', '', claimed_n.lower())
+    if key in term_map and term_map[key] and _name_appears_verbatim(claimed_n, filing_text):
+        for n in term_map[key]:
+            board = _board_institution_span(n)
+            if board:
+                return board
+        if not _is_bare_role_word(claimed_n):
+            return claimed_n
+    if _name_appears_verbatim(claimed_n, filing_text):
+        for d in declared:
+            if d.lower() == claimed_n.lower():
+                return d
+            if d.lower().startswith(claimed_n.lower()):
+                rest = d[len(claimed_n):].strip(' ,')
+                if rest and (_COMPANY_SUFFIX_RE.match(rest) or _is_suffix_only_name(rest)):
+                    return d
+        if _looks_like_company_name(claimed_n):
+            if any(claimed_n.lower() != d.lower() and claimed_n.lower() in d.lower() for d in declared):
+                return None
+            return claimed_n
+    return None
 
 
 def _appears_as_party_in_filing(name: str, filing_text: str) -> bool:
@@ -3593,27 +3703,77 @@ def resolve_merger_vehicle(
     return None
 
 
-_ENTERED_NEW_AGREEMENT_RE = re.compile(
+_ENTERED_VERB_RE = re.compile(
     r'(?i)(?:entered\s+into|executed|signed)\s+'
     r'(?:an?\s+|the\s+)?(?:that\s+certain\s+)?'
-    r'((?:(?!dated\b)[^\.;]){0,160}?'
-    r'(?:agreement|addendum|indenture|amendment|joinder|novation|'
-    r'letter|pact|licence|license))'
+)
+_TITLE_STOP_RE = re.compile(
+    r'(?i)\s+(?:with|between|among|under\s+which|for)\b|,'
+)
+_FORBIDDEN_TITLE_RE = re.compile(
+    r'(?i)\b(?:amendments?|amended\s+and\s+restated|letter\s+agreement\s+amending|'
+    r'waivers?|joinders?|extensions?|renewals?|term\s+sheets?|'
+    r'letter\s+of\s+intent|memorandum\s+of\s+understanding|non-binding)\b'
+)
+_CONDITIONAL_DEAL_RE = re.compile(
+    r'(?i)\bsubject\s+to\b.{0,80}\bdefinitive\s+agreement\b|\bwould\b'
+)
+_EXACT_MDY_RE = re.compile(
+    rf'(?i){_MONTH_ALT}\s+(\d{{1,2}}),\s+(\d{{4}})\b'
+)
+_HISTORICAL_MARKER_RE = re.compile(
+    r'(?i)(?:'
+    r'\bin\s+(?:january|february|march|april|may|june|july|august|'
+    r'september|october|november|december)\s+(?:19|20)\d{2}\b|'
+    r'\bin\s+(?:19|20)\d{2}\b|'
+    r'\bentered\s+into\b.{0,80}\bin\s+(?:19|20)\d{2}\b|'
+    r'\beffective\s+as\s+of\b|'
+    r'\bas\s+previously\s+(?:disclosed|reported|announced)\b|'
+    r'\bis\s+party\s+to\b|'
+    r'\b(?:original|existing)\s+(?:agreement|licen[sc]e|collaboration|pact|indenture)\b'
+    r')'
+)
+_ON_DATE_GRANT_RE = re.compile(
+    rf'(?i)\bon\s+{_MONTH_ALT}\s+(\d{{1,2}}),\s+(\d{{4}})\b'
+    r'[,:\s]+(?:the\s+(?:company|registrant)|we|[A-Z][\w.\-]*(?:\s+[A-Z][\w.\-]*){0,6})?'
+    r'\s*(?:granted?|granting)\b'
+)
+_GRANT_SHORTCUT_POISON_RE = re.compile(
+    r'(?i)(?:'
+    r'\bexisting\s+(?:agreement|licen[sc]e|collaboration|pact)\b|'
+    r'\b(?:exercis(?:e|ed|es|ing)\s+(?:an?\s+)?option|option\s+exercise|option)\b|'
+    r'\btarget\s+selection\b|'
+    r'\b(?:renew(?:al|ed|s|ing)|extend(?:s|ed|ing)|extensions?)\b|'
+    r'\b(?:consent|transfer|assign(?:s|ed|ment))\b|'
+    r'\b(?:milestone|royalt\w+)\s+payments?\b|'
+    r'\b(?:results?|data)\b|'
+    r'\bsame\s+terms\b|'
+    r'\ban?\s+amendment\b|'
+    r'\bamend(?:ed|ing|ment|s)\b'
+    r')'
+)
+_COMPLETION_RE = re.compile(
+    r'(?i)\b(?:clos(?:ed|ing)|complet(?:ed|ion))\s+(?:of\s+)?(?:the\s+)?'
+    r'(?:merger|acquisition|transaction|business\s+combination)\b'
 )
 _ACQUIRE_POSITIVE_RE = re.compile(
     r'(?i)(?:will|agreed\s+to|agrees\s+to)\s+acquire|'
     r'commenced\s+(?:a\s+)?tender\s+offer'
 )
+_PERIODIC_FORM_RE = re.compile(r'(?i)\bFORM\s+10-[QK]\b')
+_OUT_OF_SCOPE_ITEMS = frozenset({
+    '1.02', '2.01', '2.03', '7.01', '8.01',
+})
 
 
 def _title_is_new_license_or_collab(title: str) -> bool:
-    if not title or is_wrapper_or_existing_rights_language(title):
+    if not title or _FORBIDDEN_TITLE_RE.search(title) or is_wrapper_or_existing_rights_language(title):
         return False
     return bool(re.search(r'\b(?:licen[sc](?:e|ing)|collaboration)\b', title, re.IGNORECASE))
 
 
 def _title_is_merger_instrument(title: str) -> bool:
-    if not title or is_wrapper_or_existing_rights_language(title):
+    if not title or _FORBIDDEN_TITLE_RE.search(title) or is_wrapper_or_existing_rights_language(title):
         return False
     return bool(re.search(
         r'(?:agreement\s+and\s+plan\s+of\s+merger|'
@@ -3626,7 +3786,7 @@ def _title_is_merger_instrument(title: str) -> bool:
 def _title_is_acquisition_instrument(title: str) -> bool:
     if _title_is_merger_instrument(title):
         return True
-    if not title or is_wrapper_or_existing_rights_language(title):
+    if not title or _FORBIDDEN_TITLE_RE.search(title) or is_wrapper_or_existing_rights_language(title):
         return False
     return bool(re.search(
         r'\b(?:(?:stock|asset)\s+)?purchase\s+agreement\b|\bmerger\s+agreement\b',
@@ -3635,11 +3795,11 @@ def _title_is_acquisition_instrument(title: str) -> bool:
 
 
 def _date_in_or_near_period(dated: date | None, reference_date: str | None) -> bool:
-    """Undated 8-K entered-into counts as current; else require date within a year."""
+    """Exact dates only; must fall in the run window plus a few weeks, never 365 days."""
     if dated is None:
-        return True
+        return False
     ref = _parse_loose_date(reference_date) or date.today()
-    return dated >= ref - _OLD_EVENT_CUTOFF
+    return dated >= ref - _NEAR_PERIOD
 
 
 def _on_calendar_date(text: str) -> date | None:
@@ -3651,93 +3811,241 @@ def _on_calendar_date(text: str) -> date | None:
     return _parse_month_day_year(m.group(1), m.group(2), m.group(3))
 
 
-def _date_on_entered_into_sentence(title: str, sentence: str) -> date | None:
-    """Date stated on this entered-into sentence only — never another instrument's date."""
-    dated = _dated_clause_date(sentence) or _on_calendar_date(sentence)
+def _exact_mdy_date(text: str) -> date | None:
+    """Day+month+year only. Year-only and month-year dates are historical."""
+    if not text:
+        return None
+    dated = _dated_clause_date(text) or _on_calendar_date(text)
     if dated:
         return dated
-    m = _ENTERED_IN_MONTH_YEAR_RE.search(sentence)
-    if m:
-        try:
-            return date(int(m.group(2)), _MONTH_NAME_TO_NUM[m.group(1).lower()], 1)
-        except (ValueError, KeyError):
-            pass
-    for src in (title, sentence):
-        ym = _YEAR_NAMED_INSTRUMENT_RE.search(src)
-        if ym:
-            try:
-                return date(int(ym.group(1)), 1, 1)
-            except ValueError:
-                continue
-    return None
+    m = _EXACT_MDY_RE.search(text)
+    if not m:
+        return None
+    return _parse_month_day_year(m.group(1), m.group(2), m.group(3))
 
 
-def _extend_entered_into_title(title: str, filing_text: str, match_end: int) -> str:
-    """Keep 'Agreement and Plan of Merger' from being cut at the first Agreement."""
-    rest = filing_text[match_end:match_end + 80]
-    ext = re.match(
-        r'(?i)\s+and\s+plan\s+of\s+(?:merger|reorganization|business\s+combination)',
-        rest,
-    )
-    if ext:
-        return (title + ext.group(0)).strip()
+def _date_on_entered_into_sentence(title: str, sentence: str) -> date | None:
+    """Exact MDY on this entered-into sentence only — never another instrument's date."""
+    return _exact_mdy_date(sentence)
+
+
+def _item_number(label: str | None) -> str | None:
+    if not label:
+        return None
+    m = re.search(r'(\d+\.\d+)', label)
+    return m.group(1) if m else None
+
+
+def _split_item_bodies(filing_text: str) -> dict[str, str]:
+    bodies: dict[str, str] = {}
+    if not filing_text:
+        return bodies
+    matches = list(re.finditer(r'(?i)\bItem\s+(\d+\.\d+)', filing_text))
+    for i, m in enumerate(matches):
+        end = matches[i + 1].start() if i + 1 < len(matches) else len(filing_text)
+        bodies[m.group(1)] = filing_text[m.start():end]
+    return bodies
+
+
+def _structural_item101(filing_text: str, type_quote: str = '') -> str | None:
+    """Item 1.01 body, or None when the filing is structurally out of scope."""
+    if not filing_text:
+        return None
+    if _PERIODIC_FORM_RE.search(filing_text[:8000]):
+        return None
+    items = _split_item_bodies(filing_text)
+    if items:
+        if '1.01' not in items:
+            return None
+        if type_quote:
+            pos = find_quote_position(type_quote, filing_text)
+            if pos is None:
+                pos = filing_text.lower().find(normalize_whitespace(type_quote).lower())
+            if pos >= 0:
+                item = _item_number(_find_item_section(filing_text, pos))
+                if item and item in _OUT_OF_SCOPE_ITEMS:
+                    return None
+                if item and item != '1.01':
+                    return None
+        return items['1.01']
+    if re.search(r'(?i)\bFORM\s+(?:8-K|6-K)\b', filing_text) and '1.01' not in items:
+        return None
+    return filing_text
+
+
+def _capture_entered_title(after_verb: str) -> str:
+    """Noun phrase right after entered into / executed / signed."""
+    stop = _TITLE_STOP_RE.search(after_verb)
+    title = after_verb[:stop.start()] if stop else after_verb
+    title = re.sub(r'\([^)]*\)', ' ', title)
+    title = re.sub(r'\s+', ' ', title).strip().rstrip('.,;:')
+    title = re.sub(r'\s*\(\s*$', '', title).strip()
     return title
 
 
-def _party_tied_to_instrument(
-    title: str,
-    sentence: str,
-    filing_text: str,
-    counterparty: str,
-) -> bool:
-    if _sentence_names_party(sentence, counterparty, filing_text):
-        return True
-    aliases, dates = _collect_instrument_catalog(filing_text)
-    keys = _keys_for_instrument(title, aliases, dates)
-    for short in _quoted_terms_in(sentence):
-        keys.update(_keys_for_instrument(short, aliases, dates))
-    keys.discard('agreement')
-    keys.discard('')
-    if not keys:
-        return False
-    for sent in _split_sentences(filing_text):
-        if not _sentence_names_party(sent, counterparty, filing_text):
+def _short_name_in_sentence(sentence: str) -> str:
+    shorts = _quoted_terms_in(sentence)
+    skip = {
+        'company', 'the company', 'parent', 'purchaser', 'registrant',
+        'licensee', 'licensor', 'merger sub',
+    }
+    for s in shorts:
+        if _norm_agreement_key(s) in skip:
             continue
-        if any(re.search(rf'\b{re.escape(k)}\b', sent, re.IGNORECASE) for k in keys):
+        if re.search(r'(?i)\b(?:agreement|licen[sc]e|pact|collaboration|merger)\b', s):
+            return s
+    return ''
+
+
+@dataclass
+class _NewAgreement:
+    title: str
+    short: str
+    dated: date
+    sentence: str
+
+
+def _collect_item101_new_agreements(
+    body: str,
+    reference_date: str,
+) -> list[_NewAgreement]:
+    found: list[_NewAgreement] = []
+    if not body:
+        return found
+    for m in _ENTERED_VERB_RE.finditer(body):
+        sentence = _sentence_at(body, m.start())
+        title = _capture_entered_title(body[m.end(): m.end() + 200])
+        if not title or _FORBIDDEN_TITLE_RE.search(title):
+            continue
+        if _CONDITIONAL_DEAL_RE.search(sentence):
+            continue
+        dated = _exact_mdy_date(sentence)
+        if dated is None:
+            prefix = body[max(0, m.start() - 180):m.start()]
+            tails = _split_sentences(prefix)
+            dated = _exact_mdy_date(tails[-1] if tails else prefix)
+        if dated is None or not _date_in_or_near_period(dated, reference_date):
+            continue
+        found.append(_NewAgreement(
+            title=title,
+            short=_short_name_in_sentence(sentence),
+            dated=dated,
+            sentence=sentence,
+        ))
+    return found
+
+
+def _quote_tied_to_agreement(
+    type_quote: str,
+    body: str,
+    agmt: _NewAgreement,
+) -> bool:
+    passage = _containing_passage(type_quote, body) or type_quote
+    if not passage:
+        return False
+    sent_n = normalize_whitespace(agmt.sentence).lower()
+    pass_n = normalize_whitespace(passage).lower()
+    if sent_n and (sent_n in pass_n or pass_n in sent_n):
+        return True
+    if agmt.short and re.search(rf'\b{re.escape(agmt.short)}\b', passage, re.IGNORECASE):
+        return True
+    nxt = _next_sentence(body, agmt.sentence)
+    follow = f"{nxt} {passage}"
+    if nxt and (pass_n in normalize_whitespace(nxt).lower() or normalize_whitespace(nxt).lower() in pass_n):
+        if agmt.short and re.search(rf'\b{re.escape(agmt.short)}\b', follow, re.IGNORECASE):
             return True
-        labels = _referred_agreement_labels(sent, filing_text)
-        if any(_norm_agreement_key(lab) in keys for lab in labels):
+        if re.search(
+            r'(?i)\b(?:pursuant\s+to|under)\s+(?:the\s+)?(?:agreement|licen[sc]e(?:\s+agreement)?|'
+            r'collaboration(?:\s+agreement)?)\b',
+            follow,
+        ):
+            return True
+        title_key = _norm_agreement_key(agmt.title)
+        if title_key and title_key != 'agreement' and title_key in follow.lower():
+            return True
+        if (
+            (has_license_grant_language(passage) or has_license_grant_language(nxt))
+            and _entered_party_also_in(agmt.sentence, follow)
+        ):
             return True
     return False
 
 
-def _dated_grant_is_new_license(
-    filing_text: str,
+def _entered_party_also_in(agreement_sentence: str, grant_text: str) -> bool:
+    """True when a with/grant party from the entered-into sentence is in the grant."""
+    if not agreement_sentence or not grant_text:
+        return False
+    grant_n = grant_text.lower()
+    for m in re.finditer(
+        r'\b(?:with|between|among|[Gg]ranted?|[Gg]ranting)\s+'
+        r'((?:[A-Z][A-Za-z0-9&.\'-]+(?:\s+(?:and|&|of|[A-Z][A-Za-z0-9&.\'-]+)){0,6})'
+        r'(?:,?\s*(?:Inc|Incorporated|Ltd|LLC|plc|AG|Corp|Corporation|Company|Limited)\.?)?)',
+        agreement_sentence,
+    ):
+        name = m.group(1).strip().rstrip(',.')
+        if not name or name.lower() in {'company', 'the company', 'parent'}:
+            continue
+        if name.lower() in grant_n:
+            return True
+        core = normalize_company_name(name).lower()
+        if core and re.search(rf'\b{re.escape(core)}\b', grant_n):
+            return True
+    return False
+
+
+def _preceding_sentence(body: str, sentence: str) -> str:
+    if not body or not sentence:
+        return ''
+    sents = _split_sentences(body)
+    target = normalize_whitespace(sentence)
+    for i, sent in enumerate(sents):
+        if normalize_whitespace(sent) == target and i:
+            return sents[i - 1]
+    return ''
+
+
+def _next_sentence(body: str, sentence: str) -> str:
+    if not body or not sentence:
+        return ''
+    sents = _split_sentences(body)
+    target = normalize_whitespace(sentence)
+    for i, sent in enumerate(sents):
+        if normalize_whitespace(sent) == target and i + 1 < len(sents):
+            return sents[i + 1]
+    return ''
+
+
+def _narrow_on_date_grant(
+    body: str,
     counterparty: str,
     reference_date: str,
     type_quote: str,
 ) -> bool:
-    """8-K shorthand: 'On <date>, the Company granted X an exclusive license'."""
-    passage = ''
-    if type_quote:
-        passage = _containing_passage(type_quote, filing_text) or type_quote
-    if not passage:
-        passage = filing_text
-    grant_text = type_quote or passage
+    """On <date>, the Company granted … only when that date governs the grant verb."""
+    passage = _containing_passage(type_quote, body) or type_quote or body
+    grant_m = _ON_DATE_GRANT_RE.search(passage)
+    if not grant_m:
+        grant_m = _ON_DATE_GRANT_RE.search(body or '')
+        if grant_m:
+            passage = _sentence_at(body, grant_m.start())
+        else:
+            return False
     if not (
-        has_license_grant_language(grant_text) or has_license_grant_language(passage)
+        has_license_grant_language(type_quote or passage)
+        or has_license_grant_language(passage)
     ):
         return False
-    if not _sentence_names_party(passage, counterparty, filing_text):
+    if not _sentence_names_party(passage, counterparty, body):
         return False
-    if type_quote and _grant_refers_to_amended_agreement(type_quote, filing_text):
+    dated = _exact_mdy_date(passage)
+    if dated is None or not _date_in_or_near_period(dated, reference_date):
         return False
-    if is_historical_agreement(type_quote or passage, reference_date, filing_text):
+    prior = _preceding_sentence(body, passage)
+    if _GRANT_SHORTCUT_POISON_RE.search(passage) or _GRANT_SHORTCUT_POISON_RE.search(prior):
         return False
-    dated = _dated_clause_date(passage) or _on_calendar_date(passage)
-    if dated is None:
+    if _HISTORICAL_MARKER_RE.search(passage) or is_amendment_language(passage):
         return False
-    return _date_in_or_near_period(dated, reference_date)
+    return True
 
 
 def _sentence_names_party(sentence: str, counterparty: str, filing_text: str) -> bool:
@@ -3745,12 +4053,17 @@ def _sentence_names_party(sentence: str, counterparty: str, filing_text: str) ->
         return False
     if match_company_whole_word(counterparty, sentence):
         return True
+    compact_cp = re.sub(r'\s+', ' ', counterparty).strip()
+    if compact_cp and compact_cp.lower() in re.sub(r'\s+', ' ', sentence).lower():
+        return True
     term_map = parse_defined_terms(filing_text)
     for term, names in term_map.items():
         if not re.search(rf'\b{re.escape(term)}\b', sentence, re.IGNORECASE):
             continue
         for n in names:
             if match_company_whole_word(counterparty, n) or match_company_whole_word(n, counterparty):
+                return True
+            if compact_cp.lower() == n.lower() or compact_cp.lower() in n.lower() or n.lower() in compact_cp.lower():
                 return True
     return False
 
@@ -3762,50 +4075,60 @@ def has_affirmative_new_agreement(
     reference_date: str = '',
     type_quote: str = '',
 ) -> bool:
-    """True only when the filing affirms a new in-period agreement with that party.
-
-    License/collaboration: entered into / executed / signed a new license or
-    collaboration (or similar) with the counterparty, dated in or near the
-    filing period. Grants, payments, updates, options, consents and assignments
-    that are not tied to that statement are not enough.
-
-    Merger: entered into an Agreement and Plan of Merger or Business Combination
-    Agreement with that counterparty, dated in the period. A merger never
-    inherits another instrument's date.
-
-    Acquisition: the merger instruments above, a purchase agreement, a
-    commenced tender offer, or will/agreed-to acquire that counterparty.
-    """
+    """True only after the Item 1.01 structural gate, then wording rules inside it."""
     if not filing_text or not counterparty:
         return False
+    body = _structural_item101(filing_text, type_quote)
+    if not body:
+        return False
 
-    for m in _ENTERED_NEW_AGREEMENT_RE.finditer(filing_text):
-        title = _extend_entered_into_title(m.group(1), filing_text, m.end())
-        sentence = _sentence_at(filing_text, m.start())
-        if not _party_tied_to_instrument(title, sentence, filing_text, counterparty):
+    tied = False
+    for agmt in _collect_item101_new_agreements(body, reference_date):
+        quote_tied = (not type_quote) or _quote_tied_to_agreement(type_quote, body, agmt)
+        if not quote_tied and deal_type in (DealType.MERGER, DealType.ACQUISITION):
+            passage = _containing_passage(type_quote, body) or type_quote
+            if (
+                (_title_is_merger_instrument(agmt.title) or _title_is_acquisition_instrument(agmt.title))
+                and has_acquisition_language(type_quote or passage)
+                and (
+                    _sentence_names_party(agmt.sentence, counterparty, filing_text)
+                    or _sentence_names_party(passage, counterparty, filing_text)
+                )
+            ):
+                quote_tied = True
+        if type_quote and not quote_tied:
             continue
-        dated = _date_on_entered_into_sentence(title, sentence)
-        if not _date_in_or_near_period(dated, reference_date):
+        if not _sentence_names_party(agmt.sentence, counterparty, filing_text) and not (
+            type_quote and _sentence_names_party(
+                _containing_passage(type_quote, body) or type_quote, counterparty, filing_text,
+            ) and quote_tied
+        ):
             continue
-        if deal_type == DealType.LICENSE_COLLABORATION and _title_is_new_license_or_collab(title):
+        tied = True
+        if deal_type == DealType.LICENSE_COLLABORATION and _title_is_new_license_or_collab(agmt.title):
             return True
-        if deal_type == DealType.MERGER and _title_is_merger_instrument(title):
+        if deal_type == DealType.MERGER and _title_is_merger_instrument(agmt.title):
             return True
-        if deal_type == DealType.ACQUISITION and _title_is_acquisition_instrument(title):
+        if deal_type == DealType.ACQUISITION and _title_is_acquisition_instrument(agmt.title):
             return True
 
-    if deal_type == DealType.LICENSE_COLLABORATION and _dated_grant_is_new_license(
-        filing_text, counterparty, reference_date, type_quote,
+    if deal_type == DealType.LICENSE_COLLABORATION and _narrow_on_date_grant(
+        body, counterparty, reference_date, type_quote,
     ):
         return True
 
     if deal_type == DealType.ACQUISITION:
-        for m in _ACQUIRE_POSITIVE_RE.finditer(filing_text):
-            sentence = _sentence_at(filing_text, m.start())
-            if _sentence_names_party(sentence, counterparty, filing_text):
-                dated = _date_on_entered_into_sentence('', sentence)
-                if _date_in_or_near_period(dated, reference_date):
-                    return True
+        for m in _ACQUIRE_POSITIVE_RE.finditer(body):
+            sentence = _sentence_at(body, m.start())
+            if not _sentence_names_party(sentence, counterparty, filing_text):
+                continue
+            dated = _exact_mdy_date(sentence)
+            if dated is None:
+                prefix = body[max(0, m.start() - 180):m.start()]
+                tails = _split_sentences(prefix)
+                dated = _exact_mdy_date(tails[-1] if tails else prefix)
+            if dated is not None and _date_in_or_near_period(dated, reference_date):
+                return True
     return False
 
 
@@ -3815,23 +4138,38 @@ def out_of_scope_deal_reason(
     filing_date: str = '',
     event_date: str = '',
 ) -> str | None:
-    """Return a drop reason if the quote's filing context is out of scope.
-
-    Scope is only (a) a newly entered license/collaboration and (b) a
-    definitive acquisition or merger of a company. Wrapper and historical
-    words apply only to the grant's source agreement, not to passing
-    mentions of older pacts, milestones, or joinders.
-    """
+    """Structural Item 1.01 gate first; wording rules only inside that body."""
     if not type_quote:
         return 'empty type_quote'
-    passage = _containing_passage(type_quote, filing_text) or type_quote
+    if _PERIODIC_FORM_RE.search((filing_text or '')[:8000]):
+        return 'periodic report'
+    if event_date:
+        ev = _parse_loose_date(event_date)
+        ref = _parse_loose_date(filing_date) or date.today()
+        if ev is not None and ev < ref - _NEAR_PERIOD:
+            return 'event date outside window'
+    body = _structural_item101(filing_text, type_quote)
+    if body is None:
+        return 'not item 1.01'
+    passage = _containing_passage(type_quote, body) or _containing_passage(type_quote, filing_text) or type_quote
     reference_date = event_date or filing_date
 
-    if _grant_refers_to_amended_agreement(type_quote, filing_text):
+    if _COMPLETION_RE.search(type_quote) or _COMPLETION_RE.search(passage):
+        return 'completion/closing'
+    agreements = _collect_item101_new_agreements(body, reference_date)
+    tied = any(_quote_tied_to_agreement(type_quote, body, ag) for ag in agreements)
+    if not tied:
+        if is_amendment_language(type_quote) or is_amendment_language(passage):
+            return 'amendment'
+        if re.search(r'(?i)\bas\s+previously\s+(?:disclosed|reported|announced)\b', passage):
+            return 'historical agreement'
+        if _HISTORICAL_MARKER_RE.search(passage) or _HISTORICAL_MARKER_RE.search(type_quote):
+            return 'historical agreement'
+    if _grant_refers_to_amended_agreement(type_quote, body):
         return 'amendment'
-    if _new_agreements_are_only_amendments_or_settlements(filing_text):
+    if _new_agreements_are_only_amendments_or_settlements(body):
         return 'amendment/settlement only'
-    if is_historical_agreement(type_quote, reference_date, filing_text):
+    if is_historical_agreement(type_quote, reference_date, body):
         return 'historical agreement'
     if is_termination_or_assignment_language(type_quote) or is_termination_or_assignment_language(passage):
         return 'termination/assignment'
@@ -3840,8 +4178,8 @@ def out_of_scope_deal_reason(
 
     pos = find_quote_position(type_quote, filing_text)
     if pos is not None:
-        item = _find_item_section(filing_text, pos)
-        if item and item.replace(' ', '') in ('item1.02', 'item2.03'):
+        item = _item_number(_find_item_section(filing_text, pos))
+        if item in _OUT_OF_SCOPE_ITEMS:
             return f'out-of-scope item ({item})'
     return None
 
@@ -3998,9 +4336,8 @@ def has_license_grant_language(type_quote: str) -> bool:
         r'\bgranted\s+.{0,80}?\ban\s+exclusive\s+(?:worldwide\s+)?licen[sc]e\b',
         r'\bexclusive(?:ly)?(?:\s+\w+){0,4}\s+licen[sc]e\b',
         r'\bnon-exclusive(?:ly)?(?:\s+\w+){0,4}\s+licen[sc]e\b',
-        r'\bcollaboration\s+(?:and\s+license\s+)?agreement\b',
         r'\blicen[sc]e\s+(?:and\s+collaboration\s+)?agreement\b',
-        r'\bentere[ds]\s+into\s+(?:a\s+)?(?:\w+\s+){0,5}(?:license|collaboration)\b',
+        r'\bentere[ds]\s+into\s+(?:a\s+)?(?:\w+\s+){0,5}licen[sc]e\b',
     ]
     return any(re.search(p, text) for p in grant_patterns)
 
@@ -4492,6 +4829,11 @@ def process_sec_deal(
     if not _name_appears_verbatim(counterparty, filing_text):
         logging.info("Deal dropped: counterparty '%s' is not a verbatim party name", counterparty)
         return None
+    declared = _resolve_declared_party(counterparty, filing_text)
+    if not declared:
+        logging.info("Deal dropped: counterparty '%s' is not a declared party name", counterparty)
+        return None
+    counterparty = declared
     if not is_plausible_party_name(counterparty, filing_text):
         logging.info("Deal dropped: counterparty '%s' is not a company name", counterparty)
         return None
