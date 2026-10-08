@@ -137,6 +137,251 @@ For each amount, provide a quote containing BOTH the dollar amount AND a role ke
     }
 }
 
+# =============================================================================
+# INDEPENDENT VERIFIER (Item 3)
+# =============================================================================
+
+# Module-level flag for disabling verifier in tests
+VERIFIER_ENABLED = True
+
+DEAL_VERIFICATION_SCHEMA = {
+    "name": "verify_deal",
+    "description": """Verify each field of a deal is supported by the filing text.
+For each field, determine if it is SUPPORTED or UNSUPPORTED and provide a verbatim quote from the filing that proves your answer.
+A field is SUPPORTED if the filing text contains explicit evidence for that exact value.
+A field is UNSUPPORTED if there is no explicit evidence or if the evidence contradicts the claim.""",
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "company": {
+                "type": "object",
+                "properties": {
+                    "verdict": {"type": "string", "enum": ["supported", "unsupported"]},
+                    "quote": {"type": "string", "description": "Exact verbatim quote from filing proving the company name"}
+                },
+                "required": ["verdict", "quote"]
+            },
+            "counterparty": {
+                "type": "object",
+                "properties": {
+                    "verdict": {"type": "string", "enum": ["supported", "unsupported"]},
+                    "quote": {"type": "string", "description": "Exact verbatim quote from filing proving the counterparty name"}
+                },
+                "required": ["verdict", "quote"]
+            },
+            "deal_type": {
+                "type": "object",
+                "properties": {
+                    "verdict": {"type": "string", "enum": ["supported", "unsupported"]},
+                    "quote": {"type": "string", "description": "Exact verbatim quote from filing proving the deal type"}
+                },
+                "required": ["verdict", "quote"]
+            },
+            "amounts": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "role": {"type": "string", "description": "The role/kind of this amount (e.g., upfront, purchase_price, milestones)"},
+                        "value": {"type": "string", "description": "The amount value being verified"},
+                        "verdict": {"type": "string", "enum": ["supported", "unsupported"]},
+                        "quote": {"type": "string", "description": "Exact verbatim quote from filing proving this amount with its role"}
+                    },
+                    "required": ["role", "value", "verdict", "quote"]
+                },
+                "description": "Verification for each amount in the deal"
+            },
+            "date": {
+                "type": "object",
+                "properties": {
+                    "verdict": {"type": "string", "enum": ["supported", "unsupported"]},
+                    "quote": {"type": "string", "description": "Exact verbatim quote from filing proving the date"}
+                },
+                "required": ["verdict", "quote"]
+            }
+        },
+        "required": ["company", "counterparty", "deal_type", "amounts", "date"]
+    }
+}
+
+
+def verify_deal_with_claude(
+    deal: dict,
+    filing_text: str,
+    claude_client: Any,
+    timeout_seconds: float = 30.0
+) -> dict | None:
+    """Run independent verification of a deal using a second Claude call.
+    
+    Args:
+        deal: The deal dict from process_sec_deal()
+        filing_text: Original filing text for quote verification
+        claude_client: Anthropic client
+        timeout_seconds: Timeout for the verification call
+    
+    Returns:
+        Verified deal dict (possibly with some amounts removed), or None if deal should be dropped.
+    """
+    if not VERIFIER_ENABLED:
+        return deal
+    
+    # Build the Chinese deal line for verification
+    title = deal.get('title', '')
+    money = deal.get('money', '')
+    structure = deal.get('structure', '')
+    
+    # Build amounts description for the prompt
+    amounts_desc = []
+    for amt in deal.get('verified_amounts', []):
+        role = amt.get('kind', 'unknown')
+        rendered = amt.get('rendered', '')
+        amounts_desc.append(f"  - {role}: {rendered}")
+    amounts_str = '\n'.join(amounts_desc) if amounts_desc else '  (no amounts)'
+    
+    # Select relevant filing excerpt (focus on deal sections)
+    relevant_text = _select_relevant_filing_sections(filing_text, max_chars=30000)
+    
+    # Build verification prompt
+    prompt = f"""Verify each field of this deal is supported by the filing text.
+
+FILING TEXT:
+{relevant_text}
+
+DEAL TO VERIFY:
+- Company (filer): {deal.get('company', '')}
+- Counterparty: {deal.get('counterparty', '')}
+- Deal type: {deal.get('deal_type', '')}
+- Date: {deal.get('date', '')}
+- Chinese headline: {title}
+- Money: {money}
+- Structure: {structure}
+- Amounts:
+{amounts_str}
+
+For EACH field, determine if it is SUPPORTED or UNSUPPORTED by explicit evidence in the filing.
+Provide an EXACT VERBATIM quote from the filing text that proves your verdict.
+Do not paraphrase or modify the quotes - they must be exact substrings of the filing text above."""
+
+    try:
+        model = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5-5")
+        
+        message = claude_client.messages.create(
+            model=model,
+            max_tokens=4000,
+            temperature=0,
+            tools=[DEAL_VERIFICATION_SCHEMA],
+            tool_choice={"type": "auto"},
+            messages=[{"role": "user", "content": prompt}],
+        )
+        
+        # Extract verification response
+        verification = None
+        for block in message.content:
+            if block.type == "tool_use" and block.name == "verify_deal":
+                verification = block.input
+                break
+        
+        if not verification:
+            logging.warning("Verifier did not return structured response, dropping deal")
+            return None
+        
+        # Validate the verifier's quotes exist in the filing
+        # Check company
+        company_v = verification.get('company', {})
+        if company_v.get('verdict') == 'unsupported':
+            logging.info("Verifier: company unsupported, dropping deal")
+            return None
+        if company_v.get('quote') and not verify_quote_in_filing(company_v['quote'], filing_text):
+            logging.info("Verifier: company quote not found in filing, dropping deal")
+            return None
+        
+        # Check counterparty
+        cp_v = verification.get('counterparty', {})
+        if cp_v.get('verdict') == 'unsupported':
+            logging.info("Verifier: counterparty unsupported, dropping deal")
+            return None
+        if cp_v.get('quote') and not verify_quote_in_filing(cp_v['quote'], filing_text):
+            logging.info("Verifier: counterparty quote not found in filing, dropping deal")
+            return None
+        
+        # Check deal type
+        type_v = verification.get('deal_type', {})
+        if type_v.get('verdict') == 'unsupported':
+            logging.info("Verifier: deal_type unsupported, dropping deal")
+            return None
+        if type_v.get('quote') and not verify_quote_in_filing(type_v['quote'], filing_text):
+            logging.info("Verifier: deal_type quote not found in filing, dropping deal")
+            return None
+        
+        # Check amounts - drop unsupported ones
+        verified_amounts = []
+        amounts_v = verification.get('amounts', [])
+        original_amounts = deal.get('verified_amounts', [])
+        
+        for i, amt in enumerate(original_amounts):
+            # Find matching verification result
+            amt_v = amounts_v[i] if i < len(amounts_v) else {}
+            
+            if amt_v.get('verdict') == 'unsupported':
+                logging.info("Verifier: amount %s unsupported, dropping amount", amt.get('rendered'))
+                continue
+            
+            # Verify the verifier's quote exists
+            if amt_v.get('quote') and not verify_quote_in_filing(amt_v['quote'], filing_text):
+                logging.info("Verifier: amount quote not found in filing, dropping amount: %s", amt.get('rendered'))
+                continue
+            
+            verified_amounts.append(amt)
+        
+        # Update deal with verified amounts
+        deal = dict(deal)
+        deal['verified_amounts'] = verified_amounts
+        
+        # Rebuild structure line from remaining amounts
+        if verified_amounts:
+            # Reconstruct detail lines from verified amounts
+            detail_parts = []
+            for amt in verified_amounts:
+                kind = amt.get('kind', 'other')
+                rendered = amt.get('rendered', '')
+                if kind == 'upfront':
+                    detail_parts.append(f"首付：{rendered}")
+                elif kind == 'purchase_price':
+                    detail_parts.append(f"收购对价：{rendered}")
+                elif kind == 'milestones_total':
+                    detail_parts.append(f"里程碑：{rendered}")
+                else:
+                    detail_parts.append(rendered)
+            deal['structure'] = ' | '.join(detail_parts)
+        else:
+            deal['structure'] = ''
+        
+        # Update headline money if needed
+        if verified_amounts:
+            # Use first non-up_to amount for headline
+            for amt in verified_amounts:
+                if not amt.get('up_to'):
+                    deal['money'] = amt.get('rendered', '')
+                    break
+            else:
+                deal['money'] = verified_amounts[0].get('rendered', '') if verified_amounts else ''
+        else:
+            deal['money'] = ''
+        
+        # Update title if money changed
+        if not deal['money'] and '（' in deal['title']:
+            # Remove amount suffix from title
+            deal['title'] = re.sub(r'（[^）]+）$', '', deal['title'])
+        
+        logging.info("Verifier: deal passed with %d/%d amounts", 
+                    len(verified_amounts), len(original_amounts))
+        return deal
+        
+    except Exception as e:
+        # Verifier error or timeout - fail closed
+        logging.warning("Verifier error: %s: %s - dropping deal", type(e).__name__, e)
+        return None
+
 
 # =============================================================================
 # DATA CLASSES
@@ -2393,8 +2638,19 @@ IMPORTANT: Every quote must be an EXACT substring of the filing text above. Do n
             )
             
             if deal:
-                deals.append(deal)
-                logging.info("Deal extracted: %s", deal['title'])
+                # Run independent verification (second Claude call)
+                verified_deal = verify_deal_with_claude(
+                    deal=deal,
+                    filing_text=filing_text,
+                    claude_client=claude_client
+                )
+                
+                if verified_deal:
+                    deals.append(verified_deal)
+                    logging.info("Deal extracted: %s", verified_deal['title'])
+                else:
+                    logging.info("Deal dropped by verifier: %s", deal['title'])
+                    failed_count += 1
                 
                 if len(deals) >= max_deals:
                     break

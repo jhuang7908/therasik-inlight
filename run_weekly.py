@@ -2479,10 +2479,16 @@ def main() -> None:
     parser.add_argument("--dry-run", action="store_true", help="只写到 preview/，不改网站内容目录")
     parser.add_argument("--test", action="store_true", help="运行单元测试")
     parser.add_argument("--no-deals", action="store_true", help="不收集行业动态，只输出学术文章")
+    parser.add_argument("--no-verifier", action="store_true", help="禁用独立验证器（仅用于离线测试）")
     args = parser.parse_args()
     
     # --no-deals can also be set via environment variable
     no_deals = args.no_deals or os.environ.get("INLIGHT_NO_DEALS") == "1"
+    
+    # --no-verifier disables the independent verifier (for offline tests)
+    if args.no_verifier or os.environ.get("INLIGHT_NO_VERIFIER") == "1":
+        import sec_deals
+        sec_deals.VERIFIER_ENABLED = False
     
     if args.test:
         print("Running unit tests...\n")

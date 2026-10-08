@@ -1141,6 +1141,257 @@ class TestEndToEndMain:
 
 
 # =============================================================================
+# INDEPENDENT VERIFIER TESTS (Item 3)
+# =============================================================================
+
+class TestIndependentVerifier:
+    """Tests for the independent verification system."""
+    
+    def _make_anthropic_response(self, verification: dict):
+        """Create a mock Anthropic message response."""
+        class MockBlock:
+            def __init__(self, name, input_data):
+                self.type = "tool_use"
+                self.name = name
+                self.input = input_data
+        
+        class MockMessage:
+            def __init__(self, content):
+                self.content = content
+                self.stop_reason = "tool_use"
+        
+        return MockMessage([MockBlock("verify_deal", verification)])
+    
+    def test_verifier_passes_valid_deal(self):
+        """Verifier passes when all fields are supported with valid quotes."""
+        filing_text = """
+        On October 1, 2026, Filer Inc. (the "Company") entered into a License Agreement 
+        with Partner Corp ("Partner"), granting Partner an exclusive license.
+        Partner will pay the Company a $100 million upfront payment.
+        """
+        
+        deal = {
+            'title': 'Filer Inc.与Partner Corp授权合作（1 亿美元）',
+            'company': 'Filer Inc.',
+            'counterparty': 'Partner Corp',
+            'deal_type': 'license_collaboration',
+            'date': '2026-10',
+            'money': '1 亿美元',
+            'structure': '首付：1 亿美元',
+            'verified_amounts': [
+                {'kind': 'upfront', 'value_millions': 100, 'currency': 'USD', 'up_to': False, 'rendered': '1 亿美元'}
+            ]
+        }
+        
+        verification = {
+            "company": {"verdict": "supported", "quote": "Filer Inc. (the \"Company\")"},
+            "counterparty": {"verdict": "supported", "quote": "Partner Corp (\"Partner\")"},
+            "deal_type": {"verdict": "supported", "quote": "entered into a License Agreement"},
+            "amounts": [
+                {"role": "upfront", "value": "$100 million", "verdict": "supported", "quote": "$100 million upfront payment"}
+            ],
+            "date": {"verdict": "supported", "quote": "October 1, 2026"}
+        }
+        
+        mock_client = MagicMock()
+        mock_client.messages.create.return_value = self._make_anthropic_response(verification)
+        
+        result = sec_deals.verify_deal_with_claude(deal, filing_text, mock_client)
+        
+        assert result is not None, "Verifier should pass valid deal"
+        assert result['company'] == 'Filer Inc.'
+        assert result['counterparty'] == 'Partner Corp'
+        assert len(result['verified_amounts']) == 1
+    
+    def test_verifier_rejects_unsupported_counterparty(self):
+        """Verifier drops deal when counterparty is unsupported."""
+        filing_text = """
+        On October 1, 2026, the Company announced quarterly results.
+        """
+        
+        deal = {
+            'title': 'Filer Inc.与Partner Corp授权合作',
+            'company': 'Filer Inc.',
+            'counterparty': 'Partner Corp',
+            'deal_type': 'license_collaboration',
+            'date': '2026-10',
+            'money': '',
+            'structure': '',
+            'verified_amounts': []
+        }
+        
+        verification = {
+            "company": {"verdict": "supported", "quote": "the Company"},
+            "counterparty": {"verdict": "unsupported", "quote": ""},
+            "deal_type": {"verdict": "unsupported", "quote": ""},
+            "amounts": [],
+            "date": {"verdict": "supported", "quote": "October 1, 2026"}
+        }
+        
+        mock_client = MagicMock()
+        mock_client.messages.create.return_value = self._make_anthropic_response(verification)
+        
+        result = sec_deals.verify_deal_with_claude(deal, filing_text, mock_client)
+        
+        assert result is None, "Verifier should drop deal when counterparty is unsupported"
+    
+    def test_verifier_rejects_unsupported_deal_type(self):
+        """Verifier drops deal when deal_type is unsupported."""
+        filing_text = """
+        On October 1, 2026, Filer Inc. announced quarterly results.
+        Partner Corp was mentioned in passing.
+        """
+        
+        deal = {
+            'title': 'Filer Inc.与Partner Corp授权合作',
+            'company': 'Filer Inc.',
+            'counterparty': 'Partner Corp',
+            'deal_type': 'license_collaboration',
+            'date': '2026-10',
+            'money': '',
+            'structure': '',
+            'verified_amounts': []
+        }
+        
+        verification = {
+            "company": {"verdict": "supported", "quote": "Filer Inc."},
+            "counterparty": {"verdict": "supported", "quote": "Partner Corp"},
+            "deal_type": {"verdict": "unsupported", "quote": ""},
+            "amounts": [],
+            "date": {"verdict": "supported", "quote": "October 1, 2026"}
+        }
+        
+        mock_client = MagicMock()
+        mock_client.messages.create.return_value = self._make_anthropic_response(verification)
+        
+        result = sec_deals.verify_deal_with_claude(deal, filing_text, mock_client)
+        
+        assert result is None, "Verifier should drop deal when deal_type is unsupported"
+    
+    def test_verifier_drops_unsupported_amount(self):
+        """Verifier keeps deal but drops unsupported amount."""
+        filing_text = """
+        On October 1, 2026, Filer Inc. entered into a License Agreement 
+        with Partner Corp, granting Partner an exclusive license.
+        Partner will pay the Company a $100 million upfront payment.
+        The deal may include additional milestone payments.
+        """
+        
+        deal = {
+            'title': 'Filer Inc.与Partner Corp授权合作（1 亿美元）',
+            'company': 'Filer Inc.',
+            'counterparty': 'Partner Corp',
+            'deal_type': 'license_collaboration',
+            'date': '2026-10',
+            'money': '1 亿美元',
+            'structure': '首付：1 亿美元 | 里程碑：最高 5 亿美元',
+            'verified_amounts': [
+                {'kind': 'upfront', 'value_millions': 100, 'currency': 'USD', 'up_to': False, 'rendered': '1 亿美元'},
+                {'kind': 'milestones_total', 'value_millions': 500, 'currency': 'USD', 'up_to': True, 'rendered': '最高 5 亿美元'}
+            ]
+        }
+        
+        verification = {
+            "company": {"verdict": "supported", "quote": "Filer Inc."},
+            "counterparty": {"verdict": "supported", "quote": "Partner Corp"},
+            "deal_type": {"verdict": "supported", "quote": "License Agreement"},
+            "amounts": [
+                {"role": "upfront", "value": "$100 million", "verdict": "supported", "quote": "$100 million upfront payment"},
+                {"role": "milestones_total", "value": "$500 million", "verdict": "unsupported", "quote": ""}
+            ],
+            "date": {"verdict": "supported", "quote": "October 1, 2026"}
+        }
+        
+        mock_client = MagicMock()
+        mock_client.messages.create.return_value = self._make_anthropic_response(verification)
+        
+        result = sec_deals.verify_deal_with_claude(deal, filing_text, mock_client)
+        
+        assert result is not None, "Verifier should keep deal even if one amount is dropped"
+        assert len(result['verified_amounts']) == 1, "Should have only 1 amount after dropping unsupported"
+        assert result['verified_amounts'][0]['kind'] == 'upfront', "Remaining amount should be upfront"
+    
+    def test_verifier_rejects_fabricated_quote(self):
+        """Verifier drops deal when its quote is not in the filing."""
+        filing_text = """
+        On October 1, 2026, Filer Inc. announced quarterly results.
+        """
+        
+        deal = {
+            'title': 'Filer Inc.与Partner Corp授权合作',
+            'company': 'Filer Inc.',
+            'counterparty': 'Partner Corp',
+            'deal_type': 'license_collaboration',
+            'date': '2026-10',
+            'money': '',
+            'structure': '',
+            'verified_amounts': []
+        }
+        
+        verification = {
+            "company": {"verdict": "supported", "quote": "Filer Inc."},
+            "counterparty": {"verdict": "supported", "quote": "This quote is fabricated and does not exist in filing"},
+            "deal_type": {"verdict": "supported", "quote": "License Agreement"},
+            "amounts": [],
+            "date": {"verdict": "supported", "quote": "October 1, 2026"}
+        }
+        
+        mock_client = MagicMock()
+        mock_client.messages.create.return_value = self._make_anthropic_response(verification)
+        
+        result = sec_deals.verify_deal_with_claude(deal, filing_text, mock_client)
+        
+        assert result is None, "Verifier should drop deal when verifier's quote is fabricated"
+    
+    def test_verifier_error_fails_closed(self):
+        """Verifier error causes deal to be dropped (fail closed)."""
+        deal = {
+            'title': 'Test Deal',
+            'company': 'Filer Inc.',
+            'counterparty': 'Partner Corp',
+            'deal_type': 'license_collaboration',
+            'date': '2026-10',
+            'money': '',
+            'structure': '',
+            'verified_amounts': []
+        }
+        
+        mock_client = MagicMock()
+        mock_client.messages.create.side_effect = Exception("API timeout")
+        
+        result = sec_deals.verify_deal_with_claude(deal, "some filing text", mock_client)
+        
+        assert result is None, "Verifier should fail closed on error"
+    
+    def test_verifier_disabled_passes_through(self):
+        """When verifier is disabled, deals pass through unchanged."""
+        original_enabled = sec_deals.VERIFIER_ENABLED
+        try:
+            sec_deals.VERIFIER_ENABLED = False
+            
+            deal = {
+                'title': 'Test Deal',
+                'company': 'Filer Inc.',
+                'counterparty': 'Partner Corp',
+                'deal_type': 'license_collaboration',
+                'date': '2026-10',
+                'money': '1 亿美元',
+                'structure': '首付：1 亿美元',
+                'verified_amounts': [{'kind': 'upfront', 'rendered': '1 亿美元'}]
+            }
+            
+            mock_client = MagicMock()
+            # Even though we mock the client, it should NOT be called
+            
+            result = sec_deals.verify_deal_with_claude(deal, "filing text", mock_client)
+            
+            assert result is deal, "Disabled verifier should return original deal unchanged"
+            mock_client.messages.create.assert_not_called()
+        finally:
+            sec_deals.VERIFIER_ENABLED = original_enabled
+
+
+# =============================================================================
 # RUN TESTS
 # =============================================================================
 
