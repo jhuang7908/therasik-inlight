@@ -42,6 +42,16 @@ python run_weekly.py --dry-run
 
 `--dry-run` 仍会调用 Claude 和 OpenAI（会消耗额度），但只写到 `preview/weekly/日期/`。它不修改 `content/`，也不推送公众号。
 
+只输出学术文章，跳过交易提取：
+
+```bash
+python run_weekly.py --no-deals
+# 或通过环境变量
+INLIGHT_NO_DEALS=1 python run_weekly.py
+```
+
+`--no-deals` 跳过 SEC EDGAR 交易提取，只输出学术文章。当没有文章时（退出码 3），不会写任何输出。现有的 `latest.json` 中的交易数据会被保留。
+
 确认内容可以上站之后，在仓库里提交并推送 `main`。GitHub Pages 监听 `main` 的根目录，推送后自动重新构建，站点跟着更新。HTTPS 已启用并强制跳转。
 
 公众号只进草稿箱，不群发：
@@ -78,6 +88,8 @@ python publish_wechat.py --week 2026-10-07
 - 条件性金额（"may receive up to"）不作为标题金额
 
 **金额来源标注**：每条交易标注 `filing`（来自披露文件）。金额字段只填文件里明确写出的数字。
+
+**日期显示**：交易卡片显示的日期是事件发生日期（8-K/6-K 的 "date of earliest event"），而非文件提交日期。
 
 ## 输出文件
 

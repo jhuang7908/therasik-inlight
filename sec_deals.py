@@ -292,9 +292,18 @@ def match_company_whole_word(name: str, text: str) -> bool:
 def verify_counterparty_in_quotes(
     counterparty: str, 
     counterparty_quote: str, 
-    type_quote: str
+    type_quote: str,
+    filing_text: str = ""
 ) -> bool:
-    """Verify counterparty name appears in both counterparty_quote and type_quote."""
+    """Verify counterparty name appears in quotes, supporting defined terms resolution.
+    
+    SEC filings often use defined terms like "the parties", "the Lenders", "Licensor"
+    after establishing them earlier in the document. This function allows:
+    1. Direct counterparty name match in both quotes, OR
+    2. Counterparty in counterparty_quote AND a defined term in type_quote if:
+       - The defined term is established in the filing (e.g., 'Sanofi ("Sanofi")')
+       - OR the defined term appears near counterparty name in same paragraph
+    """
     if not counterparty:
         return False
     
@@ -304,13 +313,65 @@ def verify_counterparty_in_quotes(
     if not match_company_whole_word(counterparty, counterparty_quote):
         return False
     
-    # Counterparty must also be in type_quote
+    # Check if counterparty is directly in type_quote
+    if type_quote and match_company_whole_word(counterparty, type_quote):
+        return True
+    
+    # If not direct match, check for defined terms that could refer to counterparty
+    if type_quote and filing_text:
+        # Common defined terms in SEC filings
+        defined_term_patterns = [
+            r'\bthe\s+parties\b',
+            r'\bthe\s+lenders?\b',
+            r'\bthe\s+licensor\b',
+            r'\bthe\s+licensee\b',
+            r'\bthe\s+investor(?:s)?\b',
+            r'\bthe\s+purchaser\b',
+            r'\bthe\s+seller\b',
+            r'\bthe\s+borrower\b',
+            r'\bthe\s+agent\b',
+        ]
+        
+        type_quote_lower = type_quote.lower()
+        
+        for pattern in defined_term_patterns:
+            if re.search(pattern, type_quote_lower):
+                # Check if counterparty is defined in the filing
+                # Look for patterns like: 'Sanofi ("Sanofi")' or 'Sanofi (the "Licensor")'
+                # or counterparty appearing near the defined term
+                counterparty_normalized = normalize_company_name(counterparty).lower()
+                filing_lower = filing_text.lower()
+                
+                # Check for definition patterns
+                def_patterns = [
+                    rf'{re.escape(counterparty_normalized)}.*?\(["\']?(?:the\s+)?{pattern[2:-2]}["\']?\)',
+                    rf'\(["\']?(?:the\s+)?{pattern[2:-2]}["\']?\).*?{re.escape(counterparty_normalized)}',
+                    rf'{re.escape(counterparty_normalized)}.*?(?:herein|hereinafter).*?{pattern[2:-2]}',
+                ]
+                
+                for def_pattern in def_patterns:
+                    if re.search(def_pattern, filing_lower, re.IGNORECASE | re.DOTALL):
+                        logging.debug("Counterparty '%s' verified via defined term resolution", counterparty)
+                        return True
+                
+                # Also accept if counterparty appears in the same paragraph as the defined term
+                # in the filing (indicating the term refers to them)
+                if match_company_whole_word(counterparty, filing_text):
+                    # Check if counterparty and defined term appear in same paragraph
+                    paragraphs = split_into_paragraphs(filing_text)
+                    for _, _, para_text in paragraphs:
+                        para_lower = para_text.lower()
+                        if (match_company_whole_word(counterparty, para_text) and 
+                            re.search(pattern, para_lower)):
+                            logging.debug("Counterparty '%s' verified via paragraph proximity", counterparty)
+                            return True
+    
+    # No type_quote means we can't verify
     if not type_quote:
         return False
-    if not match_company_whole_word(counterparty, type_quote):
-        return False
     
-    return True
+    # Strict: counterparty must be in type_quote directly if no defined term match
+    return False
 
 
 # =============================================================================
@@ -921,13 +982,22 @@ DEAL_TYPE_VALIDATORS = {
         r'\bpaid\b.*\bfor\s+(?:the\s+)?(?:one-?time\s+)?buy-?out\b',
         # Paid + removes obligation pattern (Immunome-BMS style)
         r'\bpaid\b.*\bremoves?\b.*\b(?:royalt|milestone|payment|obligation)\b',
-        r'\bremoves?\s+(?:the\s+)?(?:Company\'?s?\s+)?obligation\b',
+        r'\bremoves?\s+(?:the\s+)?(?:Company\'?s?\s+)?(?:royalt|milestone|payment|obligation)\b',
+        # Amendment removing/eliminating obligations
+        r'\bamendment\b.*\b(?:remov|eliminat|terminat)\w*\b.*\b(?:royalt|milestone|payment|obligation)\b',
+        # Amendment consideration (payment for amending agreement)
+        r'\bamendment\s+consideration\b',
+        # Paid + amendment (paying to amend/terminate obligations)
+        r'\bpaid\b.*\bamendment\b',
     ],
     DealType.DEBT_FACILITY: [
         r'\b(?:credit|loan|term\s+loan|revolving)\s+(?:facility|agreement)\b',
         r'\bdebt\s+(?:facility|financing|agreement)\b',
         r'\bventure\s+(?:debt|loan)\b',
         r'\bloan\s+and\s+security\s+agreement\b',
+        # Patterns for specific lenders like Hercules
+        r'\bentered\s+into\b.*\b(?:loan|credit)\b.*\bagreement\b',
+        r'\b(?:tranche|draw(?:down)?|fund(?:ing|ed)?)\b.*\b(?:million|loan|facility)\b',
     ],
 }
 
@@ -1015,18 +1085,32 @@ def infer_deal_type_from_quote(type_quote: str) -> DealType | None:
 
 
 def is_historical_agreement(type_quote: str) -> bool:
-    """Check if the type_quote describes a historical/past agreement rather than current event."""
+    """Check if the type_quote describes a historical/past agreement rather than current event.
+    
+    Key insight: When the current 8-K event IS an amendment to a prior agreement,
+    references to the original agreement's date (e.g., "dated as of November 29, 2017")
+    are NOT historical - the current event is the amendment itself.
+    
+    We should only mark as historical when the quote describes a PAST action that is
+    NOT the current event being reported.
+    """
     if not type_quote:
         return False
     
     text_lower = type_quote.lower()
     
+    # If quote mentions amendment/amendment no./sixth amendment etc., the event IS current
+    # Even if it references an original agreement date
+    if re.search(r'\b(?:amendment\s+no\.?\s*\d+|(?:first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth)\s+amendment|amending|amended)\b', text_lower, re.IGNORECASE):
+        return False
+    
+    # Only these patterns indicate truly historical (not the current event):
     historical_patterns = [
+        # "previously entered" clearly indicates past, not current
         r'\bpreviously\s+(?:entered|agreed|executed|signed)\b',
-        r'\b(?:in|during|since)\s+\d{4}\b',  # "in 2019", "since 2020"
-        r'\bdated\s+(?:as\s+of\s+)?\w+\s+\d{1,2},?\s+\d{4}\b',  # "dated January 15, 2019"
-        r'\bpursuant\s+to\s+(?:the|that)\s+(?:certain\s+)?(?:\w+\s+)?agreement\s+(?:dated|entered)\b',
+        # "original agreement" when not in context of amendment
         r'\boriginal\s+agreement\b',
+        # "as amended through" or "prior to" (describing history, not current event)
         r'\bas\s+amended\s+(?:and\s+restated\s+)?(?:from\s+time\s+to\s+time\s+)?(?:through|prior\s+to)\b',
     ]
     
@@ -1214,12 +1298,19 @@ def process_sec_deal(
         logging.info("Deal dropped: counterparty_quote not found in filing")
         return None
     
-    # Verification 3: counterparty must appear in both quotes
+    # Verification 3: counterparty must appear in both quotes (with defined term resolution)
     if not counterparty:
         logging.info("Deal dropped: no counterparty name")
         return None
-    if not verify_counterparty_in_quotes(counterparty, counterparty_quote, type_quote):
+    if not verify_counterparty_in_quotes(counterparty, counterparty_quote, type_quote, filing_text):
         logging.info("Deal dropped: counterparty '%s' not verified in quotes", counterparty)
+        return None
+    
+    # Verification 3b: counterparty must NOT equal filer (self-deal check)
+    filer_normalized = normalize_company_name(filer_name).lower()
+    counterparty_normalized = normalize_company_name(counterparty).lower()
+    if filer_normalized == counterparty_normalized or filer_normalized in counterparty_normalized or counterparty_normalized in filer_normalized:
+        logging.info("Deal dropped: counterparty '%s' same as filer '%s'", counterparty, filer_name)
         return None
     
     # Verification 4: filer must be a party (from EDGAR metadata)
@@ -1304,16 +1395,16 @@ def process_sec_deal(
         if amount.kind in (AmountKind.PURCHASE_PRICE, AmountKind.UPFRONT):
             headline_amount = render_amount_chinese(amount)
             break
-    # For debt facility, facility_size with up_to IS appropriate as headline
-    if not headline_amount:
+    # For debt facility deals ONLY, facility_size (even with up_to) IS appropriate as headline
+    if not headline_amount and deal_type == DealType.DEBT_FACILITY:
         for amount in verified_amounts:
             if amount.kind == AmountKind.FACILITY_SIZE:
                 headline_amount = render_amount_chinese(amount)
                 break
-    # Still no headline? Use first non-conditional, non-milestone amount
+    # Still no headline? Use first non-conditional, non-milestone, non-facility_size amount
     if not headline_amount:
         for amount in verified_amounts:
-            if not amount.up_to and amount.kind != AmountKind.MILESTONES_TOTAL:
+            if not amount.up_to and amount.kind not in (AmountKind.MILESTONES_TOTAL, AmountKind.FACILITY_SIZE):
                 headline_amount = render_amount_chinese(amount)
                 break
     
@@ -1331,17 +1422,20 @@ def process_sec_deal(
         DealType.OBLIGATION_BUYOUT: ['lic'],
     }
     
+    # Use event_date if available, fallback to filing_date
+    display_date = event_date[:7] if event_date else (filing_date[:7] if filing_date else '')
+    
     return {
         'url': filing_url,
         'title': title,
         'company': filer_name,
         'counterparty': counterparty,
         'kinds': deal_kinds_map.get(deal_type, ['lic']),
-        'money': headline_amount or '未披露',
+        'money': headline_amount or '',
         'structure': ' | '.join(detail_lines) if detail_lines else '',
         'why': '',  # No model free text
         'source_name': 'SEC EDGAR',
-        'date': filing_date[:7] if filing_date else '',
+        'date': display_date,
         'amount_source': 'filing',
         'is_filing': True,
         'filing_source': 'sec',
@@ -1358,6 +1452,64 @@ def process_sec_deal(
         'deal_type': deal_type.value,
         'filer_role': filer_role,
     }
+
+
+def _select_relevant_filing_sections(filing_text: str, max_chars: int = 40000) -> str:
+    """Select relevant sections from SEC filing instead of blind truncation.
+    
+    SEC 8-K filings have structure:
+    - Cover page (important)
+    - Item X.XX sections (most important - contain the deal announcement)
+    - Exhibits (EX-99.X press releases, EX-10.X agreements)
+    
+    This function extracts the most relevant portions while staying under max_chars.
+    """
+    if len(filing_text) <= max_chars:
+        return filing_text
+    
+    # Try to find and extract key sections
+    sections = []
+    
+    # 1. Extract cover/header (first ~3000 chars usually has date, company, item list)
+    sections.append(filing_text[:3000])
+    
+    # 2. Look for Item sections (Item 1.01, Item 2.01, etc.)
+    item_pattern = r'(Item\s+\d+\.\d+[^\n]*\n(?:.*?\n){0,50})'
+    item_matches = re.findall(item_pattern, filing_text, re.IGNORECASE | re.DOTALL)
+    for match in item_matches[:5]:  # Take up to 5 item sections
+        if len(match) > 100:  # Skip tiny matches
+            sections.append(match[:5000])  # Limit each item section
+    
+    # 3. Look for Exhibit descriptions or press releases
+    exhibit_pattern = r'((?:Exhibit|EX-)\s*(?:99|10)\.\d.*?(?=Exhibit|EX-|$))'
+    exhibit_matches = re.findall(exhibit_pattern, filing_text, re.IGNORECASE | re.DOTALL)
+    for match in exhibit_matches[:3]:  # Take up to 3 exhibits
+        if len(match) > 200:
+            sections.append(match[:8000])  # Exhibits can be longer
+    
+    # 4. Look for specific deal keywords and extract surrounding context
+    deal_keywords = [
+        r'(?:License|Collaboration|Credit|Loan|Amendment|Agreement).*?Agreement',
+        r'\$[\d,]+(?:\.\d+)?\s*(?:million|billion)',
+        r'upfront\s+(?:payment|fee)',
+        r'milestone\s+payment',
+    ]
+    
+    for keyword_pattern in deal_keywords:
+        for match in re.finditer(keyword_pattern, filing_text, re.IGNORECASE):
+            start = max(0, match.start() - 500)
+            end = min(len(filing_text), match.end() + 500)
+            context = filing_text[start:end]
+            if context not in ''.join(sections):
+                sections.append(f"[...]{context}[...]")
+    
+    # Join sections and trim to max_chars
+    result = '\n\n---\n\n'.join(sections)
+    
+    if len(result) > max_chars:
+        result = result[:max_chars] + "\n[... truncated ...]"
+    
+    return result
 
 
 def extract_deals_from_filings(
@@ -1408,6 +1560,10 @@ def extract_deals_from_filings(
         try:
             model = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5-5")
             
+            # Select relevant sections from filing instead of truncating
+            # Focus on: Item sections, exhibits, and first portion
+            relevant_text = _select_relevant_filing_sections(filing_text)
+            
             prompt = f"""Analyze this SEC filing and extract deal information.
 
 CRITICAL: All quotes MUST be EXACT verbatim text from the filing - no paraphrasing, no rewording, no additions.
@@ -1415,7 +1571,7 @@ CRITICAL: All quotes MUST be EXACT verbatim text from the filing - no paraphrasi
 The filing company is: {filer_name}
 
 Filing text:
-{filing_text[:25000]}
+{relevant_text}
 
 If there is a significant business deal (acquisition, merger, license, collaboration, financing, loan, or buyout):
 1. Identify the deal type
@@ -1431,24 +1587,48 @@ IMPORTANT: Every quote must be an EXACT substring of the filing text above. Do n
 
             # Use tool_choice="auto" which is compatible with all Claude models
             # Then validate the response contains the expected tool call
-            message = claude_client.messages.create(
-                model=model,
-                max_tokens=2000,
-                tools=[DEAL_EXTRACTION_SCHEMA],
-                tool_choice={"type": "auto"},
-                messages=[{"role": "user", "content": prompt}],
-            )
-            
-            # Extract tool response
+            # Retry logic for text-only responses
+            max_retries = 2
             claude_response = None
-            for block in message.content:
-                if block.type == "tool_use" and block.name == "extract_deal":
-                    claude_response = block.input
+            
+            for attempt in range(max_retries):
+                message = claude_client.messages.create(
+                    model=model,
+                    max_tokens=8000,  # Raised from 2000 for longer responses
+                    tools=[DEAL_EXTRACTION_SCHEMA],
+                    tool_choice={"type": "auto"},
+                    messages=[{"role": "user", "content": prompt}],
+                )
+                
+                # Check stop_reason
+                stop_reason = message.stop_reason
+                if stop_reason == "max_tokens":
+                    logging.warning("Filing %s: Claude response truncated (max_tokens), retrying with deal_type=none assumption", filing_url)
+                    # If truncated, we can't trust the response - treat as no deal
+                    failed_count += 1
                     break
+                
+                # Extract tool response
+                for block in message.content:
+                    if block.type == "tool_use" and block.name == "extract_deal":
+                        claude_response = block.input
+                        break
+                
+                if claude_response:
+                    break
+                
+                # Text-only response - retry once with stronger instruction
+                if attempt == 0:
+                    logging.info("Filing %s: Claude returned text-only, retrying with tool emphasis", filing_url)
+                    prompt = prompt.replace(
+                        "If there is no significant deal",
+                        "You MUST use the extract_deal tool to respond. If there is no significant deal"
+                    )
+                else:
+                    logging.warning("Filing %s: Claude did not use extract_deal tool after retry", filing_url)
+                    failed_count += 1
             
             if not claude_response:
-                logging.warning("Filing %s: Claude did not use extract_deal tool", filing_url)
-                failed_count += 1
                 continue
             
             deal = process_sec_deal(
@@ -1551,10 +1731,27 @@ def split_into_sentences(text: str) -> list[tuple[int, int, str]]:
 
 
 def extract_numbers_from_text(text: str) -> set[str]:
-    """Extract all numbers (including Chinese) from text for verification."""
+    """Extract QUANTITY numbers from text for verification.
+    
+    This should only extract numbers that represent amounts, quantities, or measurements.
+    It should NOT extract Chinese numerals that are part of common words/idioms.
+    
+    Chinese numerals to IGNORE (not quantity numbers):
+    - 一种 (a kind of), 一些 (some), 一定 (certain), 一般 (general)
+    - 进一步 (further), 一步 (one step as idiom)
+    - 一项 (an item), 一组 (a group), 一次 (once)
+    - 两者 (both), 两方 (both parties)
+    - 第一 (first), 第二 (second), etc. - ordinals
+    
+    Chinese numerals to EXTRACT (quantity numbers):
+    - X 亿美元, X 万美元 (amounts)
+    - X 例患者, X 名患者 (patient counts)
+    - X% (percentages)
+    - 三期 (phase 3) when followed by 试验/临床 - but this is ALLOWED in clinical text
+    """
     numbers = set()
     
-    # Arabic numerals with optional decimal
+    # Arabic numerals with optional decimal - these are clear quantities
     for m in re.finditer(r'[\d,]+(?:\.\d+)?', text):
         num = m.group().replace(',', '')
         if num and num != '.':
@@ -1563,11 +1760,18 @@ def extract_numbers_from_text(text: str) -> set[str]:
             if '.' in num:
                 numbers.add(num.split('.')[0])
     
-    # Chinese numerals
-    chinese_digits = '零一二三四五六七八九十百千万亿两〇'
-    chinese_pattern = rf'[{chinese_digits}]+'
-    for m in re.finditer(chinese_pattern, text):
-        numbers.add(m.group())
+    # Chinese numerals - only extract when they represent QUANTITIES
+    # Pattern: Chinese number + unit suffix (亿/万/百/千 + currency or 例/名/人/组 etc.)
+    # This matches "三亿美元" but not "一种方法"
+    quantity_patterns = [
+        r'([零一二三四五六七八九十百千万亿两〇]+)\s*(?:亿|万|百|千)?\s*(?:美元|欧元|英镑|元|人民币|港币|日元)',
+        r'([零一二三四五六七八九十百千万亿两〇]+)\s*(?:亿|万|百|千)\b',  # standalone large numbers
+        r'([零一二三四五六七八九十百千万亿两〇]+)\s*(?:例|名|位|人|个|家|项|条|篇|份|次|组|期|年|月|日|周|天)\b',
+    ]
+    
+    for pattern in quantity_patterns:
+        for m in re.finditer(pattern, text):
+            numbers.add(m.group(1))
     
     # Percentages
     for m in re.finditer(r'\d+(?:\.\d+)?%', text):

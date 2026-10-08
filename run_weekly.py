@@ -111,9 +111,12 @@ def normalize_edgar_company_name(display_name: str) -> str:
     
     EDGAR display names look like:
     - 'Alector, Inc.  (ALEC)  (CIK 0001653087)'
-    - 'ROCKET PHARMACEUTICALS, INC.  (RCKT)  (CIK 0001281895)'
+    - 'ROCKET PHARMACEUTICALS, INC.  (RCKT)  (CIK 0001895)'
+    - 'Jasper Therapeutics, Inc.  (JSPR, JSPRW)  (CIK ...)'  (multi-ticker)
+    - 'BRT Apartments Corp.  (BRT-A)  (CIK ...)'  (dashed ticker)
     
-    Returns the clean company name without ticker/CIK parentheticals.
+    Returns the clean company name without ticker/CIK parentheticals,
+    with proper case normalization (title case, not ALL CAPS).
     """
     if not display_name:
         return display_name
@@ -125,11 +128,25 @@ def normalize_edgar_company_name(display_name: str) -> str:
     # Remove (CIK XXXXXXXXX) or (CIK 0001234567) patterns
     result = re.sub(r'\s*\(CIK\s*\d+\)\s*$', '', result, flags=re.IGNORECASE)
     
-    # Remove ticker symbol in parentheses (2-5 uppercase letters)
-    result = re.sub(r'\s*\([A-Z]{2,5}\)\s*$', '', result)
+    # Remove ticker symbol in parentheses - handle multi-ticker (JSPR, JSPRW), dashed (BRT-A), 1-letter
+    # Pattern: (TICKER) or (TICKER, TICKER2) or (TICK-A)
+    result = re.sub(r'\s*\([A-Z][A-Z0-9,\s-]*\)\s*$', '', result)
     
     # Clean up any double spaces and trailing whitespace
     result = re.sub(r'\s+', ' ', result).strip()
+    
+    # Convert ALL CAPS names to title case (e.g., "ROCKET PHARMACEUTICALS, INC." -> "Rocket Pharmaceuticals, Inc.")
+    if result.isupper():
+        # Handle title case but preserve acronyms like Inc., LLC, etc.
+        words = result.split()
+        title_words = []
+        for word in words:
+            # Keep certain words as-is when capitalizing
+            if word.upper() in ('INC.', 'INC', 'LLC', 'LTD', 'CORP', 'CORP.', 'CO', 'CO.', 'LP', 'L.P.', 'PLC'):
+                title_words.append(word.capitalize())
+            else:
+                title_words.append(word.title())
+        result = ' '.join(title_words)
     
     return result
 
@@ -4007,9 +4024,6 @@ field 必须是：{json.dumps(FIELDS, ensure_ascii=False)}
             continue
         
         steps = [str(s).strip() for s in (raw.get("steps") or []) if str(s).strip()][:5]
-        if len(steps) < 3:
-            logging.warning("丢弃步骤不足的文章：%s, steps=%d", url, len(steps))
-            continue
         
         all_text = f"{raw.get('lead', '')} {raw.get('body', '')} {raw.get('discuss', '')}"
         for blocked in blocked_patterns:
@@ -4019,7 +4033,8 @@ field 必须是：{json.dumps(FIELDS, ensure_ascii=False)}
         
         # Strip unverified numbers from news/academic text
         source_text = src.get("summary", "")
-        title = (raw.get("title") or src["title"]).strip()
+        original_title = (raw.get("title") or src["title"]).strip()
+        title = original_title
         lead = (raw.get("lead") or "").strip()
         body = (raw.get("body") or "").strip()
         discuss = (raw.get("discuss") or "").strip()
@@ -4028,13 +4043,24 @@ field 必须是：{json.dumps(FIELDS, ensure_ascii=False)}
         # Strip from title, lead, body, discuss, AND steps
         if source_text:
             import sec_deals
-            title = sec_deals.strip_unverified_numbers_from_text(title, source_text)
+            stripped_title = sec_deals.strip_unverified_numbers_from_text(title, source_text)
+            # NEVER empty a title - if stripping empties it, keep original
+            if stripped_title.strip():
+                title = stripped_title
+            else:
+                logging.warning("Number stripping emptied title, keeping original: %s", original_title[:50])
+            
             lead = sec_deals.strip_unverified_numbers_from_text(lead, source_text)
             body = sec_deals.strip_unverified_numbers_from_text(body, source_text)
             discuss = sec_deals.strip_unverified_numbers_from_text(discuss, source_text)
             # Also strip steps
             steps = [sec_deals.strip_unverified_numbers_from_text(s, source_text) for s in steps]
             steps = [s for s in steps if s.strip()]  # Remove empty steps after stripping
+        
+        # Check steps count AFTER stripping (not before)
+        if len(steps) < 3:
+            logging.warning("丢弃步骤不足的文章（stripping后）：%s, steps=%d", url, len(steps))
+            continue
         
         articles.append({
             "url": url,
@@ -4525,12 +4551,14 @@ def extract_sec_deals(items: list[dict], config: dict) -> list[dict]:
     
     logging.info("Extracting deals from %d SEC filings via sec_deals module", len(filings_with_dates))
     
-    deals = sec_deals.extract_deals_from_filings(
+    deals, failed_count = sec_deals.extract_deals_from_filings(
         filings=filings_with_dates,
         max_deals=max_deals
     )
     
     logging.info("交易选择：%d 条披露（via sec_deals module）", len(deals))
+    if failed_count > 0:
+        logging.warning("SEC deal extraction: %d filings failed to process", failed_count)
     
     return deals
 
