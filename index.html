@@ -1130,7 +1130,7 @@ function renderPaper(id){
           </div>`}
           ${bodyHtml}
           <details class="sec meet"><summary>编辑备注</summary><p>${isNewFormat?escHtml(a.au||'论文页面没有给出可核对的通讯作者。'):(a.au||'论文页面没有给出可核对的通讯作者。')}</p>${a.note?`<p>${isNewFormat?escHtml(a.note):a.note}</p>`:''}<p>这里没有采访，只写论文或新闻稿里能核对的作者、身份和单位。页面没标通讯作者时，按末位或资深作者写明，不另编履历。</p></details>
-          <div class="sec"><h2>作者、出处与核对</h2><p class="src">${a.citation ? escHtml(a.citation) + '<br>' : ''}<b>原文</b>：${isNewFormat?escHtml(a.j||''):(a.j||'')}。 <a href="${a.url}" target="_blank" rel="noopener">打开原文</a>${a.read_note ? '<br>'+escHtml(a.read_note) : ''}</p></div>
+          <div class="sec"><h2>出处</h2><p class="src">${a.citation ? escHtml(a.citation) + '<br>' : ''}<b>原文</b>：${isNewFormat?escHtml(a.j||''):(a.j||'')}。 <a href="${a.url}" target="_blank" rel="noopener">打开原文</a>${a.read_note ? '<br>'+escHtml(a.read_note) : ''}</p></div>
           <p class="note" style="margin-top:1em;font-size:13px;">本文初稿由 Claude 起草，配图由 gpt-image-1 生成，编辑核对后发布。TheraSik · 启曜生科 出品。</p>
           ${renderRelated()}
         </div>

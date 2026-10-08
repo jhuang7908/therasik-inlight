@@ -958,7 +958,7 @@ def write_output(draft: dict, dest: Path, week: str) -> None:
     for index, item in enumerate(draft["articles"], start=1):
         filename = f"a{index}.png"
         rel = ""
-        if item.get("skip_mechanism_figure") or item.get("tier") != "deep":
+        if item.get("skip_mechanism_figure") is True:
             logging.info("跳过机制图（无全文或不为深度解读）：%s", item.get("title", index))
         else:
             try:
@@ -998,8 +998,9 @@ def write_output(draft: dict, dest: Path, week: str) -> None:
         logging.exception("封面图失败")
     (dest / "articles.json").write_text(json.dumps(articles, ensure_ascii=False, indent=2), encoding="utf-8")
     (dest / "deals.json").write_text(json.dumps(deals, ensure_ascii=False, indent=2), encoding="utf-8")
-    qc = draft.get("qc_report") or draft.get("stats", {}).get("qc_report") or {}
-    (dest / "qc_report.json").write_text(json.dumps(qc, ensure_ascii=False, indent=2), encoding="utf-8")
+    qc = draft.get("qc_report") or (draft.get("stats") or {}).get("qc_report")
+    if qc:
+        (dest / "qc_report.json").write_text(json.dumps(qc, ensure_ascii=False, indent=2), encoding="utf-8")
     
     # Use wechat_html_full for new format articles (with datacard), wechat_html for legacy
     has_new_format = any(art.get("datacard") or art.get("results") for art in articles)
