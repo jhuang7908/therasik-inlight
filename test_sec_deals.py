@@ -2760,6 +2760,298 @@ class TestDefinedTermsDecideParties:
         assert "pine" not in deal["counterparty"].lower()
 
 
+class TestInstrumentHistoryAndPartyHygiene:
+    """Dated instruments, wrappers, and publishable party names (invented filers)."""
+
+    def test_full_title_dated_as_of_short_name_is_preexisting(self):
+        filing = (
+            "Lumen Therapeutics, Inc. (the \"Company\") is party to that certain "
+            "Exclusive Research and License Agreement, dated as of April 12, 2018 "
+            "(the \"Research Pact\"). Under the Research Pact, the Company granted "
+            "Quill Bio Ltd an exclusive licence. Quill will pay a $9 million "
+            "upfront payment."
+        )
+        quote = "the Company granted Quill Bio Ltd an exclusive licence"
+        assert sec_deals.is_historical_agreement(quote, "2026-10-05", filing) is True
+        assert sec_deals.out_of_scope_deal_reason(
+            quote, filing, filing_date="2026-10-05",
+        ) == "historical agreement"
+        deal = sec_deals.process_sec_deal(
+            filing_text=filing,
+            filer_name="Lumen Therapeutics, Inc.",
+            filing_url="https://test",
+            filing_date="2026-10-05",
+            event_date="2026-10-01",
+            claude_response={
+                "deal_type": "license_collaboration",
+                "counterparty_name": "Quill Bio Ltd",
+                "type_quote": quote,
+                "counterparty_quote": "granted Quill Bio Ltd an exclusive licence",
+                "amounts": [{"kind": "upfront", "quote": "a $9 million upfront payment"}],
+            },
+        )
+        assert deal is None
+
+    def test_recent_dated_as_of_short_name_is_still_current(self):
+        filing = (
+            "Lumen Therapeutics, Inc. (the \"Company\") entered into an Exclusive "
+            "Research and License Agreement, dated as of October 2, 2026 "
+            "(the \"Research Pact\"). Pursuant to the Research Pact, the Company "
+            "granted Quill Bio Ltd an exclusive licence. Quill will pay a $9 "
+            "million upfront payment."
+        )
+        quote = "the Company granted Quill Bio Ltd an exclusive licence"
+        assert sec_deals.is_historical_agreement(quote, "2026-10-05", filing) is False
+        assert sec_deals.out_of_scope_deal_reason(
+            quote, filing, filing_date="2026-10-05",
+        ) is None
+        deal = sec_deals.process_sec_deal(
+            filing_text=filing,
+            filer_name="Lumen Therapeutics, Inc.",
+            filing_url="https://test",
+            filing_date="2026-10-05",
+            event_date="2026-10-01",
+            claude_response={
+                "deal_type": "license_collaboration",
+                "counterparty_name": "Quill Bio Ltd",
+                "type_quote": quote,
+                "counterparty_quote": "granted Quill Bio Ltd an exclusive licence",
+                "amounts": [{"kind": "upfront", "quote": "a $9 million upfront payment"}],
+            },
+        )
+        assert deal is not None
+        assert "quill" in deal["counterparty"].lower()
+
+    def test_exhibit_date_for_same_instrument_is_old(self):
+        filing = (
+            "Exhibit Index\n"
+            "10.3  Exclusive Research and License Agreement dated April 12, 2018\n"
+            "Item 1.01\n"
+            "Lumen Therapeutics, Inc. (the \"Company\"). Pursuant to the Exclusive "
+            "Research and License Agreement, the Company granted Quill Bio Ltd "
+            "an exclusive licence. Quill will pay a $9 million upfront payment."
+        )
+        quote = (
+            "Pursuant to the Exclusive Research and License Agreement, the "
+            "Company granted Quill Bio Ltd an exclusive licence"
+        )
+        assert sec_deals._agreement_date_from_filing(quote, filing) is not None
+        assert sec_deals.is_historical_agreement(quote, "2026-10-05", filing) is True
+
+    def test_differently_titled_exhibit_does_not_age_a_new_grant(self):
+        filing = (
+            "Exhibit Index\n"
+            "10.1  Amended and Restated Supply Agreement dated February 2, 2016\n"
+            "Item 1.01\n"
+            "Lumen Therapeutics, Inc. (the \"Company\") entered into a License "
+            "Agreement with Quill Bio Ltd (the \"License Agreement\"). Pursuant "
+            "to the License Agreement, the Company granted Quill Bio Ltd an "
+            "exclusive licence. Quill will pay a $9 million upfront payment."
+        )
+        quote = "the Company granted Quill Bio Ltd an exclusive licence"
+        assert sec_deals.is_historical_agreement(quote, "2026-10-05", filing) is False
+        deal = sec_deals.process_sec_deal(
+            filing_text=filing,
+            filer_name="Lumen Therapeutics, Inc.",
+            filing_url="https://test",
+            filing_date="2026-10-05",
+            event_date="2026-10-01",
+            claude_response={
+                "deal_type": "license_collaboration",
+                "counterparty_name": "Quill Bio Ltd",
+                "type_quote": quote,
+                "counterparty_quote": "License Agreement with Quill Bio Ltd",
+                "amounts": [{"kind": "upfront", "quote": "a $9 million upfront payment"}],
+            },
+        )
+        assert deal is not None
+
+    def test_wrapper_instruments_and_existing_rights_are_dropped(self):
+        for title, extra in (
+            ("side letter", "with Quill Bio Ltd (the \"Side Letter\")"),
+            ("joinder agreement", "to the Research Pact (the \"Joinder\")"),
+            ("novation agreement", "of the Research Pact (the \"Novation\")"),
+            ("assignment and assumption agreement", "(the \"Assignment\")"),
+        ):
+            filing = (
+                f"Lumen Therapeutics, Inc. (the \"Company\") entered into a {title} "
+                f"{extra}. Pursuant to the {title}, the Company granted Quill Bio "
+                "Ltd an exclusive licence. Quill will pay a $4 million upfront "
+                "payment."
+            )
+            assert sec_deals.is_wrapper_or_existing_rights_language(title)
+            deal = sec_deals.process_sec_deal(
+                filing_text=filing,
+                filer_name="Lumen Therapeutics, Inc.",
+                filing_url="https://test",
+                filing_date="2026-10-05",
+                event_date="2026-10-01",
+                claude_response={
+                    "deal_type": "license_collaboration",
+                    "counterparty_name": "Quill Bio Ltd",
+                    "type_quote": "the Company granted Quill Bio Ltd an exclusive licence",
+                    "counterparty_quote": "Quill Bio Ltd",
+                    "amounts": [{"kind": "upfront", "quote": "a $4 million upfront payment"}],
+                },
+            )
+            assert deal is None, title
+
+        assert sec_deals.is_wrapper_or_existing_rights_language(
+            "the Company exercised an option under the Research Pact"
+        )
+        assert sec_deals.is_wrapper_or_existing_rights_language(
+            "milestone payments under the Research Pact became due"
+        )
+        assert sec_deals.is_wrapper_or_existing_rights_language(
+            "consent to assignment of the Research Pact"
+        )
+        assert not sec_deals.is_wrapper_or_existing_rights_language(
+            "the Company granted Quill Bio Ltd an exclusive licence"
+        )
+
+    def test_intro_sentence_earlier_in_section_controls_scope(self):
+        filing = (
+            "Item 1.01 Entry into a Material Definitive Agreement.\n"
+            "Lumen Therapeutics, Inc. (the \"Company\") is party to a side letter "
+            "dated May 8, 2019 (the \"Side Letter\").\n"
+            "Later in the same item, in accordance with the Side Letter, the "
+            "Company granted Quill Bio Ltd an exclusive licence. Quill will pay "
+            "a $4 million upfront payment."
+        )
+        quote = "the Company granted Quill Bio Ltd an exclusive licence"
+        intros = sec_deals._instrument_intro_sentences(quote, filing)
+        assert any("side letter" in s.lower() for s in intros)
+        assert sec_deals.out_of_scope_deal_reason(
+            quote, filing, filing_date="2026-10-05",
+        ) is not None
+        current = (
+            "Lumen Therapeutics, Inc. (the \"Company\") entered into a License "
+            "Agreement with Quill Bio Ltd (the \"Fresh Pact\"). In accordance "
+            "with the Fresh Pact, the Company granted Quill Bio Ltd an exclusive "
+            "licence. Quill will pay a $9 million upfront payment."
+        )
+        assert sec_deals.out_of_scope_deal_reason(
+            quote, current, filing_date="2026-10-05",
+        ) is None
+
+    def test_governance_units_never_leave_a_name_fragment(self):
+        cases = [
+            (
+                'the Special Committee of the Board of Directors of Cedar Peak Inc. ("Parent")',
+                "parent",
+                "cedar peak",
+                ("committee", "board", "director"),
+            ),
+            (
+                'the Supervisory Board of Cedar Peak Inc. ("Parent")',
+                "parent",
+                "cedar peak",
+                ("supervisory", "board"),
+            ),
+            (
+                'the Board of Managers of Cedar Peak Inc. ("Parent")',
+                "parent",
+                "cedar peak",
+                ("board", "manager"),
+            ),
+            (
+                'the General Partner of Willow Ventures LP ("Parent")',
+                "parent",
+                "willow ventures",
+                ("general", "partner"),
+            ),
+            (
+                'the Managing Member of Helios HoldCo LLC ("Parent")',
+                "parent",
+                "helios",
+                ("managing", "member"),
+            ),
+        ]
+        for text, term, must, forbidden in cases:
+            names = sec_deals.parse_defined_terms(text).get(term, [])
+            assert names, text
+            blob = " ".join(names).lower()
+            assert must in blob, names
+            for word in forbidden:
+                assert word not in blob, f"{word!r} leaked from {text}: {names}"
+            assert not any(sec_deals._name_is_fragment(n) for n in names), names
+
+        kept = [
+            (
+                'President and Fellows of Example Harbor College ("Licensor")',
+                "licensor",
+                "president and fellows",
+            ),
+            (
+                'the Regents of the University of Exampleland ("Licensor")',
+                "licensor",
+                "regents",
+            ),
+        ]
+        for text, term, must in kept:
+            names = sec_deals.parse_defined_terms(text).get(term, [])
+            assert names, text
+            assert any(must in n.lower() for n in names), names
+
+    def test_unpublishable_counterparty_leads_are_dropped_or_cleaned(self):
+        assert sec_deals._is_unpublishable_party_name("and Cedar Peak Inc.")
+        assert sec_deals._is_unpublishable_party_name("of Cedar Peak Inc.")
+        assert sec_deals._is_unpublishable_party_name("the board")
+        assert sec_deals._is_unpublishable_party_name("License Agreement Cedar Peak")
+        assert sec_deals._fallback_clean_party_name("and Cedar Peak Inc.") is None
+        assert sec_deals._fallback_clean_party_name("Cedar Peak Inc.") == "Cedar Peak Inc."
+        filing = (
+            "Cedar Peak Inc. (\"Parent\") agreed that Parent will acquire "
+            "Lumen Therapeutics, Inc. (the \"Company\") for $250 million."
+        )
+        deal = sec_deals.process_sec_deal(
+            filing_text=filing,
+            filer_name="Lumen Therapeutics, Inc.",
+            filing_url="https://test",
+            filing_date="2026-10-05",
+            event_date="2026-10-01",
+            claude_response={
+                "deal_type": "acquisition",
+                "counterparty_name": "and Cedar Peak Inc.",
+                "type_quote": "Parent will acquire Lumen Therapeutics, Inc. (the \"Company\") for $250 million",
+                "counterparty_quote": "Cedar Peak Inc. (\"Parent\")",
+                "amounts": [{"kind": "purchase_price", "quote": "for $250 million"}],
+            },
+        )
+        assert deal is None
+        ok = sec_deals.process_sec_deal(
+            filing_text=filing,
+            filer_name="Lumen Therapeutics, Inc.",
+            filing_url="https://test",
+            filing_date="2026-10-05",
+            event_date="2026-10-01",
+            claude_response={
+                "deal_type": "acquisition",
+                "counterparty_name": "Cedar Peak Inc.",
+                "type_quote": "Parent will acquire Lumen Therapeutics, Inc. (the \"Company\") for $250 million",
+                "counterparty_quote": "Cedar Peak Inc. (\"Parent\")",
+                "amounts": [{"kind": "purchase_price", "quote": "for $250 million"}],
+            },
+        )
+        assert ok is not None
+        assert "cedar" in ok["counterparty"].lower()
+        assert "agreement" not in ok["counterparty"].lower()
+
+    def test_clause_starting_agreement_title_is_a_heading(self):
+        texts = [
+            'Business Combination Agreement\nCedar Peak Inc. ("Parent")',
+            'Agreement and Plan of Business Combination Cedar Peak Inc. ("Parent")',
+            'Exclusive License Agreement\nQuill Bio Ltd ("Licensee")',
+        ]
+        for text in texts:
+            terms = sec_deals.parse_defined_terms(text)
+            names = [n for vals in terms.values() for n in vals]
+            assert names, text
+            blob = " ".join(names).lower()
+            assert "agreement" not in blob, names
+            assert any("cedar" in n.lower() or "quill" in n.lower() for n in names)
+
+
 class TestEquityNeverADealPayment:
     def test_private_placement_not_upfront(self):
         assert sec_deals.is_equity_amount_quote(

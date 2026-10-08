@@ -651,13 +651,21 @@ def _split_sentences(text: str) -> list[str]:
     """
     if not text:
         return []
+    text = re.sub(
+        r'\n(?=(?:Item\s+\d|Ex(?:hibit)?[\s._-]*\d|\d{1,2}\.\d+\s+))',
+        '. ',
+        text,
+    )
     protected = re.sub(
         _ABBREV_PERIOD_RE.pattern + r'(?!\s+[A-Z])',
         lambda m: m.group(0)[:-1] + '\u0000',
         text,
         flags=re.IGNORECASE,
     )
-    parts = re.split(r'(?<=[。！？])|(?<=(?<!\d)\.(?!\d))\s+', protected)
+    parts = re.split(
+        r'(?<=[。！？])|(?<=(?<!\d)\.(?!\d))\s+|(?<=\d{4}\.)\s+',
+        protected,
+    )
     return [p.replace('\u0000', '.').strip() for p in parts if p.strip()]
 
 
@@ -1990,51 +1998,11 @@ _MONTH_ALT = (
 )
 
 
-def _agreement_date_from_filing(type_quote: str, filing_text: str) -> date | None:
-    """Dated clause for the agreement the grant quote actually refers to.
-
-    Do not use the earliest date of any agreement in the filing (an unrelated
-    indenture must not make a new license look old).
-    """
-    if not type_quote or not filing_text:
+def _parse_month_day_year(month: str, day: str, year: str) -> date | None:
+    try:
+        return date(int(year), _MONTH_NAME_TO_NUM[month.lower()], int(day))
+    except (ValueError, KeyError):
         return None
-    labels = _referred_agreement_labels(type_quote, filing_text)
-    if not labels:
-        return None
-    dated_pat = (
-        rf'dated(?:\s+as\s+of)?\s+{_MONTH_ALT}\s+(\d{{1,2}}),\s+(\d{{4}})\b'
-    )
-    dates: list[date] = []
-    seen: set[str] = set()
-
-    def _date_from_match(m: re.Match) -> date | None:
-        try:
-            groups = m.groups()
-            month = next(g for g in groups if g and g.lower() in _MONTH_NAME_TO_NUM)
-            nums = [g for g in groups if g and g.isdigit()]
-            return date(int(nums[-1]), _MONTH_NAME_TO_NUM[month.lower()], int(nums[0]))
-        except (ValueError, KeyError, StopIteration):
-            return None
-
-    for lab in labels:
-        key = re.sub(r'^the\s+', '', lab.lower().strip())
-        if not key or key in seen:
-            continue
-        seen.add(key)
-        esc = re.escape(lab)
-        for pat in (
-            rf'{esc}.{{0,200}}?{dated_pat}',
-            rf'{dated_pat}.{{0,200}}?{esc}',
-        ):
-            for m in re.finditer(pat, filing_text, re.IGNORECASE | re.DOTALL):
-                if _is_exhibit_index_line(_line_at(filing_text, m.start())):
-                    continue
-                if not _dated_window_matches_label(m.group(0), lab):
-                    continue
-                parsed = _date_from_match(m)
-                if parsed:
-                    dates.append(parsed)
-    return min(dates) if dates else None
 
 
 def _line_at(text: str, pos: int) -> str:
@@ -2053,34 +2021,170 @@ def _is_exhibit_index_line(line: str) -> bool:
     )) or bool(re.search(r'(?i)\b(?:exhibit\s+(?:index|no\.?\s*\d)|list\s+of\s+exhibits)\b', s))
 
 
-_DATED_TITLE_RE = re.compile(
-    r'\b((?:the\s+)?(?:[A-Z][A-Za-z0-9&]+\s+){0,8}'
-    r'(?:Agreement|Addendum|Indenture|Amendment|Supplement|Modification|Extension))\b'
+_INSTRUMENT_TAIL = (
+    r'Agreement|Addendum|Indenture|Amendment|Joinder|Novation|'
+    r'Supplement|Modification|Extension|Letter'
+)
+_TITLE_WORDS = (
+    r'(?:[Tt]he\s+)?[A-Z][A-Za-z0-9&]+'
+    r'(?:\s+(?:and|&|of|the|to|[A-Z][A-Za-z0-9&]+)){0,10}'
+)
+_INSTRUMENT_TITLE_RE = re.compile(
+    rf'\b(({_TITLE_WORDS}\s+(?:{_INSTRUMENT_TAIL}))|Addendum)\b'
+)
+_DATED_AS_OF_RE = re.compile(
+    rf'((?:{_TITLE_WORDS}\s+(?:{_INSTRUMENT_TAIL}))|Addendum)'
+    rf'\s*,?\s+(?i:dated(?:\s+as\s+of)?)\s+(?i:{_MONTH_ALT})\s+(\d{{1,2}}),\s+(\d{{4}})\b'
+    rf'(?:\s*\(\s*(?:the\s+)?["\u201c]([^"\u201d]{{1,80}})["\u201d]\s*\))?',
+)
+_DATED_NEAR_TITLE_RE = re.compile(
+    rf'dated(?:\s+as\s+of)?\s+{_MONTH_ALT}\s+(\d{{1,2}}),\s+(\d{{4}})\b',
+    re.IGNORECASE,
 )
 
 
-def _dated_window_matches_label(window: str, wanted: str) -> bool:
-    """The agreement title before 'dated' must be this label, not another.
+def _norm_agreement_key(label: str) -> str:
+    return re.sub(r'^the\s+', '', re.sub(r'\s+', ' ', (label or '').lower())).strip()
 
-    Party names may sit between the title and 'dated' ('License Agreement
-    with Willow Pharma dated'). An A&R / amendment title does not match a
-    plain licence label.
+
+def _alias_instrument_keys(a: str, b: str, aliases: dict[str, set[str]]) -> None:
+    ka, kb = _norm_agreement_key(a), _norm_agreement_key(b)
+    if not ka or not kb or ka == kb:
+        return
+    aliases.setdefault(ka, set()).add(kb)
+    aliases.setdefault(kb, set()).add(ka)
+
+
+def _add_instrument_date(
+    dates: dict[str, list[date]], key: str, parsed: date | None,
+) -> None:
+    k = _norm_agreement_key(key)
+    if not k or k == 'agreement' or parsed is None:
+        return
+    dates.setdefault(k, [])
+    if parsed not in dates[k]:
+        dates[k].append(parsed)
+
+
+def _collect_instrument_catalog(
+    filing_text: str,
+) -> tuple[dict[str, set[str]], dict[str, list[date]]]:
+    """Map each instrument title/short name to aliases and dated clauses.
+
+    '<Full Title> Agreement, dated as of <date> (the \"Short\")' binds the
+    date to both names. Exhibit-index dates for that same title or short
+    name count; a differently labeled exhibit does not.
     """
-    wanted_key = _norm_agreement_key(wanted)
-    m = re.search(r'\bdated(?:\s+as\s+of)?\b', window, re.IGNORECASE)
-    if not m:
-        return False
-    before = window[:m.start()]
-    titles = list(_AGREEMENT_LABEL_RE.finditer(before)) + list(_DATED_TITLE_RE.finditer(before))
-    if not titles:
-        return False
-    last = max(titles, key=lambda x: (x.end(), x.end() - x.start()))
-    title = _norm_agreement_key(last.group(1))
-    if title != wanted_key:
-        return False
-    if is_amendment_language(title) and not is_amendment_language(wanted):
-        return False
-    return True
+    aliases: dict[str, set[str]] = {}
+    dates: dict[str, list[date]] = {}
+    if not filing_text:
+        return aliases, dates
+
+    for m in _DATED_AS_OF_RE.finditer(filing_text):
+        parsed = _parse_month_day_year(m.group(2), m.group(3), m.group(4))
+        title = m.group(1)
+        short = (m.group(5) or '').strip()
+        _add_instrument_date(dates, title, parsed)
+        if short:
+            _add_instrument_date(dates, short, parsed)
+            _alias_instrument_keys(title, short, aliases)
+
+    for m in re.finditer(
+        rf'{_DEFINED_TERM_QUOTES}([^"\u201c\u201d\u2018\u2019]+){_DEFINED_TERM_QUOTES}',
+        filing_text,
+    ):
+        short = m.group(1).strip()
+        if not short or _norm_agreement_key(short) in {
+            'company', 'the company', 'parent', 'purchaser', 'registrant',
+            'licensee', 'licensor', 'merger sub',
+        }:
+            continue
+        before = filing_text[max(0, m.start() - 220):m.start()]
+        titled = list(_INSTRUMENT_TITLE_RE.finditer(before))
+        if not titled:
+            continue
+        title_m = titled[-1]
+        title = title_m.group(1)
+        gap = before[title_m.end():]
+        instrument_short = bool(re.search(
+            r'(?i)\b(?:agreement|addendum|indenture|joinder|novation|'
+            r'letter|amendment|supplement|pact)\b',
+            short,
+        ))
+        dm = _DATED_NEAR_TITLE_RE.search(gap)
+        if not instrument_short and not dm and not re.match(r'^[\s,]*$', gap):
+            continue
+        _alias_instrument_keys(title, short, aliases)
+        if not dm:
+            dm = _DATED_NEAR_TITLE_RE.search(filing_text[m.start():m.start() + 80])
+        if dm:
+            parsed = _parse_month_day_year(dm.group(1), dm.group(2), dm.group(3))
+            _add_instrument_date(dates, title, parsed)
+            _add_instrument_date(dates, short, parsed)
+
+    for m in _DATED_NEAR_TITLE_RE.finditer(filing_text):
+        parsed = _parse_month_day_year(m.group(1), m.group(2), m.group(3))
+        window = filing_text[max(0, m.start() - 180):m.end() + 80]
+        titles = list(_INSTRUMENT_TITLE_RE.finditer(window))
+        if not titles:
+            continue
+        origin = max(0, m.start() - 180)
+        nearest = min(titles, key=lambda t: min(
+            abs((origin + t.start()) - m.start()),
+            abs((origin + t.end()) - m.start()),
+        ))
+        _add_instrument_date(dates, nearest.group(1), parsed)
+
+    return aliases, dates
+
+
+def _keys_for_instrument(
+    label: str,
+    aliases: dict[str, set[str]],
+    dates: dict[str, list] | None = None,
+) -> set[str]:
+    key = _norm_agreement_key(label)
+    if not key:
+        return set()
+    out = {key}
+    out.update(aliases.get(key, ()))
+    for dk in (dates or {}):
+        if dk == key or dk in out:
+            out.add(dk)
+            continue
+        if dk.endswith(' ' + key):
+            extra = dk[: -(len(key) + 1)]
+            if extra and not is_amendment_language(extra):
+                out.add(dk)
+        elif key.endswith(' ' + dk):
+            extra = key[: -(len(dk) + 1)]
+            if extra and not is_amendment_language(extra):
+                out.add(dk)
+    return {k for k in out if k and k != 'agreement'}
+
+
+def _agreement_date_from_filing(type_quote: str, filing_text: str) -> date | None:
+    """Dated clause for the agreement the grant quote actually refers to.
+
+    Resolves the referred title and any defined short name to the same date.
+    An unrelated indenture or a differently labeled exhibit does not count.
+    A date that appears only on the exhibit index for this same instrument does.
+    """
+    if not type_quote or not filing_text:
+        return None
+    labels = _referred_agreement_labels(type_quote, filing_text)
+    if not labels:
+        return None
+    aliases, dates = _collect_instrument_catalog(filing_text)
+    found: list[date] = []
+    seen: set[str] = set()
+    for lab in labels:
+        for key in _keys_for_instrument(lab, aliases, dates):
+            if key in seen:
+                continue
+            seen.add(key)
+            found.extend(dates.get(key, ()))
+    return min(found) if found else None
 
 
 def is_historical_agreement(
@@ -2162,6 +2266,31 @@ def is_amendment_language(text: str) -> bool:
         r'|\bextensions?\b'
         r'|\bsupplement(?:al|s|ed|ing)?\b'
         r'|\brestated\b'
+        r'|\bside\s+letters?\b'
+        r'|\bjoinders?\b'
+        r'|\bnovations?\b'
+        r'|\bassignment\s+and\s+assumption\b'
+        r'|\bconsent\s+to\s+assignment\b'
+        r')',
+        t,
+    ))
+
+
+def is_wrapper_or_existing_rights_language(text: str) -> bool:
+    """Wrappers and payments/exercises under an existing instrument are not new deals."""
+    if not text:
+        return False
+    t = text.lower()
+    if is_amendment_language(t):
+        return True
+    return bool(re.search(
+        r'(?:'
+        r'\b(?:exercis(?:e|ed|es|ing)\s+(?:an?\s+)?option|option\s+exercise)\b'
+        r'.{0,100}\b(?:under|pursuant\s+to|in\s+accordance\s+with)\b'
+        r'|\b(?:milestone|royalt\w+)\s+payments?\b'
+        r'.{0,100}\b(?:under|pursuant\s+to|in\s+accordance\s+with)\b'
+        r'|\bpayments?\s+(?:of\s+)?(?:milestone|royalt\w+)\b'
+        r'.{0,100}\b(?:under|pursuant\s+to|in\s+accordance\s+with)\b'
         r')',
         t,
     ))
@@ -2176,16 +2305,21 @@ def _title_is_amendment_or_settlement(title: str) -> bool:
 
 
 _AGREEMENT_LABEL_RE = re.compile(
-    r'\b((?:the\s+)?(?:[A-Z][A-Za-z0-9&]+\s+){0,5}'
-    r'(?:License|Collaboration|Research|Development|Commercial|'
-    r'Merger|Purchase|Exclusive\s+License|Letter|Expansion|'
-    r'Supplemental|Modification|Extension)\s+Agreement'
-    r'|Addendum)\b',
+    rf'\b((?:{_TITLE_WORDS}\s+(?:{_INSTRUMENT_TAIL}))|Addendum)\b',
 )
 _INTRO_AGREEMENT_RE = re.compile(
     r'(?:entered\s+into|executed|signed)\s+(?:an?\s+|the\s+)?'
-    r'(.{0,160}?(?:agreement|addendum|amendment|supplement|modification|extension))\b',
+    r'(.{0,160}?(?:agreement|addendum|amendment|supplement|modification|'
+    r'extension|joinder|novation|letter))\b',
     re.IGNORECASE,
+)
+_UNDER_INSTRUMENT_RE = re.compile(
+    r'(?i:\b(?:under|pursuant\s+to|in\s+accordance\s+with))\s+(?i:the\s+)?'
+    r'(?:["\u201c]([^"\u201d]{1,80})["\u201d]|'
+    r'([A-Z][A-Za-z0-9&]*(?:\s+(?:and|&|of|the|to|[A-Z][A-Za-z0-9&]+)){0,8}))'
+    r'|(?i:\bin\s+the\s+)'
+    r'(?:["\u201c]([^"\u201d]{1,80})["\u201d]|'
+    r'([A-Z][A-Za-z0-9&]*(?:\s+(?:and|&|of|the|to|[A-Z][A-Za-z0-9&]+)){0,8}))',
 )
 
 
@@ -2199,35 +2333,45 @@ def _referred_agreement_labels(type_quote: str, filing_text: str = '') -> list[s
         passage = _containing_passage(type_quote, filing_text)
         if passage and passage != type_quote:
             sources.append(passage)
+    aliases, dates = _collect_instrument_catalog(filing_text) if filing_text else ({}, {})
     term_map = parse_defined_terms(filing_text) if filing_text else {}
     for src in sources:
         if not src:
             continue
         labels.extend(m.group(1) for m in _AGREEMENT_LABEL_RE.finditer(src))
-        for term in term_map:
+        for m in _UNDER_INSTRUMENT_RE.finditer(src):
+            for g in m.groups():
+                if not g:
+                    continue
+                key = _norm_agreement_key(g)
+                if key in {'company', 'parent', 'registrant', 'purchaser'}:
+                    continue
+                if key in aliases or key in dates or _INSTRUMENT_TITLE_RE.search(g):
+                    labels.append(g)
+        for term in list(term_map) + list(aliases):
             if (
                 'agreement' in term
-                or term in {
-                    'addendum', 'amendment', 'supplement',
-                    'letter agreement', 'expansion agreement',
-                    'supplemental agreement', 'modification agreement',
-                    'extension agreement',
-                }
+                or re.search(
+                    r'\b(?:addendum|amendment|supplement|letter|joinder|'
+                    r'novation|expansion|modification|extension)\b',
+                    term,
+                )
             ) and re.search(rf'\b{re.escape(term)}\b', src, re.IGNORECASE):
                 labels.append(term)
     seen: set[str] = set()
     out: list[str] = []
     for lab in labels:
-        key = re.sub(r'^the\s+', '', lab.lower().strip())
+        lab = re.sub(
+            r'(?i)^(pursuant\s+to|under|in\s+accordance\s+with|in)\s+(?:the\s+)?',
+            '',
+            lab,
+        ).strip()
+        key = _norm_agreement_key(lab)
         if not key or key in seen or key == 'agreement':
             continue
         seen.add(key)
         out.append(lab)
     return out
-
-
-def _norm_agreement_key(label: str) -> str:
-    return re.sub(r'^the\s+', '', re.sub(r'\s+', ' ', (label or '').lower())).strip()
 
 
 def _title_is_referred_label(title: str, keys: set[str]) -> bool:
@@ -2263,57 +2407,89 @@ def _sentence_at(text: str, pos: int) -> str:
     return _line_at(text, pos)
 
 
+def _quote_position(quote: str, filing_text: str) -> int:
+    if not quote or not filing_text:
+        return -1
+    pos = find_quote_position(quote, filing_text)
+    if pos is not None:
+        return pos
+    idx = filing_text.lower().find(normalize_whitespace(quote).lower())
+    return idx
+
+
+def _instrument_intro_sentences(
+    type_quote: str, filing_text: str,
+) -> list[str]:
+    """Sentences earlier in the filing that introduce or define a referred instrument.
+
+    Used when a grant says under / pursuant to / in accordance with / in the X.
+    """
+    if not type_quote or not filing_text:
+        return []
+    labels = _referred_agreement_labels(type_quote, filing_text)
+    if not labels:
+        return []
+    aliases, dates = _collect_instrument_catalog(filing_text)
+    keys: set[str] = set()
+    for lab in labels:
+        keys.update(_keys_for_instrument(lab, aliases, dates))
+    keys.discard('agreement')
+    keys.discard('')
+    if not keys:
+        return []
+    quote_pos = _quote_position(type_quote, filing_text)
+    if quote_pos < 0:
+        quote_pos = len(filing_text)
+    intros: list[str] = []
+    seen: set[str] = set()
+
+    def _keep(pos: int) -> None:
+        if pos < 0 or pos >= quote_pos:
+            return
+        sent = _sentence_at(filing_text, pos)
+        key = normalize_whitespace(sent).lower()
+        if not sent or key in seen:
+            return
+        seen.add(key)
+        intros.append(sent)
+
+    for m in re.finditer(
+        rf'{_DEFINED_TERM_QUOTES}([^"\u201c\u201d\u2018\u2019]+){_DEFINED_TERM_QUOTES}',
+        filing_text,
+    ):
+        if _norm_agreement_key(m.group(1)) in keys:
+            _keep(m.start())
+    for m in _INTRO_AGREEMENT_RE.finditer(filing_text):
+        if _title_is_referred_label(m.group(1), keys):
+            _keep(m.start())
+    for m in _DATED_AS_OF_RE.finditer(filing_text):
+        title = _norm_agreement_key(m.group(1))
+        short = _norm_agreement_key(m.group(5) or '')
+        if title in keys or short in keys:
+            _keep(m.start())
+    return intros
+
+
 def _grant_refers_to_amended_agreement(type_quote: str, filing_text: str) -> bool:
     """True when the grant hangs off an agreement that changes an existing one.
 
-    Checks the referred agreement's title and the sentence that introduces or
-    defines it. Exhibit-index lines and differently labeled agreements are
-    ignored so a new licence is not dropped because an A&R appears elsewhere.
+    Looks at the referred title and the earlier sentence that introduces or
+    defines it (not only the grant sentence).
     """
     if not type_quote or not filing_text:
         return False
     passage = _containing_passage(type_quote, filing_text) or type_quote
-    blob = f"{type_quote} {passage}"
     labels = list(_referred_agreement_labels(type_quote, filing_text))
-    _WRAPPER = {
-        'addendum', 'amendment', 'supplement',
-        'letter agreement', 'expansion agreement', 'supplemental agreement',
-        'modification agreement', 'extension agreement',
-    }
-    term_map = parse_defined_terms(filing_text)
-    for term in term_map:
-        if (
-            'agreement' in term or term in _WRAPPER
-        ) and re.search(rf'\b{re.escape(term)}\b', blob, re.IGNORECASE):
-            labels.append(term)
     keys = {_norm_agreement_key(lab) for lab in labels}
     keys.discard('agreement')
     keys.discard('the agreement')
     keys.discard('')
     if not keys:
         return False
-    if any(is_amendment_language(lab) for lab in labels):
+    if any(is_wrapper_or_existing_rights_language(lab) for lab in labels):
         return True
-
-    def _hit_counts(pos: int) -> bool:
-        return not _is_exhibit_index_line(_line_at(filing_text, pos))
-
-    for m in re.finditer(
-        rf'{_DEFINED_TERM_QUOTES}([^"\u201c\u201d\u2018\u2019]+){_DEFINED_TERM_QUOTES}',
-        filing_text,
-    ):
-        if _norm_agreement_key(m.group(1)) not in keys:
-            continue
-        if not _hit_counts(m.start()):
-            continue
-        if is_amendment_language(_sentence_at(filing_text, m.start())):
-            return True
-    for m in _INTRO_AGREEMENT_RE.finditer(filing_text):
-        if not _hit_counts(m.start()):
-            continue
-        if not _title_is_referred_label(m.group(1), keys):
-            continue
-        if is_amendment_language(_sentence_at(filing_text, m.start())):
+    for sent in [passage, type_quote, *_instrument_intro_sentences(type_quote, filing_text)]:
+        if is_wrapper_or_existing_rights_language(sent):
             return True
     return False
 
@@ -2545,43 +2721,59 @@ _NAME_ROLE_LEAK_RE = re.compile(
     r'Holders?)\b',
     re.IGNORECASE,
 )
-_OF_NAME_STOP = frozenset({
-    'officer', 'chief', 'executive', 'director', 'directors',
-    'board', 'shareholder', 'shareholders', 'stockholder', 'stockholders',
-    'member', 'members', 'chairman', 'chairwoman', 'chairperson',
-    'president', 'trustee', 'trustees',
-    'agreement', 'plan', 'merger',
-    'secretary', 'treasurer',
-})
 _INSTITUTION_NAME_RE = re.compile(
     r'\b(?:university|college|institute|institution|foundation|'
-    r'hospital|academy|school)\b',
+    r'hospital|academy|school|museum|library)\b',
     re.IGNORECASE,
 )
+_INSTITUTIONAL_LEGAL_NAME_RE = re.compile(
+    r'(?ix)\b(?:'
+    r'president\s+and\s+fellows\s+of\s+\S'
+    r'|regents\s+of\s+(?:the\s+)?\S'
+    r'|(?:board\s+of\s+)?trustees\s+of\s+(?:the\s+)?.{0,80}'
+    r'(?:university|college|institute|institution|foundation|hospital|academy|school)'
+    r'|fellows\s+of\s+(?:the\s+)?.{0,60}'
+    r'(?:university|college|institute|foundation|academy)'
+    r')',
+)
+_GOVERNANCE_UNIT = (
+    r'(?:[\w]+\s+){0,4}(?:committees?|commissions?|boards?)'
+    r'(?:\s+of\s+(?:the\s+)?(?:board|directors|managers|trustees|'
+    r'supervisors|governors))?'
+    r'|(?:supervisory|management|executive)\s+board'
+    r'|board\s+of\s+\w+'
+    r'|(?:general\s+)?partners?'
+    r'|(?:managing\s+)?members?'
+    r'|managers?'
+    r'|trustees?'
+    r'|(?:chief\s+)?(?:\w+\s+){0,2}officers?'
+    r'|(?:share|stock)holders?'
+    r'|chair(?:man|woman|person)?s?'
+    r'|presidents?'
+    r'|directors?'
+    r'|secretar(?:y|ies)|treasurers?'
+)
 _GOVERNANCE_NAME_RE = re.compile(
-    r'\b(?:'
-    r'(?:chief\s+)?(?:executive\s+)?officer|directors?|'
-    r'board\s+of\s+directors|shareholders?|stockholders?|members?|'
-    r'chairman|chairwoman|chairperson|president|trustees?|'
-    r'agreement\s+and\s+plan\s+of\s+merger|plan\s+of\s+merger'
-    r')\b',
+    rf'\b(?:{_GOVERNANCE_UNIT}|agreement\s+and\s+plan\s+of\s+\w+|plan\s+of\s+\w+)\b',
     re.IGNORECASE,
 )
 _GOVERNANCE_PREFIX_RE = re.compile(
-    r'^(?:the\s+)?'
-    r'(?:(?:chief\s+)?(?:executive\s+)?officer|directors?|'
-    r'board(?:\s+of\s+directors)?|shareholders?|stockholders?|members?|'
-    r'chairman|chairwoman|chairperson|president|trustees?|'
-    r'agreement|plan(?:\s+of\s+merger)?)\s+'
-    r'(?:of(?:\s+the)?\s+)?',
+    rf'^(?:the\s+)?(?:{_GOVERNANCE_UNIT})\s+(?:of(?:\s+the)?\s+)?',
     re.IGNORECASE,
 )
+_GOVERNANCE_TOKEN_RE = re.compile(
+    r'(?ix)^(committee|commission|board|partner|member|manager|trustee|'
+    r'officer|director|shareholder|stockholder|chair|chairman|chairwoman|'
+    r'chairperson|president|secretary|treasurer|agreement|plan|merger)$',
+)
 _AGREEMENT_TITLE_HEADING_RE = re.compile(
-    r'(?:^|[\n\r:;]\s*|(?<=\s))'
-    r'(?:(?:Amended\s+and\s+Restated\s+)|(?:A\s*&\s*R\s+))?'
-    r'(?:Agreement\s+and\s+)?Plan\s+of\s+Merger'
-    r'|(?:(?:Amended\s+and\s+Restated\s+)?'
-    r'(?:License|Collaboration|Merger|Purchase)\s+Agreement)',
+    r'(?:^|[\n\r:;]\s*|(?<=[.!?]\s))'
+    r'(?:(?:Amended\s+and\s+Restated|A\s*&\s*R)\s+)?'
+    r'(?:[A-Z][A-Za-z0-9&]+\s+){0,8}'
+    r'(?:Agreement(?:\s+and\s+Plan\s+of\s+(?:Merger|Reorganization|'
+    r'Business\s+Combination))?'
+    r'|Plan\s+of\s+(?:Merger|Reorganization|Business\s+Combination)'
+    r'|Business\s+Combination\s+Agreement)',
     re.IGNORECASE,
 )
 _NAME_JOIN_LEAK_RE = re.compile(r'\b(?:among|between|with)\b', re.IGNORECASE)
@@ -2722,41 +2914,85 @@ def _own_party_clause(text: str, paren_start: int) -> str:
     return piece.strip()
 
 
-def _name_has_governance_leak(name: str) -> bool:
-    """True for Board of Directors / Shareholders of X — not a party name.
+def _is_institutional_legal_name(name: str) -> bool:
+    if not name:
+        return False
+    return bool(_INSTITUTIONAL_LEGAL_NAME_RE.search(name))
 
-    Board of Trustees of a university (or similar institution) is allowed.
+
+def _name_has_governance_leak(name: str) -> bool:
+    """True when a capture is a committee/board/officer phrase, not a party.
+
+    Institutional legal names that include a role word (Regents of a
+    university, President and Fellows of a college) are kept intact.
     """
     if not name:
         return False
-    if _INSTITUTION_NAME_RE.search(name) and re.search(
-        r'\bboard\s+of\s+trustees\b|\btrustees\b', name, re.IGNORECASE,
-    ):
+    if _is_institutional_legal_name(name):
         return False
     return bool(_GOVERNANCE_NAME_RE.search(name))
 
 
-def _fallback_clean_party_name(name: str) -> str | None:
-    """Strip leading role/governance/title words; keep the trailing company.
+def _name_is_fragment(name: str) -> bool:
+    """True for leftovers such as 'and Fellows…', 'of Parent', 'the board'."""
+    if not name:
+        return True
+    if name[0].islower() and name.lower().startswith(('and ', 'of ', 'the ')):
+        return True
+    if name.startswith(('& ', '&')):
+        return True
+    if name.lower().startswith(('and ', 'of ')):
+        return True
+    return False
 
-    'Board of Directors of Osprey Pharma Inc.' → 'Osprey Pharma Inc.'.
-    Institution trustees keep the full name. Returns None if nothing clean remains.
+
+def _name_starts_with_role_word(name: str) -> bool:
+    if not name or _is_institutional_legal_name(name):
+        return False
+    first = re.split(r'\s+', name.strip(), maxsplit=1)[0]
+    return bool(_GOVERNANCE_TOKEN_RE.match(first.rstrip('.,')))
+
+
+def _name_contains_agreement_word(name: str) -> bool:
+    if not name or _is_institutional_legal_name(name):
+        return False
+    return bool(re.search(r'\bagreement\b', name, re.IGNORECASE))
+
+
+def _is_unpublishable_party_name(name: str) -> bool:
+    """Never publish a counterparty that is a fragment, heading, or role phrase."""
+    if not name:
+        return True
+    if _name_is_fragment(name) or _name_starts_with_role_word(name):
+        return True
+    if _name_contains_agreement_word(name):
+        return True
+    if _name_has_governance_leak(name):
+        return True
+    return False
+
+
+def _fallback_clean_party_name(name: str) -> str | None:
+    """Strip leading governance/title units; keep a full legal entity or drop.
+
+    Stopping at a role word must not leave a fragment. Institutional names
+    that include the role word are returned unchanged.
     """
     if not name:
         return None
     name = re.sub(r'\s+', ' ', name.strip().rstrip(','))
     name = _strip_agreement_title_from_name(name)
-    if _INSTITUTION_NAME_RE.search(name) and re.search(
-        r'\b(?:board\s+of\s+)?trustees\b', name, re.IGNORECASE,
-    ):
+    if _is_institutional_legal_name(name):
         return name if _looks_like_company_name(name) else None
     while True:
         m = _GOVERNANCE_PREFIX_RE.match(name)
         if not m:
             break
         name = name[m.end():].strip()
+        if _name_is_fragment(name):
+            name = re.sub(r'^(?:and|&|of|the)\s+', '', name, flags=re.IGNORECASE).strip()
     name = _strip_agreement_title_from_name(name)
-    if not name or _name_has_governance_leak(name):
+    if _is_unpublishable_party_name(name):
         return None
     if _resolved_name_disallowed(name) or not _looks_like_company_name(name):
         return None
@@ -2765,12 +3001,11 @@ def _fallback_clean_party_name(name: str) -> str | None:
 
 def _strip_agreement_title_from_name(name: str) -> str:
     name = re.sub(
-        r'^(?:Agreement\s+and\s+)?Plan\s+of\s+Merger\s+',
-        '', name, flags=re.IGNORECASE,
-    )
-    name = re.sub(
-        r'^(?:(?:Amended\s+and\s+Restated\s+)?'
-        r'(?:License|Collaboration|Merger|Purchase)\s+Agreement)\s+',
+        r'^(?:(?:Amended\s+and\s+Restated|A\s*&\s*R)\s+)?'
+        r'(?:[A-Za-z][A-Za-z0-9&]+\s+){0,8}'
+        r'(?:Agreement(?:\s+and\s+Plan\s+of\s+(?:Merger|Reorganization|'
+        r'Business\s+Combination))?|Plan\s+of\s+(?:Merger|Reorganization|'
+        r'Business\s+Combination)|Business\s+Combination\s+Agreement)\s+',
         '', name, flags=re.IGNORECASE,
     )
     return name.strip()
@@ -2798,16 +3033,22 @@ def _resolved_name_disallowed(name: str) -> bool:
 def _of_extend_allowed(word: str, rest: str) -> bool:
     """Do not walk 'of' over role, governance, or agreement-title words."""
     low = word.lower().rstrip('.')
-    if _INSTITUTION_NAME_RE.search(rest):
-        return low not in {'agreement', 'plan', 'merger'}
-    return low not in _OF_NAME_STOP
+    if _is_institutional_legal_name(f"{word} of {rest}") or (
+        _INSTITUTION_NAME_RE.search(rest) and low in {
+            'president', 'fellows', 'regents', 'trustees', 'board',
+        }
+    ):
+        return True
+    if low in {'agreement', 'plan', 'merger'}:
+        return False
+    return not bool(_GOVERNANCE_TOKEN_RE.match(low))
 
 
 def _complete_of_name(stripped: str, name: str, start: int) -> str | None:
     """If the capture sits after 'of' / 'of the', extend or stop at a role word.
 
-    Never publish a truncated 'of' name. Role/governance words stop the walk
-    and keep the already-captured party. If only a role phrase remains, drop.
+    Never return a fragment. Role/governance words stop the walk; the
+    already-captured party is kept only if it is a full legal entity.
     """
     while start > 0:
         left = stripped[:start]
@@ -2827,16 +3068,25 @@ def _complete_of_name(stripped: str, name: str, start: int) -> str | None:
                 break
             return None
         break
+    if _name_is_fragment(name) or (
+        _is_unpublishable_party_name(name) and not _is_institutional_legal_name(name)
+    ):
+        cleaned = _fallback_clean_party_name(name)
+        return cleaned
     return name
 
 
 def _accept_captured_name(name: str) -> str | None:
     name = re.sub(r'\s+', ' ', name.strip().rstrip(','))
     name = _strip_agreement_title_from_name(name)
-    if _name_has_governance_leak(name):
+    if _is_institutional_legal_name(name):
+        return name if _looks_like_company_name(name) else None
+    if _name_has_governance_leak(name) or _is_unpublishable_party_name(name):
         name = _fallback_clean_party_name(name)
         if not name:
             return None
+    if _is_unpublishable_party_name(name):
+        return None
     if _resolved_name_disallowed(name) or not _looks_like_company_name(name):
         return None
     return name
@@ -2896,7 +3146,7 @@ def is_plausible_party_name(name: str, filing_text: str = '') -> bool:
         or _is_bare_role_word(name)
         or _is_suffix_only_name(name)
         or _is_jurisdiction_or_legal_form_name(name)
-        or _name_has_governance_leak(name)
+        or _is_unpublishable_party_name(name)
     ):
         return False
     if _looks_like_company_name(name):
@@ -3094,7 +3344,7 @@ def _clean_parent_name(raw: str, term_map: dict[str, list[str]] | None = None) -
         return None
     parent = normalize_company_name(raw).strip().rstrip(',')
     parent = re.sub(r'\s+', ' ', parent)
-    if _name_has_governance_leak(parent):
+    if _is_unpublishable_party_name(parent) or _name_has_governance_leak(parent):
         parent = _fallback_clean_party_name(parent)
         if not parent:
             return None
@@ -3268,18 +3518,19 @@ def out_of_scope_deal_reason(
     if not type_quote:
         return 'empty type_quote'
     passage = _containing_passage(type_quote, filing_text) or type_quote
-    combined = f"{type_quote} {passage}"
+    intros = _instrument_intro_sentences(type_quote, filing_text)
+    combined = f"{type_quote} {passage} {' '.join(intros)}"
     reference_date = event_date or filing_date
 
-    if is_amendment_language(type_quote) or is_amendment_language(passage):
+    if any(is_wrapper_or_existing_rights_language(t) for t in (type_quote, passage, *intros)):
         return 'amendment'
     if _grant_refers_to_amended_agreement(type_quote, filing_text):
         return 'amendment'
     if _new_agreements_are_only_amendments_or_settlements(filing_text):
         return 'amendment/settlement only'
-    if (
-        is_historical_agreement(type_quote, reference_date, filing_text)
-        or is_historical_agreement(passage, reference_date, filing_text)
+    if any(
+        is_historical_agreement(t, reference_date, filing_text)
+        for t in (type_quote, passage, *intros)
     ):
         return 'historical agreement'
     if is_termination_or_assignment_language(type_quote) or is_termination_or_assignment_language(passage):
@@ -3923,12 +4174,12 @@ def process_sec_deal(
     if _is_bare_role_word(counterparty):
         logging.info("Deal dropped: counterparty is a bare role word '%s'", counterparty)
         return None
-    if _name_has_governance_leak(counterparty):
+    if _is_unpublishable_party_name(counterparty) or _name_has_governance_leak(counterparty):
         cleaned = _fallback_clean_party_name(counterparty)
-        if not cleaned:
-            logging.info("Deal dropped: governance/role name '%s'", counterparty)
+        if not cleaned or _is_unpublishable_party_name(cleaned):
+            logging.info("Deal dropped: unpublishable counterparty '%s'", counterparty)
             return None
-        logging.info("Stripped governance prefix from '%s' → '%s'", counterparty, cleaned)
+        logging.info("Cleaned counterparty '%s' → '%s'", counterparty, cleaned)
         counterparty = cleaned
     if not is_plausible_party_name(counterparty, filing_text):
         logging.info("Deal dropped: counterparty '%s' is not a company name", counterparty)
