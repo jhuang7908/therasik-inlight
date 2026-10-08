@@ -635,6 +635,23 @@ def find_quote_position(quote: str, filing_text: str) -> int | None:
     return pos if pos >= 0 else None
 
 
+_ABBREV_PERIOD_RE = re.compile(
+    r'\b(?:Inc|Incorporated|Ltd|LLC|L\.L\.C|Corp|Corporation|Co|Limited|'
+    r'plc|AG|GmbH|S\.r\.l|S\.A|SA|SAS|N\.V|B\.V|K\.K|LP|L\.P|Pte|Pty|'
+    r'A/S|AB|NV|BV|KK|SE)\.',
+    re.IGNORECASE,
+)
+
+
+def _split_sentences(text: str) -> list[str]:
+    """Split sentences without treating Inc./Ltd./B.V./S.A. etc. as ends."""
+    if not text:
+        return []
+    protected = _ABBREV_PERIOD_RE.sub(lambda m: m.group(0)[:-1] + '\u0000', text)
+    parts = re.split(r'(?<=[。！？])|(?<=(?<!\d)\.(?!\d))\s+', protected)
+    return [p.replace('\u0000', '.').strip() for p in parts if p.strip()]
+
+
 def _containing_passage(quote: str, filing_text: str) -> str:
     """Return the sentence (fallback: paragraph) that contains a verified quote.
 
@@ -655,9 +672,7 @@ def _containing_passage(quote: str, filing_text: str) -> str:
         if verify_quote_in_filing(quote, filing_text):
             return normalize_whitespace(filing_text)
         return ''
-    # Split the host paragraph into sentences without breaking decimals.
-    parts = re.split(r'(?<=[。！？])|(?<=(?<!\d)\.(?!\d))\s+', host)
-    for sent in parts:
+    for sent in _split_sentences(host):
         if norm_quote in normalize_whitespace(sent).lower():
             return sent.strip()
     return host.strip()
@@ -1027,6 +1042,8 @@ def detect_role_from_quote(
     text = type_quote.strip()
     term_map = parse_defined_terms(f"{text}\n{filing_text or ''}")
     if _the_company_is_filer(term_map, filer) is None:
+        return None
+    if _defined_roles_conflict(term_map, filer):
         return None
 
     if deal_type in (DealType.ACQUISITION, DealType.MERGER) or _is_merger_or_purchase_quote(text):
@@ -1958,12 +1975,96 @@ def _dated_clause_date(text: str) -> date | None:
         return None
 
 
-def is_historical_agreement(type_quote: str, reference_date: str | None = None) -> bool:
+_MONTH_ALT = (
+    r'(january|february|march|april|may|june|july|august|'
+    r'september|october|november|december)'
+)
+
+
+def _agreement_date_from_filing(type_quote: str, filing_text: str) -> date | None:
+    """Dated clause for a defined agreement the grant quote hangs off.
+
+    'pursuant to which … granted' often omits the date. Look up
+    'the License Agreement dated <date>' (or the defined-term label)
+    anywhere in the filing.
+    """
+    if not type_quote or not filing_text:
+        return None
+    labels: list[str] = []
+    for m in re.finditer(
+        r'\b((?:the\s+)?(?:[A-Za-z]+\s+){0,4}(?:License|Collaboration|'
+        r'Research|Development|Commercial|Merger|Purchase)\s+Agreement)\b',
+        type_quote, re.IGNORECASE,
+    ):
+        labels.append(m.group(1))
+    hangs_off = bool(re.search(
+        r'\bpursuant\s+to\s+which\b|\bgranted?\b',
+        type_quote, re.IGNORECASE,
+    ))
+    if hangs_off or labels:
+        for term in parse_defined_terms(filing_text):
+            if 'agreement' in term and (
+                hangs_off or re.search(rf'\b{re.escape(term)}\b', type_quote, re.IGNORECASE)
+            ):
+                labels.append(term)
+    dated_pat = (
+        rf'dated(?:\s+as\s+of)?\s+{_MONTH_ALT}\s+(\d{{1,2}}),\s+(\d{{4}})\b'
+    )
+    if hangs_off and not labels:
+        labels.append('License Agreement')
+        labels.append('Agreement')
+    if not labels:
+        return None
+    dates: list[date] = []
+    seen: set[str] = set()
+
+    def _date_from_match(m: re.Match) -> date | None:
+        try:
+            groups = m.groups()
+            month = next(g for g in groups if g and g.lower() in _MONTH_NAME_TO_NUM)
+            nums = [g for g in groups if g and g.isdigit()]
+            return date(int(nums[-1]), _MONTH_NAME_TO_NUM[month.lower()], int(nums[0]))
+        except (ValueError, KeyError, StopIteration):
+            return None
+
+    for lab in labels:
+        key = lab.lower().strip()
+        if not key or key in seen:
+            continue
+        seen.add(key)
+        esc = re.escape(lab)
+        for pat in (
+            rf'{esc}.{{0,200}}?{dated_pat}',
+            rf'{dated_pat}.{{0,200}}?{esc}',
+        ):
+            for m in re.finditer(pat, filing_text, re.IGNORECASE | re.DOTALL):
+                parsed = _date_from_match(m)
+                if parsed:
+                    dates.append(parsed)
+    if not dates and hangs_off:
+        for m in re.finditer(
+            rf'(?:License|Collaboration)\s+Agreement.{{0,240}}?{dated_pat}'
+            rf'|{dated_pat}.{{0,120}}?(?:License|Collaboration)\s+Agreement',
+            filing_text, re.IGNORECASE | re.DOTALL,
+        ):
+            parsed = _date_from_match(m)
+            if parsed:
+                dates.append(parsed)
+    return min(dates) if dates else None
+
+
+def is_historical_agreement(
+    type_quote: str,
+    reference_date: str | None = None,
+    filing_text: str = '',
+) -> bool:
     """True when the quote describes a prior agreement, not a newly entered one.
 
     Dated-year cutoffs are relative to the filing/event date (not hard-coded
     2020-2025). An agreement dated more than a year before the reference is
     historical. Markers also include 'previously entered', 'had granted'.
+    When a grant hangs off a defined agreement, also use that agreement's
+    'dated <date>' anywhere in the filing.
     """
     if not type_quote:
         return False
@@ -1981,10 +2082,26 @@ def is_historical_agreement(type_quote: str, reference_date: str | None = None) 
         return True
 
     dated = _dated_clause_date(type_quote)
+    if dated is None and filing_text:
+        dated = _agreement_date_from_filing(type_quote, filing_text)
     if dated is None:
         return False
     ref = _parse_loose_date(reference_date) or date.today()
     return dated < ref - _OLD_EVENT_CUTOFF
+
+
+def _new_agreements_are_only_amendments_or_settlements(filing_text: str) -> bool:
+    """True when every 'entered into … Agreement' is an amendment or settlement."""
+    if not filing_text:
+        return False
+    hits = re.findall(
+        r'entered\s+into\s+(?:an?\s+|the\s+)?([^.;]{0,100}?agreement)',
+        filing_text, re.IGNORECASE,
+    )
+    titles = [re.sub(r'\s+', ' ', h).strip() for h in hits if h.strip()]
+    if not titles:
+        return False
+    return all(re.search(r'\b(?:amendment|settlement)\b', t, re.IGNORECASE) for t in titles)
 
 
 def is_amendment_language(text: str) -> bool:
@@ -2170,56 +2287,120 @@ _PLACE_NAME_RE = re.compile(
     r'\b(?:republic|state|commonwealth|kingdom|principality|province|duchy)\s+of\b',
     re.IGNORECASE,
 )
-_NAME_WALK_STOP = frozenset({
-    'with', 'between', 'into', 'from', 'by', 'on', 'or', 'as', 'to',
-    'entered', 'pursuant', 'which', 'that', 'this', 'said', 'called',
-    'agreement', 'plan', 'merger', 'dated', 'under',
-    'organized', 'incorporated', 'existing', 'formed', 'established',
-    'laws', 'law', 'exempted',
-    'is', 'are', 'was', 'were', 'be', 'been', 'being',
-    'has', 'have', 'had', 'will', 'shall', 'may', 'must', 'can',
-    'for', 'million', 'billion', 'thousand', 'hundred',
-    'dollars', 'dollar', 'cash', 'shares', 'stock', 'percent',
-    'approximately', 'about', 'acquire', 'acquired', 'acquiring',
-    'merge', 'merged', 'license', 'licensed', 'granted', 'agreed',
-    'payment', 'price', 'consideration', 'upfront',
-    'january', 'february', 'march', 'april', 'may', 'june',
-    'july', 'august', 'september', 'october', 'november', 'december',
+# Trailing descriptive clause after the legal name (139767d). Do not cap
+# word count: "a private limited liability company organized under …" is long.
+_DESCRIPTIVE_CLAUSE_RE = re.compile(
+    r""",\s*a(?:n)?\s+
+    (?:
+        .{0,240}?(?:organized|incorporated|existing|formed|established)\s+under\b.{0,80}
+        |
+        (?:indirect\s+)?(?:wholly[-\s]owned\s+)?subsidiary\s+of\b.{0,80}
+        |
+        (?:private|public)\s+limited\b.{0,160}
+        |
+        (?:[\w.\-]+\s+){0,8}
+        (?:corporation|company|partnership|limited(?:\s+liability\s+company)?|
+           societ[eé](?:\s+anonyme)?|aktiengesellschaft|kabushiki\s+kaisha|
+           besloten\s+vennootschap|naamloze\s+vennootschap)
+    )
+    \s*$""",
+    re.IGNORECASE | re.VERBOSE,
+)
+_PARTY_LIST_INTRO_RE = re.compile(
+    r'(?:'
+    r'\bby\s+and\s+among\s+the\s+Company\s*,'
+    r'|\bby\s+and\s+between\s+the\s+Company\s*,'
+    r'|\bamong\s+the\s+Company\s*,'
+    r'|\bbetween\s+the\s+Company\s*,'
+    r'|\bwith\s+the\s+Company\s*,'
+    r'|\bby\s+and\s+among\b'
+    r'|\bby\s+and\s+between\b'
+    r')',
+    re.IGNORECASE,
+)
+_UNQUOTED_ROLE_RE = re.compile(
+    r'(?:the\s+)?(Purchaser|Parent|Company|Registrant|Merger\s+Sub(?:sidiary)?'
+    r'|Acquisition\s+Sub(?:sidiary)?|Offeror|Buyer|Acquiror|Licensor|Licensee)\s*$',
+    re.IGNORECASE,
+)
+_LEGAL_SUFFIX_ALT = (
+    r'Inc|Incorporated|Ltd|LLC|L\.L\.C|plc|AG|Corp|Corporation|'
+    r'Company|Co|Limited|N\.V|GmbH|SE|L\.P|LP|'
+    r'B\.V|K\.K|S\.A|SA|SAS|Pty|Pte|AB|Oy|NV|BV|KK|A/S'
+)
+# 139767d end-of-clause capture: proper names, or a lowercase brand + suffix.
+_DEFINED_NAME_RE = re.compile(
+    r'('
+    r'[a-z][A-Za-z0-9&.\'-]*(?:\s+[a-z][A-Za-z0-9&.\'-]*){0,4}'
+    r'(?:,?\s*(?:' + _LEGAL_SUFFIX_ALT + r')\.?)'
+    r'|'
+    r'[A-Z][A-Za-z0-9&.\'-]*'
+    r'(?:\s+(?:and|&)\s+[A-Z][A-Za-z0-9&.\'-]*'
+    r'|\s+[A-Z&][A-Za-z0-9&.\'-]*){0,6}'
+    r'(?:,?\s*(?:' + _LEGAL_SUFFIX_ALT + r')\.?)?'
+    r')\s*$',
+)
+_NAME_ROLE_LEAK_RE = re.compile(
+    r'\b(?:the\s+Company|Parent|Merger\s+Sub(?:sidiary)?|Purchaser|'
+    r'Stockholders?|Representatives?|Guarantors?|Offeror|Registrant|'
+    r'Holders?)\b',
+    re.IGNORECASE,
+)
+_NAME_JOIN_LEAK_RE = re.compile(r'\b(?:among|between|with)\b', re.IGNORECASE)
+_NOT_PARENT_ROLES = frozenset({
+    'stockholder', 'stockholders', 'holder', 'holders',
+    'representative', 'stockholder representative',
+    'holder representative', 'guarantor', 'guarantors',
 })
-_NAME_VERB_TOKENS = frozenset({
-    'is', 'are', 'was', 'were', 'be', 'been', 'being',
-    'has', 'have', 'had', 'will', 'shall',
-})
-_NAME_CONNECTORS = frozenset({'and', '&', 'of', 'the'})
+_ROLE_GROUP = {
+    'parent': 'buyer_parent',
+    'acquiror': 'buyer_parent',
+    'acquirer': 'buyer_parent',
+    'buyer': 'buyer_parent',
+    'merger sub': 'vehicle',
+    'merger subsidiary': 'vehicle',
+    'purchaser': 'vehicle',
+    'offeror': 'vehicle',
+    'acquisition sub': 'vehicle',
+    'acquisition subsidiary': 'vehicle',
+    'acquisition co': 'vehicle',
+    'acquisition corp': 'vehicle',
+    'bidco': 'vehicle',
+    'company': 'company',
+    'the company': 'company',
+    'registrant': 'company',
+    'licensee': 'licensee',
+    'licensor': 'licensor',
+}
 
 
-def _cut_at_descriptive_clause(text: str) -> str:
-    """Keep the legal name: everything before the first descriptive clause.
-
-    '<Name>, a/an <jurisdiction> <entity type> ("Parent")' and
-    '<Name>, organized/incorporated … ("Parent")' resolve from the text
-    before that comma, not from the last capitalized words before '('.
-    """
-    if not text:
+def _strip_descriptive_clause(before: str) -> str:
+    """Remove trailing entity-type / jurisdiction clauses so the legal name remains."""
+    if not before:
         return ''
+    text = before
     text = re.sub(
-        rf'\((?!{_DEFINED_TERM_QUOTES}|the\s+{_DEFINED_TERM_QUOTES})[^)]{{0,160}}\)\s*$',
+        rf'\((?!{ _DEFINED_TERM_QUOTES }|the\s+{ _DEFINED_TERM_QUOTES })[^)]{{0,160}}\)\s*$',
         '', text,
     ).strip()
+    text = _DESCRIPTIVE_CLAUSE_RE.sub('', text).strip()
+    text = re.sub(
+        r'(?:,\s*a(?:n)?\s+.{0,200}?)?'
+        r'(?:organized|incorporated|existing|formed|established)\s+'
+        r'under\b.{0,80}$',
+        '', text, flags=re.IGNORECASE,
+    ).strip()
+    text = re.sub(
+        r'\s+under\s+(?:the\s+)?(?:[\w\-]+\s+){0,6}laws?\s*$',
+        '', text, flags=re.IGNORECASE,
+    ).strip()
+    # Own-clause only: cut at the first descriptive comma in THIS piece.
     cut = re.search(
         r',\s*(?:a(?:n)?\s+|organized\b|incorporated\b|existing\b|formed\b)',
         text, re.IGNORECASE,
     )
     if cut:
         text = text[:cut.start()]
-    else:
-        cut = re.search(
-            r'\s+(?:organized|incorporated|existing|formed|established)\s+under\b',
-            text, re.IGNORECASE,
-        )
-        if cut:
-            text = text[:cut.start()]
-    text = re.split(r'[\n\r]+', text)[-1].strip()
     return text.rstrip(',').strip()
 
 
@@ -2269,57 +2450,66 @@ def _looks_like_company_name(name: str) -> bool:
     return len(parts) >= 2
 
 
-def _extract_defined_term_company_name(before: str) -> str | None:
-    """Company name immediately before a defined-term parenthesis.
+def _is_defined_term_paren_body(body: str) -> bool:
+    if _quoted_terms_in(body):
+        return True
+    return bool(_UNQUOTED_ROLE_RE.match(body.strip()))
 
-    Accepts a lowercase first word (brand names). Never returns a bare
-    legal-form suffix. Uses the text before the first descriptive clause.
+
+def _own_party_clause(text: str, paren_start: int) -> str:
+    """Text belonging to this defined-term parenthesis only.
+
+    Stops at the previous defined-term ')', at a party-list intro
+    ('by and among the Company,' / among / between / with the Company,),
+    or at a sentence/paragraph start. Never a fixed look-back window.
     """
-    text = _cut_at_descriptive_clause(before)
-    if not text:
+    before = text[:paren_start]
+    start = 0
+    for m in re.finditer(r'\(([^)]{0,240})\)', before):
+        if _is_defined_term_paren_body(m.group(1)):
+            start = m.end()
+    piece = before[start:]
+    intros = list(_PARTY_LIST_INTRO_RE.finditer(piece))
+    if intros:
+        piece = piece[intros[-1].end():]
+    paras = re.split(r'[\n\r]+', piece)
+    piece = paras[-1] if paras else piece
+    sents = _split_sentences(piece)
+    if sents:
+        piece = sents[-1]
+    piece = re.sub(r'^and\s+', '', piece.strip(), flags=re.IGNORECASE)
+    return piece.strip()
+
+
+def _resolved_name_disallowed(name: str) -> bool:
+    """Post-validation: suffix-only, place, role leak, join words, sentence break."""
+    if not name:
+        return True
+    if _is_suffix_only_name(name) or _is_place_name(name):
+        return True
+    if _is_jurisdiction_or_legal_form_name(name) or _is_bare_role_word(name):
+        return True
+    if re.search(r'[.!?。]\s', name):
+        return True
+    if _NAME_JOIN_LEAK_RE.search(name):
+        return True
+    if _NAME_ROLE_LEAK_RE.search(name):
+        return True
+    return False
+
+
+def _name_from_own_clause(clause: str) -> str | None:
+    """139767d-style end-of-clause name, plus lowercase brands and 'and Company'."""
+    stripped = _strip_descriptive_clause(clause)
+    if not stripped:
         return None
-    tokens = re.findall(
-        r'(?:[A-Za-z]\.){1,3}[A-Za-z]\.?|[A-Za-z][A-Za-z0-9&.\'-]*|&',
-        text,
-    )
-    if not tokens:
+    nm = _DEFINED_NAME_RE.search(stripped)
+    if not nm:
         return None
-    collected: list[str] = []
-    for tok in reversed(tokens):
-        low = tok.lower().rstrip('.')
-        if low in _NAME_WALK_STOP:
-            if collected:
-                break
-            continue
-        if collected and _looks_like_company_name(' '.join(reversed(collected))):
-            if low in _NAME_CONNECTORS:
-                collected.append(tok)
-                continue
-            if tok[:1].isalpha() and low not in _NAME_WALK_STOP:
-                collected.append(tok)
-                if len(collected) >= 8:
-                    break
-                continue
-            break
-        collected.append(tok)
-        if len(collected) >= 8:
-            break
-    while collected and collected[-1].lower() in {'the', 'a', 'an', 'and', 'of'}:
-        collected.pop()
-    collected.reverse()
-    while collected and collected[0].lower() in {'the', 'a', 'an', 'and', 'of', 'with'}:
-        collected.pop(0)
-    if not collected:
+    if nm.start() > 0 and stripped[nm.start() - 1].isalnum():
         return None
-    if any(t.lower().rstrip('.') in _NAME_VERB_TOKENS for t in collected):
-        return None
-    name = ' '.join(collected)
-    name = re.sub(r'\s+', ' ', name).strip().rstrip(',')
-    if (
-        _is_suffix_only_name(name)
-        or _is_jurisdiction_or_legal_form_name(name)
-        or not _looks_like_company_name(name)
-    ):
+    name = re.sub(r'\s+', ' ', nm.group(1).strip().rstrip(','))
+    if _resolved_name_disallowed(name) or not _looks_like_company_name(name):
         return None
     return name
 
@@ -2378,6 +2568,8 @@ def parse_defined_terms(text: str) -> dict[str, list[str]]:
             or _is_bare_role_word(name)
         ):
             return
+        if _resolved_name_disallowed(name):
+            return
         if term in _BARE_ROLE_WORDS and not _looks_like_company_name(name):
             return
         mapping.setdefault(term, [])
@@ -2388,21 +2580,50 @@ def parse_defined_terms(text: str) -> dict[str, list[str]]:
         body = m.group(1)
         quoted = _quoted_terms_in(body)
         if not quoted:
-            um = re.match(
-                r'(?:the\s+)?(Purchaser|Parent|Company|Registrant|Merger\s+Sub(?:sidiary)?'
-                r'|Acquisition\s+Sub(?:sidiary)?|Offeror|Buyer|Acquiror|Licensor|Licensee)\s*$',
-                body, re.IGNORECASE,
-            )
+            um = _UNQUOTED_ROLE_RE.match(body.strip())
             if um:
                 quoted = [um.group(1)]
         if not quoted:
             continue
-        name = _extract_defined_term_company_name(text[max(0, m.start() - 200):m.start()])
+        name = _name_from_own_clause(_own_party_clause(text, m.start()))
         if not name:
             continue
         for term in quoted:
             _add(term, name)
     return mapping
+
+
+def _defined_roles_conflict(term_map: dict[str, list[str]], filer: str = '') -> bool:
+    """True when one company name lands on two distinct roles, or Parent is filer/target."""
+    if not term_map:
+        return False
+    name_groups: dict[str, set[str]] = {}
+    for term, names in term_map.items():
+        group = _ROLE_GROUP.get(term)
+        if not group:
+            continue
+        for raw in names:
+            if not is_plausible_party_name(raw):
+                continue
+            key = normalize_company_name(raw).lower()
+            if not key:
+                continue
+            name_groups.setdefault(key, set()).add(group)
+    if any(len(groups) > 1 for groups in name_groups.values()):
+        return True
+    parent_names = []
+    for term in _PARENT_ROLE_TERMS:
+        parent_names.extend(term_map.get(term, []))
+    company_names = []
+    for key in ('company', 'the company', 'registrant'):
+        company_names.extend(term_map.get(key, []))
+    for parent in parent_names:
+        if company_names and _name_matches_any(parent, company_names):
+            return True
+    for n in term_map.get('licensee', []):
+        if filer and (match_company_whole_word(filer, n) or match_company_whole_word(n, filer)):
+            return True
+    return False
 
 
 def _is_bare_role_word(name: str) -> bool:
@@ -2518,6 +2739,14 @@ def _clean_parent_name(raw: str, term_map: dict[str, list[str]] | None = None) -
         return None
     if _is_jurisdiction_or_legal_form_name(parent) or not is_plausible_party_name(parent):
         return None
+    if _resolved_name_disallowed(raw) or _resolved_name_disallowed(parent):
+        return None
+    if term_map:
+        for role in _NOT_PARENT_ROLES:
+            if _name_matches_any(raw, term_map.get(role, [])) or _name_matches_any(
+                parent, term_map.get(role, [])
+            ):
+                return None
     return parent
 
 
@@ -2681,7 +2910,12 @@ def out_of_scope_deal_reason(
 
     if is_amendment_language(type_quote) or is_amendment_language(passage):
         return 'amendment'
-    if is_historical_agreement(type_quote, reference_date) or is_historical_agreement(passage, reference_date):
+    if _new_agreements_are_only_amendments_or_settlements(filing_text):
+        return 'amendment/settlement only'
+    if (
+        is_historical_agreement(type_quote, reference_date, filing_text)
+        or is_historical_agreement(passage, reference_date, filing_text)
+    ):
         return 'historical agreement'
     if is_termination_or_assignment_language(type_quote) or is_termination_or_assignment_language(passage):
         return 'termination/assignment'
@@ -3284,6 +3518,22 @@ def process_sec_deal(
     if not verify_counterparty_in_quotes(counterparty, counterparty_quote, type_quote, filing_text):
         logging.info("Deal dropped: counterparty '%s' not verified in quotes", counterparty)
         return None
+
+    term_map = parse_defined_terms(f"{type_quote}\n{filing_text}")
+    if _defined_roles_conflict(term_map, filer_name):
+        logging.info("Deal dropped: defined-term roles conflict or Parent is filer/target")
+        return None
+
+    role_key = re.sub(r'^the\s+', '', counterparty.strip().lower())
+    if role_key in _PARENT_ROLE_TERMS:
+        parent = _parent_from_defined_terms(term_map)
+        if not parent or _is_bare_role_word(parent):
+            logging.info("Deal dropped: Parent role '%s' has no legal name", counterparty)
+            return None
+        if match_company_whole_word(parent, filer_name) or match_company_whole_word(filer_name, parent):
+            logging.info("Deal dropped: Parent resolves to filer")
+            return None
+        counterparty = parent
 
     resolved_cp = resolve_merger_vehicle(
         counterparty, filing_text, type_quote, deal_type=deal_type,

@@ -2169,6 +2169,178 @@ class TestDefinedTermsDecideParties:
         assert not sec_deals._is_suffix_only_name(deal["counterparty"])
         assert not deal["title"].startswith("BV收购")
 
+    def test_parent_and_merger_sub_in_one_sentence(self):
+        text = (
+            'Osprey Pharma Inc. ("Parent") and Helios BidCo LLC ("Merger Sub") '
+            "agreed that Merger Sub will merge with and into the Company."
+        )
+        terms = sec_deals.parse_defined_terms(text)
+        assert any("osprey" in n.lower() for n in terms.get("parent", []))
+        assert any("helios" in n.lower() for n in terms.get("merger sub", []))
+        assert not any("helios" in n.lower() for n in terms.get("parent", []))
+        assert not any("osprey" in n.lower() for n in terms.get("merger sub", []))
+
+    def test_target_filer_by_and_among_company_parent_merger_sub(self):
+        filing = (
+            "Kestrel Rx, Inc. (the \"Company\") entered into an Agreement and "
+            "Plan of Merger by and among the Company, Osprey Pharma LLC "
+            "(\"Parent\") and Helios BidCo Inc. (\"Merger Sub\"). Parent will "
+            "acquire the Company for $400 million."
+        )
+        terms = sec_deals.parse_defined_terms(filing)
+        assert any("kestrel" in n.lower() for n in terms.get("company", []))
+        assert any("osprey" in n.lower() for n in terms.get("parent", []))
+        assert any("helios" in n.lower() for n in terms.get("merger sub", []))
+        assert not sec_deals._defined_roles_conflict(terms, "Kestrel Rx, Inc.")
+        deal = sec_deals.process_sec_deal(
+            filing_text=filing,
+            filer_name="Kestrel Rx, Inc.",
+            filing_url="https://test",
+            filing_date="2026-10-05",
+            event_date="2026-10-01",
+            claude_response={
+                "deal_type": "acquisition",
+                "counterparty_name": "Parent",
+                "type_quote": "Parent will acquire the Company for $400 million",
+                "counterparty_quote": 'Osprey Pharma LLC ("Parent")',
+                "amounts": [{"kind": "purchase_price", "quote": "for $400 million"}],
+            },
+        )
+        assert deal is not None
+        assert "osprey" in deal["counterparty"].lower()
+        assert "osprey" in deal["title"].lower()
+        assert "kestrel" in deal["title"].lower()
+        assert "helios" not in deal["title"].lower()
+
+    def test_buyer_filer_merger_keeps_target(self):
+        filing = (
+            "Osprey Pharma Inc. (the \"Company\") entered into an Agreement "
+            "and Plan of Merger with Thistle Rx, Inc. (\"Target\"). The "
+            "Company will acquire Thistle Rx, Inc. for $400 million."
+        )
+        terms = sec_deals.parse_defined_terms(filing)
+        assert any("osprey" in n.lower() for n in terms.get("company", []))
+        assert any("thistle" in n.lower() for n in terms.get("target", []))
+        deal = sec_deals.process_sec_deal(
+            filing_text=filing,
+            filer_name="Osprey Pharma Inc.",
+            filing_url="https://test",
+            filing_date="2026-10-05",
+            event_date="2026-10-01",
+            claude_response={
+                "deal_type": "acquisition",
+                "counterparty_name": "Thistle Rx, Inc.",
+                "type_quote": "The Company will acquire Thistle Rx, Inc. for $400 million",
+                "counterparty_quote": 'Thistle Rx, Inc. ("Target")',
+                "amounts": [{"kind": "purchase_price", "quote": "for $400 million"}],
+            },
+        )
+        assert deal is not None
+        assert "thistle" in deal["counterparty"].lower()
+        assert deal["title"].startswith("Osprey")
+
+    def test_licensee_short_name_follows_filer_not_stolen(self):
+        filing = (
+            "Kestrel Rx, Inc. (the \"Company\") entered into a License "
+            "Agreement with Harbor Bio AG (\"Harbor\"). The Company granted "
+            "Harbor an exclusive license. Harbor will pay the Company a $20 "
+            "million upfront payment."
+        )
+        terms = sec_deals.parse_defined_terms(filing)
+        assert any("harbor" in n.lower() for n in terms.get("harbor", []))
+        assert not any("kestrel" in n.lower() for n in terms.get("harbor", []))
+        assert sec_deals.verify_defined_term_in_type_quote(
+            "Harbor Bio AG",
+            "The Company granted Harbor an exclusive license",
+            filing,
+        ) is True
+
+    def test_stockholder_representative_is_not_parent(self):
+        filing = (
+            "the holders of Company stock (the \"Stockholders\") appointed "
+            "Pine Trustee LLC as Stockholder Representative "
+            "(\"Representative\"). Osprey Pharma Inc. (\"Parent\") and "
+            "Helios BidCo LLC (\"Purchaser\"), a wholly owned subsidiary of "
+            "Parent, commenced a tender offer. Purchaser will acquire all "
+            "outstanding shares of Kestrel Rx, Inc. (the \"Company\") for "
+            "$12.00 per share."
+        )
+        terms = sec_deals.parse_defined_terms(filing)
+        assert any("osprey" in n.lower() for n in terms.get("parent", []))
+        assert not any("pine" in n.lower() for n in terms.get("parent", []))
+        parent = sec_deals.resolve_merger_vehicle(
+            "Purchaser", filing, deal_type=sec_deals.DealType.ACQUISITION,
+        )
+        assert parent is not None
+        assert "osprey" in parent.lower()
+        assert "pine" not in parent.lower()
+
+    def test_tender_offer_parent_purchaser_publishes_parent_acquires_filer(self):
+        filing = (
+            "Osprey Pharma Inc. (\"Parent\") and Helios BidCo LLC "
+            "(\"Purchaser\"), a wholly owned subsidiary of Parent, "
+            "commenced a tender offer. Purchaser will acquire all "
+            "outstanding shares of Kestrel Rx, Inc. (the \"Company\") "
+            "for $12.00 per share."
+        )
+        deal = sec_deals.process_sec_deal(
+            filing_text=filing,
+            filer_name="Kestrel Rx, Inc.",
+            filing_url="https://test",
+            filing_date="2026-10-05",
+            event_date="2026-10-01",
+            claude_response={
+                "deal_type": "acquisition",
+                "counterparty_name": "Purchaser",
+                "type_quote": "Purchaser will acquire all outstanding shares of Kestrel Rx, Inc.",
+                "counterparty_quote": 'Helios BidCo LLC ("Purchaser"), a wholly owned subsidiary of Parent',
+                "amounts": [{"kind": "purchase_price", "quote": "for $12.00 per share"}],
+            },
+        )
+        assert deal is not None
+        assert "osprey" in deal["counterparty"].lower()
+        assert "purchaser" not in deal["counterparty"].lower()
+        assert "helios" not in deal["counterparty"].lower()
+        assert "收购" in deal["title"]
+        assert "kestrel" in deal["title"].lower()
+
+    def test_sentence_ending_right_before_name(self):
+        text = 'The parties are as follows. acme therapeutics BV ("Parent")'
+        names = sec_deals.parse_defined_terms(text).get("parent", [])
+        assert any("acme" in n.lower() and "bv" in n.lower() for n in names)
+        assert not any(sec_deals._is_suffix_only_name(n) for n in names)
+
+    def test_settlement_and_amendment_to_old_dated_license_dropped(self):
+        filing = (
+            "Kestrel Rx, Inc. (the \"Company\") entered into a Settlement "
+            "Agreement with Harbor Bio AG. The Company also entered into an "
+            "Amendment to License Agreement. The License Agreement with "
+            "Willow Pharma, Inc. (predecessor to the Company) dated January 5, "
+            "2017, pursuant to which Willow Pharma granted Harbor an exclusive "
+            "license, remains in effect."
+        )
+        assert sec_deals._new_agreements_are_only_amendments_or_settlements(filing)
+        assert sec_deals.is_historical_agreement(
+            "pursuant to which Willow Pharma granted Harbor an exclusive license",
+            "2026-10-05",
+            filing,
+        ) is True
+        deal = sec_deals.process_sec_deal(
+            filing_text=filing,
+            filer_name="Kestrel Rx, Inc.",
+            filing_url="https://test",
+            filing_date="2026-10-05",
+            event_date="2026-10-01",
+            claude_response={
+                "deal_type": "license_collaboration",
+                "counterparty_name": "Harbor Bio AG",
+                "type_quote": "pursuant to which Willow Pharma granted Harbor an exclusive license",
+                "counterparty_quote": "Settlement Agreement with Harbor Bio AG",
+                "amounts": [{"kind": "upfront", "quote": "a $20 million upfront payment"}],
+            },
+        )
+        assert deal is None
+
 
 class TestEquityNeverADealPayment:
     def test_private_placement_not_upfront(self):
