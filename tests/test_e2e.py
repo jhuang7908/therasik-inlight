@@ -515,6 +515,58 @@ class TestValidationFalsePositives:
         gene_flags = [p for p in number_problems if any(g in p for g in ["CD8", "CD14", "CD318", "318", "8", "14"])]
         assert not gene_flags, f"Incorrectly flagged gene identifiers: {gene_flags}"
     
+    def test_identifiers_must_pass_unchanged(self):
+        """Identifiers from source (R2, Th17, IL-24, IFN-α2, SAMP1/YitFC, Nissle 1917) must pass."""
+        from inlight_articles import validate_depth, extract_identifiers_from_source
+        
+        source = """The study examined R2 retroelements in Th17 cells. IL-24 and IFN-α2 
+        were measured in SAMP1/YitFC mice treated with E. coli Nissle 1917. Drug TAK-981
+        enhanced CCR8 expression. Trial registered as NCT04443907."""
+        
+        identifiers = extract_identifiers_from_source(source)
+        
+        # These identifiers should be extracted from source
+        expected = ['R2', 'Th17', 'IL-24', 'IFN-α2', 'SAMP1/YitFC', 'Nissle 1917', 
+                   'TAK-981', 'CCR8', 'NCT04443907']
+        for ident in expected:
+            # Case-insensitive check
+            found = any(ident.lower() in i.lower() or i.lower() in ident.lower() 
+                       for i in identifiers)
+            assert found or any(ident.split('/')[0] in i for i in identifiers), \
+                f"Identifier '{ident}' not extracted from source"
+        
+        art = {
+            "tier": "brief",
+            "title": "R2逆转录转座子在Th17细胞中的作用",
+            "one_liner": "研究发现Th17细胞中R2表达升高，IL-24和IFN-α2水平变化。",
+            "datacard": {
+                "study_type": "基础研究",
+                "n": "原文未给出",
+                "control": "野生型小鼠",
+                "intervention": "TAK-981处理",
+                "followup": "不适用",
+                "primary_endpoint": "CCR8表达",
+                "primary_endpoint_result": "升高",
+                "statistics": "原文未报告",
+                "safety": "不适用",
+            },
+            "background": "Th17细胞研究。",
+            "design": "SAMP1/YitFC模型研究。",
+            "results": ["Nissle 1917处理后IL-24升高。"],
+            "mechanism": "",
+            "limitations": ["动物模型"],
+            "significance": "提示R2可作为靶点。",
+            "data_points": [],
+        }
+        problems = validate_depth(art, source)
+        
+        # Should NOT flag any of these identifiers as invented numbers
+        number_problems = [p for p in problems if "数字" in p and "未找到" in p]
+        ident_flags = [p for p in number_problems if any(
+            i in p for i in ['R2', 'Th17', 'IL-24', 'IFN-α2', 'SAMP1', 'TAK-981', 'CCR8', '17', '24', '981']
+        )]
+        assert not ident_flags, f"Incorrectly flagged identifiers: {ident_flags}"
+
     def test_trial_ids_not_flagged(self):
         """Trial IDs like NCT04443907, RPCEC00000444 should not be flagged."""
         from inlight_articles import validate_depth
