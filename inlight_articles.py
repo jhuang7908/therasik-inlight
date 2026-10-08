@@ -1115,13 +1115,13 @@ ARTICLE_TOOL_SCHEMA = {
                 "type": "object",
                 "properties": {
                     "study_type": {"type": "string"},
-                    "n": {"type": "string", "description": "样本量，写清单位与分组；无则写'原文未给出'"},
+                    "n": {"type": "string", "description": "样本量，写清单位与分组；材料没有则省略该字段，不要写占位句"},
                     "control": {"type": "string"},
                     "intervention": {"type": "string", "description": "药名/剂量/途径/频次/疗程"},
                     "followup": {"type": "string"},
                     "primary_endpoint": {"type": "string", "description": "终点名称与定义"},
-                    "primary_endpoint_result": {"type": "string", "description": "数值 + 对照值；无则写'原文未给出'"},
-                    "statistics": {"type": "string", "description": "HR/OR/95%CI/P；无则写'原文未报告统计学检验'"},
+                    "primary_endpoint_result": {"type": "string", "description": "数值 + 对照值；材料没有则省略该字段"},
+                    "statistics": {"type": "string", "description": "HR/OR/95%CI/P；未做检验则在结果段写明未检验，不要用套话填满数据卡"},
                     "safety": {"type": "string", "description": "≥3级AE/SAE/死亡；非临床研究写'不适用'"},
                 },
                 "required": ["study_type", "n", "control", "intervention", "followup",
@@ -1153,6 +1153,8 @@ ARTICLE_TOOL_SCHEMA = {
                         "value": {"type": "string"},
                         "meaning": {"type": "string"},
                         "source_quote": {"type": "string", "description": "来源原文中支撑该数字的英文原句，必须逐字复制"},
+                        "location": {"type": "string", "description": "Abstract / Results / Fig / Table / Methods"},
+                        "basis": {"type": "string", "enum": ["abstract", "body"], "description": "摘要口径或正文口径，同一张图不得混用"},
                     },
                     "required": ["value", "meaning", "source_quote"],
                 },
@@ -1160,7 +1162,7 @@ ARTICLE_TOOL_SCHEMA = {
             },
             "unknowns": {
                 "type": "array",
-                "description": "来源中确实缺失的要素，逐项列出，如'原文未给出中位随访时长'",
+                "description": "来源中确实缺失的要素；写入局限一条，不要写「原文未给出」占位",
                 "items": {"type": "string"},
             },
             "steps": {
@@ -1194,6 +1196,7 @@ def _triage_field_rules(config: dict | None) -> str:
     return (
         "分类基于研究的主要对象，而非使用的工具。\n"
         "- 类器官工作不得归入动物模型。\n"
+        "- 仅在小鼠中验证疗法不得标动物模型；仅给药途径不得标抗体工程。\n"
         "- 肿瘤类器官资源库/药敏归精准肿瘤（生产字段 f9）。\n"
     )
 
@@ -1344,11 +1347,16 @@ evidence_level 不是 fulltext 时只能填 brief，且不得写 image_prompt / 
 
 ## deep 档要求
 
-- 标题：20–40 字，结论式，含一个关键数字或关键对比。不要用「重磅」「颠覆」「突破」「首次」（除非材料明写 first-in-human / first report）。
-- one_liner 一句话结论：40–70 字，必须包含「什么对象 / 什么模型 + 做了什么 + 得到什么量化结果」。
+- 标题：20–40 字，结论式；优先已检验的主要终点或摘要与正文一致的核心读出，可含一个关键数字。不要用「重磅」「颠覆」「突破」「首次」（除非材料明写 first-in-human / first report）。
+  文中标明未做统计检验的对比不得出现在标题；试验未设计/未 powered 做比较时，标题禁止「优于/疗效相当/显著优于」。
+- one_liner 一句话结论：40–70 字，必须包含「什么对象 / 什么模型 + 做了什么 + 得到什么量化结果」，与标题使用同一套数字口径。
 - results 核心结果：3–5 段，合计 500–700 字。**每段讲一个实验或一个终点，每段至少写出一个具体数字。**
-  主要终点那一段必须给：绝对值 + 对照组数值 + 统计量（HR/OR/95%CI/P）。
-  材料未报告统计检验的，写「原文未报告统计学检验」。
+  主要终点那一段必须含：终点定义、分析集 n、点估计或事件数、对照/阈值、以及是否为组间比较设计效能（powered / Fleming 等）。
+  材料未做检验的对比写在结果段并标「未检验」，不要写进标题。
+- data_points 每条加 location（Abstract / Results 小节 / Fig / Table / Methods）和 basis（abstract 或 body）。摘要与正文数字冲突时正文用 Results 口径；摘要口径须标明「摘要」。同一张图禁止混用两套口径。
+- 「原文未报告/原文未给出」全文合计最多 2 次；缺项省略字段，写入局限，不要用套话填数据卡。
+- 保留原文语气：趋势/相关/作者推测不得升级为「显著/证明」。
+- 领域标签必须对应文章主题，不是顺带用到的工具：仅在小鼠中验证不得标动物模型；仅给药途径不得标抗体工程。
 - limitations 局限与不确定：至少 3 条，合计 200–280 字。每条都要具体，必须覆盖以下三类中的至少两类：
   ① 外推性（物种、人群、样本量、单中心、无对照、剂量未优化）
   ② 终点与随访（替代终点、随访过短、未按疗效设定检验效能、开放标签）
@@ -4437,7 +4445,51 @@ def process_articles(items: list[dict], config: dict) -> dict:
             stats["dropped"] += 1
             stats["drops"].append({"url": url, "reason": f"exception: {e}"})
             continue
-    
+
+    if acir_strict(config):
+        from inlight_audit import apply_dual_blind_to_week, run_automated_audit
+        from inlight_qc import item_has_real_fulltext
+
+        def _redraft_blind(art, reasons):
+            item = url_to_enriched.get(art.get("url"))
+            if not item:
+                return None
+            retry = draft_single_article(item, "deep", config, problems=[str(reasons)])
+            if not retry:
+                return None
+            retry["field"] = art.get("field")
+            retry["tier"] = "deep"
+            retry["url"] = art.get("url")
+            retry["skip_mechanism_figure"] = art.get("skip_mechanism_figure", False)
+            raw = "\n".join(filter(None, [
+                getattr(item, "abstract", None),
+                getattr(item, "fulltext_results", None),
+                getattr(item, "fig_captions", None),
+                getattr(item, "methods_design", None),
+            ]))
+            audit = run_automated_audit(
+                retry,
+                abstract=getattr(item, "abstract", "") or "",
+                results_src=getattr(item, "fulltext_results", "") or "",
+                fig_captions=getattr(item, "fig_captions", "") or "",
+                methods=getattr(item, "methods_design", "") or "",
+                source=raw,
+                real_fulltext=item_has_real_fulltext(item),
+                claim_audit=None,
+                structure_ok=True,
+                number_ok=True,
+                has_figure=not retry.get("skip_mechanism_figure", True),
+                rewrite_count=int(art.get("rewrite_count") or 0) + 1,
+            )
+            if not audit.get("publish_allowed"):
+                return None
+            retry["writing_audit"] = audit
+            return retry
+
+        articles = apply_dual_blind_to_week(
+            articles, stats, config, url_to_enriched, redraft=_redraft_blind,
+        )
+
     stats["dropped"] = len(stats["drops"])
     LAST_RUN_STATS.clear()
     LAST_RUN_STATS.update(stats)
@@ -4469,12 +4521,13 @@ def _process_single_article(
         if r and r != field
     ]
 
-    def drop(reason: str):
+    def drop(reason: str, extra: dict | None = None):
         logging.error("Dropping %s: %s", url, reason)
         if stats is not None:
             stats.setdefault("drops", []).append({"url": url, "reason": reason})
+            payload = extra or {}
             stats.setdefault("qc_report", {}).setdefault("articles", []).append(
-                assemble_qc_entry(url, False, [empty_check("gate", False, reason)])
+                assemble_qc_entry(url, False, [empty_check("gate", False, reason)], payload)
             )
         return None
 
@@ -4802,22 +4855,65 @@ def _process_single_article(
     if gemini_result is not None:
         checks.append(empty_check("gemini", bool(gemini_result.get("pass")),
                                   str(gemini_result.get("reasons") or "")))
+    writing_audit = None
+    if strict and art.get("tier") == "deep":
+        from inlight_audit import attach_audit_fields, run_automated_audit
+        writing_audit = run_automated_audit(
+            art,
+            abstract=enriched_item.abstract or "",
+            results_src=enriched_item.fulltext_results or "",
+            fig_captions=enriched_item.fig_captions or "",
+            methods=enriched_item.methods_design or "",
+            source=qc_src,
+            real_fulltext=real_ft,
+            claim_audit=LAST_CLAIM_AUDIT,
+            structure_ok=not struct_probs,
+            number_ok=not number_probs,
+            number_problems=number_probs,
+            has_figure=not art.get("skip_mechanism_figure"),
+            rewrite_count=int(art.get("rewrite_count") or 0),
+        )
+        art["writing_audit"] = {k: writing_audit.get(k) for k in (
+            "headline_ok", "endpoint_hierarchy", "must_cover_coverage",
+            "boilerplate_count", "hard_errors", "publish_allowed",
+        )}
+        checks.append(empty_check(
+            "writing_audit",
+            bool(writing_audit.get("publish_allowed")),
+            "; ".join(
+                f"{e.get('code')}: {e.get('detail')}"
+                for e in (writing_audit.get("hard_errors") or [])
+            ) or ("gates failed" if not writing_audit.get("publish_allowed") else "ok"),
+        ))
     failed = [c for c in checks if not c.get("pass")]
     if failed and strict:
+        extra = {
+            "tier": art.get("tier"),
+            "read_note": enriched_item.read_note,
+            "sections_read": enriched_item.sections_read,
+            "gemini": (gemini_result or {}).get("scores"),
+        }
+        if writing_audit:
+            from inlight_audit import attach_audit_fields
+            extra = attach_audit_fields(extra, writing_audit)
         return drop("QC check failed: " + "; ".join(
             f"{c['name']}: {c.get('reason') or ''}" for c in failed[:4]
-        ))
+        ), extra)
     if failed:
         logging.warning("QC warnings (non-strict, still publishing): %s",
                         "; ".join(f"{c['name']}: {c.get('reason') or ''}" for c in failed[:4]))
+    extra = {
+        "tier": art.get("tier"),
+        "read_note": enriched_item.read_note,
+        "sections_read": enriched_item.sections_read,
+        "gemini": (gemini_result or {}).get("scores"),
+    }
+    if writing_audit:
+        from inlight_audit import attach_audit_fields
+        extra = attach_audit_fields(extra, writing_audit)
     if stats is not None:
         stats.setdefault("qc_report", {}).setdefault("articles", []).append(
-            assemble_qc_entry(url, True, checks, {
-                "tier": art.get("tier"),
-                "read_note": enriched_item.read_note,
-                "sections_read": enriched_item.sections_read,
-                "gemini": (gemini_result or {}).get("scores"),
-            })
+            assemble_qc_entry(url, True, checks, extra)
         )
 
     return art

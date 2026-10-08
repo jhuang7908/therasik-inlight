@@ -619,9 +619,12 @@ def validate_acir_structure(art: dict) -> list[str]:
     if not isinstance(dc, dict):
         problems.append("数据卡缺失")
     else:
-        for key in DATACARD_REQUIRED:
+        for key in ("primary_endpoint", "primary_endpoint_result"):
             if not str(dc.get(key) or "").strip():
                 problems.append(f"数据卡缺 {key}")
+        for key, val in dc.items():
+            if re.search(r"原文未给出|原文未报告", str(val or "")):
+                problems.append(f"数据卡 {key} 不要写占位套话，缺项请省略")
 
     if art.get("evidence_level") != "fulltext":
         problems.append("深度解读要求 evidence_level=fulltext")
