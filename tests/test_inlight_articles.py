@@ -866,6 +866,28 @@ class TestChineseAuthorFalsePositives(unittest.TestCase):
         author_problems = [p for p in problems if "作者姓氏" in p and "子" in p]
         self.assertEqual(author_problems, [], f"Should not flag '细胞因子等' as author: {author_problems}")
     
+    def test_wang_deng_baogao_flagged(self):
+        """'王等报告' (Wang et al. report) SHOULD be flagged if Wang not in source."""
+        from inlight_articles import validate_names
+        
+        art = {
+            "title": "临床研究结果",
+            "one_liner": "王等报告了该药物的有效性。",
+            "background": "",
+            "design": "",
+            "results": ["王等报告，客观缓解率达到52%。"],
+            "mechanism": "",
+            "significance": "",
+            "authors": "原文未给出",
+            "limitations": [],
+        }
+        raw = "The drug showed efficacy with a 52% response rate."
+        problems = validate_names(art, raw)
+        
+        # SHOULD flag '王' because it's used in author context but not in source
+        author_problems = [p for p in problems if "作者姓氏" in p and "王" in p]
+        self.assertTrue(len(author_problems) > 0, f"Should flag '王等报告' as invented author: {problems}")
+    
     def test_real_author_zhang_deng_flagged(self):
         """'张等发现' (Zhang et al. found) SHOULD be flagged if Zhang not in source."""
         from inlight_articles import validate_names

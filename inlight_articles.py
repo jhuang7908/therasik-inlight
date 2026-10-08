@@ -808,6 +808,11 @@ evidence_level 为 press/secondary 时只能填 brief。
 第三人称、过去时叙述实验、克制。不用感叹号，不用「惊人」「震撼」「改写教科书」。
 作者称谓用「姓氏 等」，首次出现时给期刊名。不评价单位排名。
 
+## 术语翻译（硬性规定）
+
+以下术语的翻译是固定的，必须使用正确翻译，使用错误翻译将导致文章被拒绝：
+- mesaconate / mesaconic acid → 中康酸（不是「美康酸」「梅沙康酸」「麦康酸」）
+
 ## 材料
 
 标题：{item.title}
@@ -1762,10 +1767,12 @@ def validate_names(art: dict, raw_material: str) -> list[str]:
     # - AND followed by a verb or attribution word (发现, 报道, 称, 指出, 认为)
     
     chinese_surname_pattern = r'([\u4e00-\u9fff])等'
-    author_context_pattern = r'(?:^|[。？！，、])\s*[\u4e00-\u9fff]等\s*(?:发现|报道|称|指出|认为|表示|提出|观察|测定|检测|分析)'
+    # List of verbs that indicate author attribution (expanded to include 报告)
+    author_verbs = r'发现|报道|报告|称|指出|认为|表示|提出|观察|测定|检测|分析|开展|证明|证实'
+    author_context_pattern = rf'(?:^|[。？！，、])\s*[\u4e00-\u9fff]等\s*(?:{author_verbs})'
     
     # Only flag if we find author-context pattern
-    author_contexts = set(re.findall(r'([\u4e00-\u9fff])等(?=\s*(?:发现|报道|称|指出|认为|表示|提出|观察|测定|检测|分析))', all_text))
+    author_contexts = set(re.findall(rf'([\u4e00-\u9fff])等(?=\s*(?:{author_verbs}))', all_text))
     for char in author_contexts:
         if char not in raw_material:
             problems.append(f"中文作者姓氏 '{char}' 在原始材料中未找到")
