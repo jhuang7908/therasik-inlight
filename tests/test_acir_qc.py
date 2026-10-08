@@ -539,9 +539,11 @@ class TestHouseStylePromptsAndImageQc(unittest.TestCase):
         else:
             im = Image.new("RGB", (w, h), (255, 255, 255))
         d = ImageDraw.Draw(im)
-        # Subject bbox ≈ 72% of the 1.618 card; terracotta ≈ 4% of frame.
+        # Subject bbox ≈ 72% of the 1.618 card; terracotta on UR golden (~4%).
         d.rectangle([230, 140, 1370, 850], fill=(15, 107, 92))
-        d.ellipse([640, 360, 960, 680], fill=(192, 73, 47))
+        gx, gy = int(0.618 * w), int(0.382 * h)
+        r = 145
+        d.ellipse([gx - r, gy - r, gx + r, gy + r], fill=(192, 73, 47))
         if text:
             d.text((40, 40), text, fill=(20, 20, 20))
         return im
@@ -555,7 +557,8 @@ class TestHouseStylePromptsAndImageQc(unittest.TestCase):
         d = ImageDraw.Draw(im)
         d.ellipse([230, 150, 1370, 840], outline=(15, 107, 92), width=6)
         d.ellipse([250, 170, 430, 350], outline=(47, 125, 109), width=4)
-        d.ellipse([700, 360, 980, 640], fill=(192, 73, 47))
+        gx, gy = int(0.618 * w), int(0.382 * h)
+        d.ellipse([gx - 145, gy - 145, gx + 145, gy + 145], fill=(192, 73, 47))
         with tempfile.TemporaryDirectory() as td:
             path = os.path.join(td, "span.png")
             im.save(path)
@@ -642,7 +645,48 @@ class TestHouseStylePromptsAndImageQc(unittest.TestCase):
             self.assertGreaterEqual(out["accent_frac"], 0.03, (path.name, out))
             self.assertLessEqual(out["accent_frac"], 0.06, (path.name, out))
             self.assertFalse(out["ocr_text"], (path.name, out))
+            self.assertLessEqual(out.get("golden_dist", 1), 0.06, (path.name, out))
+            self.assertFalse(out.get("dead_center"), (path.name, out))
             self.assertTrue(out["pass"], (path.name, out))
+
+    def test_qc_golden_section_and_accent_emphasis_pass_and_fail(self):
+        """Golden placement + strong accent pass; weak/centred accent fail closed."""
+        from PIL import Image, ImageDraw
+        from inlight_qc import qc_image, GOLDEN_DIST_MAX
+
+        w, h = 1600, 989
+
+        def card(cx, cy, radius, extra_green=True):
+            im = Image.new("RGB", (w, h), (255, 255, 255))
+            d = ImageDraw.Draw(im)
+            if extra_green:
+                d.rectangle([230, 140, 1370, 850], fill=(15, 107, 92))
+            d.ellipse([cx - radius, cy - radius, cx + radius, cy + radius], fill=(192, 73, 47))
+            return im
+
+        with tempfile.TemporaryDirectory() as td:
+            good = os.path.join(td, "golden.png")
+            card(int(0.618 * w), int(0.382 * h), 145).save(good)
+            ok = qc_image(good)
+            self.assertTrue(ok["pass"], ok)
+            self.assertLessEqual(ok["golden_dist"], GOLDEN_DIST_MAX, ok)
+            self.assertFalse(ok["dead_center"], ok)
+            self.assertGreaterEqual(ok["accent_frac"], 0.03, ok)
+
+            centred = os.path.join(td, "centre.png")
+            card(w // 2, h // 2, 145).save(centred)
+            bad_c = qc_image(centred)
+            self.assertFalse(bad_c["pass"], bad_c)
+            self.assertTrue(
+                bad_c.get("dead_center") or bad_c["golden_dist"] > GOLDEN_DIST_MAX,
+                bad_c,
+            )
+
+            weak = os.path.join(td, "weak.png")
+            card(int(0.618 * w), int(0.382 * h), 20).save(weak)
+            bad_w = qc_image(weak)
+            self.assertFalse(bad_w["pass"], bad_w)
+            self.assertTrue(any("accent" in r for r in bad_w["reasons"]), bad_w)
 
     def test_generate_article_image_falls_back_after_two_retries(self):
         import run_weekly
@@ -774,6 +818,64 @@ class TestHouseStylePromptsAndImageQc(unittest.TestCase):
         self.assertIn("${escUrl(dealData.url)}", css)
         self.assertIn("${escHtml(a.disp)}", css)
         self.assertIn("fieldKey(a.f)", css)
+        self.assertIn("function isVisibleArticle", css)
+        self.assertIn("function primaryField", css)
+        self.assertIn("每篇只进一个主领域栏目", css)
+        self.assertIn("不属于九个领域的条目不展示", css)
+        self.assertIn("isVisibleArticle(a)", css)
+
+    def test_write_output_hides_out_of_scope_articles(self):
+        import run_weekly
+
+        with tempfile.TemporaryDirectory() as td:
+            dest = __import__("pathlib").Path(td) / "week"
+            dest.mkdir()
+            with patch.object(run_weekly, "ROOT", dest.parent):
+                with patch.object(run_weekly, "generate_article_image", return_value={"pass": False, "skipped": True}):
+                    run_weekly.write_output(
+                        {
+                            "articles": [
+                                {
+                                    "title": "OUT",
+                                    "url": "https://doi.org/10.1/none",
+                                    "date": "2026-10-08",
+                                    "field": "none",
+                                    "source": "N",
+                                    "authors": "A",
+                                    "lead": "x",
+                                    "body": "y",
+                                    "discuss": "z",
+                                    "steps": ["a", "b", "c"],
+                                    "excluded": True,
+                                },
+                                {
+                                    "title": "IN",
+                                    "url": "https://doi.org/10.1/f4",
+                                    "date": "2026-10-08",
+                                    "field": "f4",
+                                    "primary_field": "f4",
+                                    "related_fields": ["f5"],
+                                    "source": "N",
+                                    "authors": "A",
+                                    "lead": "x",
+                                    "body": "y",
+                                    "discuss": "z",
+                                    "steps": ["a", "b", "c"],
+                                },
+                            ],
+                            "deals": [],
+                            "qc_report": {"articles": []},
+                        },
+                        dest,
+                        "2026-10-08",
+                    )
+            data = json.loads((dest / "articles.json").read_text())
+            titles = [a.get("t") for a in data]
+            self.assertNotIn("OUT", titles)
+            self.assertIn("IN", titles)
+            kept = next(a for a in data if a["t"] == "IN")
+            self.assertEqual(kept["f"], "f4")
+            self.assertEqual(kept["tags"][0], "f4")
 
     def test_gemini_reviewer_model_is_31_pro_preview(self):
         from pathlib import Path

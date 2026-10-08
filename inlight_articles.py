@@ -1291,9 +1291,22 @@ def _article_prompt_abstract(item: EnrichedItem) -> str:
     return "无"
 
 
-def build_article_prompt(item: EnrichedItem, tier: str) -> str:
+def build_article_prompt(
+    item: EnrichedItem,
+    tier: str,
+    *,
+    source_window: int | None = None,
+    compact: bool = False,
+) -> str:
     """Build prompt for single article drafting."""
     from inlight_qc import FULLTEXT_WINDOW
+    window = FULLTEXT_WINDOW if source_window is None else max(2000, int(source_window))
+    fig_n = 1600 if compact else 4000
+    meth_n = 1200 if compact else 3000
+    compact_note = (
+        "\n上次输出因长度被截断。请更紧凑地写完全部字段，并完整调用 submit_article，不要中途停止。\n"
+        if compact else ""
+    )
     return f"""你是「前沿追踪」的科学编辑。下面是一篇论文的可核实材料，请据此写一篇中文解读。
 
 ## 不可违反的规则
@@ -1371,14 +1384,14 @@ DOI / 链接：{item.url}
 {_article_prompt_abstract(item) if item.evidence_level != "fulltext" else "（深度解读以全文 Results 为准，摘要仅供对照）"}
 
 全文结果与讨论（仅在 evidence_level=fulltext 时提供，必须作为数字与机制的唯一依据）：
-{item.fulltext_results[:FULLTEXT_WINDOW] if item.evidence_level == "fulltext" and item.fulltext_results else '无'}
+{item.fulltext_results[:window] if item.evidence_level == "fulltext" and item.fulltext_results else '无'}
 
 图注（若有）：
-{item.fig_captions[:4000] if item.evidence_level == "fulltext" and item.fig_captions else '无'}
+{item.fig_captions[:fig_n] if item.evidence_level == "fulltext" and item.fig_captions else '无'}
 
 研究设计相关方法（若有）：
-{item.methods_design[:3000] if item.evidence_level == "fulltext" and item.methods_design else '无'}
-
+{item.methods_design[:meth_n] if item.evidence_level == "fulltext" and item.methods_design else '无'}
+{compact_note}
 调用 submit_article 工具提交。
 """
 
@@ -1603,6 +1616,8 @@ def number_in_text_as_word_boundary(number: str, text: str) -> bool:
     # A hyphen is allowed on BOTH ends of a numeric range
     # ("1.30-3.35", "1.7%-40.5%", "6-23 months"). "TAK-981" stays rejected
     # because the digits are preceded by a letter-hyphen identifier.
+    # CJK, dashes, and thousands separators are word boundaries: 共527例,
+    # 缓解率64%, —1,139例 must match. Python str.isalnum() is True for CJK.
     unit_re = re.compile(
         r'(?:mg|kg|mL|µg|nM|pM|µM|mM|μg|μL|ng|pg|mmol|mol|g|L|%|％|倍|年|个月|天|周|小时|例|名)',
         re.IGNORECASE,
@@ -1611,9 +1626,9 @@ def number_in_text_as_word_boundary(number: str, text: str) -> bool:
         start, end = match.start(), match.end()
         prev = text_clean[start - 1] if start else ""
         prev2 = text_clean[start - 2] if start >= 2 else ""
-        if prev == "-" and prev2.isalpha():
+        if prev == "-" and _is_ascii_alpha(prev2):
             continue
-        if prev and (prev.isalnum() or prev == "."):
+        if prev and (_is_ascii_alnum(prev) or prev == "."):
             continue
         after = text_clean[end:]
         if unit_re.match(after) or re.match(r'-\s*\d', after):
@@ -1621,10 +1636,19 @@ def number_in_text_as_word_boundary(number: str, text: str) -> bool:
         nxt = after[:1]
         if nxt == "." and after[1:2].isdigit():
             continue
-        if nxt.isalnum():
+        if _is_ascii_alnum(nxt):
             continue
         return True
     return False
+
+
+def _is_ascii_alnum(ch: str) -> bool:
+    """True for ASCII letters/digits only. CJK is a number-word boundary."""
+    return bool(ch) and ch.isascii() and ch.isalnum()
+
+
+def _is_ascii_alpha(ch: str) -> bool:
+    return bool(ch) and ch.isascii() and ch.isalpha()
 
 
 def normalize_source_text(text: str, *, convert_english_words: bool = True) -> str:
@@ -1684,8 +1708,13 @@ def extract_identifiers_from_source(source: str) -> set[str]:
     """
     identifiers = set()
     
-    # Gene names: CD4, CD8, CD14, CD318, IL-23, IFN-α2, HLA-DP04, NK, NF-κB
-    for match in re.finditer(r'\b(?:CD|IL|HLA|IFN|NK|NF|CCR|Th|TAK|CCL|CXCL|CXCR|ROR)[A-Za-zα-ω]?-?[A-Za-z0-9αβγδ/-]*\d+[A-Za-z0-9αβγδ/-]*\b', source, re.IGNORECASE):
+    # Gene names: CD4, CD8, CD 8, CD318, IL-23, IFN-α2, HLA-DP04, NK, NF-κB
+    scan = _identifier_scan_text(source)
+    for match in re.finditer(
+        r'\b(?:CD|IL|HLA|IFN|NK|NF|CCR|Th|TAK|CCL|CXCL|CXCR|ROR)[A-Za-zα-ω]?[\s_-]?[A-Za-z0-9αβγδ/-]*\d+[A-Za-z0-9αβγδ/-]*\b',
+        scan,
+        re.IGNORECASE,
+    ):
         identifiers.add(match.group(0))
     
     # Element/family names: R2, S1, M1
@@ -1718,13 +1747,33 @@ def extract_identifiers_from_source(source: str) -> set[str]:
 
 # Tokens that look like identifiers, not data claims. Digits inside these
 # must not be extracted as claimed numbers and must not evidence a count/% .
+# Spaced / subscript-style splits (CD 8, Th 17) are the same token as CD8.
+# Do not allow a free letter-run + space + digits ("was 52" is a count).
+_IDENTIFIER_PREFIXES = (
+    "CD", "IL", "HLA", "IFN", "NK", "NF", "CCR", "CXCR", "CXCL", "CCL",
+    "Th", "TAK", "ROR", "Dsg", "MK",
+)
 _IDENTIFIER_TOKEN_RE = re.compile(
     r'(?i)(?:'
     # Gene/protein/strain/compound tokens: letters + digits (Dsg2, CD14, p38, MK-25)
     r'(?<![A-Za-z0-9])[A-Za-z][A-Za-z]{0,10}-?\d+[A-Za-z0-9./-]*'
+    # Spaced cell-subset / receptor names: CD 8, Th 17, CCR 8
+    r'|(?<![A-Za-z0-9])(?:'
+    + "|".join(_IDENTIFIER_PREFIXES)
+    + r')[\s_-]+\d+[A-Za-z0-9./-]*'
     # Leading-digit names: 4-1BB, 4-1BBL
     r'|(?<![A-Za-z0-9])\d+-\d+[A-Za-z]{1,8}'
     r'|(?:NCT|RPCEC|ISRCTN|EudraCT|ACTRN|ChiCTR)\d+'
+    r')'
+)
+_SUBSCRIPT_DIGIT_MAP = str.maketrans("₀₁₂₃₄₅₆₇₈₉", "0123456789")
+
+# Taxonomy / kind words: 「六种」「6类」「six kinds」 are qualitative, not counts.
+_QUALITATIVE_COUNT_RE = re.compile(
+    r'(?i)(?:'
+    r'\d+(?:\.\d+)?\s*(?:种|类)|'
+    r'[零一二三四五六七八九十两]+\s*(?:种|类)|'
+    r'(?:zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\s+kinds?'
     r')'
 )
 
@@ -1746,11 +1795,16 @@ BRIEF_HAN_MAX = 900
 SEE_BODY_RE = re.compile(r"详见正文")
 
 
+def _identifier_scan_text(text: str) -> str:
+    """Map subscript digits so CD₈ matches the same token as CD8 / CD 8."""
+    return (text or "").translate(_SUBSCRIPT_DIGIT_MAP)
+
+
 def identifier_spans(text: str) -> list[tuple[int, int]]:
     """Character spans of identifier tokens (CD318, IL-6, p38, NCT…)."""
     if not text:
         return []
-    return [m.span() for m in _IDENTIFIER_TOKEN_RE.finditer(text)]
+    return [m.span() for m in _IDENTIFIER_TOKEN_RE.finditer(_identifier_scan_text(text))]
 
 
 def span_covers(pos: int, end: int, spans: list[tuple[int, int]]) -> bool:
@@ -1914,7 +1968,7 @@ def _occurrence_unit_classes(num_core: str, source: str) -> list[str | None]:
         if span_covers(m.start(), m.end(), id_spans):
             continue
         prev = source[m.start() - 1] if m.start() else ""
-        if prev.isalnum() or prev == ".":
+        if _is_ascii_alnum(prev) or prev == ".":
             continue
         nxt = source[m.end():m.end() + 1]
         nxt2 = source[m.end() + 1:m.end() + 2] if m.end() + 1 < len(source) else ""
@@ -2100,7 +2154,7 @@ def _noun_mismatch(num_core: str, context: str, source: str) -> bool:
     src_nouns = []
     for m in re.finditer(re.escape(num_core), source):
         prev = source[m.start() - 1] if m.start() else ""
-        if prev.isalnum() or prev == ".":
+        if _is_ascii_alnum(prev) or prev == ".":
             continue
         noun = classify_noun_after(source, m.end())
         if noun:
@@ -2273,6 +2327,9 @@ def is_exempt_number_context(context: str, number: str) -> bool:
     Returns True if the number is part of standard grading, clinical phases,
     statistical terms, or other terminology that shouldn't be flagged as invented.
     """
+    if _QUALITATIVE_COUNT_RE.search(context or ""):
+        # 「六种」「6类」「six kinds」 are taxonomy labels, not numeric claims.
+        return True
     # First, check if the context contains any exempt patterns
     for pattern in EXEMPT_NUMBER_RE:
         for match in pattern.finditer(context):
@@ -2714,6 +2771,9 @@ def extract_numbers_with_context(text: str) -> list[tuple[str, str]]:
         # Skip digits that live inside an identifier token (CD318, p38, NCT…)
         if span_covers(match.start(), match.end(), id_spans):
             continue
+        after = text[match.end():match.end() + 4]
+        if re.match(r'\s*(?:种|类)', after):
+            continue
         num = match.group(0)
         start = max(0, match.start() - 20)
         end = min(len(text), match.end() + 20)
@@ -2737,6 +2797,9 @@ def extract_chinese_numbers_with_context(text: str) -> list[tuple[str, str]]:
         r'(?:年|倍|%|％|个月|天|周|小时|例|名|位|人|剂|次|万|亿)'
     )
     for match in re.finditer(cn_data_pattern, text):
+        after = text[match.end():match.end() + 2]
+        if after[:1] in ("种", "类"):
+            continue
         cn_num = match.group(0)
         start = max(0, match.start() - 20)
         end = min(len(text), match.end() + 20)
@@ -2753,7 +2816,8 @@ def _is_qualitative_datapoint(value: str, meaning: str) -> bool:
         r'(?i)[ivxⅠ-Ⅻ]+期|phase\s*[ivx]|wild[- ]type|knock[- ]?out|'
         r'genotype|biomarker|high|low|mild|moderate|severe|'
         r'阳性|阴性|野生型|突变型|组织分型|瘤种|内型|分型|'
-        r'高|低|轻|中|重',
+        r'高|低|轻|中|重|'
+        r'(?:种|类|kinds?)',
         blob,
     ))
 
@@ -2774,11 +2838,21 @@ def _invented_numeric_range(output: str, source: str) -> list[str]:
         if re.search(r'(?i)CD\d|IL-?\d|HLA|NCT|p38|MK-\d', window):
             continue
         pat = re.compile(
-            rf'(?<![0-9.]){re.escape(a)}\s*[-–—~to至到]\s*{re.escape(b)}',
+            rf'(?<![0-9.]){re.escape(a)}\s*[-–—~～to至到]\s*{re.escape(b)}',
             re.I,
         )
-        if not pat.search(src) and not pat.search(source):
-            problems.append(f"数字范围 '{a}-{b}{unit}' 在原文中未作为区间出现")
+        if pat.search(src) or pat.search(source):
+            continue
+        # Chinese 至/到/～/– ranges: accept when both endpoints appear.
+        if (
+            number_in_text_as_word_boundary(a, src)
+            or number_in_text_as_word_boundary(a, source)
+        ) and (
+            number_in_text_as_word_boundary(b, src)
+            or number_in_text_as_word_boundary(b, source)
+        ):
+            continue
+        problems.append(f"数字范围 '{a}-{b}{unit}' 在原文中未作为区间出现")
     return problems
 
 
@@ -2847,13 +2921,14 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
     # Identifier tokens in the output (NCT…, IL-6, CD19, …) must occur in
     # the source. Skipping their digits as claimed numbers must not let an
     # invented registry ID through.
+    src_scan = _identifier_scan_text(raw_material)
     src_id_keys = {
         re.sub(r'[\s-]+', '', m.group(0).lower())
-        for m in _IDENTIFIER_TOKEN_RE.finditer(raw_material)
+        for m in _IDENTIFIER_TOKEN_RE.finditer(src_scan)
     }
-    src_lower = raw_material.lower()
+    src_lower = src_scan.lower()
     seen_ids: set[str] = set()
-    for match in _IDENTIFIER_TOKEN_RE.finditer(all_text):
+    for match in _IDENTIFIER_TOKEN_RE.finditer(_identifier_scan_text(all_text)):
         tok = match.group(0)
         key = re.sub(r'[\s-]+', '', tok.lower())
         if key in seen_ids:
@@ -3000,6 +3075,8 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
         arabic = chinese_numeral_to_arabic(cn_num)
         arabic_core = extract_number_core(arabic)
         if not arabic_core:
+            continue
+        if _QUALITATIVE_COUNT_RE.search(context or ""):
             continue
         
         # Check if this number is in an exempt context
@@ -3743,27 +3820,48 @@ def draft_single_article(item: EnrichedItem, tier: str, config: dict, problems: 
         logging.error("API error drafting article for %s: %s", item.title[:50], e)
         return None
     
-    # Truncation retry: stream (anthropic 1.12.0 rejects huge non-stream max_tokens)
+    # Truncation retry: larger budget + shorter request. Never publish a
+    # truncated piece — a second max_tokens drop is a clean skip.
     if message.stop_reason == "max_tokens":
-        logging.warning("Article draft truncated (max_tokens), retrying via stream: %s", item.title[:50])
-        bigger_max_tokens = 16000 if tier == "deep" else 8000
+        retry_tokens = 24000 if tier == "deep" else 16000
+        retry_prompt = build_article_prompt(
+            item, tier, source_window=8000, compact=True,
+        )
+        if problems:
+            retry_prompt += f"\n\n## 上次生成的问题（请务必修正）\n\n" + "\n".join(f"- {p}" for p in problems)
+            retry_prompt += (
+                "\n\n只删除或改写被点名的主张，其余已核对内容保持不变。"
+                "每个数字和专有名称必须从材料逐字复制，不得改写或替换。"
+            )
+        retry_prompt += "\n\n请务必调用 submit_article 工具提交你的文章。"
+        logging.warning(
+            "Article draft truncated (max_tokens), retrying with %d tokens and shorter source: %s",
+            retry_tokens, item.title[:50],
+        )
         try:
             message = _claude_create(
                 client,
                 model=model,
-                max_tokens=bigger_max_tokens,
+                max_tokens=retry_tokens,
                 tools=_article_tools_for(config),
                 tool_choice={"type": "auto"},
-                messages=[{"role": "user", "content": prompt}],
+                messages=[{"role": "user", "content": retry_prompt}],
             )
         except Exception as e:
             logging.error("API error on max_tokens retry for %s: %s", item.title[:50], e)
             return None
         
         if message.stop_reason == "max_tokens":
-            logging.error("Still truncated after streamed retry with %d tokens, giving up: %s", bigger_max_tokens, item.title[:50])
+            logging.error(
+                "Dropping truncated draft after two max_tokens stops (retry budget %d): %s",
+                retry_tokens, item.title[:50],
+            )
             return None
     
+    if getattr(message, "stop_reason", None) == "max_tokens":
+        logging.error("Refusing to publish truncated draft: %s", item.title[:50])
+        return None
+
     for block in message.content:
         if block.type == "tool_use" and block.name == "submit_article":
             art = block.input

@@ -144,6 +144,8 @@ ACCENT_RGB = (0xC0, 0x49, 0x2F)
 ACCENT_SHADE_RGB = (0xE0, 0x7A, 0x5F)
 FILL_RANGE = (0.68, 0.78)
 ACCENT_RANGE = (0.03, 0.06)
+GOLDEN_DIST_MAX = 0.06
+DEAD_CENTER_TOL = 0.04
 IMAGE_REGEN_LIMIT = 2
 FALLBACK_COVER_SIZE = (1600, 989)  # 1.618:1
 
@@ -917,18 +919,43 @@ def _border_bg(im: Any, b: int = 4) -> tuple[float, float, float]:
     return (float(rs[mid]), float(gs[mid]), float(bs[mid]))
 
 
-def _warm_mask_frac(im: Any) -> float:
+def _warm_pixels(im: Any) -> tuple[list[int], list[int], int, int]:
     hsv = im.convert("HSV")
     pix = hsv.load()
     w, h = hsv.size
-    hit = 0
+    xs: list[int] = []
+    ys: list[int] = []
     for y in range(h):
         for x in range(w):
             hh, s, v = pix[x, y]
             hd = hh * 360 / 255
             if (hd <= 38 or hd >= 340) and s >= 0.35 * 255 and v >= 0.28 * 255:
-                hit += 1
-    return hit / max(w * h, 1)
+                xs.append(x)
+                ys.append(y)
+    return xs, ys, w, h
+
+
+def _warm_mask_frac(im: Any) -> float:
+    xs, ys, w, h = _warm_pixels(im)
+    return len(xs) / max(w * h, 1)
+
+
+def accent_placement(im: Any) -> dict[str, Any]:
+    """Accent centroid vs golden-section points (check_v5: gd≤0.06, not dead centre)."""
+    xs, ys, w, h = _warm_pixels(im)
+    n = len(xs)
+    if n < 80:
+        return {
+            "fx": None, "fy": None, "n": n,
+            "golden_dist": 1.0, "dead_center": True,
+        }
+    fx, fy = (sum(xs) / n) / max(w, 1), (sum(ys) / n) / max(h, 1)
+    gd = min(((fx - tx) ** 2 + (fy - ty) ** 2) ** 0.5 for tx, ty in GOLDEN_XY.values())
+    dead = abs(fx - 0.5) < DEAD_CENTER_TOL and abs(fy - 0.5) < DEAD_CENTER_TOL
+    return {
+        "fx": round(fx, 4), "fy": round(fy, 4), "n": n,
+        "golden_dist": round(gd, 4), "dead_center": dead,
+    }
 
 
 def subject_metrics(im: Any) -> dict[str, Any]:
@@ -1080,13 +1107,15 @@ def is_publishable_image(path: str | Path) -> bool:
 
 
 def qc_image(path: str, prior_hashes: list[list[int]] | None = None) -> dict[str, Any]:
-    """QC from the approved trial: subject span 68–78%, accent 3–6%, real OCR."""
+    """QC: span 68–78%, accent 3–6% on a golden point, real OCR. Weak accent fails."""
     reasons: list[str] = []
     result: dict[str, Any] = {
         "pass": False,
         "ocr_text": False,
         "accent_frac": 0.0,
         "fill_frac": 0.0,
+        "golden_dist": 1.0,
+        "dead_center": True,
         "reasons": reasons,
         "hash": [],
     }
@@ -1110,10 +1139,13 @@ def qc_image(path: str, prior_hashes: list[list[int]] | None = None) -> dict[str
     metrics = subject_metrics(im)
     fill_frac = float(metrics["span"])
     accent_frac = _warm_mask_frac(im)
+    place = accent_placement(im)
     ocr_hit, ocr_note = image_has_ocr_text(im)
     bits = average_hash_bits(im)
     result["fill_frac"] = round(fill_frac, 4)
     result["accent_frac"] = round(accent_frac, 4)
+    result["golden_dist"] = place["golden_dist"]
+    result["dead_center"] = place["dead_center"]
     result["ocr_text"] = bool(ocr_hit)
     result["hash"] = bits
     if ocr_hit:
@@ -1121,6 +1153,12 @@ def qc_image(path: str, prior_hashes: list[list[int]] | None = None) -> dict[str
     lo_a, hi_a = ACCENT_RANGE
     if not (lo_a <= accent_frac <= hi_a):
         reasons.append(f"accent {accent_frac:.3f} outside {lo_a:.2f}-{hi_a:.2f}")
+    if place["dead_center"]:
+        reasons.append("accent dead-centre; needs golden-section focal emphasis")
+    if place["golden_dist"] > GOLDEN_DIST_MAX:
+        reasons.append(
+            f"golden_dist {place['golden_dist']:.3f} > {GOLDEN_DIST_MAX:.2f}"
+        )
     lo_f, hi_f = FILL_RANGE
     if not (lo_f <= fill_frac <= hi_f):
         reasons.append(f"fill {fill_frac:.3f} outside {lo_f:.2f}-{hi_f:.2f}")
@@ -1151,17 +1189,7 @@ def reframe_to_card(src: str | Path, dest: str | Path, pos: str = "UR", target: 
     scale = min(target * ow / max(iw, 1), target * oh / max(ih, 1))
     tx, ty = GOLDEN_XY.get(pos, GOLDEN_XY["UR"])
     # Accent centroid if present, else subject centre
-    hsv = im.convert("HSV")
-    hp = hsv.load()
-    xs: list[int] = []
-    ys: list[int] = []
-    for y in range(h):
-        for x in range(w):
-            hh, s, v = hp[x, y]
-            hd = hh * 360 / 255
-            if (hd <= 38 or hd >= 340) and s >= 0.35 * 255 and v >= 0.28 * 255:
-                xs.append(x)
-                ys.append(y)
+    xs, ys, _, _ = _warm_pixels(im)
     if len(xs) > 200:
         fx, fy = sum(xs) / len(xs), sum(ys) / len(ys)
     else:

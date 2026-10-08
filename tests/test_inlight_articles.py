@@ -1878,6 +1878,133 @@ class TestNewMaterialDeterministic(unittest.TestCase):
         ok = _invented_numeric_range("随访6-23个月", "Patients were followed 6-23 months.")
         self.assertFalse(ok)
 
+    def test_range_accepted_when_both_endpoints_in_source(self):
+        from inlight_articles import _invented_numeric_range
+
+        ok = _invented_numeric_range(
+            "随访6至23个月",
+            "Follow-up ranged from 6 months to 23 months.",
+        )
+        self.assertFalse(ok, ok)
+        ok_wave = _invented_numeric_range(
+            "剂量1.7%～40.5%",
+            "The reduction was 1.7% at week 4 and 40.5% at week 12.",
+        )
+        self.assertFalse(ok_wave, ok_wave)
+        still_bad = _invented_numeric_range(
+            "随访6-99个月",
+            "Patients were followed from 6 months; VMS fell 64%.",
+        )
+        self.assertTrue(still_bad)
+
+
+class TestMatcherToleratesFaithfulDrafts(unittest.TestCase):
+    """False-drop fixes: spaced labels, CJK-glued numbers, qualitative kinds."""
+
+    def test_spaced_and_subscript_identifier_not_a_count(self):
+        from inlight_articles import (
+            extract_number_core,
+            extract_numbers_with_context,
+            number_exists_in_source,
+            extract_identifiers_from_source,
+            normalize_source_text,
+            validate_depth,
+        )
+
+        source = "CD 8 T cells and Th 17 subsets were enriched; CD₈ infiltration rose."
+        extracted = extract_numbers_with_context("CD 8细胞与Th 17亚群")
+        cores = [extract_number_core(n) for n, _ in extracted]
+        self.assertNotIn("8", cores, extracted)
+        self.assertNotIn("17", cores, extracted)
+
+        art = {
+            "tier": "brief",
+            "title": "CD8 与 Th17",
+            "one_liner": "CD 8与Th 17亚群升高。",
+            "background": "背景一句。",
+            "design": "设计一句。",
+            "results": ["CD8与Th17浸润增加。"],
+            "mechanism": "",
+            "significance": "",
+            "limitations": ["单中心外推有限。"],
+            "data_points": [],
+        }
+        problems = validate_depth(art, source)
+        self.assertFalse(any("标识符" in p for p in problems), problems)
+        self.assertFalse(any("数字 '" in p for p in problems), problems)
+
+        norm = normalize_source_text(source)
+        ids = extract_identifiers_from_source(source)
+        self.assertFalse(number_exists_in_source("8", norm, ids, "8例死亡"))
+
+    def test_cjk_glued_and_dashed_numbers_match_source(self):
+        from inlight_articles import (
+            number_in_text_as_word_boundary,
+            number_exists_in_source,
+            normalize_source_text,
+            validate_depth,
+        )
+
+        source = "共纳入527例患者，缓解率64%；—1,139例可评估。"
+        self.assertTrue(number_in_text_as_word_boundary("527", source))
+        self.assertTrue(number_in_text_as_word_boundary("64", "缓解率64%"))
+        self.assertTrue(number_in_text_as_word_boundary("1139", source.replace(",", "").replace("，", "")))
+        norm = normalize_source_text(source)
+        raw = normalize_source_text(source, convert_english_words=False)
+        self.assertTrue(number_exists_in_source("527", norm, set(), "共527例", source_raw=raw))
+        self.assertTrue(number_exists_in_source("64", norm, set(), "缓解率64%", source_raw=raw))
+        self.assertTrue(number_exists_in_source("1139", norm, set(), "—1,139例", source_raw=raw))
+        self.assertFalse(number_exists_in_source("999", norm, set(), "共999例", source_raw=raw))
+
+        art = {
+            "tier": "brief",
+            "title": "527例缓解率64%",
+            "one_liner": "共527例，缓解率64%。",
+            "background": "背景。",
+            "design": "纳入527例。",
+            "results": ["缓解率64%，可评估—1,139例。"],
+            "mechanism": "",
+            "significance": "",
+            "limitations": ["外推有限。"],
+            "data_points": [
+                {"value": "527例", "meaning": "入组", "source_quote": "共纳入527例患者"},
+                {"value": "64%", "meaning": "缓解率", "source_quote": "缓解率64%"},
+            ],
+        }
+        problems = validate_depth(art, source)
+        invented = [p for p in problems if "在原始材料中未找到" in p]
+        self.assertEqual(invented, [], invented)
+
+    def test_qualitative_kinds_are_not_numeric_claims(self):
+        from inlight_articles import (
+            extract_numbers_with_context,
+            extract_chinese_numbers_with_context,
+            validate_depth,
+            is_exempt_number_context,
+        )
+
+        self.assertEqual(extract_numbers_with_context("鉴定出6种细胞亚群"), [])
+        self.assertEqual(extract_chinese_numbers_with_context("鉴定出六种细胞亚群"), [])
+        self.assertTrue(is_exempt_number_context("six kinds of subsets", "6"))
+
+        art = {
+            "tier": "brief",
+            "title": "六种亚群",
+            "one_liner": "鉴定出六种细胞亚群。",
+            "background": "背景。",
+            "design": "单细胞分析。",
+            "results": ["共六种表型，另有6类组织分型。"],
+            "mechanism": "",
+            "significance": "",
+            "limitations": ["外推有限。"],
+            "data_points": [
+                {"value": "六种", "meaning": "细胞亚群种类", "source_quote": "six kinds of subsets"},
+            ],
+        }
+        problems = validate_depth(art, "Single-cell analysis identified six kinds of subsets.")
+        self.assertFalse(any("必须包含数字" in p for p in problems), problems)
+        self.assertFalse(any("数字 '" in p or "中文数字" in p for p in problems), problems)
+
     def test_chinese_numeral_classifier_on_groups(self):
         from inlight_articles import classify_unit_in_context, number_exists_in_source, normalize_source_text
         from inlight_articles import UNIT_COUNT, NOUN_GROUP, classify_noun_after, chinese_numeral_to_arabic

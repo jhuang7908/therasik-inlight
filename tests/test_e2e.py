@@ -305,6 +305,36 @@ sources:
         
         # Should return None on truncation
         assert result is None
+        assert mock_client.messages.create.call_count == 2
+        first_kw = mock_client.messages.create.call_args_list[0].kwargs
+        retry_kw = mock_client.messages.create.call_args_list[1].kwargs
+        assert retry_kw["max_tokens"] > first_kw["max_tokens"]
+        retry_prompt = retry_kw["messages"][0]["content"]
+        assert "被截断" in retry_prompt
+
+    @patch('anthropic.Anthropic')
+    @patch('inlight_articles._http_get')
+    def test_max_tokens_on_both_attempts_drops(self, mock_http, mock_anthropic_class, mock_env):
+        """Both attempts stop at max_tokens: drop cleanly, never publish."""
+        from inlight_articles import draft_single_article, EnrichedItem
+
+        mock_http.return_value = None
+        mock_client = MagicMock()
+        mock_anthropic_class.return_value = mock_client
+        mock_client.messages.create.return_value = make_truncated_response()
+
+        item = EnrichedItem(
+            url="https://test.com/trunc",
+            title="Truncated twice",
+            source="Test",
+            date="2026-01-01",
+            abstract="Test abstract " * 40,
+            evidence_level="abstract",
+        )
+        result = draft_single_article(item, "brief", {})
+        assert result is None
+        assert mock_client.messages.create.call_count == 2
+        assert mock_client.messages.create.call_args_list[1].kwargs["max_tokens"] == 16000
     
     @patch('anthropic.Anthropic')
     @patch('inlight_articles._http_get')

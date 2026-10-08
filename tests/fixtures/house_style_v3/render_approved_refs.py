@@ -68,8 +68,9 @@ def render_t1_trap(path: Path) -> None:
     d.arc([640, 430, 900, 700], start=160, end=420, fill=MINT, width=8)
     d.ellipse([790, 430, 870, 510], fill=MID, outline=SLATE, width=2)
 
-    # Stage 3 — terracotta target cell + engager + immune cell.
-    _cell(d, 1280, 340, 168, TERR, nucleus=TERR_L, outline=TERR)
+    # Stage 3 — terracotta target on the upper-right golden point (0.618, 0.382).
+    gx, gy = int(0.618 * W), int(0.382 * H)
+    _cell(d, gx, gy, 155, TERR, nucleus=TERR_L, outline=TERR)
     _y_antibody(d, 1280, 560, 1.7, DEEP)
     _cell(d, 1280, 760, 92, PALE, nucleus=MINT, outline=SLATE)
     d.line([(1040, 500), (1188, 560)], fill=SLATE, width=3)
@@ -101,38 +102,41 @@ def render_t4_tsc_astro(path: Path) -> None:
             cy = int(oy + rad * math.sin(ang))
             _cell(d, cx, cy, cr, col, nucleus=MINT if col == DEEP else None)
 
-    # Terracotta mosaic patch on the organoid's right edge (part of the ONE accent).
+    # Mint mosaic on the organoid (not the accent).
     for i, (dx, dy) in enumerate((
         (148, -18), (168, 6), (158, 34), (178, 22), (140, 16),
         (170, -16), (186, 4), (150, 46), (162, -36), (190, 36),
     )):
-        _cell(d, ox + dx, oy + dy, 26 if i < 6 else 20, TERR, nucleus=TERR_L, outline=TERR)
+        _cell(d, ox + dx, oy + dy, 26 if i < 6 else 20, MID, nucleus=MINT, outline=SLATE)
 
     # Zoom lines to the cortical field.
     d.line([(ox + r - 6, oy - 70), (900, 200)], fill=SLATE, width=1)
     d.line([(ox + r - 6, oy + 70), (900, 788)], fill=SLATE, width=1)
     d.ellipse([900, 190, 1420, 800], outline=SLATE, width=2)
 
-    def neuron(cx, cy, scale=1.0):
+    def neuron(cx, cy, scale=1.0, fill=MID):
         soma = int(48 * scale)
-        d.ellipse([cx - soma, cy - soma, cx + soma, cy + soma], fill=TERR, outline=TERR)
-        d.ellipse([cx - soma // 3, cy - soma // 3, cx + soma // 3, cy + soma // 3], fill=TERR_L)
+        d.ellipse([cx - soma, cy - soma, cx + soma, cy + soma], fill=fill, outline=SLATE)
+        d.ellipse([cx - soma // 3, cy - soma // 3, cx + soma // 3, cy + soma // 3], fill=MINT)
         arms = (
             (-70, -32, -110, -80), (56, -40, 100, -96),
             (-32, 62, -70, 118), (40, 56, 88, 112),
             (-86, 16, -130, 30), (80, 8, 128, -16),
         )
         for x1, y1, x2, y2 in arms:
-            d.line([(cx, cy), (cx + int(x1 * scale), cy + int(y1 * scale))], fill=TERR, width=max(6, int(8 * scale)))
+            d.line([(cx, cy), (cx + int(x1 * scale), cy + int(y1 * scale))], fill=fill, width=max(6, int(8 * scale)))
             d.line(
                 [(cx + int(x1 * scale), cy + int(y1 * scale)),
                  (cx + int(x2 * scale), cy + int(y2 * scale))],
-                fill=TERR, width=max(4, int(6 * scale)),
+                fill=fill, width=max(4, int(6 * scale)),
             )
 
-    neuron(1088, 380, 1.2)
-    neuron(1230, 520, 1.15)
-    neuron(1100, 660, 1.05)
+    neuron(1088, 520, 1.05, MID)
+    neuron(1230, 640, 1.0, DEEP)
+    neuron(1100, 720, 0.95, MID)
+    # ONE terracotta accent on the upper-right golden point.
+    gx, gy = int(0.618 * W), int(0.382 * H)
+    _cell(d, gx, gy, 152, TERR, nucleus=TERR_L, outline=TERR)
 
     for cx, cy, rad, col in (
         (980, 280, 16, MINT), (1320, 300, 15, MID), (1340, 620, 16, DEEP),

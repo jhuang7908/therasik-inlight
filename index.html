@@ -10,10 +10,10 @@ img{max-width:100%}
 [hidden]{display:none!important}
 </style>
 <title>前沿追踪 - 中文生物医药前沿资讯</title>
-<meta name="description" content="中文生物医药前沿资讯，每周整理九个领域的研究进展与商业化动态。类器官、AI药物设计、肿瘤免疫、细胞治疗、疫苗、自身免疫病、小核酸与LNP、动物模型、抗体工程。">
+<meta name="description" content="中文生物医药前沿资讯，每周整理九个领域的研究进展与商业化动态。类器官、动物模型、AI药物设计、肿瘤免疫与细胞治疗、自身免疫与移植免疫、疫苗与感染免疫、抗体工程、核酸与基因治疗、精准肿瘤。">
 <meta name="author" content="TheraSik · 启曜生科 / 前沿追踪">
 <meta property="og:title" content="前沿追踪 - 中文生物医药前沿资讯">
-<meta property="og:description" content="每周整理九个领域的研究进展与商业化动态：类器官、AI药物设计、肿瘤免疫、细胞治疗、疫苗、自身免疫病、小核酸与LNP、动物模型、抗体工程。">
+<meta property="og:description" content="每周整理九个领域的研究进展与商业化动态：类器官、动物模型、AI药物设计、肿瘤免疫与细胞治疗、自身免疫与移植免疫、疫苗与感染免疫、抗体工程、核酸与基因治疗、精准肿瘤。">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://inlight.therasik.com/">
 <meta property="og:image" content="https://inlight.therasik.com/img/og-image.png">
@@ -107,6 +107,8 @@ nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:color-
 .card.soon .go{color:var(--muted)}
 .tags{display:flex;flex-wrap:wrap;gap:5px}
 .tag{font-size:10.5px;padding:0 7px;border-radius:999px;border:1px solid var(--tc);color:var(--tc)}
+.rfchip{font-size:10px;padding:0 6px;border-radius:999px;border:1px solid var(--tc);color:var(--tc);opacity:.92;font-weight:600}
+.card .rfrow{display:flex;flex-wrap:wrap;gap:4px;margin-top:2px}
 
 /* 九个领域排成 3×3 九宫格，正好填满 */
 .fieldlist{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -595,7 +597,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 
 <!-- ============ FIELDS ============ -->
 <div class="wrap view" id="v-fields" hidden>
-  <header class="hero"><h1>九个领域</h1><p>近半年的文献，每个领域至少四篇，点「详情」看中文介绍和原文链接。一篇常常同时挂在几个领域下，只写一次。标「二手核实」的是原刊页面打不开、靠新闻稿和机构库交叉核对的，已在卡片里写明。</p></header>
+  <header class="hero"><h1>九个领域</h1><p>近半年的文献，每篇只归入一个主领域。相关领域用卡片上的小标签标出，不重复计数。标「二手核实」的是原刊页面打不开、靠新闻稿和机构库交叉核对的，已在卡片里写明。</p></header>
   <div id="fieldsections"></div>
 </div>
 
@@ -675,7 +677,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 
   <section class="panel">
     <h2>每周更新什么</h2>
-    <p>九个领域：类器官、AI 药物设计、肿瘤免疫、细胞治疗、疫苗、自身免疫疾病、小核酸与 LNP、动物模型、抗体工程。一篇文章常常同时属于好几个，所以标签是多选的，不硬塞进一个栏目。</p>
+    <p>九个领域：类器官、动物模型、AI 药物设计、肿瘤免疫与细胞治疗、自身免疫与移植免疫、疫苗与感染免疫、抗体工程、核酸与基因治疗（含 LNP 递送）、精准肿瘤与临床转化。每篇只进一个主领域栏目；其它相关领域用小标签标出。不属于九个领域的条目不展示。</p>
     <p>每篇解读是一张示意图加一千字以内的评述。示意图由 AI 生成（gpt-image-1），依据论文流程绘制，不是期刊原图，也不代表分子比例。评述分四节写，背景、发现、机制、意义和局限。末尾给作者单位和完整引文，方便你直接去查原文。</p>
     <p>交易那边记六类：收购、授权、NewCo、临床进展、投资融资、监管政策。金额按首付和里程碑分开写，有多少写多少，来源都挂链接。中国公司出海的授权这两年最多，这一类会盯得紧一些。</p>
   </section>
@@ -997,6 +999,17 @@ function escHtml(s){
 function fieldKey(k){
   return /^[fc][1-9]$/.test(String(k||''))?String(k):'f1';
 }
+const LEGACY_TO_F={c1:'f1',c2:'f3',c3:'f4',c4:'f5',c5:'f2',c6:'f7',c7:'f4',c8:'f6',c9:'f8'};
+function isVisibleArticle(a){
+  if(!a||a.excluded) return false;
+  const f=String(a.f||'');
+  return f!=='none' && f!=='null' && /^[fc][1-9]$/.test(f);
+}
+function primaryField(a){
+  if(!isVisibleArticle(a)) return '';
+  const f=String(a.f);
+  return /^f[1-9]$/.test(f)?f:(LEGACY_TO_F[f]||f);
+}
 function escUrl(u){
   const s=String(u==null?'':u).trim();
   try{
@@ -1158,7 +1171,7 @@ function arcRow(a){
     <span class="atags">${(a.tags||[]).slice(0,2).map(t=>`<span class="tag" style="--tc:var(--${t})">${FNAMES[t]||''}</span>`).join('')}</span>
     <span class="asrc">${escHtml(a.j)}</span></a>`;
 }
-function artsOf(k){return CAT.filter(a=>a.tags.includes(k))}
+function artsOf(k){return CAT.filter(a=>isVisibleArticle(a)&&primaryField(a)===k)}
 document.querySelectorAll('.tabs .chip').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('.tabs .chip').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
   document.getElementById('tab-latest').hidden = b.dataset.tab!=='latest';
@@ -1315,9 +1328,10 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Escape'&&activePanel) closeDetailsPanel(true);
 });
 function repaintCatalog(){
-  document.getElementById('latestgrid').innerHTML=CAT.slice(0,8).map((a,i)=>catCard(a,'l'+i)).join('');
+  const visible=CAT.filter(isVisibleArticle);
+  document.getElementById('latestgrid').innerHTML=visible.slice(0,8).map((a,i)=>catCard(a,'l'+i)).join('');
   const byMonth={};
-  CAT.forEach(a=>{if(!a.ds)return; const k=a.ds.slice(0,7);(byMonth[k]=byMonth[k]||[]).push(a)});
+  visible.forEach(a=>{if(!a.ds)return; const k=a.ds.slice(0,7);(byMonth[k]=byMonth[k]||[]).push(a)});
   document.getElementById('archivelist').innerHTML=Object.keys(byMonth).sort().reverse().map(k=>{
     const [y,m]=k.split('-');
     return `<section style="margin-bottom:26px">
@@ -1341,8 +1355,8 @@ function repaintCatalog(){
   renderTracker();
   renderChips();
   lgHtml=document.getElementById('latestgrid').innerHTML;
-  const deepCount=CAT.filter(a=>a.deep).length;
-  const surveyCount=CAT.length-deepCount;
+  const deepCount=visible.filter(a=>a.deep).length;
+  const surveyCount=visible.length-deepCount;
   const hd=document.getElementById('hb-deep'), hs=document.getElementById('hb-survey'), hb=document.getElementById('hb-deals');
   if(hd)hd.textContent=deepCount;
   if(hs)hs.textContent=surveyCount;
@@ -1413,7 +1427,7 @@ function route(){
 }
 function mergeWeekly(data){
   const ids=new Set(CAT.map(a=>a.id));
-  const fresh=(data.articles||[]).filter(a=>a&&a.id&&a.t&&a.url&&!ids.has(a.id));
+  const fresh=(data.articles||[]).filter(a=>a&&a.id&&a.t&&a.url&&!ids.has(a.id)&&isVisibleArticle(a));
   fresh.forEach(a=>{
     if(!Array.isArray(a.tags)||!a.tags.length) a.tags=a.f?[a.f]:[];
     if(!a.disp&&a.ds) a.disp=a.ds.slice(0,7).replace('-','.');

@@ -36,6 +36,9 @@ try:
     from inlight_fields import (
         FIELD_PROMPT_RULES as NEW_FIELD_PROMPT_RULES,
         FIELDS as NEW_FIELDS,
+        classify_draft_articles,
+        claude_create_kwargs,
+        is_visible,
         site_classification_fields,
     )
     FIELD_MODULE_AVAILABLE = True
@@ -55,6 +58,14 @@ except ImportError:
     NEW_FIELD_PROMPT_RULES = "领域 field 只能是：" + ", ".join(NEW_FIELDS)
     def site_classification_fields(item):
         return {"f": item.get("field")}
+    def classify_draft_articles(articles, *args, **kwargs):
+        return articles
+    def claude_create_kwargs(**kwargs):
+        kwargs.pop("temperature", None)
+        return kwargs
+    def is_visible(article):
+        field = article.get("f") or article.get("field")
+        return bool(field) and field != "none" and not article.get("excluded")
 
 ROOT = Path(__file__).resolve().parent
 FIELDS = {
@@ -165,13 +176,16 @@ def check_anthropic_model() -> str:
     
     try:
         client = Anthropic()
-        client.messages.create(
+        create_kwargs = dict(
             model=model,
             max_tokens=50,
             tools=[test_tool],
             tool_choice={"type": "auto"},
             messages=[{"role": "user", "content": "Call test_tool with ok=true"}],
         )
+        if FIELD_MODULE_AVAILABLE:
+            create_kwargs = claude_create_kwargs(**create_kwargs)
+        client.messages.create(**create_kwargs)
         logging.info("模型 %s 可用（tool_choice=auto 测试通过）", model)
         return model
     except NotFoundError:
@@ -976,13 +990,26 @@ def site_article(item: dict, image_rel: str) -> dict:
         result["rf"] = [r for r in item["related_fields"] if r and r != item.get("field")]
         primary = item.get("field")
         result["tags"] = ([primary] if primary else []) + list(result["rf"])
-    if FIELD_MODULE_AVAILABLE and str(item.get("field") or "").startswith("f"):
+    field = str(item.get("field") or "")
+    use_new_taxonomy = FIELD_MODULE_AVAILABLE and (
+        field.startswith("f")
+        or field in ("none", "")
+        or item.get("excluded")
+        or str(item.get("primary_field") or "").startswith("f")
+    )
+    if use_new_taxonomy:
         extra = site_classification_fields(item)
-        if extra.get("f"):
+        if extra.get("excluded") or not extra.get("f"):
+            result.update(extra)
+            result["f"] = extra.get("f")
+            result["tags"] = []
+        elif extra.get("f"):
             result.update(extra)
             if result.get("rf"):
                 primary = result.get("f")
                 result["tags"] = [primary, *result["rf"]] if primary else list(result["rf"])
+            elif extra.get("f"):
+                result["tags"] = [extra["f"]]
     
     # Include new format fields if present
     if item.get("tier"):
@@ -1118,6 +1145,9 @@ def write_output(draft: dict, dest: Path, week: str) -> None:
 
     prior_hashes: list = []
     for index, item in enumerate(incoming, start=1):
+        if item.get("excluded") or item.get("field") in ("none", None, ""):
+            logging.info("隐藏领域外文章（不展示）：%s", item.get("title") or item.get("url"))
+            continue
         filename = f"a{index}.png"
         rel = ""
         if item.get("skip_mechanism_figure") is True:
@@ -1157,6 +1187,9 @@ def write_output(draft: dict, dest: Path, week: str) -> None:
                     dest_img.unlink()
         try:
             art = site_article(item, rel)
+            if not is_visible(art):
+                logging.info("隐藏领域外文章（不展示）：%s", item.get("title") or art.get("id"))
+                continue
             art["lead"] = item.get("lead", "")
             art["body"] = item.get("body", "")
             art["discuss"] = item.get("discuss", "")
