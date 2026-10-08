@@ -85,6 +85,24 @@ python publish_wechat.py --week 2026-10-07
 - Claude：使用 tool_use 模式返回结构化 JSON，避免解析错误
 - 图像生成：使用 gpt-image-1，提示词强调 BioRender 风格、无文字无标签
 
+## 静态文章页面（社交分享）
+
+生成带 Open Graph 标签的静态 HTML 页面，便于社交媒体分享时显示正确的标题、摘要和缩略图：
+
+```bash
+python build_pages.py          # 写入 pages/article/*.html
+python build_pages.py --dry-run  # 预览，不写文件
+```
+
+每篇文章会生成一个对应的 HTML 页面：
+- 包含 og:title、og:description、og:image 等 Open Graph 标签
+- 包含 Twitter Card 标签
+- 访问时自动跳转到主站对应的文章 hash 路由
+
+页面会检测 `img/{article-id}.webp`，如果存在则使用文章配图作为 og:image，否则使用默认图片。
+
+分享链接格式：`https://inlight.therasik.com/pages/article/{article-id}.html`
+
 ## 出错时看哪里
 
 日志在 `logs/`。
