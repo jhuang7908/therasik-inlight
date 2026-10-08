@@ -2479,6 +2479,286 @@ class TestDefinedTermsDecideParties:
         assert deal is not None
         assert "harbor" in deal["counterparty"].lower()
 
+    def test_letter_agreement_amending_existing_collaboration_is_dropped(self):
+        filing = (
+            "Kestrel Rx, Inc. (the \"Company\") entered into a letter agreement "
+            "amending the existing Collaboration Agreement with Harbor Bio AG "
+            "(the \"Letter Agreement\"). Pursuant to the Letter Agreement, the "
+            "Company granted Harbor Bio AG an exclusive license. Harbor will "
+            "pay the Company a $20 million upfront payment."
+        )
+        assert sec_deals.is_amendment_language("amending")
+        assert sec_deals.is_amendment_language(
+            "a letter agreement amending an existing collaboration"
+        )
+        assert sec_deals.out_of_scope_deal_reason(
+            "the Company granted Harbor Bio AG an exclusive license",
+            filing, filing_date="2026-10-05",
+        ) == "amendment"
+        deal = sec_deals.process_sec_deal(
+            filing_text=filing,
+            filer_name="Kestrel Rx, Inc.",
+            filing_url="https://test",
+            filing_date="2026-10-05",
+            event_date="2026-10-01",
+            claude_response={
+                "deal_type": "license_collaboration",
+                "counterparty_name": "Harbor Bio AG",
+                "type_quote": "the Company granted Harbor Bio AG an exclusive license",
+                "counterparty_quote": "Collaboration Agreement with Harbor Bio AG",
+                "amounts": [{"kind": "upfront", "quote": "a $20 million upfront payment"}],
+            },
+        )
+        assert deal is None
+
+    def test_addendum_to_existing_licence_is_dropped(self):
+        filing = (
+            "Kestrel Rx, Inc. (the \"Company\") entered into an addendum to "
+            "the existing Licence Agreement with Harbor Bio AG "
+            "(the \"Addendum\"). Pursuant to the Addendum, the Company "
+            "granted Harbor Bio AG an exclusive licence. Harbor will pay "
+            "the Company a $12 million upfront payment."
+        )
+        assert sec_deals.is_amendment_language("addendum")
+        deal = sec_deals.process_sec_deal(
+            filing_text=filing,
+            filer_name="Kestrel Rx, Inc.",
+            filing_url="https://test",
+            filing_date="2026-10-05",
+            event_date="2026-10-01",
+            claude_response={
+                "deal_type": "license_collaboration",
+                "counterparty_name": "Harbor Bio AG",
+                "type_quote": "the Company granted Harbor Bio AG an exclusive licence",
+                "counterparty_quote": "Licence Agreement with Harbor Bio AG",
+                "amounts": [{"kind": "upfront", "quote": "a $12 million upfront payment"}],
+            },
+        )
+        assert deal is None
+
+    def test_expansion_agreement_expanding_existing_is_dropped(self):
+        filing = (
+            "Kestrel Rx, Inc. (the \"Company\") entered into an Expansion "
+            "Agreement expanding the existing Collaboration Agreement with "
+            "Harbor Bio AG (the \"Expansion Agreement\"). Pursuant to the "
+            "Expansion Agreement, the Company granted Harbor Bio AG an "
+            "exclusive license. Harbor will pay the Company a $8 million "
+            "upfront payment."
+        )
+        assert sec_deals.is_amendment_language("expansion")
+        assert sec_deals.is_amendment_language("expanding")
+        deal = sec_deals.process_sec_deal(
+            filing_text=filing,
+            filer_name="Kestrel Rx, Inc.",
+            filing_url="https://test",
+            filing_date="2026-10-05",
+            event_date="2026-10-01",
+            claude_response={
+                "deal_type": "license_collaboration",
+                "counterparty_name": "Harbor Bio AG",
+                "type_quote": "the Company granted Harbor Bio AG an exclusive license",
+                "counterparty_quote": "Collaboration Agreement with Harbor Bio AG",
+                "amounts": [{"kind": "upfront", "quote": "a $8 million upfront payment"}],
+            },
+        )
+        assert deal is None
+
+    def test_modification_extension_supplemental_wording_is_dropped(self):
+        for title, verb, word in (
+            ("Modification Agreement", "modifying", "modification"),
+            ("Extension Agreement", "extending", "extension"),
+            ("Supplemental Agreement", "supplementing", "supplemental"),
+        ):
+            assert sec_deals.is_amendment_language(word), word
+            filing = (
+                f"Kestrel Rx, Inc. (the \"Company\") entered into a {title} "
+                f"{verb} the existing License Agreement with Harbor Bio AG "
+                f"(the \"{title}\"). Pursuant to the {title}, the Company "
+                "granted Harbor Bio AG an exclusive license. Harbor will pay "
+                "the Company a $5 million upfront payment."
+            )
+            deal = sec_deals.process_sec_deal(
+                filing_text=filing,
+                filer_name="Kestrel Rx, Inc.",
+                filing_url="https://test",
+                filing_date="2026-10-05",
+                event_date="2026-10-01",
+                claude_response={
+                    "deal_type": "license_collaboration",
+                    "counterparty_name": "Harbor Bio AG",
+                    "type_quote": "the Company granted Harbor Bio AG an exclusive license",
+                    "counterparty_quote": "License Agreement with Harbor Bio AG",
+                    "amounts": [{"kind": "upfront", "quote": "a $5 million upfront payment"}],
+                },
+            )
+            assert deal is None, title
+
+    def test_governance_of_parent_is_never_the_party_name(self):
+        cases = [
+            'The Board of Directors of Osprey Pharma Inc. ("Parent")',
+            'the Shareholders of Osprey Pharma Inc. ("Parent")',
+            'the Stockholders of Osprey Pharma Inc. ("Parent")',
+            'Chief Executive Officer of Osprey Pharma Inc. ("Parent")',
+            'the Chairman of Osprey Pharma Inc. ("Parent")',
+            'the President of Osprey Pharma Inc. ("Parent")',
+            'the Members of Osprey Pharma Inc. ("Parent")',
+            'the Directors of Osprey Pharma Inc. ("Parent")',
+            'Officer of Osprey Pharma Inc. ("Parent")',
+            'the Trustees of Osprey Pharma Inc. ("Parent")',
+        ]
+        forbidden = (
+            "board", "director", "shareholder", "stockholder", "officer",
+            "chairman", "president", "member", "trustee",
+        )
+        for text in cases:
+            names = sec_deals.parse_defined_terms(text).get("parent", [])
+            assert names, text
+            blob = " ".join(names).lower()
+            assert "osprey" in blob, names
+            for word in forbidden:
+                assert word not in blob, f"{word!r} leaked from {text}: {names}"
+            assert not any(
+                sec_deals._name_has_governance_leak(n) for n in names
+            ), names
+
+        filing = (
+            "The Board of Directors of Osprey Pharma Inc. (\"Parent\") agreed "
+            "that Parent will acquire Kestrel Rx, Inc. (the \"Company\") for "
+            "$400 million."
+        )
+        for claimed in (
+            "Board of Directors of Osprey Pharma Inc.",
+            "Shareholders of Osprey Pharma Inc.",
+            "Parent",
+        ):
+            deal = sec_deals.process_sec_deal(
+                filing_text=filing,
+                filer_name="Kestrel Rx, Inc.",
+                filing_url="https://test",
+                filing_date="2026-10-05",
+                event_date="2026-10-01",
+                claude_response={
+                    "deal_type": "acquisition",
+                    "counterparty_name": claimed,
+                    "type_quote": "Parent will acquire Kestrel Rx, Inc. (the \"Company\") for $400 million",
+                    "counterparty_quote": "The Board of Directors of Osprey Pharma Inc. (\"Parent\")",
+                    "amounts": [{"kind": "purchase_price", "quote": "for $400 million"}],
+                },
+            )
+            if deal is None:
+                continue
+            cp = deal["counterparty"].lower()
+            assert "osprey" in cp
+            assert "board" not in cp
+            assert "director" not in cp
+            assert "shareholder" not in cp
+            title = deal["title"].lower()
+            assert "board" not in title
+            assert "director" not in title
+            assert "shareholder" not in title
+
+    def test_board_of_trustees_of_university_is_kept(self):
+        uni = 'the Board of Trustees of Example State University ("Licensor")'
+        names = sec_deals.parse_defined_terms(uni).get("licensor", [])
+        assert any(
+            "board of trustees" in n.lower() and "university" in n.lower()
+            for n in names
+        ), names
+        other = 'Board of Trustees of the University of Exampleland ("Parent")'
+        names = sec_deals.parse_defined_terms(other).get("parent", [])
+        assert any(
+            "trustees" in n.lower() and "university" in n.lower()
+            for n in names
+        ), names
+
+    def test_agreement_title_heading_is_not_part_of_party_name(self):
+        texts = [
+            'Agreement and Plan of Merger\nOsprey Pharma Inc. ("Parent")',
+            'AGREEMENT AND PLAN OF MERGER\nOsprey Pharma Inc., a Delaware corporation ("Parent")',
+            'Agreement and Plan of Merger Osprey Pharma Inc. ("Parent")',
+        ]
+        for text in texts:
+            names = sec_deals.parse_defined_terms(text).get("parent", [])
+            assert names, text
+            blob = " ".join(names).lower()
+            assert "osprey" in blob, names
+            assert "agreement" not in blob, names
+            assert "plan of merger" not in blob, names
+            assert "merger" not in blob, names
+
+    def test_exhibit_index_ar_does_not_historicize_new_license(self):
+        filing = (
+            "Item 9.01 Financial Statements and Exhibits.\n"
+            "Exhibit Index\n"
+            "10.1  Amended and Restated License Agreement dated January 5, 2017\n"
+            "10.2  Amendment No. 1 to Collaboration Agreement dated March 3, 2018\n"
+            "\n"
+            "Item 1.01 Entry into a Material Definitive Agreement.\n"
+            "Kestrel Rx, Inc. (the \"Company\") entered into a License "
+            "Agreement with Harbor Bio AG (the \"License Agreement\"). "
+            "Pursuant to the License Agreement, the Company granted Harbor "
+            "Bio AG an exclusive license. Harbor will pay the Company a $20 "
+            "million upfront payment."
+        )
+        quote = (
+            "Pursuant to the License Agreement, the Company granted Harbor "
+            "Bio AG an exclusive license"
+        )
+        assert sec_deals.is_historical_agreement(quote, "2026-10-05", filing) is False
+        assert sec_deals._agreement_date_from_filing(quote, filing) is None
+        assert sec_deals.out_of_scope_deal_reason(
+            quote, filing, filing_date="2026-10-05",
+        ) is None
+        deal = sec_deals.process_sec_deal(
+            filing_text=filing,
+            filer_name="Kestrel Rx, Inc.",
+            filing_url="https://test",
+            filing_date="2026-10-05",
+            event_date="2026-10-01",
+            claude_response={
+                "deal_type": "license_collaboration",
+                "counterparty_name": "Harbor Bio AG",
+                "type_quote": quote,
+                "counterparty_quote": "License Agreement with Harbor Bio AG",
+                "amounts": [{"kind": "upfront", "quote": "a $20 million upfront payment"}],
+            },
+        )
+        assert deal is not None
+        assert "harbor" in deal["counterparty"].lower()
+
+    def test_new_license_plus_unrelated_amendment_still_publishes(self):
+        filing = (
+            "Kestrel Rx, Inc. (the \"Company\") entered into a License "
+            "Agreement with Harbor Bio AG (the \"License Agreement\"). "
+            "Pursuant to the License Agreement, the Company granted Harbor "
+            "Bio AG an exclusive license. Harbor will pay the Company a $20 "
+            "million upfront payment. Separately, the Company entered into "
+            "an Amendment to the Collaboration Agreement with Pine Bio Ltd "
+            "dated June 1, 2019."
+        )
+        quote = "the Company granted Harbor Bio AG an exclusive license"
+        assert sec_deals.is_historical_agreement(quote, "2026-10-05", filing) is False
+        assert sec_deals.out_of_scope_deal_reason(
+            quote, filing, filing_date="2026-10-05",
+        ) is None
+        deal = sec_deals.process_sec_deal(
+            filing_text=filing,
+            filer_name="Kestrel Rx, Inc.",
+            filing_url="https://test",
+            filing_date="2026-10-05",
+            event_date="2026-10-01",
+            claude_response={
+                "deal_type": "license_collaboration",
+                "counterparty_name": "Harbor Bio AG",
+                "type_quote": quote,
+                "counterparty_quote": "License Agreement with Harbor Bio AG",
+                "amounts": [{"kind": "upfront", "quote": "a $20 million upfront payment"}],
+            },
+        )
+        assert deal is not None
+        assert "harbor" in deal["counterparty"].lower()
+        assert "pine" not in deal["counterparty"].lower()
+
 
 class TestEquityNeverADealPayment:
     def test_private_placement_not_upfront(self):
