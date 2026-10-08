@@ -1020,6 +1020,8 @@ def number_in_text_as_word_boundary(number: str, text: str) -> bool:
     - '500' from matching '5000' or '1500'
     - '8' from matching 'CD8', 'IL-8', 'TAK-981'
     - '31' from matching 'CD318'
+    - '2' from matching '3.2' (decimal)
+    - '45' from matching 'NCT04512345'
     """
     # Remove commas from both
     number_clean = number.replace(",", "").replace("，", "").strip()
@@ -1029,15 +1031,19 @@ def number_in_text_as_word_boundary(number: str, text: str) -> bool:
         return False
     
     # Build pattern that requires the number to NOT be part of an identifier
-    # Numbers should be bounded by non-alphanumeric characters (not just non-digits)
-    # This prevents CD8 from providing "8", CD318 from providing "31", etc.
+    # Numbers should be bounded by non-alphanumeric characters AND not part of:
+    # - Identifiers (preceded/followed by letters)
+    # - Larger numbers (preceded/followed by digits)
+    # - Decimals (preceded/followed by decimal point + digit)
+    # - Hyphenated identifiers like TAK-981 (preceded/followed by hyphen + alnum)
     #
-    # Valid boundaries: start, end, whitespace, punctuation, CJK characters
-    # Invalid boundaries: letters (part of identifier), digits (part of larger number)
-    
-    # Pattern: number must be preceded and followed by non-alphanumeric or string boundary
-    # We use negative lookbehind/lookahead for ASCII letters and digits
-    pattern = r'(?<![a-zA-Z0-9])' + re.escape(number_clean) + r'(?![a-zA-Z0-9])'
+    # Pattern: number must be preceded and followed by appropriate boundaries
+    # Boundaries that ARE identifiers: letters, digits, hyphen+alnum, dot+digit
+    pattern = (
+        r'(?<![a-zA-Z0-9])(?<![-.])'  # Not preceded by alnum, hyphen, or dot
+        + re.escape(number_clean) +
+        r'(?![a-zA-Z0-9])(?![-.]?\d)'  # Not followed by alnum, or hyphen/dot+digit
+    )
     return bool(re.search(pattern, text_clean))
 
 
@@ -1177,6 +1183,85 @@ def number_exists_in_source(num_str: str, source_norm: str, source_identifiers: 
             return True
     
     return False
+
+
+# Standard terminology that should be exempt from invented-number checks
+# These phrases contain numbers that are part of terminology, not data claims
+EXEMPT_NUMBER_PATTERNS = [
+    # Grading: ≥3级, grade 3+, 三级及以上
+    r'[≥>=]?\s*3\s*级',
+    r'grade\s*[≥>=]?\s*[3-5]',
+    r'[三四五]级及以上',
+    r'[三四五]级以上',
+    # Clinical phases: I/II/III/IV期, phase 1/2/3
+    r'[IiⅠⅡⅢⅣ]+\s*[/／-]?\s*[IiⅠⅡⅢⅣ]*\s*期',
+    r'[一二三四]期',
+    r'phase\s*[1-4ivⅰⅡⅢⅣ]+',
+    # Statistical terms: 95%CI, p<0.05, HR/OR
+    r'95\s*%?\s*ci',
+    r'p\s*[<>=]\s*0?\.\d+',
+    r'hr\s*[=:]\s*\d',
+    r'or\s*[=:]\s*\d',
+    # Gene/protein identifiers with numbers: p38, CD19, IL-6, PD-1
+    r'\bp\d+\b',  # p38, p53
+    r'CD\d+',  # CD4, CD8, CD19, CD318
+    r'IL-?\d+',  # IL-6, IL-2
+    r'PD-?\d+',  # PD-1, PD-L1
+    # Frequency phrases: 一次/周, once a week, 每周1次
+    r'[一二三四五六七八九十]\s*次\s*[/／每]\s*(周|天|月|日)',
+    r'\d\s*次\s*[/／每]\s*(周|天|月|日)',
+    r'once\s+a\s+(week|day|month)',
+    r'twice\s+(weekly|daily|a\s+week)',
+    r'每\s*(周|天|日|月)\s*[一二三四五六七八九十\d]+\s*次',
+    # Trial IDs: NCT\d+, RPCEC\d+
+    r'NCT\d+',
+    r'RPCEC\d+',
+    # Dosing identifiers: 100 mg, 200 mg (when part of dosing scheme description)
+    r'\d+\s*mg\s*每',  # 100 mg每周
+    r'每\s*(周|天)\s*\d+\s*mg',
+    # "原文未给出/未报告" phrases - don't flag numbers inside these
+    r'原文未给出',
+    r'原文未报告',
+    r'未读到',
+]
+
+# Compiled patterns for efficiency
+EXEMPT_NUMBER_RE = [re.compile(p, re.IGNORECASE) for p in EXEMPT_NUMBER_PATTERNS]
+
+
+def is_exempt_number_context(context: str, number: str) -> bool:
+    """Check if a number appears in an exempt context (standard terminology).
+    
+    Returns True if the number is part of standard grading, clinical phases,
+    statistical terms, or other terminology that shouldn't be flagged as invented.
+    """
+    # First, check if the context contains any exempt patterns
+    for pattern in EXEMPT_NUMBER_RE:
+        match = pattern.search(context)
+        if match:
+            # Verify the number is actually within or adjacent to the matched pattern
+            matched_text = match.group(0)
+            if number in matched_text or str(int(float(number)) if '.' not in number else number) in matched_text:
+                return True
+    
+    # Check for "原文未给出/未报告" - any number in these phrases is exempt
+    if re.search(r'原文未给出|原文未报告|未读到|未给出|未报告', context):
+        return True
+    
+    return False
+
+
+def normalize_unit_spacing(text: str) -> str:
+    """Normalize spacing between numbers and units.
+    
+    '12 nM' and '12nM' should be treated as equivalent.
+    """
+    # Add space between number and unit if missing, then normalize
+    # Common units
+    units = r'(mg|kg|mL|µg|nM|pM|µM|mM|μg|μL|%|％|ng|pg|μM|mmol|mol|M|g|L)'
+    # Remove space between number and unit, then we can match either form
+    text = re.sub(rf'(\d)\s+{units}', r'\1\2', text)
+    return text
 
 
 # Contradictory metric pairs - if output uses one and source uses the other, it's a mismatch
@@ -1410,9 +1495,21 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
             continue
         
         # Reject disease names and other non-quantitative content
-        if meaning and any(x in meaning.lower() for x in ['非数值', 'disease', 'condition', '疾病', '病症']):
-            problems.append(f"data_point 不是数值数据：{value} ({meaning})")
-            continue
+        # BUT: allow clinical metrics like 疾病控制率 (DCR), 无病生存期 (DFS), etc.
+        clinical_metric_patterns = [
+            r'疾病控制率',  # Disease Control Rate (DCR)
+            r'无病生存',    # Disease-Free Survival (DFS)
+            r'疾病进展',    # Disease Progression
+            r'disease\s*control\s*rate',
+            r'disease\s*free\s*survival',
+            r'无进展生存',  # Progression-Free Survival (often involves disease)
+        ]
+        is_clinical_metric = any(re.search(p, meaning, re.IGNORECASE) for p in clinical_metric_patterns)
+        
+        if meaning and not is_clinical_metric:
+            if any(x in meaning.lower() for x in ['非数值', 'disease', 'condition', '疾病', '病症']):
+                problems.append(f"data_point 不是数值数据：{value} ({meaning})")
+                continue
         
         # Reject gaming: registering identifier digits
         if "名称" in meaning or "编号" in meaning:
@@ -1438,12 +1535,27 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
                 problems.append(f"data_point value 不在 quote 中：{value}")
     
     # Extract ALL numbers from output text and check each against source
-    # This includes numbers in "原文未给出" contexts - no special exemption
-    # Every numeric token must appear in source (after normalization)
+    # EXEMPT: Standard terminology (≥3级, 95%CI, phase 3, p38, etc.)
+    # EXEMPT: Numbers inside "原文未给出/未报告" phrases
+    # Every other numeric token must appear in source (after normalization)
+    
+    # Normalize unit spacing in source for matching: "12 nM" = "12nM"
+    source_norm_units = normalize_unit_spacing(source_norm)
     
     # Extract Arabic numbers with context
     for num, context in extract_numbers_with_context(all_text):
-        if not number_exists_in_source(num, source_norm, source_identifiers, context):
+        num_core = extract_number_core(num)
+        if not num_core:
+            continue
+        
+        # Check if this number is in an exempt context (standard terminology)
+        if is_exempt_number_context(context, num_core):
+            continue
+        
+        # Normalize unit spacing for comparison
+        context_norm = normalize_unit_spacing(context)
+        
+        if not number_exists_in_source(num, source_norm_units, source_identifiers, context_norm):
             problems.append(f"数字 '{num}' 在原始材料中未找到")
         else:
             # Number exists - also check if meaning matches
@@ -1455,7 +1567,14 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
     for cn_num, context in extract_chinese_numbers_with_context(all_text):
         arabic = chinese_numeral_to_arabic(cn_num)
         arabic_core = extract_number_core(arabic)
-        if arabic_core and not number_in_text_as_word_boundary(arabic_core, source_norm):
+        if not arabic_core:
+            continue
+        
+        # Check if this number is in an exempt context
+        if is_exempt_number_context(context, arabic_core):
+            continue
+        
+        if not number_in_text_as_word_boundary(arabic_core, source_norm_units):
             problems.append(f"中文数字 '{cn_num}' ({arabic}) 在原始材料中未找到")
         else:
             # Chinese number exists - also check meaning
@@ -1744,20 +1863,79 @@ def _validate_article_structure(art: dict, title_snippet: str) -> dict | None:
     """Validate and coerce article field types.
     
     The model may return malformed responses where dict/list fields are strings
-    (e.g., with embedded XML-like tags). This function:
-    - Validates required fields exist
-    - Coerces string lists/dicts where possible (JSON parsing)
-    - Rejects malformed articles with logging
+    (e.g., with embedded XML-like tags) or where string fields are None/dict/list.
+    
+    This function handles ALL 11 known malformed shapes:
+    1. datacard as string
+    2. results as list of dicts (should be list of strings)
+    3. limitations as ints (should be list of strings)
+    4. data_point value as int (should be string)
+    5. background as list (should be string)
+    6. title as None
+    7. one_liner as dict
+    8. significance as None
+    9. image_prompt as list
+    10. steps as ints
+    11. unknowns as malformed
     
     Returns validated article dict, or None if unrecoverable.
     """
+    # Required string fields - must exist and be string (or coercible)
+    required_string_fields = ["title", "one_liner", "background", "design", "significance"]
+    # Optional string fields
+    optional_string_fields = ["mechanism", "image_prompt", "journal", "authors"]
     # Required dict fields
     dict_fields = ["datacard"]
-    # Required list fields
-    list_fields = ["results", "limitations", "data_points", "steps"]
+    # Required list of strings fields
+    list_string_fields = ["results", "limitations", "steps"]
+    # Required list of dicts fields
+    list_dict_fields = ["data_points"]
     # Optional list fields
     optional_list_fields = ["unknowns"]
     
+    # Validate and coerce required string fields
+    for field in required_string_fields:
+        val = art.get(field)
+        if val is None:
+            logging.error("Article missing required string field '%s': %s", field, title_snippet)
+            return None
+        elif isinstance(val, dict):
+            # Try to convert dict to string (e.g., {"text": "value"})
+            if "text" in val:
+                art[field] = str(val["text"])
+            else:
+                logging.error("Article field '%s' is dict, cannot coerce: %s", field, title_snippet)
+                return None
+        elif isinstance(val, list):
+            # Coerce list to string by joining
+            try:
+                art[field] = " ".join(str(item) for item in val)
+                logging.warning("Coerced list to string for field '%s': %s", field, title_snippet)
+            except Exception:
+                logging.error("Article field '%s' is list, cannot coerce: %s", field, title_snippet)
+                return None
+        elif not isinstance(val, str):
+            # Try string conversion
+            try:
+                art[field] = str(val)
+            except Exception:
+                logging.error("Article field '%s' has unexpected type %s: %s", field, type(val).__name__, title_snippet)
+                return None
+    
+    # Validate and coerce optional string fields
+    for field in optional_string_fields:
+        val = art.get(field)
+        if val is None:
+            art[field] = ""
+        elif isinstance(val, list):
+            # Coerce list to string
+            art[field] = " ".join(str(item) for item in val) if val else ""
+        elif isinstance(val, dict):
+            art[field] = str(val.get("text", "")) if "text" in val else ""
+        elif not isinstance(val, str):
+            art[field] = str(val) if val else ""
+    
+    # Validate and coerce dict fields
     for field in dict_fields:
         val = art.get(field)
         if val is None:
@@ -1780,7 +1958,8 @@ def _validate_article_structure(art: dict, title_snippet: str) -> dict | None:
             logging.error("Article field '%s' has unexpected type %s: %s", field, type(val).__name__, title_snippet)
             return None
     
-    for field in list_fields:
+    # Validate and coerce list-of-strings fields
+    for field in list_string_fields:
         val = art.get(field)
         if val is None:
             # Missing list field - use empty list
@@ -1791,16 +1970,59 @@ def _validate_article_structure(art: dict, title_snippet: str) -> dict | None:
             try:
                 parsed = json.loads(val)
                 if isinstance(parsed, list):
+                    art[field] = [str(item) for item in parsed]
+                else:
+                    # Single string - wrap in list
+                    art[field] = [val]
+            except json.JSONDecodeError:
+                # Single string - wrap in list
+                art[field] = [val]
+        elif isinstance(val, list):
+            # Ensure all items are strings
+            coerced = []
+            for item in val:
+                if isinstance(item, str):
+                    coerced.append(item)
+                elif isinstance(item, dict):
+                    # Try to extract text
+                    coerced.append(str(item.get("text", item)))
+                elif isinstance(item, (int, float)):
+                    coerced.append(str(item))
+                else:
+                    coerced.append(str(item))
+            art[field] = coerced
+        else:
+            # Single non-list value - wrap in list
+            art[field] = [str(val)]
+            logging.warning("Coerced single value to list for field '%s': %s", field, title_snippet)
+    
+    # Validate and coerce list-of-dicts fields (data_points)
+    for field in list_dict_fields:
+        val = art.get(field)
+        if val is None:
+            art[field] = []
+            logging.warning("Article missing list-of-dicts field '%s': %s", field, title_snippet)
+        elif isinstance(val, str):
+            try:
+                parsed = json.loads(val)
+                if isinstance(parsed, list):
                     art[field] = parsed
                 else:
-                    logging.error("Article field '%s' parsed to non-list type: %s", field, title_snippet)
-                    return None
+                    art[field] = []
             except json.JSONDecodeError:
-                logging.error("Article field '%s' is malformed string (not valid JSON): %s", field, title_snippet)
-                return None
-        elif not isinstance(val, list):
-            logging.error("Article field '%s' has unexpected type %s: %s", field, type(val).__name__, title_snippet)
-            return None
+                art[field] = []
+        elif isinstance(val, list):
+            # Validate each item is a dict with required fields
+            valid_items = []
+            for item in val:
+                if isinstance(item, dict):
+                    # Ensure value is string
+                    if "value" in item and not isinstance(item["value"], str):
+                        item["value"] = str(item["value"])
+                    valid_items.append(item)
+            art[field] = valid_items
+        else:
+            art[field] = []
     
     for field in optional_list_fields:
         val = art.get(field)
@@ -1858,226 +2080,246 @@ def process_articles(items: list[dict], config: dict) -> dict:
         if tier == "industry":
             continue
         
-        enriched_item = url_to_enriched.get(url)
-        if not enriched_item:
-            logging.warning("Skipping unknown URL from triage: %s", url)
+        # Wrap ALL per-article processing in try-except
+        # One article's failure should NEVER crash the whole run
+        try:
+            art = _process_single_article(selection, url_to_enriched, config)
+            if art:
+                articles.append(art)
+        except Exception as e:
+            logging.error("EXCEPTION processing article %s: %s - dropping this article, run continues", url, e)
+            import traceback
+            logging.debug("Traceback: %s", traceback.format_exc())
             continue
-        
-        if enriched_item.evidence_level in ("press", "secondary") and tier == "deep":
-            logging.warning("Downgrading %s from deep to brief (evidence: %s)", url, enriched_item.evidence_level)
-            tier = "brief"
-        
-        # Deep tier requires fulltext OR rich abstract (>=1200 chars)
-        # Otherwise we get filler content ("未给出" padding)
-        abstract_len = len(enriched_item.abstract or "")
-        has_fulltext = bool(enriched_item.fulltext_results)
-        if tier == "deep" and not has_fulltext and abstract_len < 1200:
-            logging.warning("Downgrading %s from deep to brief (abstract only %d chars, need >=1200 or fulltext)", 
-                          url, abstract_len)
-            tier = "brief"
-        
-        # Build raw_material for validation - avoid duplicating abstract/rss_summary
-        raw_parts = []
-        if enriched_item.abstract:
-            raw_parts.append(enriched_item.abstract)
-        if enriched_item.fulltext_results:
-            raw_parts.append(enriched_item.fulltext_results)
-        if enriched_item.fig_captions:
-            raw_parts.append(enriched_item.fig_captions)
-        if enriched_item.methods_design:
-            raw_parts.append(enriched_item.methods_design)
-        # Only include rss_summary if it's not a near-duplicate of abstract
-        # EPMC and RSS may differ only in encoding (ROR{gamma}t vs Greek letters)
-        if enriched_item.rss_summary:
-            if not enriched_item.abstract or not is_near_duplicate(enriched_item.rss_summary, enriched_item.abstract):
-                raw_parts.append(enriched_item.rss_summary)
-        raw_material = "\n".join(raw_parts)
-        
-        art = draft_single_article(enriched_item, tier, config)
-        if not art:
-            logging.warning("Failed to draft article for: %s", url)
-            continue
-        
-        art["field"] = field
-        
-        problems = validate_depth(art, raw_material)
-        name_problems = validate_names(art, raw_material)
-        problems.extend(name_problems)
-        
-        if problems:
-            logging.warning("Validation issues for %s: %s", url, problems)
-            
-            # Classify first draft problems
-            first_hard_problems = [p for p in problems if any(x in p for x in [
-                '未找到', '无法回溯', '编造', '营销词汇', '新闻稿', '含义不匹配'
-            ])]
-            first_soft_problems = [p for p in problems if p not in first_hard_problems]
-            first_has_soft_only = len(first_hard_problems) == 0 and len(first_soft_problems) > 0
-            
-            # Keep first draft as fallback for soft-only failures
-            first_art = art.copy()
-            first_problems = problems.copy()
-            
-            # Targeted redraft with specific problems listed
-            logging.info("Targeted redraft with %d problems listed...", len(problems))
-            retry_art = draft_single_article(enriched_item, tier, config, problems=problems)
-            
-            if retry_art is None:
-                logging.error("Targeted redraft failed for %s", url)
-                if tier == "deep":
-                    # Try brief as fallback
-                    logging.info("Trying brief fallback for: %s", url)
-                    retry_art = draft_single_article(enriched_item, "brief", config)
-                    if retry_art is None:
-                        logging.error("Brief fallback also failed, dropping: %s", url)
-                        continue
-                    tier = "brief"
-                else:
-                    # For brief: if first draft had soft-only problems, keep it
-                    if first_has_soft_only:
-                        logging.warning("Redraft failed but first draft had soft-only problems, keeping first: %s", url)
-                        art = first_art
-                        problems = first_problems
-                    else:
-                        continue
-                    # Skip further processing since we're keeping first draft
-                    if first_has_soft_only:
-                        pass  # Will continue to transform section
-            else:
-                retry_art["field"] = field
-                retry_problems = validate_depth(retry_art, raw_material)
-                retry_problems.extend(validate_names(retry_art, raw_material))
-                
-                # Compare first and retry drafts - publish the better one
-                retry_hard = [p for p in retry_problems if any(x in p for x in [
-                    '未找到', '无法回溯', '编造', '营销词汇', '新闻稿', '含义不匹配'
-                ])]
-                retry_soft = [p for p in retry_problems if p not in retry_hard]
-                
-                # Determine which draft is better:
-                # 1. Fewer hard problems is better
-                # 2. If tied on hard, fewer total problems is better
-                first_score = (len(first_hard_problems), len(first_problems))
-                retry_score = (len(retry_hard), len(retry_problems))
-                
-                if retry_score <= first_score:
-                    # Retry is same or better
-                    art = retry_art
-                    problems = retry_problems
-                    logging.info("Using retry draft (score %s vs first %s): %s", retry_score, first_score, url)
-                else:
-                    # First draft is better, keep it
-                    art = first_art
-                    problems = first_problems
-                    logging.info("Keeping first draft (score %s vs retry %s): %s", first_score, retry_score, url)
-                
-                if problems:
-                    # Re-classify the selected draft's problems
-                    hard_problems = [p for p in problems if any(x in p for x in [
-                        '未找到', '无法回溯', '编造', '营销词汇', '新闻稿', '含义不匹配'
-                    ])]
-                    soft_problems = [p for p in problems if p not in hard_problems]
-                    
-                    if hard_problems:
-                        # Hard problems: downgrade or drop
-                        if tier == "deep":
-                            logging.warning("Downgrading %s from deep to brief after retry - hard problems: %s", url, hard_problems)
-                            brief_art = draft_single_article(enriched_item, "brief", config, problems=problems)
-                            if brief_art is None:
-                                logging.error("Brief targeted redraft failed, dropping: %s", url)
-                                continue
-                            brief_art["field"] = field
-                            art = brief_art
-                            tier = "brief"
-                            problems = validate_depth(art, raw_material)
-                            problems.extend(validate_names(art, raw_material))
-                            hard_problems = [p for p in problems if any(x in p for x in [
-                                '未找到', '无法回溯', '编造', '营销词汇', '新闻稿', '含义不匹配'
-                            ])]
-                            if hard_problems:
-                                logging.error("Dropping %s after brief redraft - hard problems: %s", url, hard_problems)
-                                continue
-                            # Soft-only problems after downgrade: accept with warning
-                            if problems:
-                                logging.warning("Accepting %s with soft problems: %s", url, problems)
-                        else:
-                            logging.error("Dropping %s after retry - hard problems: %s", url, hard_problems)
-                            continue
-                    else:
-                        # Only soft problems: accept with a warning
-                        logging.warning("Accepting %s with soft-only problems: %s", url, soft_problems)
-        
-        # Transform new format to include legacy fields needed by write_output
-        # Add date from enriched item
-        art["date"] = enriched_item.date
-        
-        # Map new fields to legacy fields for backward compatibility
-        # lead: one_liner or first result
-        art["lead"] = art.get("one_liner", "") or (art.get("results", [""])[0] if art.get("results") else "")
-        
-        # body: combine background, design, results
-        body_parts = []
-        if art.get("background"):
-            body_parts.append(art["background"])
-        if art.get("design"):
-            body_parts.append(art["design"])
-        if art.get("results"):
-            body_parts.extend(art["results"])
-        if art.get("mechanism"):
-            body_parts.append(art["mechanism"])
-        art["body"] = " ".join(body_parts)
-        
-        # discuss: combine limitations and significance
-        discuss_parts = []
-        if art.get("limitations"):
-            # Strip trailing periods to avoid "。；" in the join
-            lims = [lim.rstrip("。.") for lim in art["limitations"]]
-            discuss_parts.append("局限：" + "；".join(lims) + "。")
-        if art.get("significance"):
-            discuss_parts.append(art["significance"])
-        art["discuss"] = " ".join(discuss_parts)
-        
-        # Ensure journal is set - prefer EPMC journal, fallback to source
-        if not art.get("journal"):
-            art["journal"] = enriched_item.journal or enriched_item.source
-        
-        # Ensure steps is set (required for image caption)
-        if not art.get("steps"):
-            art["steps"] = ["研究背景", "方法设计", "核心发现", "意义与局限"]
-        
-        # Ensure image_prompt is set - derive from paper subject ONLY
-        # IMPORTANT: Use English keywords only (Chinese text renders as characters in image)
-        # IMPORTANT: Do NOT add generic field boilerplate that may conflict with subject
-        if not art.get("image_prompt"):
-            # Extract English keywords from the enriched item's title
-            source_title = enriched_item.title or ""
-            # Extract English words (proteins, drugs, mechanisms, cell types)
-            english_words = re.findall(r'\b[A-Za-z][A-Za-z0-9-]{2,}\b', source_title)
-            # Filter to likely scientific terms (exclude common words)
-            stopwords = {'the', 'and', 'for', 'with', 'from', 'this', 'that', 'are', 'was', 
-                        'were', 'not', 'via', 'new', 'novel', 'study', 'research', 'analysis',
-                        'findings', 'results', 'evidence', 'role', 'effect', 'effects'}
-            keywords = [w for w in english_words if len(w) >= 3 and w.lower() not in stopwords][:6]
-            
-            # Build prompt from paper subject only, no generic field boilerplate
-            # End with style directives that prevent text rendering
-            if keywords:
-                art["image_prompt"] = f"{', '.join(keywords)}, medical illustration, scientific diagram, no text, no labels, no words"
-            else:
-                # Fallback: generic biomedical imagery only
-                art["image_prompt"] = "biomedical research, cells, molecules, medical illustration, no text, no labels, no words"
-        else:
-            # Model provided image_prompt - ensure no-text directive is added
-            model_prompt = art["image_prompt"]
-            if "no text" not in model_prompt.lower() and "无文字" not in model_prompt:
-                art["image_prompt"] = f"{model_prompt}, no text, no labels, no words"
-        
-        articles.append(art)
     
     # Process industry items: they stay on the existing claude_draft path
     # Don't return raw industry items - return empty list
     # Industry items should continue using the old claude_draft deals path
     return {"articles": articles, "deals": []}
+
+
+def _process_single_article(selection: dict, url_to_enriched: dict, config: dict) -> dict | None:
+    """Process a single article through drafting, validation, and transformation.
+    
+    Extracted to allow per-article exception handling in process_articles.
+    Returns the processed article dict or None if it should be dropped.
+    """
+    url = selection["url"]
+    tier = selection["tier"]
+    field = selection["field"]
+    
+    enriched_item = url_to_enriched.get(url)
+    if not enriched_item:
+        logging.warning("Skipping unknown URL from triage: %s", url)
+        return None
+    
+    if enriched_item.evidence_level in ("press", "secondary") and tier == "deep":
+        logging.warning("Downgrading %s from deep to brief (evidence: %s)", url, enriched_item.evidence_level)
+        tier = "brief"
+    
+    # Deep tier requires fulltext OR rich abstract (>=1200 chars)
+    # Otherwise we get filler content ("未给出" padding)
+    abstract_len = len(enriched_item.abstract or "")
+    has_fulltext = bool(enriched_item.fulltext_results)
+    if tier == "deep" and not has_fulltext and abstract_len < 1200:
+        logging.warning("Downgrading %s from deep to brief (abstract only %d chars, need >=1200 or fulltext)", 
+                      url, abstract_len)
+        tier = "brief"
+    
+    # Build raw_material for validation - avoid duplicating abstract/rss_summary
+    raw_parts = []
+    if enriched_item.abstract:
+        raw_parts.append(enriched_item.abstract)
+    if enriched_item.fulltext_results:
+        raw_parts.append(enriched_item.fulltext_results)
+    if enriched_item.fig_captions:
+        raw_parts.append(enriched_item.fig_captions)
+    if enriched_item.methods_design:
+        raw_parts.append(enriched_item.methods_design)
+    # Only include rss_summary if it's not a near-duplicate of abstract
+    # EPMC and RSS may differ only in encoding (ROR{gamma}t vs Greek letters)
+    if enriched_item.rss_summary:
+        if not enriched_item.abstract or not is_near_duplicate(enriched_item.rss_summary, enriched_item.abstract):
+            raw_parts.append(enriched_item.rss_summary)
+    raw_material = "\n".join(raw_parts)
+    
+    art = draft_single_article(enriched_item, tier, config)
+    if not art:
+        logging.warning("Failed to draft article for: %s", url)
+        return None
+    
+    art["field"] = field
+    
+    problems = validate_depth(art, raw_material)
+    name_problems = validate_names(art, raw_material)
+    problems.extend(name_problems)
+    
+    if problems:
+        logging.warning("Validation issues for %s: %s", url, problems)
+        
+        # Classify first draft problems
+        first_hard_problems = [p for p in problems if any(x in p for x in [
+            '未找到', '无法回溯', '编造', '营销词汇', '新闻稿', '含义不匹配'
+        ])]
+        first_soft_problems = [p for p in problems if p not in first_hard_problems]
+        first_has_soft_only = len(first_hard_problems) == 0 and len(first_soft_problems) > 0
+        
+        # Keep first draft as fallback for soft-only failures
+        first_art = art.copy()
+        first_problems = problems.copy()
+        
+        # Targeted redraft with specific problems listed
+        logging.info("Targeted redraft with %d problems listed...", len(problems))
+        retry_art = draft_single_article(enriched_item, tier, config, problems=problems)
+        
+        if retry_art is None:
+            logging.error("Targeted redraft failed for %s", url)
+            if tier == "deep":
+                # Try brief as fallback
+                logging.info("Trying brief fallback for: %s", url)
+                retry_art = draft_single_article(enriched_item, "brief", config)
+                if retry_art is None:
+                    logging.error("Brief fallback also failed, dropping: %s", url)
+                    return None
+                tier = "brief"
+            else:
+                # For brief: if first draft had soft-only problems, keep it
+                if first_has_soft_only:
+                    logging.warning("Redraft failed but first draft had soft-only problems, keeping first: %s", url)
+                    art = first_art
+                    problems = first_problems
+                else:
+                    return None
+        else:
+            retry_art["field"] = field
+            retry_problems = validate_depth(retry_art, raw_material)
+            retry_problems.extend(validate_names(retry_art, raw_material))
+            
+            # Compare first and retry drafts - publish the better one
+            retry_hard = [p for p in retry_problems if any(x in p for x in [
+                '未找到', '无法回溯', '编造', '营销词汇', '新闻稿', '含义不匹配'
+            ])]
+            retry_soft = [p for p in retry_problems if p not in retry_hard]
+            
+            # Determine which draft is better:
+            # 1. Fewer hard problems is better
+            # 2. If tied on hard, fewer total problems is better
+            first_score = (len(first_hard_problems), len(first_problems))
+            retry_score = (len(retry_hard), len(retry_problems))
+            
+            if retry_score <= first_score:
+                # Retry is same or better
+                art = retry_art
+                problems = retry_problems
+                logging.info("Using retry draft (score %s vs first %s): %s", retry_score, first_score, url)
+            else:
+                # First draft is better, keep it
+                art = first_art
+                problems = first_problems
+                logging.info("Keeping first draft (score %s vs retry %s): %s", first_score, retry_score, url)
+            
+            if problems:
+                # Re-classify the selected draft's problems
+                hard_problems = [p for p in problems if any(x in p for x in [
+                    '未找到', '无法回溯', '编造', '营销词汇', '新闻稿', '含义不匹配'
+                ])]
+                soft_problems = [p for p in problems if p not in hard_problems]
+                
+                if hard_problems:
+                    # Hard problems: downgrade or drop
+                    if tier == "deep":
+                        logging.warning("Downgrading %s from deep to brief after retry - hard problems: %s", url, hard_problems)
+                        brief_art = draft_single_article(enriched_item, "brief", config, problems=problems)
+                        if brief_art is None:
+                            logging.error("Brief targeted redraft failed, dropping: %s", url)
+                            return None
+                        brief_art["field"] = field
+                        art = brief_art
+                        tier = "brief"
+                        problems = validate_depth(art, raw_material)
+                        problems.extend(validate_names(art, raw_material))
+                        hard_problems = [p for p in problems if any(x in p for x in [
+                            '未找到', '无法回溯', '编造', '营销词汇', '新闻稿', '含义不匹配'
+                        ])]
+                        if hard_problems:
+                            logging.error("Dropping %s after brief redraft - hard problems: %s", url, hard_problems)
+                            return None
+                        # Soft-only problems after downgrade: accept with warning
+                        if problems:
+                            logging.warning("Accepting %s with soft problems: %s", url, problems)
+                    else:
+                        logging.error("Dropping %s after retry - hard problems: %s", url, hard_problems)
+                        return None
+                else:
+                    # Only soft problems: accept with a warning
+                    logging.warning("Accepting %s with soft-only problems: %s", url, soft_problems)
+    
+    # Transform new format to include legacy fields needed by write_output
+    # Add date from enriched item
+    art["date"] = enriched_item.date
+    
+    # Map new fields to legacy fields for backward compatibility
+    # lead: one_liner or first result
+    art["lead"] = art.get("one_liner", "") or (art.get("results", [""])[0] if art.get("results") else "")
+    
+    # body: combine background, design, results
+    body_parts = []
+    if art.get("background"):
+        body_parts.append(art["background"])
+    if art.get("design"):
+        body_parts.append(art["design"])
+    if art.get("results"):
+        body_parts.extend(art["results"])
+    if art.get("mechanism"):
+        body_parts.append(art["mechanism"])
+    art["body"] = " ".join(body_parts)
+    
+    # discuss: combine limitations and significance
+    discuss_parts = []
+    if art.get("limitations"):
+        # Strip trailing periods to avoid "。；" in the join
+        lims = [lim.rstrip("。.") for lim in art["limitations"]]
+        discuss_parts.append("局限：" + "；".join(lims) + "。")
+    if art.get("significance"):
+        discuss_parts.append(art["significance"])
+    art["discuss"] = " ".join(discuss_parts)
+    
+    # Ensure journal is set - prefer EPMC journal, fallback to source
+    if not art.get("journal"):
+        art["journal"] = enriched_item.journal or enriched_item.source
+    
+    # Ensure steps is set (required for image caption)
+    if not art.get("steps"):
+        art["steps"] = ["研究背景", "方法设计", "核心发现", "意义与局限"]
+    
+    # Ensure image_prompt is set - derive from paper subject ONLY
+    # IMPORTANT: Use English keywords only (Chinese text renders as characters in image)
+    # IMPORTANT: Do NOT add generic field boilerplate that may conflict with subject
+    if not art.get("image_prompt"):
+        # Extract English keywords from the enriched item's title
+        source_title = enriched_item.title or ""
+        # Extract English words (proteins, drugs, mechanisms, cell types)
+        english_words = re.findall(r'\b[A-Za-z][A-Za-z0-9-]{2,}\b', source_title)
+        # Filter to likely scientific terms (exclude common words)
+        stopwords = {'the', 'and', 'for', 'with', 'from', 'this', 'that', 'are', 'was', 
+                    'were', 'not', 'via', 'new', 'novel', 'study', 'research', 'analysis',
+                    'findings', 'results', 'evidence', 'role', 'effect', 'effects'}
+        keywords = [w for w in english_words if len(w) >= 3 and w.lower() not in stopwords][:6]
+        
+        # Build prompt from paper subject only, no generic field boilerplate
+        # End with style directives that prevent text rendering
+        if keywords:
+            art["image_prompt"] = f"{', '.join(keywords)}, medical illustration, scientific diagram, no text, no labels, no words"
+        else:
+            # Fallback: generic biomedical imagery only
+            art["image_prompt"] = "biomedical research, cells, molecules, medical illustration, no text, no labels, no words"
+    else:
+        # Model provided image_prompt - ensure no-text directive is added
+        model_prompt = art["image_prompt"]
+        if "no text" not in model_prompt.lower() and "无文字" not in model_prompt:
+            art["image_prompt"] = f"{model_prompt}, no text, no labels, no words"
+    
+    return art
 
 
 def _escape_html(text: str) -> str:

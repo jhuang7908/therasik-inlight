@@ -1020,6 +1020,70 @@ class TestDataPointValidation(unittest.TestCase):
         # Should NOT reject specific numbers
         value_problems = [p for p in problems if "52" in p or "36" in p]
         self.assertEqual(value_problems, [], f"Should allow specific numbers: {value_problems}")
+    
+    def test_nine_doses_rejected(self):
+        """English word 'nine doses' should be rejected - must use digits."""
+        from inlight_articles import validate_depth
+        
+        art = {
+            "tier": "brief",
+            "title": "测试",
+            "one_liner": "测试",
+            "datacard": {
+                "study_type": "研究",
+                "n": "原文未给出",
+                "control": "无",
+                "intervention": "无",
+                "followup": "无",
+                "primary_endpoint": "测试",
+                "primary_endpoint_result": "测试",
+                "statistics": "无",
+                "safety": "无",
+            },
+            "results": ["结果"],
+            "limitations": ["局限"],
+            "data_points": [
+                {"value": "nine doses", "meaning": "剂量次数", "source_quote": "nine doses were administered"},
+            ],
+        }
+        raw = "nine doses were administered over 9 weeks"
+        problems = validate_depth(art, raw)
+        
+        # Should reject 'nine doses' - no Arabic digits
+        no_digit_problems = [p for p in problems if "数字" in p]
+        self.assertTrue(len(no_digit_problems) > 0, f"Should reject 'nine doses': {problems}")
+    
+    def test_disease_control_rate_not_flagged(self):
+        """'疾病控制率' (DCR) is a metric name, not a disease to be flagged."""
+        from inlight_articles import validate_depth
+        
+        art = {
+            "tier": "brief",
+            "title": "疾病控制率25%",
+            "one_liner": "疾病控制率25%",
+            "datacard": {
+                "study_type": "临床试验",
+                "n": "36例",
+                "control": "无",
+                "intervention": "药物",
+                "followup": "12月",
+                "primary_endpoint": "疾病控制率",
+                "primary_endpoint_result": "25%",
+                "statistics": "无",
+                "safety": "无",
+            },
+            "results": ["疾病控制率为25%"],
+            "limitations": ["局限"],
+            "data_points": [
+                {"value": "25%", "meaning": "疾病控制率", "source_quote": "disease control rate was 25%"},
+            ],
+        }
+        raw = "disease control rate was 25% in this study"
+        problems = validate_depth(art, raw)
+        
+        # Should NOT flag '疾病控制率' as a disease name
+        disease_problems = [p for p in problems if "疾病" in p and "data_point" in p.lower()]
+        self.assertEqual(disease_problems, [], f"Should NOT flag 疾病控制率: {problems}")
 
 
 class TestNumberMeaningMismatch(unittest.TestCase):
@@ -1158,6 +1222,10 @@ class TestMalformedModelResponse(unittest.TestCase):
             "tier": "brief",
             "field": "c3",
             "title": "测试",
+            "one_liner": "这是一个测试",
+            "background": "测试背景",
+            "design": "研究设计",
+            "significance": "研究意义",
             "datacard": {
                 "study_type": "临床试验",
                 "n": "36例",
@@ -1192,6 +1260,10 @@ class TestMalformedModelResponse(unittest.TestCase):
             "tier": "brief",
             "field": "c3",
             "title": "测试",
+            "one_liner": "这是一个测试",
+            "background": "测试背景",
+            "design": "研究设计",
+            "significance": "研究意义",
             "datacard": '{"study_type": "试验", "n": "10"}',  # Valid JSON string
             "results": '["结果1", "结果2"]',  # Valid JSON list string
             "limitations": '["局限1"]',
@@ -1207,14 +1279,22 @@ class TestMalformedModelResponse(unittest.TestCase):
         self.assertEqual(result["results"], ["结果1", "结果2"])
     
     def test_missing_fields_handled(self):
-        """Missing required fields should be initialized, not crash."""
+        """Missing list/dict fields should be initialized, not crash.
+        
+        Required string fields: title, one_liner, background, design, significance
+        This test verifies list/dict coercion for optional fields.
+        """
         from inlight_articles import _validate_article_structure
         
-        # Minimal article missing some fields
+        # Article with required strings but missing list/dict fields
         minimal_art = {
             "url": "https://example.com",
             "tier": "brief",
             "title": "测试",
+            "one_liner": "测试一行",
+            "background": "背景",
+            "design": "设计",
+            "significance": "意义",
         }
         
         result = _validate_article_structure(minimal_art, "test")
