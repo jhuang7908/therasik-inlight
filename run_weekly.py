@@ -70,17 +70,37 @@ FIELDS = {
 }
 DEAL_KINDS = {"acq", "lic", "newco", "clin", "inv", "policy"}
 try:
-    from inlight_qc import IMAGE_PREFIX, IMAGE_SUFFIX, IMAGE_REGEN_LIMIT
+    from inlight_qc import (
+        IMAGE_PREFIX, IMAGE_SUFFIX, IMAGE_REGEN_LIMIT, IMAGE_MODELS,
+        GOLDEN_POS, image_pipeline_ready, reframe_to_card, qc_image,
+        is_publishable_image, write_fallback_cover,
+    )
 except ImportError:
     IMAGE_PREFIX = (
-        "Polished BioRender-style scientific schematic, noticeably THICKER "
-        "dark slate-green outlines, solid-filled terracotta #C0492F occupying "
-        "about 3 to 6 percent of the frame. "
+        "Polished BioRender-style scientific schematic, the quality of a graphical "
+        "abstract or mechanism figure in a Nature or Cell paper. "
     )
     IMAGE_SUFFIX = (
-        " Absolutely no text, no letters, no numbers, no labels, no logos."
+        "Absolutely no text, no letters, no numbers, no labels, no logos."
     )
     IMAGE_REGEN_LIMIT = 2
+    IMAGE_MODELS = ("gpt-image-2", "gpt-image-1")
+    GOLDEN_POS = ("UR", "LL", "LM", "RM", "TM", "BM", "UL", "LR")
+
+    def image_pipeline_ready():
+        return False, "inlight_qc missing"
+
+    def reframe_to_card(src, dest, pos="UR", target=0.72):
+        return {"ok": False}
+
+    def qc_image(path, prior_hashes=None):
+        return {"pass": False, "reasons": ["inlight_qc missing"]}
+
+    def is_publishable_image(path):
+        return False
+
+    def write_fallback_cover(path):
+        return None
 UA = "FrontierDigestWeekly/1.0 (+https://inlight.therasik.com)"
 
 
@@ -813,43 +833,74 @@ steps 必须是 3-5 个简短步骤（每个≤25字），描述论文的核心�
 
 def compose_image_prompt(prompt: str) -> str:
     """Wrap a subject line in the house-style prefix/suffix unless already wrapped."""
-    clean_prompt = sanitize_image_prompt(prompt or "")
     marker = "Polished BioRender-style scientific schematic"
-    if marker in clean_prompt:
-        return clean_prompt
+    if marker in (prompt or ""):
+        return prompt
+    clean_prompt = sanitize_image_prompt(prompt or "")
     return IMAGE_PREFIX + clean_prompt[:1000] + IMAGE_SUFFIX
 
 
-def draw_image(prompt: str, dest: Path) -> None:
+def draw_image(prompt: str, dest: Path, pos: str = "UR", reframe: bool = False) -> None:
     from openai import OpenAI
 
-    model = os.environ.get("OPENAI_IMAGE_MODEL", "gpt-image-1")
+    forced = (os.environ.get("OPENAI_IMAGE_MODEL") or "").strip()
+    models = [forced] if forced else list(IMAGE_MODELS)
+    if "gpt-image-2" not in models:
+        models = ["gpt-image-2", *models]
     full_prompt = compose_image_prompt(prompt)
-    logging.info("画图 %s -> %s", model, dest.name)
-    result = OpenAI().images.generate(
-        model=model,
-        prompt=full_prompt,
-        size="1536x1024",
-        n=1,
-    )
-    raw = result.data[0].b64_json
-    dest.write_bytes(base64.b64decode(raw))
-
-
-def generate_article_image(prompt: str, dest: Path, qc_enabled: bool = True) -> dict:
-    """Generate a house-style figure, QC it, regenerate at most twice, else fallback."""
-    from inlight_qc import qc_image, write_fallback_cover
-
     dest = Path(dest)
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    last_err = None
+    for model in models:
+        logging.info("画图 %s -> %s", model, dest.name)
+        kwargs = dict(model=model, prompt=full_prompt, size="1536x1024", n=1, quality="high")
+        try:
+            result = OpenAI().images.generate(**kwargs, background="opaque")
+        except TypeError:
+            try:
+                result = OpenAI().images.generate(**kwargs)
+            except Exception as exc:
+                last_err = exc
+                continue
+        except Exception as exc:
+            last_err = exc
+            continue
+        dest.write_bytes(base64.b64decode(result.data[0].b64_json))
+        if reframe:
+            reframe_to_card(dest, dest, pos=pos)
+        return
+    raise RuntimeError(f"image generate failed: {last_err}")
+
+
+def generate_article_image(
+    prompt: str,
+    dest: Path,
+    qc_enabled: bool = True,
+    prior_hashes: list | None = None,
+    pos: str = "UR",
+) -> dict:
+    """Generate, reframe, QC. Never publish a 1×1. Skip the figure if QC fails."""
+    dest = Path(dest)
+    ready, why = image_pipeline_ready()
+    if not ready:
+        logging.error("跳过配图（质控依赖未就绪）：%s", why)
+        if dest.exists():
+            dest.unlink()
+        return {
+            "pass": False, "fallback": False, "skipped": True,
+            "attempts": 0, "reasons": [why],
+            "ocr_text": False, "accent_frac": 0.0, "fill_frac": 0.0,
+        }
+
     if not qc_enabled:
-        draw_image(prompt, dest)
+        draw_image(prompt, dest, pos=pos, reframe=False)
         return {"pass": True, "fallback": False, "attempts": 1, "reasons": []}
 
     attempts: list[dict] = []
     for i in range(IMAGE_REGEN_LIMIT + 1):
         try:
-            draw_image(prompt, dest)
-            result = qc_image(str(dest))
+            draw_image(prompt, dest, pos=pos, reframe=True)
+            result = qc_image(str(dest), prior_hashes=prior_hashes)
         except Exception as exc:
             result = {
                 "pass": False,
@@ -859,7 +910,7 @@ def generate_article_image(prompt: str, dest: Path, qc_enabled: bool = True) -> 
                 "reasons": [f"generate error: {type(exc).__name__}"],
             }
         attempts.append(result)
-        if result.get("pass"):
+        if result.get("pass") and is_publishable_image(dest):
             result["attempts"] = i + 1
             result["fallback"] = False
             return result
@@ -867,12 +918,14 @@ def generate_article_image(prompt: str, dest: Path, qc_enabled: bool = True) -> 
             "Image QC failed attempt %d/%d for %s: %s",
             i + 1, IMAGE_REGEN_LIMIT + 1, dest.name, result.get("reasons"),
         )
-    write_fallback_cover(str(dest))
+    if dest.exists():
+        dest.unlink()
     last = attempts[-1] if attempts else {"reasons": ["no image"]}
-    logging.error("Image QC exhausted retries; fallback cover %s", dest.name)
+    logging.error("Image QC exhausted retries; publishing without a figure: %s", dest.name)
     return {
         "pass": False,
-        "fallback": True,
+        "fallback": False,
+        "skipped": True,
         "attempts": len(attempts),
         "reasons": last.get("reasons") or ["qc failed"],
         "ocr_text": last.get("ocr_text", False),
@@ -1056,7 +1109,14 @@ def write_output(draft: dict, dest: Path, week: str) -> None:
         logging.info("本期无发表文章，跳过全部配图")
     elif not need_images:
         logging.info("本期无全文深度解读，跳过全部配图")
+    elif qc_enabled:
+        ready, ready_why = image_pipeline_ready()
+        if not ready:
+            logging.error("质控依赖未就绪，跳过全部配图：%s", ready_why)
+            need_images = False
+            image_qc_log.append({"skipped": True, "reason": ready_why})
 
+    prior_hashes: list = []
     for index, item in enumerate(incoming, start=1):
         filename = f"a{index}.png"
         rel = ""
@@ -1065,25 +1125,36 @@ def write_output(draft: dict, dest: Path, week: str) -> None:
         elif need_images:
             try:
                 dest_img = img_dir / filename
+                pos = GOLDEN_POS[(index - 1) % len(GOLDEN_POS)]
                 if qc_enabled:
-                    qc_img = generate_article_image(item.get("image_prompt", ""), dest_img, True)
+                    qc_img = generate_article_image(
+                        item.get("image_prompt", ""), dest_img, True,
+                        prior_hashes=prior_hashes, pos=pos,
+                    )
                     image_qc_log.append({
                         "title": item.get("title", ""),
                         "url": item.get("url", ""),
                         "file": filename,
                         **{k: qc_img.get(k) for k in (
-                            "pass", "fallback", "attempts", "reasons",
+                            "pass", "fallback", "skipped", "attempts", "reasons",
                             "ocr_text", "accent_frac", "fill_frac",
-                        )},
+                        ) if k in qc_img or k in ("pass", "fallback", "attempts", "reasons")},
                     })
-                    if dest_img.exists():
+                    if qc_img.get("hash"):
+                        prior_hashes.append(qc_img["hash"])
+                    if is_publishable_image(dest_img):
                         rel = f"{dest.relative_to(ROOT).as_posix()}/images/{filename}"
+                    elif dest_img.exists():
+                        dest_img.unlink()
                 else:
                     draw_image(item.get("image_prompt", ""), dest_img)
                     rel = f"{dest.relative_to(ROOT).as_posix()}/images/{filename}"
             except Exception:
                 logging.exception("配图失败：%s", item.get("title", index))
                 rel = ""
+                dest_img = img_dir / filename
+                if qc_enabled and dest_img.exists() and not is_publishable_image(dest_img):
+                    dest_img.unlink()
         try:
             art = site_article(item, rel)
             art["lead"] = item.get("lead", "")
@@ -1112,20 +1183,47 @@ def write_output(draft: dict, dest: Path, week: str) -> None:
         )
         try:
             if qc_enabled:
-                qc_cover = generate_article_image(cover_prompt, cover, True)
-                image_qc_log.append({
+                qc_cover = generate_article_image(
+                    cover_prompt, cover, True, prior_hashes=prior_hashes, pos="UR",
+                )
+                cover_entry = {
                     "title": "wechat-cover",
                     "url": "",
                     "file": "wechat/cover.png",
                     **{k: qc_cover.get(k) for k in (
-                        "pass", "fallback", "attempts", "reasons",
+                        "pass", "fallback", "skipped", "attempts", "reasons",
                         "ocr_text", "accent_frac", "fill_frac",
-                    )},
-                })
+                    ) if k in qc_cover or k in ("pass", "fallback", "attempts", "reasons")},
+                }
+                if not is_publishable_image(cover):
+                    write_fallback_cover(str(cover))
+                    if is_publishable_image(cover):
+                        cover_entry["fallback"] = True
+                        cover_entry["skipped"] = False
+                        cover_entry["reasons"] = list(cover_entry.get("reasons") or []) + [
+                            "designed 1600x989 fallback"
+                        ]
+                    elif cover.exists():
+                        cover.unlink()
+                image_qc_log.append(cover_entry)
             else:
                 draw_image(cover_prompt, cover)
         except Exception:
             logging.exception("封面图失败")
+            if qc_enabled:
+                write_fallback_cover(str(cover))
+                if is_publishable_image(cover):
+                    image_qc_log.append({
+                        "title": "wechat-cover",
+                        "url": "",
+                        "file": "wechat/cover.png",
+                        "pass": False,
+                        "fallback": True,
+                        "skipped": False,
+                        "reasons": ["designed 1600x989 fallback after generate error"],
+                    })
+                elif cover.exists():
+                    cover.unlink()
     (dest / "articles.json").write_text(json.dumps(articles, ensure_ascii=False, indent=2), encoding="utf-8")
     (dest / "deals.json").write_text(json.dumps(deals, ensure_ascii=False, indent=2), encoding="utf-8")
     if qc:

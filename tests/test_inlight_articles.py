@@ -2383,11 +2383,10 @@ class TestYieldAndSourceFetch(unittest.TestCase):
 
         with patch("inlight_articles._http_get", side_effect=http):
             fetch_press_coverage("Organoid immune synapse unique title 98765", "")
-        ea = [u for u in seen if "eurekalert.org" in u]
-        self.assertTrue(ea)
-        self.assertTrue(all("/search/" not in u.split("?", 1)[0] or "?" in u for u in ea))
-        self.assertFalse(any("/search/Organoid" in u for u in ea))
-        self.assertTrue(any("news-releases" in u and "?" in u for u in ea))
+        # Direct EurekAlert HTML was a 200 + "Page not found" body; do not fetch it.
+        self.assertFalse(any("eurekalert.org" in u for u in seen))
+        self.assertTrue(any("europepmc" in u for u in seen))
+        self.assertFalse(any("/search/Organoid" in u for u in seen))
 
     def test_triage_prompt_asks_for_depth_and_quantity(self):
         from inlight_articles import build_triage_prompt, EnrichedItem

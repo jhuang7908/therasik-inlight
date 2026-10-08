@@ -812,13 +812,6 @@ def fetch_press_coverage(title: str, doi: str) -> str:
             text = (hit.get("abstractText") or "").strip()
             if len(text) >= 80:
                 return text[:8000]
-    if title:
-        ea = "https://www.eurekalert.org/news-releases?" + urllib.parse.urlencode(
-            {"kw": title[:80]}
-        )
-        visible = _html_visible_text(_http_get(ea))
-        if len(visible) >= 400 and re.search(r"(?i)press release|embargo|researchers", visible):
-            return visible[:8000]
     return ""
 
 

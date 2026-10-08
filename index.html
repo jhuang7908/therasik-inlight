@@ -994,14 +994,25 @@ function paperHref(a){return a.deep?('#'+a.deep):('#p-'+a.id)}
 function escHtml(s){
   return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+function fieldKey(k){
+  return /^[fc][1-9]$/.test(String(k||''))?String(k):'f1';
+}
+function escUrl(u){
+  const s=String(u==null?'':u).trim();
+  try{
+    const x=new URL(s);
+    if(x.protocol==='http:'||x.protocol==='https:') return escHtml(s);
+  }catch(e){}
+  return '';
+}
 function catCard(a){
   const href=paperHref(a);
-  const tags=[a.deep?`<span class="kind" style="--kc:var(--${a.f})">本站解读</span>`:'',a.sec?`<span class="kind" style="--kc:var(--c4)">二手核实</span>`:''].filter(Boolean).join('');
-  return `<div class="item" style="--kc:var(--${a.f})">
-    <a href="${href}">${cover(FIELD_MOTIF[a.f],a.f,a.img||`img/papers/${a.id}.jpg?v=5`)}</a>
+  const tags=[a.deep?`<span class="kind" style="--kc:var(--${fieldKey(a.f)})">本站解读</span>`:'',a.sec?`<span class="kind" style="--kc:var(--c4)">二手核实</span>`:''].filter(Boolean).join('');
+  return `<div class="item" style="--kc:var(--${fieldKey(a.f)})">
+    <a href="${href}">${cover(FIELD_MOTIF[fieldKey(a.f)],fieldKey(a.f),a.img||`img/papers/${a.id}.jpg?v=5`)}</a>
     <div class="cbody">
       <h3><a href="${href}">${escHtml(a.t)}</a></h3>
-      <div class="metarow"><span class="idate">${a.disp}</span><span class="jname">${escHtml(a.j)}</span>
+      <div class="metarow"><span class="idate">${escHtml(a.disp)}</span><span class="jname">${escHtml(a.j)}</span>
         <span class="tagrow">${tags}</span>
         <a class="expbtn" href="${href}">阅读</a></div>
     </div></div>`;
@@ -1101,7 +1112,7 @@ function renderPaper(id){
         <a class="related-card" href="${paperHref(r)}">
           <span class="rc-field" style="color:var(--${r.f})">${FNAMES[r.f] || ''}</span>
           <span class="rc-title">${escHtml(r.t)}</span>
-          <span class="rc-date">${r.disp}</span>
+          <span class="rc-date">${escHtml(r.disp)}</span>
         </a>`).join('')}
       </div>
     </div>`;
@@ -1113,7 +1124,7 @@ function renderPaper(id){
   el.innerHTML=`<a class="back" href="#fields">← 返回领域</a>
     <article>
       <div class="ahead">
-        <div class="eyebrow">${FNAMES[a.f]||''} · ${a.ds?cnDate(a.ds):a.disp}${tier==='deep'?' · <span class="tier-badge deep">深度解读</span>':' · <span class="tier-badge brief">速览</span>'}</div>
+        <div class="eyebrow">${FNAMES[fieldKey(a.f)]||''} · ${a.ds?cnDate(a.ds):escHtml(a.disp)}${tier==='deep'?' · <span class="tier-badge deep">深度解读</span>':' · <span class="tier-badge brief">速览</span>'}</div>
         <div class="zh-title">${escHtml(a.t)}</div>
         ${a.secondhand_label ? `<p class="secondhand-banner">${escHtml(a.secondhand_label)}</p>` : ''}
         ${open && isNewFormat ? `<p class="one-liner">${escHtml(open)}</p>` : ''}
@@ -1121,7 +1132,7 @@ function renderPaper(id){
       </div>
       <div class="abody">
         <aside class="meta">
-          ${datacardHtml || `<div><span class="k">文献出处</span><p><b>${escHtml(a.j||'')}</b>${a.ds?'<br>'+cnDate(a.ds):''}<br><a href="${a.url}" target="_blank" rel="noopener">原文</a></p></div>`}
+          ${datacardHtml || `<div><span class="k">文献出处</span><p><b>${escHtml(a.j||'')}</b>${a.ds?'<br>'+cnDate(a.ds):''}<br><a href="${escUrl(a.url)}" target="_blank" rel="noopener">原文</a></p></div>`}
           ${!datacardHtml ? `<div><span class="k">领域</span><p>${(a.tags||[]).map(t=>FNAMES[t]||'').filter(Boolean).join('、')}</p></div>` : ''}
         </aside>
         <div class="amain">
@@ -1132,7 +1143,7 @@ function renderPaper(id){
           </div>`}
           ${bodyHtml}
           <details class="sec meet"><summary>编辑备注</summary><p>${escHtml(a.au||'论文页面没有给出可核对的通讯作者。')}</p>${a.note?`<p>${escHtml(a.note)}</p>`:''}<p>这里没有采访，只写论文或新闻稿里能核对的作者、身份和单位。页面没标通讯作者时，按末位或资深作者写明，不另编履历。</p></details>
-          <div class="sec"><h2>出处</h2><p class="src">${a.citation ? escHtml(a.citation) + '<br>' : ''}<b>原文</b>：${escHtml(a.j||'')}。 <a href="${a.url}" target="_blank" rel="noopener">打开原文</a>${a.read_note ? '<br>'+escHtml(a.read_note) : ''}</p></div>
+          <div class="sec"><h2>出处</h2><p class="src">${a.citation ? escHtml(a.citation) + '<br>' : ''}<b>原文</b>：${escHtml(a.j||'')}。 <a href="${escUrl(a.url)}" target="_blank" rel="noopener">打开原文</a>${a.read_note ? '<br>'+escHtml(a.read_note) : ''}</p></div>
           <p class="note" style="margin-top:1em;font-size:13px;">本文初稿由 Claude 起草，配图由 gpt-image-1 生成，编辑核对后发布。TheraSik · 启曜生科 出品。</p>
           ${renderRelated()}
         </div>
@@ -1141,8 +1152,8 @@ function renderPaper(id){
 }
 function setHtml(el,html){ el.innerHTML=html; }
 function arcRow(a){
-  return `<a class="arow" style="--dc:var(--${a.f})" href="${a.deep?('#'+a.deep):('#p-'+a.id)}">
-    <span class="adate">${a.disp}</span>
+  return `<a class="arow" style="--dc:var(--${fieldKey(a.f)})" href="${a.deep?('#'+a.deep):('#p-'+a.id)}">
+    <span class="adate">${escHtml(a.disp)}</span>
     <span class="atitle">${escHtml(a.t)}</span>
     <span class="atags">${(a.tags||[]).slice(0,2).map(t=>`<span class="tag" style="--tc:var(--${t})">${FNAMES[t]||''}</span>`).join('')}</span>
     <span class="asrc">${escHtml(a.j)}</span></a>`;
@@ -1249,7 +1260,7 @@ function insertDetailsPanel(card,grid,dealData,panelId){
   panel.innerHTML=`<div class="panel-tags">${tags}</div>
     ${dealData.ms?`<p class="msline">${escHtml(dealData.ms)}</p>`:''}
     <p>${escHtml(dealData.why)}</p>
-    <div class="foot"><a href="${dealData.url}" target="_blank" rel="noopener">出处：${escHtml(dealData.src)}</a>${dealData.art?`<a href="#${dealData.art}">${escHtml(dealData.artt)} →</a>`:''}<button class="close-btn" type="button">收起 ↑</button></div>`;
+    <div class="foot"><a href="${escUrl(dealData.url)}" target="_blank" rel="noopener">出处：${escHtml(dealData.src)}</a>${dealData.art?`<a href="#${dealData.art}">${escHtml(dealData.artt)} →</a>`:''}<button class="close-btn" type="button">收起 ↑</button></div>`;
   insertAfter.after(panel);
   return panel;
 }

@@ -508,44 +508,78 @@ class TestHouseStylePromptsAndImageQc(unittest.TestCase):
         from inlight_qc import IMAGE_PREFIX, IMAGE_SUFFIX, mechanism_image_prompt
         import run_weekly
 
-        prompt = mechanism_image_prompt(_results(), "pathway blocked")
+        prompt = mechanism_image_prompt(
+            "The TCR on the T cell bound the peptide and the downstream signal fired.",
+            "TCR–pMHC engagement phosphorylated ZAP-70 and opened the calcium flux.",
+        )
         for blob in (IMAGE_PREFIX, run_weekly.IMAGE_PREFIX, prompt):
-            self.assertIn("THICKER", blob)
             self.assertIn("#C0492F", blob)
-            self.assertIn("solid-filled", blob)
-            self.assertIn("3 to 6 percent", blob)
+            self.assertIn("thin clean dark slate-green outlines", blob)
+            self.assertIn("6 percent", blob)
         for blob in (IMAGE_SUFFIX, run_weekly.IMAGE_SUFFIX, prompt):
             low = blob.lower()
             self.assertIn("no text", low)
             self.assertIn("no letters", low)
             self.assertIn("no logos", low)
-        self.assertIn("hairline", IMAGE_PREFIX.lower())
-        self.assertNotIn("thin gray outlines", IMAGE_PREFIX.lower())
+        self.assertNotIn("THICKER", IMAGE_PREFIX)
         self.assertIn("Subject:", prompt)
+        self.assertIn("TCR", prompt)
+        self.assertIn("terracotta", prompt.lower())
+        self.assertNotIn("outcome outcome", prompt.lower())
+        self.assertIn("No faces", prompt)
         self.assertIn("0.382", prompt)
         self.assertIn("1.618", prompt)
 
-    def test_qc_image_accepts_in_range_and_rejects_text(self):
+    def _span_card(self, text=None, transparent=False):
         from PIL import Image, ImageDraw
-        from inlight_qc import qc_image, write_fallback_cover
 
-        w, h = 400, 247
+        w, h = 1600, 989
+        if transparent:
+            im = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+        else:
+            im = Image.new("RGB", (w, h), (255, 255, 255))
+        d = ImageDraw.Draw(im)
+        # Subject bbox ≈ 72% of the 1.618 card; terracotta ≈ 4% of frame.
+        d.rectangle([230, 140, 1370, 850], fill=(15, 107, 92))
+        d.ellipse([640, 360, 960, 680], fill=(192, 73, 47))
+        if text:
+            d.text((40, 40), text, fill=(20, 20, 20))
+        return im
+
+    def test_qc_fill_is_subject_span_not_ink_share(self):
+        from PIL import Image, ImageDraw
+        from inlight_qc import qc_image, subject_metrics, matte_to_white
+
+        w, h = 1600, 989
         im = Image.new("RGB", (w, h), (255, 255, 255))
         d = ImageDraw.Draw(im)
-        d.ellipse([20, 20, 220, 220], fill=(15, 107, 92))
-        d.ellipse([210, 40, 360, 200], fill=(159, 216, 203))
-        d.ellipse([240, 80, 310, 160], fill=(192, 73, 47))
+        d.ellipse([230, 150, 1370, 840], outline=(15, 107, 92), width=6)
+        d.ellipse([250, 170, 430, 350], outline=(47, 125, 109), width=4)
+        d.ellipse([700, 360, 980, 640], fill=(192, 73, 47))
+        with tempfile.TemporaryDirectory() as td:
+            path = os.path.join(td, "span.png")
+            im.save(path)
+            out = qc_image(path)
+        metrics = subject_metrics(matte_to_white(im))
+        self.assertTrue(0.68 <= metrics["span"] <= 0.78, metrics)
+        self.assertTrue(0.68 <= out["fill_frac"] <= 0.78, out)
+        self.assertLess(out["accent_frac"], 0.20)
+        self.assertTrue(out["pass"], out)
+
+    def test_qc_image_accepts_in_range_and_rejects_text(self):
+        from inlight_qc import qc_image, write_fallback_cover, is_publishable_image
+
         with tempfile.TemporaryDirectory() as td:
             good = os.path.join(td, "good.png")
-            im.save(good)
+            self._span_card().save(good)
             out = qc_image(good)
             self.assertFalse(out["ocr_text"], out)
-            self.assertGreaterEqual(out["fill_frac"], 0.50)
-            self.assertGreater(out["accent_frac"], 0.0)
+            self.assertGreaterEqual(out["fill_frac"], 0.68)
+            self.assertLessEqual(out["fill_frac"], 0.78)
+            self.assertGreaterEqual(out["accent_frac"], 0.03)
+            self.assertTrue(out["pass"], out)
 
-            bad = Image.new("RGB", (w, h), (255, 255, 255))
-            bd = ImageDraw.Draw(bad)
-            bd.text((20, 80), "ABC LABEL 64%", fill=(20, 20, 20))
+            bad = self._span_card(text="ABC LABEL RESPONSE 64%")
             bad_path = os.path.join(td, "text.png")
             bad.save(bad_path)
             text_out = qc_image(bad_path)
@@ -554,15 +588,68 @@ class TestHouseStylePromptsAndImageQc(unittest.TestCase):
 
             fb = os.path.join(td, "fallback.png")
             write_fallback_cover(fb)
-            self.assertTrue(os.path.isfile(fb))
-            self.assertGreater(os.path.getsize(fb), 100)
+            self.assertTrue(is_publishable_image(fb))
+            from PIL import Image
+            self.assertEqual(Image.open(fb).size, (1600, 989))
+
+    def test_qc_mattes_transparency_and_fail_closed_without_ocr(self):
+        from inlight_qc import qc_image, matte_to_white
+
+        with tempfile.TemporaryDirectory() as td:
+            path = os.path.join(td, "alpha.png")
+            self._span_card(transparent=True).save(path)
+            from PIL import Image
+            matted = matte_to_white(Image.open(path))
+            self.assertEqual(matted.getpixel((5, 5)), (255, 255, 255))
+            out = qc_image(path)
+            self.assertLess(out["fill_frac"], 0.95, out)
+        with patch("inlight_qc.ocr_available", return_value=False):
+            with tempfile.TemporaryDirectory() as td:
+                path = os.path.join(td, "x.png")
+                self._span_card().save(path)
+                closed = qc_image(path)
+        self.assertFalse(closed["pass"])
+        self.assertTrue(any("OCR" in r for r in closed["reasons"]), closed)
+
+    def test_qc_passes_approved_house_style_references(self):
+        from pathlib import Path
+        from inlight_qc import qc_image
+
+        roots = [
+            Path("/workspace/inlight_review/img_trial3/final/images"),
+            Path("/home/ubuntu/.cursor/projects/workspace/uploads"),
+            Path(__file__).resolve().parent / "fixtures" / "house_style_v3",
+        ]
+        wanted = ("t1_trap.png", "t4_tsc_astro.png")
+        seen = []
+        for root in roots:
+            if not root.is_dir():
+                continue
+            for name in wanted:
+                p = root / name
+                if p.is_file() and p.stat().st_size > 2000:
+                    seen.append(p)
+            seen.extend(p for p in sorted(root.glob("APPROVED*.png")) if p.stat().st_size > 2000)
+        # Dedup while keeping approved names first.
+        uniq = []
+        for p in seen:
+            if p.resolve() not in {x.resolve() for x in uniq}:
+                uniq.append(p)
+        self.assertTrue(uniq, "approved reference PNGs must be available for QC")
+        for path in uniq:
+            out = qc_image(str(path))
+            self.assertTrue(0.68 <= out["fill_frac"] <= 0.78, (path.name, out))
+            self.assertGreaterEqual(out["accent_frac"], 0.03, (path.name, out))
+            self.assertLessEqual(out["accent_frac"], 0.06, (path.name, out))
+            self.assertFalse(out["ocr_text"], (path.name, out))
+            self.assertTrue(out["pass"], (path.name, out))
 
     def test_generate_article_image_falls_back_after_two_retries(self):
         import run_weekly
 
         calls = {"n": 0}
 
-        def fake_draw(prompt, dest):
+        def fake_draw(prompt, dest, pos="UR", reframe=False):
             calls["n"] += 1
             dest.write_bytes(b"not-a-png")
 
@@ -575,14 +662,14 @@ class TestHouseStylePromptsAndImageQc(unittest.TestCase):
         }
         with tempfile.TemporaryDirectory() as td:
             dest = os.path.join(td, "a1.png")
-            with patch.object(run_weekly, "draw_image", side_effect=fake_draw):
-                with patch("inlight_qc.qc_image", return_value=fail):
-                    out = run_weekly.generate_article_image("Subject: cells", dest, True)
+            with patch.object(run_weekly, "image_pipeline_ready", return_value=(True, "")):
+                with patch.object(run_weekly, "draw_image", side_effect=fake_draw):
+                    with patch("inlight_qc.qc_image", return_value=fail):
+                        out = run_weekly.generate_article_image("Subject: cells", dest, True)
             self.assertEqual(calls["n"], 3)
-            self.assertTrue(out["fallback"])
+            self.assertTrue(out.get("skipped"))
             self.assertFalse(out["pass"])
-            self.assertTrue(os.path.isfile(dest))
-            self.assertGreater(os.path.getsize(dest), 20)
+            self.assertFalse(os.path.isfile(dest))
 
     def test_write_output_skips_images_when_nothing_published(self):
         import run_weekly
@@ -608,11 +695,12 @@ class TestHouseStylePromptsAndImageQc(unittest.TestCase):
     def test_write_output_logs_image_qc_fallback(self):
         import run_weekly
 
-        def fake_gen(prompt, dest, qc_enabled=True):
+        def fake_gen(prompt, dest, qc_enabled=True, **kwargs):
             dest.write_bytes(b"\x89PNG\r\n\x1a\n")
             return {
                 "pass": False,
-                "fallback": True,
+                "fallback": False,
+                "skipped": True,
                 "attempts": 3,
                 "reasons": ["ocr text detected"],
                 "ocr_text": True,
@@ -651,10 +739,19 @@ class TestHouseStylePromptsAndImageQc(unittest.TestCase):
                     )
             qc = json.loads((dest / "qc_report.json").read_text())
             self.assertTrue(qc.get("images"))
-            self.assertTrue(any(x.get("fallback") for x in qc["images"]))
+            self.assertTrue(any(x.get("skipped") or x.get("fallback") for x in qc["images"]))
             arts = json.loads((dest / "articles.json").read_text())
             self.assertEqual(len(arts), 1)
-            self.assertTrue(arts[0].get("img"))
+            self.assertFalse(arts[0].get("img"))
+            cover = dest / "wechat" / "cover.png"
+            self.assertTrue(cover.is_file())
+            from PIL import Image
+            self.assertEqual(Image.open(cover).size, (1600, 989))
+            self.assertTrue(any(
+                x.get("file") == "wechat/cover.png" and x.get("fallback")
+                for x in qc["images"]
+            ))
+            self.assertGreater(cover.stat().st_size, 2000)
 
     def test_site_css_card_ratio_and_grid(self):
         from pathlib import Path
@@ -671,6 +768,21 @@ class TestHouseStylePromptsAndImageQc(unittest.TestCase):
         self.assertIn("${escHtml(a.t)}", css)
         self.assertIn("const FNAMES={f1:'类器官'", css)
         self.assertIn("k:'f9',n:'精准肿瘤与临床转化'", css)
+        self.assertIn("function escUrl", css)
+        self.assertIn("function fieldKey", css)
+        self.assertIn("${escUrl(a.url)}", css)
+        self.assertIn("${escUrl(dealData.url)}", css)
+        self.assertIn("${escHtml(a.disp)}", css)
+        self.assertIn("fieldKey(a.f)", css)
+
+    def test_gemini_reviewer_model_is_31_pro_preview(self):
+        from pathlib import Path
+        from inlight_qc import DEFAULT_GEMINI_MODEL
+
+        self.assertEqual(DEFAULT_GEMINI_MODEL, "gemini-3.1-pro-preview")
+        src = Path(__file__).resolve().parent.parent.joinpath("sources.yaml").read_text()
+        self.assertIn("gemini_model: gemini-3.1-pro-preview", src)
+        self.assertNotIn("gemini-2.5-flash", src)
 
 
 if __name__ == "__main__":

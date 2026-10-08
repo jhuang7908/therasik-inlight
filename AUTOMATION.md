@@ -9,8 +9,12 @@
 ## 安装
 
 ```bash
+# 配图质控需要系统 OCR（一次性）：
+sudo apt-get install -y tesseract-ocr
 python -m pip install -r requirements.txt
 ```
+
+`requirements.txt` 含 Pillow、pytesseract，以及 `rapidocr-onnxruntime`（无 tesseract 时的后备）。配图前脚本会检查这两项；缺 Pillow 或 OCR 则闭门跳过全部生成，绝不写 1×1 空白图。
 
 Windows 上如果 `python` 不在 PATH 里，用 `py -3` 代替 `python`。
 
@@ -21,9 +25,9 @@ Windows 上如果 `python` 不在 PATH 里，用 `py -3` 代替 `python`。
 | `ANTHROPIC_API_KEY` | `run_weekly.py` 筛选、写中文深度解读、数字/主张核对（Claude） |
 | `OPENAI_API_KEY` | `run_weekly.py` 配图和公众号封面（图像模型不变） |
 | `ANTHROPIC_MODEL` | 可选，默认 `claude-sonnet-5-5`（脚本启动时会检查模型可用性） |
-| `OPENAI_IMAGE_MODEL` | 可选，默认 `gpt-image-1` |
+| `OPENAI_IMAGE_MODEL` | 可选；默认先试 `gpt-image-2`，不可用再回退 `gpt-image-1`。1536×1024、quality=high、不透明白底，再裁到 1600×989 |
 | `GEMINI_API_KEY` | 深度解读的独立 ACIR 质控（只审不写）。缺了就闭门失败，不发该篇 |
-| `GEMINI_MODEL` | 可选；也可写在 `sources.yaml` 的 `gemini_model` |
+| `GEMINI_MODEL` | 可选；默认 `gemini-3.1-pro-preview`（`sources.yaml` 的 `gemini_model`） |
 | `INLIGHT_EXTRA_ENV_FILE` | 可选。生产机 `inlight.env` 没有 Gemini 密钥时，指向另一份只读 env。只读取 `GEMINI_API_KEY`，不写文件，不把内容打进日志 |
 | `WECHAT_APPID` | 只有 `publish_wechat.py` 需要 |
 | `WECHAT_APPSECRET` | 只有 `publish_wechat.py` 需要 |
@@ -89,8 +93,8 @@ python publish_wechat.py --week 2026-10-07
 ## AI 工具使用
 
 - Claude（`ANTHROPIC_MODEL`，默认 claude-sonnet-5-5）：选题、从全文起草深度解读、数字/主张核对。不换别的写作模型。
-- Gemini：只做独立 ACIR 复审（结构/深度/数字密度/机制与推测/局限/可追溯），不写正文。
-- 图像生成：使用 gpt-image-1。机制图只给读过全文的深度解读。
+- Gemini（`gemini-3.1-pro-preview`）：只做独立 ACIR 复审（结构/深度/数字密度/机制与推测/局限/可追溯），不写正文。
+- 图像生成：`gpt-image-2`（不可用则 `gpt-image-1`），quality=high，1536×1024 不透明白底，再按 house style v3 裁到 1600×989。机制图只给读过全文的深度解读。质控用主语包围盒占比（68–78%）和真实 OCR；OCR 不可用则闭门不发图。
 
 ## 静态文章页面（社交分享）
 

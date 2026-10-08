@@ -14,7 +14,7 @@ max_candidates: 30    # academic items to enrich and triage
 max_per_source: 10
 max_academic: 16      # legacy-path publish cap; new pipeline uses min_deep/max_deep
 max_industry: 4       # optional deals/business news; skip without error if none
-gemini_model: gemini-2.5-flash
+gemini_model: gemini-3.1-pro-preview
 # extra_env_file: /path/to/other.env   # or set INLIGHT_EXTRA_ENV_FILE; read-only GEMINI_API_KEY only
 
 sources:

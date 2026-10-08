@@ -80,30 +80,28 @@ SECTION_RANGES = {
     "significance": (150, 220),
     "citation": (80, 140),
 }
-# House style v3 (BioRender). Prefix/suffix are the reusable prompt wraps.
-# Owner adjustments: noticeably THICKER outlines; LARGE solid terracotta accent (3–6%).
+# House style v3 prefix/suffix — verbatim from the approved house_style_v3.md.
 IMAGE_PREFIX = (
     "Polished BioRender-style scientific schematic, the quality of a graphical "
     "abstract or mechanism figure in a Nature or Cell paper. Standard crisp "
     "scientific icons (cells, membranes, receptors, Y-shaped antibodies, DNA, "
     "organoids, mice, organ-on-chips) drawn with smooth flat fills, gentle soft "
-    "gradients and subtle shading, noticeably THICKER dark slate-green outlines "
-    "of one consistent bold line weight (not hairline; thick enough to stay "
-    "strong at 390px phone card size), crisp vector edges. Plain pure white "
-    "background (#FFFFFF), completely empty: no scene, no floor, no shadows on "
-    "a ground, no vignette, no panels or boxes behind the figure. The figure "
-    "explains one mechanism as a clear process of 2 to 4 stages connected by "
-    "simple slate-grey arrows (#5C6B67). Colour palette strictly limited to the "
-    "house greens - deep green #0F6B5C, mid green #2F7D6D, pale mint #9FD8CB, "
-    "light grey-green #D6DEDB, slate grey #5C6B67 - plus neutral light greys "
-    "and white; exactly ONE key element is terracotta #C0492F (lighter "
-    "terracotta #E07A5F only for its shading); it is drawn LARGE, solid-filled "
-    "(not outline-only) and boldly filled - the largest and heaviest single "
-    "object in the figure - occupying about 3 to 6 percent of the whole image "
-    "area, while the green parts stay lighter and more delicate. "
+    "gradients and subtle shading, thin clean dark slate-green outlines of one "
+    "consistent line weight, crisp vector edges. Plain pure white background "
+    "(#FFFFFF), completely empty: no scene, no floor, no shadows on a ground, "
+    "no vignette, no panels or boxes behind the figure. The figure explains one "
+    "mechanism as a clear process of 2 to 4 stages connected by simple thin "
+    "slate-grey arrows (#5C6B67). Colour palette strictly limited to the house "
+    "greens - deep green #0F6B5C, mid green #2F7D6D, pale mint #9FD8CB, light "
+    "grey-green #D6DEDB, slate grey #5C6B67 - plus neutral light greys and "
+    "white; exactly ONE key element is terracotta #C0492F (lighter terracotta "
+    "#E07A5F only for its shading); it is drawn large, solid and boldly filled "
+    "- the largest and heaviest single object in the figure - occupying about "
+    "6 percent of the whole image area, while the green parts stay lighter and "
+    "more delicate."
 )
 IMAGE_SUFFIX = (
-    " Composition: one cohesive figure group spanning about three quarters of "
+    "Composition: one cohesive figure group spanning about three quarters of "
     "the image width and kept inside the central 85 percent of the canvas, "
     "every cell and object drawn complete with generous empty white margins on "
     "every side, nothing touching or cut by the image edge, no stray elements "
@@ -118,6 +116,13 @@ IMAGE_SUFFIX = (
     "logos, no watermark, no frame, no border."
 )
 HOUSE_STYLE = IMAGE_PREFIX + IMAGE_SUFFIX
+PHI = (1 + 5 ** 0.5) / 2
+G1, G2 = 1 - 1 / PHI, 1 / PHI
+GOLDEN_POS = ("UR", "LL", "LM", "RM", "TM", "BM", "UL", "LR")
+GOLDEN_XY = {
+    "UL": (G1, G1), "UR": (G2, G1), "LL": (G1, G2), "LR": (G2, G2),
+    "RM": (G2, 0.5), "LM": (G1, 0.5), "TM": (0.5, G1), "BM": (0.5, G2),
+}
 GOLDEN_PLACEMENTS = (
     "upper-right (x=0.618, y=0.382)",
     "lower-left (x=0.382, y=0.618)",
@@ -128,6 +133,12 @@ GOLDEN_PLACEMENTS = (
     "upper-left (x=0.382, y=0.382)",
     "lower-right (x=0.618, y=0.618)",
 )
+DEFAULT_GEMINI_MODEL = "gemini-3.1-pro-preview"
+IMAGE_MODELS = ("gpt-image-2", "gpt-image-1")
+IMAGE_GEN_SIZE = "1536x1024"
+IMAGE_OUT_SIZE = (1600, 989)
+SUBJECT_TARGET = 0.72
+DEDUPE_FAIL = 10
 FIG_DISCLAIMER = "示意图由 AI 生成，依据原文结果绘制，非期刊原图，不代表分子比例。"
 ACCENT_RGB = (0xC0, 0x49, 0x2F)
 ACCENT_SHADE_RGB = (0xE0, 0x7A, 0x5F)
@@ -458,31 +469,68 @@ _MECH_HINT = re.compile(
     r"antibody|car-?t|tcr|checkpoint|antigen|epitope|nucleosome|"
     r"机制|通路|受体|结合|信号|磷酸化"
 )
+_ENTITY_RE = re.compile(
+    r"(?i)\b(?:CD\d+[A-Za-z0-9]*|IL-?\d+[A-Za-z0-9]*|TCR|CAR-?T?|PD-?1|"
+    r"PD-?L1|CTLA-?4|HLA-[A-Z0-9*]+|NK|mRNA|siRNA|LNP|ADC|Fab|Fc|"
+    r"organoid|nucleosome|antibody|receptor|ligand|cytokine|"
+    r"[A-Z][A-Za-z]{2,}(?:in|ab|cept|nib|mab))\b|"
+    r"[\u4e00-\u9fff]{2,8}(?:细胞|受体|抗体|器官|通路|蛋白)"
+)
+_MOUSE_RE = re.compile(r"(?i)\bmice\b|\bmouse\b|murine|小鼠")
+
+
+def _named_entities(text: str) -> list[str]:
+    seen: list[str] = []
+    for m in _ENTITY_RE.finditer(str(text or "")):
+        tok = m.group(0).strip()
+        if tok.lower() in {"this", "that", "with", "from", "study", "result", "results"}:
+            continue
+        if tok not in seen:
+            seen.append(tok)
+        if len(seen) >= 8:
+            break
+    return seen
+
+
+def _mechanism_stages(results_text: str, mechanism: str) -> list[str]:
+    parts: list[str] = []
+    for blob in (mechanism, results_text):
+        for sent in re.split(r"(?<=[。．.!?])\s+", str(blob or "").strip()):
+            sent = sent.strip()
+            if not sent:
+                continue
+            if _MECH_HINT.search(sent) or _ENTITY_RE.search(sent):
+                parts.append(sent[:160])
+            if len(parts) >= 4:
+                return parts
+    if not parts and mechanism:
+        parts.append(str(mechanism).strip()[:160])
+    return parts[:4] or ["a receptor engages its ligand and the downstream signal fires"]
 
 
 def _mechanism_subject(results_text: str, mechanism: str) -> str:
-    """Subject from verified mechanism prose, not the first words of a fetch dump."""
-    stop = {
-        "this", "that", "with", "from", "were", "been", "have",
-        "study", "result", "results", "using", "these", "those", "into",
-        "graphical", "abstract", "outcome", "section", "http", "https",
-        "doi", "pmc", "copyright", "author", "authors",
-    }
-    parts: list[str] = []
-    mech = str(mechanism or "").strip()
-    if mech:
-        parts.append(mech)
-    for sent in re.split(r"(?<=[。．.!?])\s+", str(results_text or "")):
-        if _MECH_HINT.search(sent):
-            parts.append(sent)
-    blob = " ".join(parts) if parts else mech
-    words = [w for w in WORD_RE.findall(blob) if len(w) >= 4 and w.lower() not in stop]
-    if words:
-        return ", ".join(words[:8])
-    han = HAN_RE.findall(mech)
-    if len(han) >= 8:
-        return mech[:80]
-    return "cellular signaling cascade"
+    """Story from verified mechanism/Results: who/what, 2–4 stages, one accent."""
+    src = f"{mechanism or ''} {results_text or ''}"
+    names = _named_entities(src)
+    stages = _mechanism_stages(results_text, mechanism)
+    accent = names[0] if names else "the key receptor complex"
+    who = ", ".join(names[:6]) if names else "the named receptor, ligand and cell from the paper"
+    allow_mouse = bool(_MOUSE_RE.search(src))
+    forbid = (
+        "No faces, no cartoon robots, no people, no human or animal body silhouettes"
+    )
+    if not allow_mouse:
+        forbid += ", no mice unless the source study uses them"
+    forbid += ", no English or Chinese text, letters, numbers or labels of any kind"
+    stage_txt = " ".join(
+        f"Stage {i}: {s.rstrip('。.')}." for i, s in enumerate(stages[:4], 1)
+    )
+    return (
+        f"A 2-to-4 stage BioRender mechanism using only named elements from the paper "
+        f"({who}). {stage_txt} Exactly ONE key element — {accent} — is drawn solid "
+        f"terracotta #C0492F, large and boldly filled, the heaviest object in the "
+        f"figure. {forbid}."
+    )
 
 
 def mechanism_image_prompt(
@@ -494,14 +542,12 @@ def mechanism_image_prompt(
     subject = _mechanism_subject(results_text, mechanism)
     if placement_index is None:
         placement_index = sum(ord(c) for c in subject)
+    pos = GOLDEN_POS[placement_index % len(GOLDEN_POS)]
     placement = GOLDEN_PLACEMENTS[placement_index % len(GOLDEN_PLACEMENTS)]
     return (
-        f"{IMAGE_PREFIX}"
-        f"Subject: {subject}. "
-        f"Place the visual centre of the solid terracotta key element on the "
-        f"{placement} golden line (0.382 or 0.618). The subject fills about "
-        f"72 percent of the 1.618:1 card. "
-        f"{IMAGE_SUFFIX}"
+        f"{IMAGE_PREFIX} Subject: {subject} Place the visual centre of the solid "
+        f"terracotta key element on the {placement} golden line (position {pos}). "
+        f"The subject fills about 72 percent of the 1.618:1 card. {IMAGE_SUFFIX}"
     )
 
 
@@ -758,7 +804,7 @@ def gemini_review_deep(art: dict, fulltext: str, config: dict | None) -> dict:
             "reasons": "GEMINI_API_KEY missing; deep QC fail-closed",
             "skipped": False,
         }
-    model = cfg.get("gemini_model") or os.environ.get("GEMINI_MODEL") or "gemini-2.5-flash"
+    model = cfg.get("gemini_model") or os.environ.get("GEMINI_MODEL") or DEFAULT_GEMINI_MODEL
     drafted = json.dumps({
         "title": art.get("title"),
         "one_liner": art.get("one_liner"),
@@ -821,68 +867,220 @@ def assemble_qc_entry(
     return entry
 
 
-def _rgb_dist(a: tuple[int, int, int], b: tuple[int, int, int]) -> float:
-    return ((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2) ** 0.5
+def matte_to_white(im: Any) -> Any:
+    """Composite transparent pixels onto opaque white before any measurement."""
+    from PIL import Image
+
+    if im.mode in ("RGBA", "LA") or (im.mode == "P" and "transparency" in im.info):
+        rgba = im.convert("RGBA")
+        bg = Image.new("RGB", rgba.size, (255, 255, 255))
+        bg.paste(rgba, mask=rgba.split()[-1])
+        return bg
+    return im.convert("RGB")
 
 
-def _letterlike_components(im: Any) -> bool:
-    """Conservative ink-blob detector used when tesseract is unavailable."""
-    g = im.convert("L")
-    max_w = 360
-    if g.width > max_w:
-        g = g.resize((max_w, max(1, int(g.height * max_w / g.width))))
-    w, h = g.size
-    pix = g.load()
-    visited = [[False] * w for _ in range(h)]
-    letterish = 0
+def _crop_box(w: int, h: int, ar: float) -> tuple[int, int, int, int]:
+    if w / max(h, 1) > ar:
+        cw, ch = h * ar, float(h)
+    else:
+        cw, ch = float(w), w / ar
+    return (
+        int(round((w - cw) / 2)),
+        int(round((h - ch) / 2)),
+        int(round((w + cw) / 2)),
+        int(round((h + ch) / 2)),
+    )
+
+
+def _border_bg(im: Any, b: int = 4) -> tuple[float, float, float]:
+    w, h = im.size
+    pix = im.load()
+    samples: list[tuple[int, int, int]] = []
+    for y in range(min(b, h)):
+        for x in range(w):
+            samples.append(pix[x, y])
+    for y in range(max(h - b, 0), h):
+        for x in range(w):
+            samples.append(pix[x, y])
+    for y in range(h):
+        for x in range(min(b, w)):
+            samples.append(pix[x, y])
+        for x in range(max(w - b, 0), w):
+            samples.append(pix[x, y])
+    if not samples:
+        return (255.0, 255.0, 255.0)
+    n = len(samples)
+    rs = sorted(p[0] for p in samples)
+    gs = sorted(p[1] for p in samples)
+    bs = sorted(p[2] for p in samples)
+    mid = n // 2
+    return (float(rs[mid]), float(gs[mid]), float(bs[mid]))
+
+
+def _warm_mask_frac(im: Any) -> float:
+    hsv = im.convert("HSV")
+    pix = hsv.load()
+    w, h = hsv.size
+    hit = 0
     for y in range(h):
         for x in range(w):
-            if visited[y][x] or pix[x, y] > 90:
-                continue
-            stack = [(x, y)]
-            visited[y][x] = True
-            minx = maxx = x
-            miny = maxy = y
-            n = 0
-            while stack:
-                cx, cy = stack.pop()
-                n += 1
-                for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-                    nx, ny = cx + dx, cy + dy
-                    if 0 <= nx < w and 0 <= ny < h and not visited[ny][nx] and pix[nx, ny] <= 90:
-                        visited[ny][nx] = True
-                        stack.append((nx, ny))
-                        minx = min(minx, nx)
-                        maxx = max(maxx, nx)
-                        miny = min(miny, ny)
-                        maxy = max(maxy, ny)
-            bw, bh = maxx - minx + 1, maxy - miny + 1
-            if bh < 10 or bh > 36 or n < 16:
-                continue
-            aspect = bw / max(bh, 1)
-            if 0.18 <= aspect <= 1.15:
-                letterish += 1
-            if letterish >= 5:
-                return True
-    return False
+            hh, s, v = pix[x, y]
+            hd = hh * 360 / 255
+            if (hd <= 38 or hd >= 340) and s >= 0.35 * 255 and v >= 0.28 * 255:
+                hit += 1
+    return hit / max(w * h, 1)
 
 
-def image_has_ocr_text(im: Any) -> bool:
-    """True when the figure contains readable letters/digits."""
+def subject_metrics(im: Any) -> dict[str, Any]:
+    """check_v5 fill: subject bounding span inside the 1.618:1 centre crop."""
+    w, h = im.size
+    x0c, y0c, x1c, y1c = _crop_box(w, h, PHI)
+    crop = im.crop((x0c, y0c, x1c, y1c))
+    cw, ch = crop.size
+    bg = _border_bg(im)
+    pix = crop.load()
+    mask = [[False] * cw for _ in range(ch)]
+    row_hit = [0] * ch
+    col_hit = [0] * cw
+    for y in range(ch):
+        for x in range(cw):
+            r, g, b = pix[x, y]
+            d = ((r - bg[0]) ** 2 + (g - bg[1]) ** 2 + (b - bg[2]) ** 2) ** 0.5
+            if d > 28:
+                mask[y][x] = True
+                row_hit[y] += 1
+                col_hit[x] += 1
+    rows = [i for i, n in enumerate(row_hit) if n / max(cw, 1) > 0.004]
+    cols = [i for i, n in enumerate(col_hit) if n / max(ch, 1) > 0.004]
+    if not rows or not cols:
+        return {"span": 0.0, "bbox": (0, 0, 0, 0), "margins": {"L": 1, "R": 1, "T": 1, "B": 1}}
+    x0, x1, y0, y1 = cols[0], cols[-1] + 1, rows[0], rows[-1] + 1
+    span = max((x1 - x0) / max(cw, 1), (y1 - y0) / max(ch, 1))
+    return {
+        "span": span,
+        "bbox": (x0 + x0c, y0 + y0c, x1 + x0c, y1 + y0c),
+        "margins": {
+            "L": x0 / max(cw, 1),
+            "R": (cw - x1) / max(cw, 1),
+            "T": y0 / max(ch, 1),
+            "B": (ch - y1) / max(ch, 1),
+        },
+    }
+
+
+_OCR_CACHE: tuple[str, Any] | tuple[None, None] | None = None
+
+
+def _ocr_engine() -> tuple[str, Any] | tuple[None, None]:
+    global _OCR_CACHE
+    if _OCR_CACHE is not None:
+        return _OCR_CACHE
     try:
         import pytesseract  # type: ignore
 
-        text = pytesseract.image_to_string(im, config="--psm 6")
-        tokens = re.findall(r"[A-Za-z]{3,}|\d{2,}|[\u4e00-\u9fff]{2,}", text or "")
-        if tokens:
-            return True
+        pytesseract.get_tesseract_version()
+        _OCR_CACHE = ("tesseract", pytesseract)
+        return _OCR_CACHE
     except Exception:
         pass
-    return _letterlike_components(im)
+    try:
+        from rapidocr_onnxruntime import RapidOCR  # type: ignore
+
+        _OCR_CACHE = ("rapidocr", RapidOCR())
+        return _OCR_CACHE
+    except Exception:
+        _OCR_CACHE = (None, None)
+        return _OCR_CACHE
 
 
-def qc_image(path: str) -> dict[str, Any]:
-    """Automated image QC: no OCR text, accent 3–6%, subject fill 68–78%."""
+def ocr_available() -> bool:
+    return _ocr_engine()[0] is not None
+
+
+def image_pipeline_ready() -> tuple[bool, str]:
+    """Check QC deps before spending any image generations."""
+    try:
+        from PIL import Image  # noqa: F401
+    except ImportError:
+        return False, "Pillow missing"
+    if not ocr_available():
+        return False, "OCR unavailable; fail closed"
+    return True, ""
+
+
+def image_has_ocr_text(im: Any) -> tuple[bool, str]:
+    """Real OCR only (check_v5: conf>=80, >=3 alnum/CJK). Missing engine fails closed."""
+    name, engine = _ocr_engine()
+    if name is None:
+        return True, "OCR unavailable; fail closed"
+    token_re = re.compile(r"[A-Za-z]{3,}|\d{2,}|[\u4e00-\u9fff]{2,}")
+    try:
+        if name == "tesseract":
+            data = engine.image_to_data(im, config="--psm 6", output_type=engine.Output.DICT)
+            hits: list[str] = []
+            for txt, conf in zip(data.get("text") or [], data.get("conf") or []):
+                try:
+                    score = float(conf)
+                except (TypeError, ValueError):
+                    continue
+                if score < 80:
+                    continue
+                if token_re.search(str(txt or "")):
+                    hits.append(str(txt).strip())
+            return bool(hits), " ".join(hits[:8])
+        arr = im.convert("RGB")
+        try:
+            import numpy as np
+
+            result, _ = engine(np.asarray(arr))
+        except TypeError:
+            result, _ = engine(arr)
+        hits = []
+        for row in result or []:
+            txt, conf = "", 1.0
+            if isinstance(row, (list, tuple)):
+                if len(row) >= 3:
+                    txt, conf = str(row[1]), float(row[2] or 0)
+                elif len(row) >= 2:
+                    txt = str(row[1])
+            else:
+                txt = str(row)
+            if conf < 0.8:
+                continue
+            if token_re.search(txt):
+                hits.append(txt)
+        return bool(hits), " ".join(hits[:8])
+    except Exception as exc:
+        return True, f"OCR error: {type(exc).__name__}"
+
+
+def average_hash_bits(im: Any, size: int = 8) -> list[int]:
+    g = im.convert("L").resize((size, size))
+    pix = list(g.tobytes())
+    avg = sum(pix) / max(len(pix), 1)
+    return [1 if p >= avg else 0 for p in pix]
+
+
+def hash_distance(a: list[int], b: list[int]) -> int:
+    return sum(x != y for x, y in zip(a, b))
+
+
+def is_publishable_image(path: str | Path) -> bool:
+    p = Path(path)
+    if not p.exists() or p.stat().st_size < 2000:
+        return False
+    try:
+        from PIL import Image
+
+        im = Image.open(p)
+        w, h = im.size
+    except Exception:
+        return False
+    return w >= 400 and h >= 247
+
+
+def qc_image(path: str, prior_hashes: list[list[int]] | None = None) -> dict[str, Any]:
+    """QC from the approved trial: subject span 68–78%, accent 3–6%, real OCR."""
     reasons: list[str] = []
     result: dict[str, Any] = {
         "pass": False,
@@ -890,50 +1088,106 @@ def qc_image(path: str) -> dict[str, Any]:
         "accent_frac": 0.0,
         "fill_frac": 0.0,
         "reasons": reasons,
+        "hash": [],
     }
     try:
         from PIL import Image
     except ImportError:
         reasons.append("Pillow missing; cannot QC image")
         return result
+    if not ocr_available():
+        reasons.append("OCR unavailable; fail closed")
+        return result
     try:
-        im = Image.open(path).convert("RGB")
+        im = matte_to_white(Image.open(path))
     except Exception as exc:
         reasons.append(f"unreadable image: {type(exc).__name__}")
         return result
+    if im.size[0] < 32 or im.size[1] < 32:
+        reasons.append(f"image too small to publish ({im.size[0]}x{im.size[1]})")
+        return result
 
-    w, h = im.size
-    total = max(w * h, 1)
-    fill = 0
-    accent = 0
-    for r, g, b in im.getdata():  # RGB triples; get_flattened_data is a flat byte stream
-        if r >= 245 and g >= 245 and b >= 245:
-            continue
-        fill += 1
-        rgb = (r, g, b)
-        if min(_rgb_dist(rgb, ACCENT_RGB), _rgb_dist(rgb, ACCENT_SHADE_RGB)) <= 58:
-            accent += 1
-    fill_frac = fill / total
-    accent_frac = accent / total
-    ocr_text = image_has_ocr_text(im)
+    metrics = subject_metrics(im)
+    fill_frac = float(metrics["span"])
+    accent_frac = _warm_mask_frac(im)
+    ocr_hit, ocr_note = image_has_ocr_text(im)
+    bits = average_hash_bits(im)
     result["fill_frac"] = round(fill_frac, 4)
     result["accent_frac"] = round(accent_frac, 4)
-    result["ocr_text"] = bool(ocr_text)
-    if ocr_text:
-        reasons.append("ocr text detected")
+    result["ocr_text"] = bool(ocr_hit)
+    result["hash"] = bits
+    if ocr_hit:
+        reasons.append(f"ocr text detected: {ocr_note}")
     lo_a, hi_a = ACCENT_RANGE
     if not (lo_a <= accent_frac <= hi_a):
         reasons.append(f"accent {accent_frac:.3f} outside {lo_a:.2f}-{hi_a:.2f}")
     lo_f, hi_f = FILL_RANGE
     if not (lo_f <= fill_frac <= hi_f):
         reasons.append(f"fill {fill_frac:.3f} outside {lo_f:.2f}-{hi_f:.2f}")
+    if prior_hashes:
+        dmin = min((hash_distance(bits, prev) for prev in prior_hashes), default=99)
+        if dmin <= DEDUPE_FAIL:
+            reasons.append(f"near-duplicate of another weekly image (d={dmin})")
     result["pass"] = not reasons
     result["reasons"] = reasons
     return result
 
 
+def reframe_to_card(src: str | Path, dest: str | Path, pos: str = "UR", target: float = SUBJECT_TARGET) -> dict[str, Any]:
+    """Port of reframe_v9: 1600×989, subject ~72%, accent on a golden point."""
+    from PIL import Image
+
+    src, dest = Path(src), Path(dest)
+    im = matte_to_white(Image.open(src))
+    w, h = im.size
+    metrics = subject_metrics(im)
+    x0, y0, x1, y1 = metrics["bbox"]
+    if x1 <= x0 or y1 <= y0:
+        canvas = Image.new("RGB", IMAGE_OUT_SIZE, (255, 255, 255))
+        canvas.save(dest, "PNG")
+        return {"ok": False, "reason": "empty subject"}
+    ow, oh = IMAGE_OUT_SIZE
+    iw, ih = x1 - x0, y1 - y0
+    scale = min(target * ow / max(iw, 1), target * oh / max(ih, 1))
+    tx, ty = GOLDEN_XY.get(pos, GOLDEN_XY["UR"])
+    # Accent centroid if present, else subject centre
+    hsv = im.convert("HSV")
+    hp = hsv.load()
+    xs: list[int] = []
+    ys: list[int] = []
+    for y in range(h):
+        for x in range(w):
+            hh, s, v = hp[x, y]
+            hd = hh * 360 / 255
+            if (hd <= 38 or hd >= 340) and s >= 0.35 * 255 and v >= 0.28 * 255:
+                xs.append(x)
+                ys.append(y)
+    if len(xs) > 200:
+        fx, fy = sum(xs) / len(xs), sum(ys) / len(ys)
+    else:
+        fx, fy = (x0 + x1) / 2, (y0 + y1) / 2
+    nw, nh = max(1, int(round(w * scale))), max(1, int(round(h * scale)))
+    scaled = im.resize((nw, nh), Image.Resampling.LANCZOS)
+    left = tx * ow - fx * scale
+    top = ty * oh - fy * scale
+    mx, my = 0.055 * ow, 0.055 * oh
+    left = min(max(left + x0 * scale, mx), ow - iw * scale - mx) - x0 * scale
+    top = min(max(top + y0 * scale, my), oh - ih * scale - my) - y0 * scale
+    canvas = Image.new("RGB", (ow, oh), (255, 255, 255))
+    canvas.paste(scaled, (int(round(left)), int(round(top))))
+    pix = canvas.load()
+    for y in range(oh):
+        for x in range(ow):
+            r, g, b = pix[x, y]
+            if min(r, g, b) >= 250 and max(r, g, b) - min(r, g, b) <= 3:
+                pix[x, y] = (255, 255, 255)
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    canvas.save(dest, "PNG")
+    return {"ok": True, "pos": pos, "scale": round(float(scale), 3)}
+
+
 def write_fallback_cover(path: str) -> None:
-    """Neutral house-style cover: white + site greens, no text, no terracotta."""
+    """Neutral house-style cover at 1600×989. Never write a 1×1 or blank PNG."""
     w, h = FALLBACK_COVER_SIZE
     try:
         from PIL import Image, ImageDraw
@@ -943,19 +1197,7 @@ def write_fallback_cover(path: str) -> None:
         draw.ellipse([int(w * 0.12), int(h * 0.18), int(w * 0.46), int(h * 0.82)], fill=(159, 216, 203))
         draw.ellipse([int(w * 0.52), int(h * 0.16), int(w * 0.88), int(h * 0.84)], fill=(15, 107, 92))
         draw.ellipse([int(w * 0.60), int(h * 0.30), int(w * 0.80), int(h * 0.70)], fill=(47, 125, 109))
+        Path(path).parent.mkdir(parents=True, exist_ok=True)
         im.save(path, "PNG")
-        return
     except Exception:
-        logging.warning("Pillow fallback cover failed; writing minimal PNG")
-
-    def _chunk(tag: bytes, data: bytes) -> bytes:
-        return struct.pack(">I", len(data)) + tag + data + struct.pack(">I", zlib.crc32(tag + data) & 0xFFFFFFFF)
-
-    raw = b"\x00" + b"\xff\xff\xff"
-    png = (
-        b"\x89PNG\r\n\x1a\n"
-        + _chunk(b"IHDR", struct.pack(">IIBBBBB", 1, 1, 8, 2, 0, 0, 0))
-        + _chunk(b"IDAT", zlib.compress(raw))
-        + _chunk(b"IEND", b"")
-    )
-    Path(path).write_bytes(png)
+        logging.warning("Pillow fallback cover failed; not writing a 1x1 placeholder")

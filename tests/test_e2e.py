@@ -242,8 +242,8 @@ sources:
         kwargs = mock_client.messages.create.call_args.kwargs
         assert "temperature" not in kwargs
         names = [t.get("name") for t in kwargs["tools"]]
-        assert "submit_claim_audit" in names
-        assert "test_tool" in names
+        assert names == ["submit_claim_audit"]
+        assert "test_tool" not in names
 
     @patch('anthropic.Anthropic')
     @patch('inlight_articles._http_get')
