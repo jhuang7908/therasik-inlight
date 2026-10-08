@@ -1452,6 +1452,52 @@ class TestAcquisitionDirection:
         assert role is None
 
 
+class TestDivestitureOutOfScope:
+    """Selling a subsidiary, business or asset is never an in-scope acquisition."""
+
+    def test_company_possessive_is_never_the_filer(self):
+        assert sec_deals.is_divestiture_or_asset_sale(
+            "Arbor Partners LLC agreed to acquire the Company's diagnostics business"
+        ) is True
+
+    def test_outstanding_shares_of_company_subsidiary(self):
+        assert sec_deals.is_divestiture_or_asset_sale(
+            "Buyer agreed to acquire all outstanding shares of the Company's subsidiary"
+        ) is True
+
+    def test_subsidiary_of_the_company(self):
+        assert sec_deals.is_divestiture_or_asset_sale(
+            "purchased all outstanding capital stock of Foo Diagnostics, a wholly-owned subsidiary of the Company"
+        ) is True
+
+    def test_company_subsidiary_as_buyer_is_not_divestiture(self):
+        assert sec_deals.is_divestiture_or_asset_sale(
+            "the Company's subsidiary will merge into Juniper Biosciences, Inc."
+        ) is False
+
+    def test_process_drops_subsidiary_share_sale(self):
+        filing = (
+            "Lumen Diagnostics, Inc. (the \"Company\"). "
+            "On October 1, 2026, Buyer Inc. agreed to acquire all outstanding shares "
+            "of the Company's subsidiary Helio Diagnostics, Inc. for $90 million."
+        )
+        deal = sec_deals.process_sec_deal(
+            filing_text=filing,
+            filer_name="Lumen Diagnostics, Inc.",
+            filing_url="https://test",
+            filing_date="2026-10-05",
+            event_date="2026-10-01",
+            claude_response={
+                "deal_type": "acquisition",
+                "counterparty_name": "Buyer Inc.",
+                "type_quote": "Buyer Inc. agreed to acquire all outstanding shares of the Company's subsidiary Helio Diagnostics, Inc.",
+                "counterparty_quote": "Buyer Inc. agreed to acquire all outstanding shares of the Company's subsidiary Helio Diagnostics, Inc.",
+                "amounts": [{"kind": "purchase_price", "quote": "for $90 million"}],
+            },
+        )
+        assert deal is None
+
+
 # =============================================================================
 # RUN TESTS
 # =============================================================================

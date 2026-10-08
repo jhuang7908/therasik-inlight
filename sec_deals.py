@@ -1970,28 +1970,56 @@ def is_termination_or_assignment_language(text: str) -> bool:
 
 
 def is_divestiture_or_asset_sale(text: str) -> bool:
-    """True if the text describes a business-unit sale, not an acquisition of a company."""
+    """True if the text is a sale of the filer's subsidiary, business or assets.
+
+    'The Company's X' is never the filer itself. Acquiring the Company's
+    subsidiary, business, assets, or 'all outstanding shares of the Company's
+    subsidiary' is a divestiture (out of scope).
+
+    The Company's subsidiary merging *into* a third party (filer as buyer)
+    is not a divestiture.
+    """
     if not text:
         return False
     t = text.lower()
+
+    # Filer buying *through* a subsidiary is not a sale of that subsidiary.
+    if re.search(
+        r"the\s+company['\u2019]s\s+(?:indirect\s+)?"
+        r"(?:wholly[-\s]owned\s+)?subsidiary\s+(?:will\s+)?"
+        r"(?:merge\s+(?:with\s+and\s+)?into|acquir)",
+        t,
+    ):
+        return False
+
     if re.search(r'\bdivest(?:iture|ed|s|ing)?\b', t):
         return True
+    # Anyone acquiring/buying the Company's property (not the Company).
     if re.search(
-        r'\bacquir(?:e|es|ed|ing)\s+the\s+company[\'\u2019]s\s+'
-        r'[\w\s-]{0,40}?(?:business|division|unit|assets|operations|portfolio)\b',
+        r'(?:acquir|purchas|buy).{0,80}the\s+company[\'\u2019]s\s+',
+        t,
+    ):
+        return True
+    if re.search(
+        r'(?:acquir|purchas|buy|sale\s+of).{0,80}'
+        r'all\s+(?:of\s+)?(?:the\s+)?outstanding\s+shares?\s+of\s+'
+        r'(?:the\s+)?company[\'\u2019]s',
+        t,
+    ):
+        return True
+    if re.search(
+        r'(?:acquir|purchas|buy|sale\s+of).{0,80}'
+        r'(?:wholly[-\s]owned\s+)?subsidiary\s+of\s+(?:the\s+)?company\b',
         t,
     ):
         return True
     if re.search(
         r'\b(?:sale|dispos(?:e|al)|sell(?:s|ing)?)\s+of\s+(?:the\s+)?'
-        r'(?:company[\'\u2019]s\s+)?[\w\s-]{0,40}?'
-        r'(?:business|division|unit|subsidiary|assets)\b',
+        r'(?:company[\'\u2019]s|its)\s+',
         t,
     ):
         return True
-    if re.search(r'\bwholly-owned\s+subsidiary\b', t) and re.search(
-        r'\b(?:sale|sold|divest|dispos|acquir)', t
-    ):
+    if re.search(r'\bthe\s+company\s+(?:sold|will\s+sell|agreed\s+to\s+sell)\b', t):
         return True
     return False
 
