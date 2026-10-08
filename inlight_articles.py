@@ -58,6 +58,7 @@ class EnrichedItem:
     doi: str = ""
     pmid: str = ""
     pmcid: str = ""
+    journal: str = ""  # Journal name from EPMC or source
     abstract: str = ""
     fulltext_results: str = ""
     fig_captions: str = ""
@@ -442,6 +443,11 @@ def enrich_item(row: dict) -> EnrichedItem:
         item.abstract = core.get("abstractText", "")
         item.pmid = core.get("pmid", "") or item.pmid
         item.pmcid = core.get("pmcid", "")
+        # Get journal name from EPMC if available
+        if core.get("journalTitle"):
+            item.journal = core.get("journalTitle")
+        elif core.get("journalInfo", {}).get("journal", {}).get("title"):
+            item.journal = core["journalInfo"]["journal"]["title"]
         if item.abstract:
             item.evidence_level = "abstract"
             item.source_trace.append(f"EPMC abstract: {len(item.abstract)} chars")
@@ -1009,12 +1015,19 @@ def extract_identifiers_from_source(source: str) -> set[str]:
     return identifiers
 
 
-def number_exists_in_source(num_str: str, source_norm: str, source_identifiers: set[str]) -> bool:
+def number_exists_in_source(num_str: str, source_norm: str, source_identifiers: set[str], 
+                            context_window: str = "") -> bool:
     """Check if a number exists in the source text (after normalization).
     
     Returns True if:
-    - The number appears in source with same context (nearby unit/context word)
+    - The number appears in source with word boundaries
     - The number is part of an identifier that appears verbatim in source
+    
+    Args:
+        num_str: The number string from output (e.g., "50", "3.5倍", "72小时")
+        source_norm: Normalized source text
+        source_identifiers: Set of identifiers extracted from source
+        context_window: Optional surrounding text for better context matching
     """
     # Normalize the number
     num_clean = num_str.replace(',', '').replace('，', '').strip()
@@ -1022,13 +1035,14 @@ def number_exists_in_source(num_str: str, source_norm: str, source_identifiers: 
     # Extract core numeric value
     num_core = extract_number_core(num_clean)
     if not num_core:
-        return True  # Not a number
+        return True  # Not a number (empty after extraction)
     
     # Check if this is part of an identifier in source
     for ident in source_identifiers:
-        if num_core in ident.lower():
-            # The number is part of an identifier - check if identifier is in output context
-            return True  # Allow - the identifier exists in source
+        ident_lower = ident.lower()
+        if num_core in ident_lower:
+            # The number is part of an identifier - allow if identifier exists in source
+            return True
     
     # Check if the number exists in source with word boundary
     if number_in_text_as_word_boundary(num_core, source_norm):
@@ -1042,6 +1056,46 @@ def number_exists_in_source(num_str: str, source_norm: str, source_identifiers: 
             return True
     
     return False
+
+
+def extract_numbers_with_context(text: str) -> list[tuple[str, str]]:
+    """Extract numbers from text with their surrounding context.
+    
+    Returns list of (number_string, context_window) tuples.
+    Context window is ~20 chars before and after for unit/meaning verification.
+    """
+    results = []
+    
+    # Arabic numbers with optional units
+    number_pattern = r'(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?(?:\s*(?:%|％|倍|年|个月|天|周|小时|例|名|mg|kg|mL|µg|nM|pM|µM|mM|μg|μL))?'
+    for match in re.finditer(number_pattern, text):
+        num = match.group(0)
+        start = max(0, match.start() - 20)
+        end = min(len(text), match.end() + 20)
+        context = text[start:end]
+        results.append((num, context))
+    
+    return results
+
+
+def extract_chinese_numbers_with_context(text: str) -> list[tuple[str, str]]:
+    """Extract Chinese numerals with their surrounding context.
+    
+    Handles: 一二三四五六七八九十百千万亿两
+    With units: 年|倍|%|％|个月|天|周|小时|例|名|位|人|剂|次|万|亿
+    """
+    results = []
+    
+    # Chinese numerals with units (these ARE data)
+    cn_data_pattern = r'[零一二三四五六七八九十百千万亿两]+(?:多)?(?:年|倍|%|％|个月|天|周|小时|例|名|位|人|剂|次|万|亿)'
+    for match in re.finditer(cn_data_pattern, text):
+        cn_num = match.group(0)
+        start = max(0, match.start() - 20)
+        end = min(len(text), match.end() + 20)
+        context = text[start:end]
+        results.append((cn_num, context))
+    
+    return results
 
 
 def validate_depth(art: dict, raw_material: str) -> list[str]:
@@ -1123,18 +1177,15 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
     
     # Extract ALL numbers from output text and check each against source
     # This includes numbers in "原文未给出" contexts - no special exemption
+    # Every numeric token must appear in source (after normalization)
     
-    # Extract numbers from output
-    number_pattern = r'(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?(?:\s*(?:%|％|倍|年|个月|天|周|例|名|mg|kg|mL|µg|nM))?'
-    for match in re.finditer(number_pattern, all_text):
-        num = match.group(0)
-        if not number_exists_in_source(num, source_norm, source_identifiers):
+    # Extract Arabic numbers with context
+    for num, context in extract_numbers_with_context(all_text):
+        if not number_exists_in_source(num, source_norm, source_identifiers, context):
             problems.append(f"数字 '{num}' 在原始材料中未找到")
     
-    # Chinese numerals with data units
-    cn_data_pattern = r'[一二三四五六七八九十百千万亿两]+(?:年|倍|%|％|个月|天|周|例|名|位|人|剂|次)'
-    for match in re.finditer(cn_data_pattern, all_text):
-        cn_num = match.group(0)
+    # Extract Chinese numerals with context (万/亿 included)
+    for cn_num, context in extract_chinese_numbers_with_context(all_text):
         arabic = chinese_numeral_to_arabic(cn_num)
         arabic_core = extract_number_core(arabic)
         if arabic_core and not number_in_text_as_word_boundary(arabic_core, source_norm):
@@ -1191,15 +1242,16 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
 
 
 def validate_names(art: dict, raw_material: str) -> list[str]:
-    """Check that person/institution/drug/company names in output appear in source.
+    """Check that proper names in output appear in source.
     
-    Returns list of problems for names that appear fabricated.
+    Per spec B, we check ONLY:
+    1. Latin-script tokens (author names, drug names, company names)
+    2. Chinese institution suffix patterns with a preceding proper name
+    3. 'X等' author patterns
     
-    Checks:
-    - Latin author names: "Zhang 等", "Li 等", "Smith 等"
-    - Chinese author names: "张等", "李等" 
-    - Institution names mentioned in the article
-    - Company/drug names that look specific
+    We do NOT flag:
+    - Generic terms like '单中心', '中心数', '多中心'
+    - Common Chinese words that happen to end in institution suffixes
     """
     problems = []
     norm = normalize_whitespace(raw_material).lower()
@@ -1216,64 +1268,69 @@ def validate_names(art: dict, raw_material: str) -> list[str]:
         *art.get("limitations", []),
     ])
     
-    # Latin author names: "Zhang 等", "Li 等", "Smith 等"
+    # 1. Latin-script author names: "Zhang 等", "Li 等", "Smith 等"
     latin_author_pattern = r'([A-Z][a-z]+)\s*等'
     for match in re.finditer(latin_author_pattern, all_text):
         name = match.group(1).lower()
-        if name not in norm and len(name) >= 2:
-            if f"{name}," not in norm and f"{name} " not in norm:
-                problems.append(f"作者姓氏 '{match.group(1)}' 在原始材料中未找到（可能是编造）")
+        if len(name) >= 2 and name not in norm:
+            # Check with various boundaries
+            if not any(x in norm for x in [f"{name},", f"{name} ", f"{name}.", f" {name}"]):
+                problems.append(f"作者姓氏 '{match.group(1)}' 在原始材料中未找到")
     
-    # Chinese author names: "张等", "李等", "王等" followed by 等
-    chinese_surname_pattern = r'([\u4e00-\u9fff]{1,2})等'
-    common_non_surnames = {'作者', '患者', '受试', '研究', '结果', '数据', '其他', '这些', '那些'}
+    # 2. Chinese 'X等' author patterns (single surname + 等)
+    # Only check surnames, not common words
+    chinese_surname_pattern = r'([\u4e00-\u9fff])等'
+    # Common single-char words that are NOT surnames when followed by 等
+    common_non_surnames = {'者', '后', '外', '内', '上', '下', '前', '中', '果', '据', '他', '她', '它', '此', '其'}
     for match in re.finditer(chinese_surname_pattern, all_text):
-        name = match.group(1)
-        if name not in common_non_surnames:
-            if name not in norm:
-                problems.append(f"中文作者姓氏 '{name}' 在原始材料中未找到（可能是编造）")
+        char = match.group(1)
+        if char not in common_non_surnames:
+            # This looks like a surname - check if it appears in source
+            if char not in raw_material:
+                problems.append(f"中文作者姓氏 '{char}' 在原始材料中未找到")
     
-    # Specific institution patterns (universities, hospitals, centers)
-    # Per spec B: Don't treat '中心数', '单中心' as institutions
-    # Only check: institution suffixes with preceding proper names
-    institution_pattern = r'([\u4e00-\u9fffA-Za-z\s]+(?:大学|医院|研究所|研究中心|医疗中心|癌症中心|Institute|University|Hospital|Center|Centre))'
-    non_institution_phrases = {
-        '单中心', '多中心', '中心数', '数据中心', '研究中心', '该中心',
-        '医疗中心', '癌症中心', '一个中心', '两个中心', '三个中心',
-    }
+    # 3. Chinese institution patterns: PROPER NAME + suffix
+    # Only match if there's a clear proper name before the suffix
+    # Proper name indicators: capitalized/title case, or known institution name patterns
+    # E.g., "北京大学", "哈佛医院", but NOT "单中心", "中心数"
+    
+    # Look for specific named institutions (proper name + suffix)
+    # Proper names in Chinese are typically 2-4 chars of specific place/person names
+    institution_suffixes = r'(?:大学|医院|研究所|研究院|学院)'
+    institution_pattern = rf'([\u4e00-\u9fff]{{2,4}}){institution_suffixes}'
+    
+    # Known generic terms to skip
+    generic_terms = {'单中心', '多中心', '中心数', '该中心', '本中心', '数据中', '研究中'}
+    
     for match in re.finditer(institution_pattern, all_text):
-        inst = match.group(1).strip()
-        # Skip if it's a generic term, not an institution name
-        if inst in non_institution_phrases or len(inst) < 4:
+        full_name = match.group(0)
+        prefix = match.group(1)
+        
+        # Skip if prefix looks generic (contains numbers or common descriptive words)
+        if any(c in prefix for c in '一二三四五六七八九十百千万零数该本某各'):
             continue
-        # Skip if it's a number + 中心 pattern
-        if re.match(r'^[\d一二三四五六七八九十]+[个家]?中心$', inst):
+        if full_name in generic_terms:
             continue
-        # Skip study design terms
-        if inst.endswith('中心') and inst in ('单中心', '多中心', '中心数'):
-            continue
-        inst_lower = inst.lower()
-        # Only check specific-looking institutions (not generic phrases)
-        if inst_lower not in norm:
-            # Allow generic terms
-            if not any(g in inst_lower for g in ['该研究', '本研究', '这项', '一家', '多家', '单中心', '多中心']):
-                problems.append(f"机构名 '{inst}' 在原始材料中未找到（可能是编造）")
+        
+        # Check if this institution name appears in source
+        if full_name.lower() not in norm:
+            problems.append(f"机构名 '{full_name}' 在原始材料中未找到")
     
-    # Specific drug/compound names (capitalized, not common words)
+    # 4. Latin-script drug/compound names (specific patterns)
     drug_pattern = r'\b([A-Z][a-z]+(?:mab|nib|lib|zumab|ximab|tinib|ciclib|lizumab))\b'
     for match in re.finditer(drug_pattern, all_text):
         drug = match.group(1).lower()
         if drug not in norm:
-            problems.append(f"药物名 '{match.group(1)}' 在原始材料中未找到（可能是编造）")
+            problems.append(f"药物名 '{match.group(1)}' 在原始材料中未找到")
     
-    # Company names (patterns like "XYZ公司", "XYZ Inc", "XYZ Ltd")
-    company_pattern = r'([A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+)?)\s*(?:公司|Inc\.?|Ltd\.?|Corp\.?|Therapeutics|Pharma|Bio)'
+    # 5. Latin-script company names
+    company_pattern = r'([A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+)?)\s*(?:公司|Inc\.?|Ltd\.?|Corp\.?|Therapeutics|Pharma|Biopharma)'
     for match in re.finditer(company_pattern, all_text):
         company = match.group(1).lower()
-        if company not in norm and len(company) >= 3:
-            # Skip very common words
-            if company not in ['the', 'and', 'bio', 'new']:
-                problems.append(f"公司名 '{match.group(1)}' 在原始材料中未找到（可能是编造）")
+        if len(company) >= 3 and company not in norm:
+            # Skip very common English words
+            if company not in ['the', 'and', 'bio', 'new', 'global', 'inc', 'international']:
+                problems.append(f"公司名 '{match.group(1)}' 在原始材料中未找到")
     
     return problems
 
@@ -1425,13 +1482,20 @@ def process_articles(items: list[dict], config: dict) -> dict:
                           url, abstract_len)
             tier = "brief"
         
-        raw_material = "\n".join([
-            enriched_item.abstract or "",
-            enriched_item.fulltext_results or "",
-            enriched_item.fig_captions or "",
-            enriched_item.methods_design or "",
-            enriched_item.rss_summary or "",
-        ])
+        # Build raw_material for validation - avoid duplicating abstract/rss_summary
+        raw_parts = []
+        if enriched_item.abstract:
+            raw_parts.append(enriched_item.abstract)
+        if enriched_item.fulltext_results:
+            raw_parts.append(enriched_item.fulltext_results)
+        if enriched_item.fig_captions:
+            raw_parts.append(enriched_item.fig_captions)
+        if enriched_item.methods_design:
+            raw_parts.append(enriched_item.methods_design)
+        # Only include rss_summary if it's different from abstract
+        if enriched_item.rss_summary and enriched_item.rss_summary != enriched_item.abstract:
+            raw_parts.append(enriched_item.rss_summary)
+        raw_material = "\n".join(raw_parts)
         
         art = draft_single_article(enriched_item, tier, config)
         if not art:
@@ -1470,24 +1534,40 @@ def process_articles(items: list[dict], config: dict) -> dict:
             problems.extend(validate_names(art, raw_material))
             
             if problems:
-                if tier == "deep":
-                    # Downgrade to brief with targeted redraft
-                    logging.warning("Downgrading %s from deep to brief after retry - targeted redraft", url)
-                    brief_art = draft_single_article(enriched_item, "brief", config, problems=problems)
-                    if brief_art is None:
-                        logging.error("Brief targeted redraft failed, dropping: %s", url)
-                        continue
-                    brief_art["field"] = field
-                    art = brief_art
-                    tier = "brief"
-                    problems = validate_depth(art, raw_material)
-                    problems.extend(validate_names(art, raw_material))
-                    if problems:
-                        logging.error("Dropping %s after brief redraft: %s", url, problems)
+                # Classify problems as hard (invented content) vs soft (formatting/count)
+                hard_problems = [p for p in problems if any(x in p for x in [
+                    '未找到', '无法回溯', '编造', '营销词汇', '新闻稿'
+                ])]
+                soft_problems = [p for p in problems if p not in hard_problems]
+                
+                if hard_problems:
+                    # Hard problems: downgrade or drop
+                    if tier == "deep":
+                        logging.warning("Downgrading %s from deep to brief after retry - hard problems: %s", url, hard_problems)
+                        brief_art = draft_single_article(enriched_item, "brief", config, problems=problems)
+                        if brief_art is None:
+                            logging.error("Brief targeted redraft failed, dropping: %s", url)
+                            continue
+                        brief_art["field"] = field
+                        art = brief_art
+                        tier = "brief"
+                        problems = validate_depth(art, raw_material)
+                        problems.extend(validate_names(art, raw_material))
+                        hard_problems = [p for p in problems if any(x in p for x in [
+                            '未找到', '无法回溯', '编造', '营销词汇', '新闻稿'
+                        ])]
+                        if hard_problems:
+                            logging.error("Dropping %s after brief redraft - hard problems: %s", url, hard_problems)
+                            continue
+                        # Soft-only problems after downgrade: accept with warning
+                        if problems:
+                            logging.warning("Accepting %s with soft problems: %s", url, problems)
+                    else:
+                        logging.error("Dropping %s after retry - hard problems: %s", url, hard_problems)
                         continue
                 else:
-                    logging.error("Dropping %s after retry: %s", url, problems)
-                    continue
+                    # Only soft problems: accept the better draft with a warning
+                    logging.warning("Accepting %s with soft-only problems: %s", url, soft_problems)
         
         # Transform new format to include legacy fields needed by write_output
         # Add date from enriched item
@@ -1512,35 +1592,50 @@ def process_articles(items: list[dict], config: dict) -> dict:
         # discuss: combine limitations and significance
         discuss_parts = []
         if art.get("limitations"):
-            discuss_parts.append("局限：" + "；".join(art["limitations"]))
+            # Strip trailing periods to avoid "。；" in the join
+            lims = [lim.rstrip("。.") for lim in art["limitations"]]
+            discuss_parts.append("局限：" + "；".join(lims) + "。")
         if art.get("significance"):
             discuss_parts.append(art["significance"])
         art["discuss"] = " ".join(discuss_parts)
         
-        # Ensure journal is set
+        # Ensure journal is set - prefer EPMC journal, fallback to source
         if not art.get("journal"):
-            art["journal"] = enriched_item.source
+            art["journal"] = enriched_item.journal or enriched_item.source
         
         # Ensure steps is set (required for image caption)
         if not art.get("steps"):
             art["steps"] = ["研究背景", "方法设计", "核心发现", "意义与局限"]
         
-        # Ensure image_prompt is set - use visual-only description, not Chinese title
-        # Chinese text in image prompts risks having Chinese characters rendered in the image
+        # Ensure image_prompt is set - derive from paper subject, not generic field
+        # Use English keywords only (Chinese text risks rendering as characters in image)
         if not art.get("image_prompt"):
-            # Generate a visual-only description based on the field
-            field_visuals = {
-                "c1": "organoid structure, 3D cell culture, microscopy image, scientific illustration",
-                "c2": "molecular structure, drug binding, AI network diagram, computational biology",
-                "c3": "immune cells attacking tumor, T cells, cancer immunotherapy, medical illustration",
-                "c4": "autoimmune response, antibodies, immune system diagram, medical science",
-                "c5": "laboratory mice, animal model, preclinical research, biomedical science",
-                "c6": "antibody structure, protein engineering, molecular biology, Y-shaped antibody",
-                "c7": "CAR-T cells, cell therapy, immune cells, gene editing illustration",
-                "c8": "vaccine vial, mRNA, lipid nanoparticle, immunization, medical science",
-                "c9": "RNA molecule, lipid nanoparticle, gene therapy, molecular delivery",
+            # Extract English keywords from the enriched item's title/abstract
+            source_title = enriched_item.title or ""
+            # Extract English words (proteins, drugs, mechanisms)
+            english_words = re.findall(r'\b[A-Za-z][A-Za-z0-9-]{2,}\b', source_title)
+            # Filter to likely scientific terms
+            keywords = [w for w in english_words if len(w) >= 3 and w.lower() not in 
+                       {'the', 'and', 'for', 'with', 'from', 'this', 'that', 'are', 'was', 'were', 'not'}][:5]
+            
+            # Field-based base prompts
+            field_bases = {
+                "c1": "organoid, 3D cell culture, microscopy",
+                "c2": "molecular structure, drug binding, AI network",
+                "c3": "immune cells, tumor, T cells, cancer immunotherapy",
+                "c4": "autoimmune, antibodies, immune system",
+                "c5": "laboratory mice, animal model, preclinical",
+                "c6": "antibody structure, protein engineering",
+                "c7": "CAR-T cells, cell therapy, gene editing",
+                "c8": "vaccine, mRNA, lipid nanoparticle",
+                "c9": "RNA molecule, lipid nanoparticle, gene therapy",
             }
-            art["image_prompt"] = field_visuals.get(field, "scientific research, medical illustration, biomedical science")
+            base = field_bases.get(field, "scientific research, biomedical")
+            
+            if keywords:
+                art["image_prompt"] = f"{', '.join(keywords)}, {base}, medical illustration"
+            else:
+                art["image_prompt"] = f"{base}, medical illustration, scientific diagram"
         
         articles.append(art)
     

@@ -1045,9 +1045,8 @@ function renderPaper(id){
   }
   
   function renderLegacyBody() {
-    // For legacy format: only show separate sections if we have distinct lead/body/discuss fields
-    // If we only have sum, show it once under "这篇在解决什么" (as was done on main branch)
-    // This prevents duplication when the code splits sum into bits
+    // For legacy format: use same section headings as new format for consistency
+    // Headings: 研究背景, 核心结果, 讨论 (matching the main article format)
     
     // Check if we have actual separate fields (not derived from sum splitting)
     const hasDistinctLead = a.lead && a.lead !== a.sum;
@@ -1055,19 +1054,19 @@ function renderPaper(id){
     const hasDistinctDiscuss = a.discuss && a.discuss !== a.sum && a.discuss !== a.body;
     
     if (!hasDistinctLead && !hasDistinctBody && !hasDistinctDiscuss) {
-      // Only have sum - show it once with original heading
-      return `<div class="sec"><h2>这篇在解决什么</h2><p>${a.sum || open}</p></div>`;
+      // Only have sum - show it under consistent heading
+      return `<div class="sec"><h2>研究背景与核心结果</h2><p>${a.sum || open}</p></div>`;
     }
     
-    // Have distinct fields - show them separately
+    // Have distinct fields - show them with consistent headings
     let html = '';
     const leadText = a.lead || bits[0] || '';
     if (leadText) {
-      html += `<div class="sec"><h2>这篇在解决什么</h2><p>${leadText}</p></div>`;
+      html += `<div class="sec"><h2>研究背景</h2><p>${leadText}</p></div>`;
     }
     const walkText = a.body || '';
     if (walkText && walkText !== leadText) {
-      html += `<div class="sec"><h2>他们怎么做、看到了什么</h2><p>${walkText}</p></div>`;
+      html += `<div class="sec"><h2>核心结果</h2><p>${walkText}</p></div>`;
     }
     const closeText = a.discuss || '';
     if (closeText && closeText !== leadText && closeText !== walkText) {

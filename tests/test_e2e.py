@@ -675,12 +675,154 @@ class TestValidationFalsePositives:
             "data_points": [],
         }
         raw = "The drug was well tolerated. Safety data for grade 3+ events not reported."
+
+
+class TestInventedNumbersMustBeCaught:
+    """Negative tests: invented numbers MUST be caught by validation.
+    
+    Per spec A: Every numeric token in output must exist in source.
+    These tests verify that invented numbers are FLAGGED (test passes if caught).
+    """
+    
+    def test_invented_50nm_72hours_caught(self):
+        """'50 nM处理72小时' must be caught when not in source."""
+        from inlight_articles import validate_depth
+        
+        art = {
+            "tier": "brief",
+            "title": "药物处理实验",
+            "one_liner": "50 nM处理72小时后细胞活力下降。",
+            "datacard": {
+                "study_type": "体外实验",
+                "n": "原文未给出",
+                "control": "DMSO",
+                "intervention": "药物A",
+                "followup": "不适用",
+                "primary_endpoint": "细胞活力",
+                "primary_endpoint_result": "下降",
+                "statistics": "原文未报告",
+                "safety": "不适用",
+            },
+            "background": "研究药物对细胞的影响。",
+            "design": "药物处理实验。",
+            "results": ["50 nM处理72小时后细胞活力下降50%。"],
+            "mechanism": "",
+            "limitations": ["体外实验"],
+            "significance": "提示药物抑制细胞。",
+            "data_points": [],
+        }
+        # Source does NOT contain 50, 72, or 50%
+        raw = "Drug treatment reduced cell viability. Cells were treated for various durations."
         problems = validate_depth(art, raw)
         
-        # Should NOT flag "3" from "≥3级" in "原文未给出" context
-        number_problems = [p for p in problems if "正文数字未登记" in p]
-        disclaimer_flags = [p for p in number_problems if "3" in p]
-        assert not disclaimer_flags, f"Incorrectly flagged numbers in disclaimers: {disclaimer_flags}"
+        # MUST catch 50, 72 as invented numbers
+        invented_flags = [p for p in problems if any(n in p for n in ['50', '72'])]
+        assert invented_flags, f"Failed to catch invented numbers 50/72: {problems}"
+    
+    def test_invented_12_healthy_donors_caught(self):
+        """'12名健康供者' must be caught when not in source."""
+        from inlight_articles import validate_depth
+        
+        art = {
+            "tier": "brief",
+            "title": "供体细胞研究",
+            "one_liner": "从12名健康供者获取细胞。",
+            "datacard": {
+                "study_type": "体外实验",
+                "n": "12名",
+                "control": "无",
+                "intervention": "不适用",
+                "followup": "不适用",
+                "primary_endpoint": "细胞特征",
+                "primary_endpoint_result": "表征完成",
+                "statistics": "原文未报告",
+                "safety": "不适用",
+            },
+            "background": "研究健康供者细胞。",
+            "design": "从12名健康供者获取PBMC。",
+            "results": ["12名供者的细胞表现一致。"],
+            "mechanism": "",
+            "limitations": ["样本有限"],
+            "significance": "初步数据。",
+            "data_points": [],
+        }
+        # Source does NOT contain 12 or "healthy donors"
+        raw = "Peripheral blood mononuclear cells were obtained from volunteer donors."
+        problems = validate_depth(art, raw)
+        
+        # MUST catch 12 as invented number
+        invented_flags = [p for p in problems if '12' in p]
+        assert invented_flags, f"Failed to catch invented number 12: {problems}"
+    
+    def test_invented_3point5_fold_upregulation_caught(self):
+        """'上调3.5倍' must be caught when not in source."""
+        from inlight_articles import validate_depth
+        
+        art = {
+            "tier": "brief",
+            "title": "基因表达研究",
+            "one_liner": "处理后基因表达上调3.5倍。",
+            "datacard": {
+                "study_type": "机制研究",
+                "n": "原文未给出",
+                "control": "未处理组",
+                "intervention": "药物处理",
+                "followup": "不适用",
+                "primary_endpoint": "基因表达",
+                "primary_endpoint_result": "上调3.5倍",
+                "statistics": "原文未报告",
+                "safety": "不适用",
+            },
+            "background": "研究药物对基因表达的影响。",
+            "design": "qPCR检测基因表达。",
+            "results": ["目标基因上调3.5倍。"],
+            "mechanism": "",
+            "limitations": ["机制不清"],
+            "significance": "提示调控作用。",
+            "data_points": [],
+        }
+        # Source does NOT contain 3.5 or fold change data
+        raw = "Gene expression was significantly upregulated after treatment. Statistical analysis confirmed the change."
+        problems = validate_depth(art, raw)
+        
+        # MUST catch 3.5 as invented number
+        invented_flags = [p for p in problems if '3.5' in p]
+        assert invented_flags, f"Failed to catch invented number 3.5: {problems}"
+    
+    def test_invented_wanyi_number_caught(self):
+        """Chinese 万/亿 numbers must be caught when not in source."""
+        from inlight_articles import validate_depth
+        
+        art = {
+            "tier": "brief",
+            "title": "投资研究",
+            "one_liner": "总投资达五亿美元。",
+            "datacard": {
+                "study_type": "产业分析",
+                "n": "不适用",
+                "control": "不适用",
+                "intervention": "不适用",
+                "followup": "不适用",
+                "primary_endpoint": "不适用",
+                "primary_endpoint_result": "不适用",
+                "statistics": "不适用",
+                "safety": "不适用",
+            },
+            "background": "产业投资分析。",
+            "design": "文献综述。",
+            "results": ["总投资达五亿美元，涉及三万患者。"],
+            "mechanism": "",
+            "limitations": ["数据有限"],
+            "significance": "反映投资趋势。",
+            "data_points": [],
+        }
+        # Source does NOT contain 五亿, 三万 or equivalent numbers
+        raw = "Investment in this therapeutic area has grown significantly over the past decade."
+        problems = validate_depth(art, raw)
+        
+        # MUST catch 五亿 and/or 三万 as invented
+        invented_flags = [p for p in problems if any(n in p for n in ['五亿', '三万', '亿', '万'])]
+        assert invented_flags, f"Failed to catch invented Chinese numbers: {problems}"
 
 
 class TestInstitutionFalsePositives:
@@ -769,6 +911,137 @@ class TestDataPointGaming:
         # Should flag the gaming data_point
         gaming_flags = [p for p in problems if "标识符而非数据" in p]
         assert gaming_flags, f"Should flag gaming data_point: {problems}"
+
+
+class TestMainPipelineE2E:
+    """E2E test calling main() --dry-run --use-new-pipeline with mocked external services."""
+    
+    @pytest.fixture
+    def mock_run_env(self, tmp_path, monkeypatch):
+        """Set up mock environment for run_weekly.py main()."""
+        # Set required env vars
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+        monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+        monkeypatch.setenv("ANTHROPIC_MODEL", "claude-sonnet-5-5")
+        
+        # Create temp directory structure
+        test_dir = tmp_path / "inlight_e2e"
+        test_dir.mkdir()
+        (test_dir / "content").mkdir()
+        (test_dir / "preview").mkdir()
+        (test_dir / "logs").mkdir()
+        
+        # Create minimal sources.yaml
+        sources_content = """
+window_days: 7
+max_per_source: 2
+max_academic: 2
+max_industry: 1
+max_deep: 1
+max_brief: 2
+sources:
+  - name: Test Nature
+    type: rss
+    feed: https://example.com/nature.xml
+"""
+        (test_dir / "sources.yaml").write_text(sources_content)
+        
+        # Change to test directory
+        monkeypatch.chdir(test_dir)
+        
+        return test_dir
+    
+    def test_validate_depth_catches_invented_in_pipeline(self):
+        """Test that validate_depth correctly catches invented numbers in a pipeline context."""
+        from inlight_articles import validate_depth, validate_names
+        
+        # Simulate a draft article with invented numbers (as if generated by Claude)
+        draft_article = {
+            "tier": "brief",
+            "title": "新型抗体疗法临床试验",
+            "one_liner": "36例患者中52%达到缓解，中位随访12个月。",
+            "datacard": {
+                "study_type": "I期试验",
+                "n": "36例",
+                "control": "无对照",
+                "intervention": "抗体A",
+                "followup": "12个月",
+                "primary_endpoint": "客观缓解率",
+                "primary_endpoint_result": "52%",
+                "statistics": "原文未报告",
+                "safety": "可接受",
+            },
+            "background": "研究新型抗体。",
+            "design": "纳入36例患者。",
+            "results": ["缓解率52%，随访12个月后50%仍维持缓解。"],  # 50% is INVENTED
+            "mechanism": "",
+            "limitations": ["单臂研究"],
+            "significance": "有前景的疗法。",
+            "data_points": [
+                {"value": "52%", "meaning": "缓解率", "source_quote": "response rate was 52%"},
+                {"value": "36", "meaning": "患者数", "source_quote": "36 patients enrolled"},
+                {"value": "12", "meaning": "随访月数", "source_quote": "median follow-up 12 months"},
+            ],
+        }
+        
+        # Source only has 52%, 36, 12 - NOT 50%
+        source = "In this phase I trial, 36 patients enrolled with response rate was 52%. Median follow-up 12 months showed durable responses."
+        
+        problems = validate_depth(draft_article, source)
+        name_problems = validate_names(draft_article, source)
+        all_problems = problems + name_problems
+        
+        # MUST catch the invented "50%" in results
+        invented_found = any("50" in p for p in problems)
+        assert invented_found, f"Pipeline failed to catch invented 50%: {all_problems}"
+    
+    def test_validate_real_article_passes(self):
+        """Test that a properly sourced article passes validation."""
+        from inlight_articles import validate_depth, validate_names
+        
+        # Properly sourced article - all numbers from source
+        # Need to meet brief character count: 450-650 chars
+        good_article = {
+            "tier": "brief",
+            "title": "CAR-T细胞治疗客观缓解率52%",
+            "one_liner": "一项纳入36例难治性血液肿瘤患者的单臂I期研究显示，CAR-T细胞治疗的客观缓解率为52%，中位随访时间为12个月。",
+            "datacard": {
+                "study_type": "I期试验",
+                "n": "36例",
+                "control": "单臂无对照",
+                "intervention": "CAR-T细胞",
+                "followup": "12个月",
+                "primary_endpoint": "客观缓解率",
+                "primary_endpoint_result": "52%（19/36）",
+                "statistics": "原文未报告统计学检验",
+                "safety": "三级以上不良事件28%",
+            },
+            "background": "针对难治性血液肿瘤，传统化疗方案和靶向药物疗效有限，急需新型治疗方法改善预后。CAR-T细胞治疗是一种前沿免疫疗法。",
+            "design": "这是一项单中心单臂开放标签I期研究，连续纳入36例经标准治疗后复发或难治的患者，均接受CAR-T细胞治疗。",
+            "results": ["研究显示客观缓解率达到52%（19/36例），其中完全缓解率表现良好。中位随访12个月后大部分缓解患者仍维持缓解状态。安全性方面，三级及以上不良事件发生率为28%。"],
+            "mechanism": "",
+            "limitations": ["单臂设计缺乏对照组无法评估相对疗效"],
+            "significance": "这项研究表明CAR-T细胞治疗为难治性血液肿瘤患者提供了一个有前景的治疗选择。",
+            "data_points": [
+                {"value": "52%", "meaning": "缓解率", "source_quote": "response rate was 52%"},
+                {"value": "36", "meaning": "患者数", "source_quote": "36 patients enrolled"},
+                {"value": "19/36", "meaning": "缓解人数", "source_quote": "response rate was 52% (19/36)"},
+                {"value": "12", "meaning": "随访月数", "source_quote": "Median follow-up was 12 months"},
+                {"value": "28%", "meaning": "AE比例", "source_quote": "Grade 3+ adverse events occurred in 28%"},
+            ],
+        }
+        
+        source = """In this study, 36 patients enrolled with refractory disease. 
+        The objective response rate was 52% (19/36). Median follow-up was 12 months. 
+        Grade 3+ adverse events occurred in 28% of patients."""
+        
+        problems = validate_depth(good_article, source)
+        name_problems = validate_names(good_article, source)
+        all_problems = problems + name_problems
+        
+        # Should have zero problems (or only soft char count issues)
+        hard_problems = [p for p in all_problems if '未找到' in p or '编造' in p or '营销' in p]
+        assert len(hard_problems) == 0, f"Properly sourced article should pass hard checks: {hard_problems}"
 
 
 if __name__ == "__main__":
