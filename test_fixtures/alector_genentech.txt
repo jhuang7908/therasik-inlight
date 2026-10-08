@@ -1,0 +1,35 @@
+UNITED STATES SECURITIES AND EXCHANGE COMMISSION
+Washington, D.C. 20549
+FORM 8-K
+CURRENT REPORT
+
+Pursuant to Section 13 or 15(d) of the Securities Exchange Act of 1934
+
+Date of Report (Date of earliest event reported): September 30, 2026
+
+ALECTOR, INC.
+(Exact name of registrant as specified in its charter)
+
+Item 1.01 Entry into a Material Definitive Agreement
+
+On September 30, 2026, Alector, Inc. (the "Company") entered into a Collaboration 
+Agreement (the "Agreement") with Genentech, Inc. ("Genentech"), a member of the 
+Roche Group. Pursuant to the Agreement, the Company granted Genentech an 
+exclusive, worldwide license to develop, manufacture and commercialize antibody 
+products targeting progranulin ("PGRN") and one additional target.
+
+Under the terms of the Agreement, the Company will receive an upfront payment 
+of $100 million in cash upon the execution of the Agreement. The Company is 
+eligible to receive up to an aggregate of $1.17 billion in potential development, 
+regulatory and commercial milestone payments. Additionally, Genentech will pay 
+tiered royalties on worldwide net sales ranging from mid-single digits to low 
+double digits.
+
+The Company expects that the upfront payment and potential milestone payments 
+will extend its cash runway into 2029.
+
+Item 9.01 Financial Statements and Exhibits
+
+(d) Exhibits
+
+99.1 Press Release dated October 5, 2026

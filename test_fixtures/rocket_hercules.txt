@@ -1,0 +1,43 @@
+UNITED STATES SECURITIES AND EXCHANGE COMMISSION
+Washington, D.C. 20549
+FORM 8-K
+CURRENT REPORT
+
+Pursuant to Section 13 or 15(d) of the Securities Exchange Act of 1934
+
+Date of Report (Date of earliest event reported): September 30, 2026
+
+ROCKET PHARMACEUTICALS, INC.
+(Exact name of registrant as specified in its charter)
+
+Item 1.01 Entry into a Material Definitive Agreement
+
+On September 30, 2026, Rocket Pharmaceuticals, Inc. (the "Company") entered into 
+a Loan and Security Agreement (the "Credit Agreement") with Hercules Capital, Inc. 
+("Hercules"), as administrative agent and collateral agent, and certain lenders 
+party thereto.
+
+The Credit Agreement provides for term loan commitments in an aggregate principal 
+amount of up to $150.0 million, consisting of five tranches. The first tranche of 
+$35.0 million (Tranche 1-A) was funded on September 30, 2026. The second tranche 
+of $20.0 million (Tranche 1-B) is available for draw within 180 days following 
+the closing date. The remaining tranches are subject to achievement of certain 
+milestones.
+
+In connection with the Credit Agreement, the Company issued to Hercules warrants 
+to purchase 1,755,853 shares of the Company's common stock at an exercise price 
+of $2.99 per share. The warrants are exercisable for a period of ten years.
+
+The term loans bear interest at a variable rate equal to the greater of (i) Prime 
+Rate plus 3.0% and (ii) 11.0% per annum.
+
+Item 3.02 Unregistered Sales of Equity Securities
+
+The Company issued warrants to purchase 1,755,853 shares of common stock to 
+Hercules as described above.
+
+Item 9.01 Financial Statements and Exhibits
+
+(d) Exhibits
+
+99.1 Press Release dated October 6, 2026

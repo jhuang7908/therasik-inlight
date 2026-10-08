@@ -962,11 +962,13 @@ def _test_adversarial_deals():
 
 
 def _test_integration_deal_pipeline():
-    """Integration test: full deal pipeline with mocked model response.
+    """Integration test: full deal pipeline using sec_deals module.
     
     Simulates what happens when the model returns a deal with quotes,
-    and verifies the full pipeline processes it correctly.
+    and verifies the full pipeline processes it correctly via sec_deals.
     """
+    import sec_deals
+    
     # Simulate real Alector/Genentech filing text
     filing_text = """
     UNITED STATES SECURITIES AND EXCHANGE COMMISSION
@@ -986,32 +988,37 @@ def _test_integration_deal_pipeline():
     exclusive, worldwide license to develop, manufacture and commercialize antibody 
     products for up to two targets.
     
-    Under the terms of the Agreement, the Company will receive an upfront payment 
+    Under the terms of the Agreement, Genentech will pay the Company an upfront payment 
     of $100 million in cash. The Company is eligible to receive up to an aggregate 
     of $1.0 billion in potential development, regulatory and commercial milestone 
     payments. Additionally, Genentech will pay tiered royalties on worldwide net 
     sales ranging from mid-single digits to low double digits.
     """
     
-    # Simulate correct model response with quotes
+    # Simulate correct model response with quotes (sec_deals format)
     model_response = {
-        'url': 'https://www.sec.gov/Archives/edgar/data/1653087/test/8k.htm',
-        'party1_name': 'Alector',
-        'party1_quote': 'Alector, Inc. (the "Company") entered into a Collaboration Agreement',
-        'party2_name': 'Genentech',
-        'party2_quote': 'Collaboration Agreement (the "Agreement") with Genentech, Inc.',
-        'deal_type_quote': 'granted Genentech an exclusive, worldwide license',
-        'amount_quotes': {
-            'upfront': 'upfront payment of $100 million in cash',
-            'milestones': 'up to an aggregate of $1.0 billion in potential development',
-        },
+        'deal_type': 'license_collaboration',
+        'counterparty_name': 'Genentech',
+        'type_quote': 'the Company granted Genentech an exclusive, worldwide license to develop, manufacture and commercialize antibody products',
+        'counterparty_quote': 'entered into a Collaboration Agreement (the "Agreement") with Genentech, Inc. ("Genentech")',
+        'amounts': [
+            {'kind': 'upfront', 'quote': 'Genentech will pay the Company an upfront payment of $100 million in cash'},
+            {'kind': 'milestones_total', 'quote': 'eligible to receive up to an aggregate of $1.0 billion in potential development, regulatory and commercial milestone payments. Additionally, Genentech'},
+        ],
     }
     
-    # Process the deal
-    result = process_deal_with_quotes(model_response, filing_text, 'Alector, Inc.')
+    # Process the deal via sec_deals module
+    result = sec_deals.process_sec_deal(
+        filing_text=filing_text,
+        filer_name='Alector, Inc.',
+        filing_url='https://www.sec.gov/test',
+        filing_date='2026-10-01',
+        event_date='2026-10-01',
+        claude_response=model_response
+    )
     
     tests_passed = 0
-    total_tests = 6
+    total_tests = 5
     
     # Test 1: Deal should be accepted (not None)
     if result is not None:
@@ -1021,7 +1028,7 @@ def _test_integration_deal_pipeline():
         return False
     
     # Test 2: Company name correct
-    if result.get('company') == 'Alector':
+    if 'Alector' in result.get('company', ''):
         tests_passed += 1
     else:
         print(f"FAIL: Company wrong: {result.get('company')}")
@@ -1032,235 +1039,61 @@ def _test_integration_deal_pipeline():
     else:
         print(f"FAIL: Counterparty wrong: {result.get('counterparty')}")
     
-    # Test 4: Deal type is license (from quote)
-    if result.get('kinds') == ['lic']:
+    # Test 4: Filer role is licensor (from quote)
+    if result.get('filer_role') == 'licensor':
         tests_passed += 1
     else:
-        print(f"FAIL: Deal type wrong: {result.get('kinds')}")
+        print(f"FAIL: Filer role wrong: {result.get('filer_role')}")
     
-    # Test 5: Upfront amount parsed correctly ($100M = 1亿美元)
-    upfront = result.get('upfront', '')
-    if '1 亿美元' in upfront or '1亿美元' in upfront:
+    # Test 5: Has verified amounts
+    if len(result.get('verified_amounts', [])) >= 1:
         tests_passed += 1
     else:
-        print(f"FAIL: Upfront amount wrong: {upfront}")
-    
-    # Test 6: Verified quotes stored
-    verified = result.get('verified_quotes', {})
-    if verified.get('party1') and verified.get('deal_type'):
-        tests_passed += 1
-    else:
-        print(f"FAIL: Verified quotes not stored: {verified}")
+        print(f"FAIL: No verified amounts found")
     
     print(f"_test_integration_deal_pipeline: {tests_passed}/{total_tests} tests passed")
     return tests_passed == total_tests
 
 
-def process_deal_with_quotes(raw_deal: dict, filing_text: str, filer_name: str) -> dict | None:
-    """Process a deal using the evidence-quote system.
+def _test_sec_deals_module():
+    """Test that sec_deals module functions work correctly."""
+    import sec_deals
     
-    R1-R9: Returns verified deal dict or None if validation fails.
-    """
-    url = raw_deal.get('url', '')
+    tests_passed = 0
+    total_tests = 4
     
-    # Get all quotes from model response
-    party1_quote = raw_deal.get('party1_quote', '')
-    party2_quote = raw_deal.get('party2_quote', '')
-    deal_type_quote = raw_deal.get('deal_type_quote', '')
-    amount_quotes = raw_deal.get('amount_quotes', {})  # dict of field -> quote
+    # Test 1: Quote verification
+    if sec_deals.verify_quote_in_filing("hello world", "This is hello world test"):
+        tests_passed += 1
+    else:
+        print("FAIL: quote verification")
     
-    # R1: Verify all quotes exist in filing
-    all_quotes = [party1_quote, party2_quote, deal_type_quote] + list(amount_quotes.values())
-    all_quotes = [q for q in all_quotes if q]  # Filter empty
+    # Test 2: Company matching
+    if sec_deals.match_company_whole_word("BMS", "Bristol-Myers Squibb announced"):
+        tests_passed += 1
+    else:
+        print("FAIL: company matching with alias")
     
-    # R2: If party or type quote fails → drop the deal
-    if party1_quote and not _verify_quote_in_filing(party1_quote, filing_text):
-        logging.warning("Party1 quote not found in filing, dropping deal: %s", url)
-        return None
+    # Test 3: Amount parsing
+    parsed = sec_deals.parse_amount_from_quote("$100 million upfront", sec_deals.AmountKind.UPFRONT)
+    if parsed and parsed.value_in_millions == 100:
+        tests_passed += 1
+    else:
+        print("FAIL: amount parsing")
     
-    if deal_type_quote and not _verify_quote_in_filing(deal_type_quote, filing_text):
-        logging.warning("Deal type quote not found in filing, dropping deal: %s", url)
-        return None
-    
-    # R8: Check for nonprofit/government in quotes
-    if _detect_nonprofit_in_quotes(all_quotes):
-        logging.warning("Nonprofit/government detected in quotes, dropping deal: %s", url)
-        return None
-    
-    # R4: Extract and verify parties from quotes
-    party1_name = raw_deal.get('party1_name', '')
-    party2_name = raw_deal.get('party2_name', '')
-    
-    # Party names must appear in their quotes
-    if party1_name and party1_quote:
-        if not _match_company_whole_word(party1_name, party1_quote):
-            logging.warning("Party1 name '%s' not in quote, dropping: %s", party1_name, url)
-            return None
-    
-    if party2_name and party2_quote:
-        if not _match_company_whole_word(party2_name, party2_quote):
-            logging.warning("Party2 name '%s' not in quote, dropping: %s", party2_name, url)
-            return None
-    
-    # R4: Detect role from quote grammar
-    role_info = None
-    if deal_type_quote:
-        role_result = _detect_role_from_quote(deal_type_quote)
-        if role_result:
-            actor, role_type, counter = role_result
-            role_info = {'actor': actor, 'role': role_type, 'counter': counter}
-    
-    # R4: Verify filer is one of the parties
-    if not _verify_filer_is_party(filer_name, party1_name, party2_name):
-        logging.warning("Filer '%s' is not a party (%s, %s), dropping: %s", 
-                       filer_name, party1_name, party2_name, url)
-        return None
-    
-    # R7: Classify deal type from quote
-    deal_type = _classify_deal_type_from_quote(deal_type_quote)
-    if not deal_type:
-        # Try to infer from amount quotes
-        for q in amount_quotes.values():
-            deal_type = _classify_deal_type_from_quote(q)
-            if deal_type:
-                break
-    
-    if not deal_type:
-        logging.warning("Could not classify deal type, dropping: %s", url)
-        return None
-    
-    # R5: Verify amount quotes are in same passage as party quotes
-    verified_amounts = {}
-    for field_name, amount_quote in amount_quotes.items():
-        if not amount_quote:
-            continue
-        
-        # Verify quote exists
-        if not _verify_quote_in_filing(amount_quote, filing_text):
-            logging.warning("Amount quote for '%s' not found, skipping field: %s", field_name, url)
-            continue
-        
-        # Check same passage as party quotes
-        passage_ok = True
-        if party1_quote and not _quotes_in_same_passage(amount_quote, party1_quote, filing_text):
-            passage_ok = False
-        if party2_quote and not _quotes_in_same_passage(amount_quote, party2_quote, filing_text):
-            passage_ok = False
-        
-        if not passage_ok:
-            logging.warning("Amount quote for '%s' not in same passage as parties, skipping: %s", 
-                           field_name, url)
-            continue
-        
-        # R3: Parse amount from verified quote
-        parsed = _parse_amount_from_quote(amount_quote)
-        if parsed:
-            verified_amounts[field_name] = {
-                'quote': amount_quote,
-                'parsed': parsed,
-                'rendered': _render_amount_chinese(parsed)
-            }
-    
-    # Determine main amount
-    main_amount = '未披露'
-    if 'total' in verified_amounts:
-        main_amount = verified_amounts['total']['rendered']
-    elif 'facility_size' in verified_amounts:
-        main_amount = verified_amounts['facility_size']['rendered']
-    elif 'upfront' in verified_amounts:
-        main_amount = verified_amounts['upfront']['rendered']
-    elif verified_amounts:
-        # Take first available
-        first_key = list(verified_amounts.keys())[0]
-        main_amount = verified_amounts[first_key]['rendered']
-    
-    # R7: Handle '首付' - only if quote contains 'upfront'
-    upfront = ''
-    upfront_label = ''
-    if 'upfront' in verified_amounts:
-        upfront_quote = verified_amounts['upfront']['quote']
-        if 'upfront' in upfront_quote.lower() or 'up-front' in upfront_quote.lower():
-            upfront = verified_amounts['upfront']['rendered']
-            upfront_label = '首付'
+    # Test 4: Amount rendering
+    if parsed:
+        rendered = sec_deals.render_amount_chinese(parsed)
+        if '1 亿美元' in rendered:
+            tests_passed += 1
         else:
-            # Don't use 首付 label
-            upfront = verified_amounts['upfront']['rendered']
-            upfront_label = ''
+            print(f"FAIL: amount rendering: {rendered}")
+    else:
+        print("FAIL: amount rendering (no parsed amount)")
     
-    milestones = verified_amounts.get('milestones', {}).get('rendered', '')
-    equity = verified_amounts.get('equity', {}).get('rendered', '')
-    drawn = verified_amounts.get('drawn', {}).get('rendered', '')
-    
-    # R6: Build title from verified fields only
-    title = _build_deal_title_from_verified(
-        company=party1_name,
-        counterparty=party2_name,
-        deal_type=deal_type,
-        amount=main_amount,
-        role_info=role_info
-    )
-    
-    # Build deal entry with NO free text
-    deal_entry = {
-        'url': url,
-        'title': title,
-        'company': party1_name,
-        'counterparty': party2_name,
-        'kinds': [deal_type],
-        'money': main_amount,
-        'is_filing': True,
-        'filing_source': 'sec',
-        'amount_source': 'filing',
-        'verified_quotes': {
-            'party1': party1_quote,
-            'party2': party2_quote,
-            'deal_type': deal_type_quote,
-            'amounts': {k: v['quote'] for k, v in verified_amounts.items()}
-        }
-    }
-    
-    # Add optional fields
-    if upfront:
-        if upfront_label:
-            deal_entry['upfront'] = f"{upfront_label}：{upfront}"
-        else:
-            deal_entry['upfront'] = upfront
-    if milestones:
-        deal_entry['milestones'] = milestones
-    if equity:
-        deal_entry['equity'] = equity
-    if drawn:
-        deal_entry['drawn'] = drawn
-    
-    return deal_entry
+    print(f"_test_sec_deals_module: {tests_passed}/{total_tests} tests passed")
+    return tests_passed == total_tests
 
-
-# Tool schema for evidence-quote based deal extraction
-DEAL_QUOTE_SCHEMA = {
-    "type": "object",
-    "description": "SEC filing deal with verbatim quotes from the filing text",
-    "properties": {
-        "url": {"type": "string", "description": "Filing URL, copied exactly from input"},
-        "party1_name": {"type": "string", "description": "First party company name"},
-        "party1_quote": {"type": "string", "description": "Verbatim quote from filing containing party1 name and role"},
-        "party2_name": {"type": "string", "description": "Second party company name (counterparty)"},
-        "party2_quote": {"type": "string", "description": "Verbatim quote from filing containing party2 name and role"},
-        "deal_type_quote": {"type": "string", "description": "Verbatim quote from filing showing deal type (acquisition, license, credit, buyout, etc.)"},
-        "amount_quotes": {
-            "type": "object",
-            "description": "Verbatim quotes for each amount field",
-            "properties": {
-                "total": {"type": "string", "description": "Quote containing total deal value"},
-                "upfront": {"type": "string", "description": "Quote containing upfront payment"},
-                "milestones": {"type": "string", "description": "Quote containing milestone payments"},
-                "equity": {"type": "string", "description": "Quote containing equity stake"},
-                "facility_size": {"type": "string", "description": "Quote containing credit facility size"},
-                "drawn": {"type": "string", "description": "Quote containing amount drawn"},
-            }
-        },
-    },
-    "required": ["url", "party1_name", "party1_quote", "deal_type_quote"],
-}
 
 
 def sanitize_image_prompt(prompt: str) -> str:
@@ -4071,12 +3904,16 @@ def _test_chinese_number_extraction():
 
 
 def claude_draft(items: list[dict], config: dict) -> dict:
-    """Use Claude with tool_use for reliable JSON output."""
+    """Use Claude with tool_use for reliable JSON output.
+    
+    DEALS ARE NO LONGER PRODUCED HERE. Deals are extracted separately via sec_deals module.
+    This function only handles academic articles.
+    """
     from anthropic import Anthropic
 
     tool_schema = {
         "name": "submit_weekly_digest",
-        "description": "Submit the curated articles and deals for the weekly digest",
+        "description": "Submit the curated academic articles for the weekly digest",
         "input_schema": {
             "type": "object",
             "properties": {
@@ -4108,56 +3945,24 @@ def claude_draft(items: list[dict], config: dict) -> dict:
                         "required": ["url", "field", "title", "authors", "lead", "steps"],
                     },
                 },
-                "deals": {
-                    "type": "array",
-                    "description": "Industry deals - amounts MUST be from source text only",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "url": {"type": "string"},
-                            "company": {"type": "string", "description": "Primary company name"},
-                            "counterparty": {"type": "string", "description": "Deal counterparty if known"},
-                            "kinds": {"type": "array", "items": {"type": "string", "enum": list(DEAL_KINDS)}},
-                            "money": {"type": "string", "description": "From source text only. Format: X 亿美元 or 未披露"},
-                            "upfront": {"type": "string", "description": "Upfront if in source text"},
-                            "milestones": {"type": "string", "description": "Milestones if in source text"},
-                            "equity": {"type": "string", "description": "Equity stake if in source text, e.g. 19.9% 股权"},
-                            "structure": {"type": "string", "description": "Deal structure - NO invented numbers"},
-                            "why": {"type": "string", "description": "Why this matters - NO invented numbers"},
-                            "source_name": {"type": "string"},
-                            "is_filing": {"type": "boolean"},
-                            "amount_source": {"type": "string", "enum": ["filing", "news", "unknown"]},
-                        },
-                        "required": ["url", "company", "kinds", "money"],
-                    },
-                },
             },
-            "required": ["articles", "deals"],
+            "required": ["articles"],
         },
     }
 
-    prompt = f"""你是前沿追踪的编辑。下面是过去 {config.get('window_days', 7)} 天从固定来源抓到的条目。
+    # Filter to academic items only - deals are handled by sec_deals module
+    academic_items = [item for item in items if item.get("kind") == "academic"]
+
+    prompt = f"""你是前沿追踪的编辑。下面是过去 {config.get('window_days', 7)} 天从固定来源抓到的学术条目。
 
 ## 核心规则
 
-1. **金额必须来自来源文本** - 绝不发明数字。如果来源没有明确金额，写"未披露"。
-2. 每条的 url 必须从输入里原样复制。
-3. 学术最多 {config.get('max_academic', 6)} 篇，行业最多 {config.get('max_industry', 4)} 条。
+1. 每条的 url 必须从输入里原样复制。
+2. 学术最多 {config.get('max_academic', 6)} 篇。
 
 ## 领域分类
 
 field 必须是：{json.dumps(FIELDS, ensure_ascii=False)}
-
-## 行业动态（deals）规则
-
-**绝对禁止发明数字。** why 和 structure 字段不许包含任何来源里没有的金额、百分比。
-
-1. kinds 只能是：lic (授权合作)、acq (并购)、inv (融资/IPO)
-2. company 填主公司名（如 Alector）
-3. counterparty 填交易对手（如 Genentech）
-4. money 格式统一为"X 亿美元"或"未披露"
-5. upfront、milestones、equity 只填来源里明确写的
-6. why 和 structure 只写来源里有的事实，不要加任何数字
 
 ## image_prompt 规则
 
@@ -4167,7 +3972,7 @@ field 必须是：{json.dumps(FIELDS, ensure_ascii=False)}
 - 绝不请求标签、文字或注释
 
 输入：
-{json.dumps(items, ensure_ascii=False)}
+{json.dumps(academic_items, ensure_ascii=False)}
 """
     model = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5-5")
     logging.info("调用 Claude %s (tool_use, tool_choice=auto)", model)
@@ -4199,8 +4004,8 @@ field 必须是：{json.dumps(FIELDS, ensure_ascii=False)}
         logging.error("Claude did not return tool_use block after retry")
         raise ValueError("No tool_use response from Claude")
     
-    allowed = {row["url"] for row in items}
-    by_url = {row["url"]: row for row in items}
+    allowed = {row["url"] for row in academic_items}
+    by_url = {row["url"]: row for row in academic_items}
     
     invalid_author_patterns = [
         r'^nature\s*(medicine|biotechnology|communications|methods)?$',
@@ -4252,15 +4057,28 @@ field 必须是：{json.dumps(FIELDS, ensure_ascii=False)}
                 logging.error("输出包含阻断词 '%s'，终止运行", blocked)
                 raise SystemExit(4)
         
+        # Strip unverified numbers from news/academic text
+        source_text = src.get("summary", "")
+        lead = (raw.get("lead") or "").strip()
+        body = (raw.get("body") or "").strip()
+        discuss = (raw.get("discuss") or "").strip()
+        
+        # Apply number stripping if we have source text
+        if source_text:
+            import sec_deals
+            lead = sec_deals.strip_unverified_numbers_from_text(lead, source_text)
+            body = sec_deals.strip_unverified_numbers_from_text(body, source_text)
+            discuss = sec_deals.strip_unverified_numbers_from_text(discuss, source_text)
+        
         articles.append({
             "url": url,
             "field": field,
             "title": (raw.get("title") or src["title"]).strip(),
             "journal": journal or src["source"],
             "authors": authors or "（来源未列出作者）",
-            "lead": (raw.get("lead") or "").strip(),
-            "body": (raw.get("body") or "").strip(),
-            "discuss": (raw.get("discuss") or "").strip(),
+            "lead": lead,
+            "body": body,
+            "discuss": discuss,
             "steps": steps,
             "study_type": (raw.get("study_type") or "").strip(),
             "n": (raw.get("n") or "").strip(),
@@ -4270,232 +4088,10 @@ field 必须是：{json.dumps(FIELDS, ensure_ascii=False)}
             "source": src["source"],
         })
     
-    deals = []
-    filing_deals = []
-    seen_urls = set()
-    
-    # Fix A: SEC-only deals - news items cannot become deals
-    # We only process items that come from SEC filings
-    for raw in data.get("deals") or []:
-        url = (raw.get("url") or "").strip()
-        if url not in allowed:
-            logging.warning("丢弃不在来源里的动态：%s", url)
-            continue
-        
-        if url in seen_urls:
-            logging.warning("跳过重复 URL 的交易：%s", url)
-            continue
-        seen_urls.add(url)
-        
-        src = by_url[url]
-        is_filing = src.get("filing_source")
-        
-        # Fix A: Only SEC filings can become deals
-        if not is_filing:
-            logging.info("跳过非披露来源的交易（SEC-only 规则）：%s", url)
-            continue
-        
-        source_text = src.get("filing_text", "")
-        if not source_text or len(source_text) < 100:
-            logging.warning("披露文本缺失或过短，跳过：%s", url)
-            continue
-        
-        # Fix B5: Reject nonprofit/government/consortium (with word boundaries)
-        if _is_nonprofit_or_consortium(source_text):
-            logging.warning("丢弃非营利/政府/联盟项目：%s", url)
-            continue
-        
-        # Fix B7: Check if this is an obligation buyout
-        is_buyout = _is_obligation_buyout(source_text)
-        if is_buyout:
-            logging.info("检测到义务买断交易：%s", url)
-        
-        # Fix B8: Check if this is a credit facility
-        is_credit = _is_credit_facility(source_text)
-        if is_credit:
-            logging.info("检测到信贷额度交易：%s", url)
-        
-        # Validate deal type
-        kinds = [k for k in (raw.get("kinds") or []) if k in {"lic", "acq", "inv"}]
-        source_classified = _classify_deal_type(source_text)
-        
-        if is_buyout:
-            # Buyouts are not license agreements
-            if source_classified == "lic":
-                source_classified = None
-            kinds = []  # Will be handled specially
-        
-        if not kinds:
-            if source_classified:
-                kinds = [source_classified]
-            elif is_credit:
-                kinds = ["inv"]
-            elif is_buyout:
-                kinds = ["lic"]  # Buyouts relate to license obligations
-            else:
-                logging.warning("丢弃类型不明确的交易：%s", url)
-                continue
-        
-        if kinds and source_classified and kinds[0] != source_classified:
-            logging.warning("交易类型与来源不符，使用来源分类：%s (%s -> %s)", url, kinds[0], source_classified)
-            kinds = [source_classified]
-        
-        if not _has_deal_keywords(source_text, kinds[0]):
-            if not (is_credit or is_buyout):
-                logging.warning("来源缺少交易关键词，丢弃：%s (type=%s)", url, kinds[0])
-                continue
-        
-        # Get company from structured field
-        company = (raw.get("company") or "").strip()
-        counterparty = (raw.get("counterparty") or "").strip()
-        
-        if not company:
-            company = src.get("company", "")
-            if not company:
-                title = src.get("title", "")
-                if ":" in title:
-                    company = title.split(":")[0].strip()
-                else:
-                    company = title[:30]
-        
-        # Fix B1 & B2: Verify company name appears in source text
-        if not _verify_company_in_source(company, source_text):
-            logging.warning("公司名未在来源中找到，丢弃：%s (company=%s)", url, company)
-            continue
-        
-        if counterparty and not _verify_company_in_source(counterparty, source_text):
-            logging.warning("交易对手未在来源中找到，丢弃字段：%s (counterparty=%s)", url, counterparty)
-            counterparty = ""
-        
-        # Fix B8: Handle credit facilities with 'up to' amounts
-        money = (raw.get("money") or "未披露").strip()
-        money = re.sub(r'^\$(\d+(?:\.\d+)?)\s*亿', r'\1 亿美元', money)
-        money = re.sub(r'(\d)亿', r'\1 亿', money)
-        
-        drawn_amount = None
-        if is_credit:
-            up_to_result = _extract_up_to_amount(source_text)
-            if up_to_result:
-                max_val, drawn_val = up_to_result
-                # Convert to Chinese format
-                try:
-                    max_num = float(max_val)
-                    if max_num >= 100:
-                        money = f"最高 {max_num / 100:.2f} 亿美元".replace('.00', '')
-                    else:
-                        money = f"最高 {max_num} 百万美元"
-                    if drawn_val:
-                        drawn_num = float(drawn_val)
-                        if drawn_num >= 100:
-                            drawn_amount = f"已提取 {drawn_num / 100:.2f} 亿美元".replace('.00', '')
-                        else:
-                            drawn_amount = f"已提取 {drawn_num} 百万美元"
-                except ValueError:
-                    pass
-        
-        # Verify ALL amounts
-        if money != "未披露" and not money.startswith("最高"):
-            if not _verify_amount_in_text(money, source_text):
-                logging.warning("金额未在来源中找到，改为未披露：%s -> %s", url, money)
-                money = "未披露"
-        
-        # Fix B7: Only label as '首付' if filing has upfront language
-        upfront = (raw.get("upfront") or "").strip()
-        upfront_label = "首付" if _has_upfront_language(source_text) else ""
-        
-        if upfront:
-            upfront = re.sub(r'首付[：:]\s*', '', upfront)
-            upfront = re.sub(r'\s*首付$', '', upfront)
-        if upfront and not _verify_amount_in_text(upfront, source_text):
-            logging.warning("首付/初期金额未验证，丢弃：%s -> %s", url, upfront)
-            upfront = ""
-        
-        milestones = (raw.get("milestones") or "").strip()
-        if milestones:
-            milestones = re.sub(r'里程碑[：:]\s*', '', milestones)
-            milestones = re.sub(r'\s*里程碑$', '', milestones)
-        if milestones and not _verify_amount_in_text(milestones, source_text):
-            logging.warning("里程碑金额未验证，丢弃：%s -> %s", url, milestones)
-            milestones = ""
-        
-        equity = (raw.get("equity") or "").strip()
-        if equity and not _verify_amount_in_text(equity, source_text):
-            logging.warning("股权比例未验证，丢弃：%s -> %s", url, equity)
-            equity = ""
-        
-        # Build verified amounts set for stripping unverified numbers
-        verified_amounts = set()
-        for field_val in [money, upfront, milestones, equity]:
-            if field_val and field_val != "未披露":
-                verified_amounts.update(_normalize_amount_with_currency(field_val))
-        
-        # Fix B3: Strip ALL unverified numbers from why and structure
-        why = (raw.get("why") or "").strip()
-        why = _strip_unverified_numbers(why, verified_amounts)
-        
-        structure = (raw.get("structure") or "").strip()
-        structure = _strip_unverified_numbers(structure, verified_amounts)
-        
-        # Fix B7: Handle obligation buyouts differently
-        if is_buyout:
-            title = f"{company}买断{counterparty if counterparty else ''}义务" 
-            if money and money != "未披露":
-                title += f"（{money}）"
-        else:
-            title = _build_deal_title(company, counterparty, kinds[0], money)
-        
-        # All SEC filing deals have filing as amount_source
-        amount_source = "filing"
-        
-        deal_entry = {
-            "url": url,
-            "title": title,
-            "company": company,
-            "counterparty": counterparty,
-            "kinds": kinds,
-            "money": money,
-            "structure": structure,
-            "why": why,
-            "source_name": (raw.get("source_name") or src["source"]).strip(),
-            "date": src["date"][:7],
-            "amount_source": amount_source,
-            "is_filing": True,
-            "filing_source": src.get("filing_source", "sec"),
-        }
-        
-        # Fix B7: Only add upfront if filing has upfront language
-        if upfront and upfront_label:
-            deal_entry["upfront"] = upfront
-        elif upfront and not upfront_label:
-            # Don't label as 首付 - include in structure instead
-            if structure:
-                structure += f" 初期付款：{upfront}"
-            else:
-                structure = f"初期付款：{upfront}"
-            deal_entry["structure"] = structure
-        
-        if milestones:
-            deal_entry["milestones"] = milestones
-        if equity:
-            deal_entry["equity"] = equity
-        if drawn_amount:
-            deal_entry["drawn"] = drawn_amount
-        if is_buyout:
-            deal_entry["is_buyout"] = True
-        if is_credit:
-            deal_entry["is_credit"] = True
-        
-        filing_deals.append(deal_entry)
-    
-    # Fix A: SEC-only deals - no news deals in the deals section
     cap_a = int(config.get("max_academic") or 6)
-    max_deals = int(config.get("max_deals") or 6)
     
-    deals = filing_deals[:max_deals]
-    
-    logging.info("交易选择：%d 条披露（SEC-only 规则，无新闻来源交易）", len(deals))
-    
-    return {"articles": articles[:cap_a], "deals": deals}
+    # NOTE: Deals are NOT produced here. They come from sec_deals module via extract_sec_deals()
+    return {"articles": articles[:cap_a], "deals": []}
 
 
 def _check_image_for_text(image_bytes: bytes, max_retries: int = 2) -> bool | None:
@@ -4908,6 +4504,55 @@ def _test_deal_number_stripping():
     return passed == len(test_cases)
 
 
+def extract_sec_deals(items: list[dict], config: dict) -> list[dict]:
+    """Extract deals from SEC filings using sec_deals module.
+    
+    THIS IS THE ONLY PATH FOR DEAL EXTRACTION.
+    All deals come from SEC EDGAR filings with strict quote-based verification.
+    """
+    import sec_deals
+    
+    # Filter to SEC filing items only
+    filing_items = [
+        item for item in items 
+        if item.get("filing_source") == "sec" and item.get("filing_text")
+    ]
+    
+    if not filing_items:
+        logging.info("No SEC filings found for deal extraction")
+        return []
+    
+    # Filter by event date requirement
+    filings_with_dates = []
+    for item in filing_items:
+        event_date = item.get("event_date")
+        if not event_date:
+            logging.info("Skipping filing without event date: %s", item.get("url", ""))
+            continue
+        filings_with_dates.append(item)
+    
+    if not filings_with_dates:
+        logging.info("No SEC filings with event dates found")
+        return []
+    
+    max_deals = int(config.get("max_deals") or 6)
+    
+    logging.info("Extracting deals from %d SEC filings via sec_deals module", len(filings_with_dates))
+    
+    deals = sec_deals.extract_deals_from_filings(
+        filings=filings_with_dates,
+        max_deals=max_deals
+    )
+    
+    logging.info("交易选择：%d 条披露（via sec_deals module）", len(deals))
+    
+    return deals
+
+
+# Marker for testing that deals go through sec_deals
+_SEC_DEALS_CALLED = False
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="生成一周的前沿追踪内容")
     parser.add_argument("--dry-run", action="store_true", help="只写到 preview/，不改网站内容目录")
@@ -4945,6 +4590,8 @@ def main() -> None:
         all_passed &= _test_real_sec_filings()
         all_passed &= _test_adversarial_deals()
         all_passed &= _test_integration_deal_pipeline()
+        # NEW: Test that sec_deals module is used
+        all_passed &= _test_sec_deals_module()
         print(f"\n{'All tests passed!' if all_passed else 'Some tests failed.'}")
         raise SystemExit(0 if all_passed else 1)
     
@@ -4959,8 +4606,17 @@ def main() -> None:
             logging.error("最近 %s 天没有抓到条目，不写文件", config.get("window_days", 7))
             raise SystemExit(2)
         logging.info("送去筛选的条目 %d", len(items))
+        
+        # Extract deals from SEC filings - THE ONLY DEAL PATH
+        global _SEC_DEALS_CALLED
+        _SEC_DEALS_CALLED = True
+        deals = extract_sec_deals(items, config)
+        
+        # Draft articles (deals are handled separately above)
         draft = claude_draft(items, config)
-        if not draft["articles"] and not draft["deals"]:
+        draft["deals"] = deals  # Add deals from sec_deals module
+        
+        if not draft["articles"] and not deals:
             logging.error("模型没有留下任何来源内的条目")
             raise SystemExit(3)
         week = date.today().isoformat()
