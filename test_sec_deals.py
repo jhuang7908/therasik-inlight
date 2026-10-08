@@ -2943,9 +2943,10 @@ class TestInstrumentHistoryAndPartyHygiene:
         ) is not None
         current = (
             "Lumen Therapeutics, Inc. (the \"Company\") entered into a License "
-            "Agreement with Quill Bio Ltd (the \"Fresh Pact\"). In accordance "
-            "with the Fresh Pact, the Company granted Quill Bio Ltd an exclusive "
-            "licence. Quill will pay a $9 million upfront payment."
+            "Agreement, dated as of October 1, 2026, with Quill Bio Ltd "
+            "(the \"Fresh Pact\"). In accordance with the Fresh Pact, the "
+            "Company granted Quill Bio Ltd an exclusive licence. Quill will "
+            "pay a $9 million upfront payment."
         )
         assert sec_deals.out_of_scope_deal_reason(
             quote, as_item101(current), filing_date="2026-10-05",
@@ -3533,6 +3534,95 @@ class TestReview867b:
         assert "FORM 8-K" in wrapped
         assert sec_deals._structural_item101(raw) is None
         assert sec_deals._structural_item101(wrapped)
+
+
+class TestReviewBc300bf:
+    """One invented-name check per bc300bf default-deny item (new wording)."""
+
+    def test_item1_change_verb_mdy_never_opens_the_window(self):
+        filing = as_item101(
+            "Lumen Forge plc entered into a Licence Pact with Quill Binding GmbH "
+            "in fiscal 2019, which was conformed on October 1, 2026. The Company "
+            "granted Quill Binding GmbH an exclusive licence."
+        )
+        assert sec_deals._collect_item101_new_agreements(
+            sec_deals._structural_item101(filing) or filing, "2026-10-01",
+        ) == []
+        assert sec_deals.has_affirmative_new_agreement(
+            sec_deals.DealType.LICENSE_COLLABORATION, filing, "Quill Binding GmbH",
+            reference_date="2026-10-01",
+            type_quote="The Company granted Quill Binding GmbH an exclusive licence",
+        ) is False
+
+    def test_item2_parenthetical_restatement_is_not_new(self):
+        filing = as_item101(
+            "On October 1, 2026, Lumen Forge plc entered into a Licence Pact "
+            "(a restatement in substitution for the 2019 research pact) with "
+            "Quill Binding GmbH. The Company granted Quill Binding GmbH an "
+            "exclusive licence."
+        )
+        assert sec_deals.has_affirmative_new_agreement(
+            sec_deals.DealType.LICENSE_COLLABORATION, filing, "Quill Binding GmbH",
+            reference_date="2026-10-01",
+            type_quote="The Company granted Quill Binding GmbH an exclusive licence",
+        ) is False
+
+    def test_item3_renewing_stem_in_following_clause_drops(self):
+        filing = as_item101(
+            "On October 1, 2026, Lumen Forge plc entered into a Licence Pact "
+            "with Quill Binding GmbH that is a renewing arrangement for the "
+            "prior research term. The Company granted Quill Binding GmbH an "
+            "exclusive licence."
+        )
+        assert sec_deals.has_affirmative_new_agreement(
+            sec_deals.DealType.LICENSE_COLLABORATION, filing, "Quill Binding GmbH",
+            reference_date="2026-10-01",
+            type_quote="The Company granted Quill Binding GmbH an exclusive licence",
+        ) is False
+
+    def test_item4_paying_agent_term_is_not_the_counterparty(self):
+        text = (
+            'Quill Binding GmbH, as paying agent for the holders '
+            '(the "Payor"), and Lumen Forge plc'
+        )
+        resolved = sec_deals._legal_name_for_capacity_role("Payor", text)
+        assert resolved is not None
+        assert "quill binding" in resolved.lower()
+        assert "payor" not in resolved.lower()
+        assert sec_deals._publishable_legal_entity_name("Payor", text) is False
+        assert sec_deals._publishable_legal_entity_name(resolved, text) is True
+
+    def test_item5_board_of_fellows_of_college_plus_gmbh_strips(self):
+        text = 'the Board of Fellows of Maple College BioWorks GmbH ("Parent")'
+        names = sec_deals.parse_defined_terms(text).get("parent", [])
+        blob = " ".join(names).lower()
+        assert "maple college bioworks" in blob
+        assert "board" not in blob
+        resolved = sec_deals._resolve_declared_party(
+            "Board of Fellows of Maple College BioWorks GmbH", text,
+        )
+        assert resolved is not None
+        assert "maple college bioworks gmbh" in resolved.lower()
+        assert not resolved.lower().startswith("board")
+        assert sec_deals._is_institutional_legal_name(
+            "Board of Fellows of Maple College BioWorks GmbH"
+        ) is False
+
+    def test_item6_sixk_press_release_uses_same_date_and_stem_rules(self):
+        filing = (
+            "FORM 6-K\nDate of Report (Date of earliest event reported): October 1, 2026\n"
+            "Press Release\nLumen Forge plc announced it has entered into a Licence "
+            "Pact with Quill Binding GmbH in fiscal 2019, which was conformed on "
+            "October 1, 2026. The Company granted Quill Binding GmbH an exclusive "
+            "licence.\n"
+        )
+        assert sec_deals._structural_item101(filing)
+        assert sec_deals._collect_item101_new_agreements(filing, "2026-10-01") == []
+        assert sec_deals.has_affirmative_new_agreement(
+            sec_deals.DealType.LICENSE_COLLABORATION, filing, "Quill Binding GmbH",
+            reference_date="2026-10-01",
+            type_quote="The Company granted Quill Binding GmbH an exclusive licence",
+        ) is False
 
 
 # =============================================================================
