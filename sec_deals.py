@@ -3596,7 +3596,7 @@ def resolve_merger_vehicle(
 _ENTERED_NEW_AGREEMENT_RE = re.compile(
     r'(?i)(?:entered\s+into|executed|signed)\s+'
     r'(?:an?\s+|the\s+)?(?:that\s+certain\s+)?'
-    r'((?:(?!dated\b)[^\n.;]){0,160}?'
+    r'((?:(?!dated\b)[^\.;]){0,160}?'
     r'(?:agreement|addendum|indenture|amendment|joinder|novation|'
     r'letter|pact|licence|license))'
 )
