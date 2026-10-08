@@ -2812,7 +2812,7 @@ class TestInstrumentHistoryAndPartyHygiene:
     def test_recent_dated_as_of_short_name_is_still_current(self):
         filing = (
             "Lumen Therapeutics, Inc. (the \"Company\") entered into an Exclusive "
-            "Research and License Agreement, dated as of October 2, 2026 "
+            "License Agreement, dated as of October 2, 2026 "
             "(the \"Research Pact\"). Pursuant to the Research Pact, the Company "
             "granted Quill Bio Ltd an exclusive licence. Quill will pay a $9 "
             "million upfront payment."
@@ -3036,7 +3036,9 @@ class TestInstrumentHistoryAndPartyHygiene:
                 "amounts": [{"kind": "purchase_price", "quote": "for $250 million"}],
             },
         )
-        assert deal is None
+        assert deal is not None
+        assert deal["counterparty"] == "Cedar Peak Inc."
+        assert not deal["counterparty"].lower().startswith(("and", "with", "by"))
         ok = sec_deals.process_sec_deal(
             filing_text=as_item101(filing),
             filer_name="Lumen Therapeutics, Inc.",
@@ -3623,6 +3625,147 @@ class TestReviewBc300bf:
             reference_date="2026-10-01",
             type_quote="The Company granted Quill Binding GmbH an exclusive licence",
         ) is False
+
+
+class TestReview3832546:
+    """One invented-name check per 3832546 design item (new wording)."""
+
+    def test_item1_modifier_inside_title_is_not_on_the_allow_list(self):
+        filing = as_item101(
+            "On October 1, 2026, Cedar Vale plc entered into a Phase-B License "
+            "Agreement with Willow North GmbH. The Company granted Willow North "
+            "GmbH an exclusive licence."
+        )
+        assert sec_deals._collect_item101_new_agreements(
+            sec_deals._structural_item101(filing) or filing, "2026-10-01",
+        ) == []
+        assert sec_deals.has_affirmative_new_agreement(
+            sec_deals.DealType.LICENSE_COLLABORATION, filing, "Willow North GmbH",
+            reference_date="2026-10-01",
+            type_quote="The Company granted Willow North GmbH an exclusive licence",
+        ) is False
+
+    def test_item2_same_party_year_tied_to_licence_in_later_sentence_drops(self):
+        filing = as_item101(
+            "On October 1, 2026, Cedar Vale plc entered into a License Agreement "
+            "with Willow North GmbH, pursuant to which the Company granted "
+            "Willow North GmbH an exclusive licence. The 2014 licence between "
+            "these same two companies still governs supply of the starting material."
+        )
+        assert sec_deals._collect_item101_new_agreements(
+            sec_deals._structural_item101(filing) or filing, "2026-10-01",
+        ) == []
+
+    def test_item3_llm_deny_gate_yes_only_with_verbatim_and_exact_cp(self):
+        filing = as_item101(
+            "On October 1, 2026, Cedar Vale plc entered into a License Agreement "
+            "with Willow North GmbH. The Company granted Willow North GmbH an "
+            "exclusive licence."
+        )
+        body = sec_deals._structural_item101(filing) or filing
+        yes_quote = "On October 1, 2026, Cedar Vale plc entered into a License Agreement with Willow North GmbH"
+
+        class _LiveClient:
+            def __init__(self):
+                self.messages = MagicMock()
+
+        _LiveClient.__module__ = "anthropic"
+        client = _LiveClient()
+
+        def _msg(payload):
+            block = type("B", (), {"type": "tool_use", "name": "confirm_brand_new", "input": payload})()
+            return type("M", (), {"stop_reason": "tool_use", "content": [block]})()
+
+        yes_payload = {
+            "is_brand_new": "YES",
+            "newness_quote": yes_quote,
+            "counterparty": "Willow North GmbH",
+            "counterparty_quote": "entered into a License Agreement with Willow North GmbH",
+        }
+        client.messages.create.return_value = _msg(yes_payload)
+        assert sec_deals.confirm_brand_new_agreement(
+            body, "2026-10-01", "Willow North GmbH", filing, client,
+        ) is True
+        no_payload = dict(yes_payload, is_brand_new="NO")
+        client.messages.create.return_value = _msg(no_payload)
+        assert sec_deals.confirm_brand_new_agreement(
+            body, "2026-10-01", "Willow North GmbH", filing, client,
+        ) is False
+        mismatch = dict(yes_payload, counterparty="Someone Else Ltd")
+        client.messages.create.return_value = _msg(mismatch)
+        assert sec_deals.confirm_brand_new_agreement(
+            body, "2026-10-01", "Willow North GmbH", filing, client,
+        ) is False
+        client.messages.create.side_effect = RuntimeError("no key")
+        assert sec_deals.confirm_brand_new_agreement(
+            body, "2026-10-01", "Willow North GmbH", filing, client,
+        ) is False
+
+    def test_item4_with_prefix_and_holders_designee_is_not_the_counterparty(self):
+        text = (
+            'Willow North GmbH, as designee for the noteholders '
+            '(the "Agent"), and Cedar Vale plc entered into an Agreement '
+            'and Plan of Merger. Parent means Cedar Vale plc.'
+        )
+        assert sec_deals._strip_counterparty_lead("with Willow North GmbH") == "Willow North GmbH"
+        assert sec_deals._introduced_in_capacity_or_designee("Agent", text) is True
+        resolved = sec_deals._legal_name_for_capacity_role("Agent", text)
+        assert resolved is not None
+        assert "willow north" in resolved.lower()
+        holders = (
+            'On October 1, 2026, Maple Target, Inc. (the "Company") entered into '
+            'an Agreement and Plan of Merger with Willow Holders Agency LLC, as '
+            'representative for the holders (the "Holders Representative"), '
+            'pursuant to which Cedar Vale plc ("Parent") will acquire the Company. '
+            'Parent means Cedar Vale plc.'
+        )
+        deal = sec_deals.process_sec_deal(
+            filing_text=as_item101(holders),
+            filer_name="Maple Target, Inc.",
+            filing_url="https://test",
+            filing_date="2026-10-05",
+            event_date="2026-10-01",
+            claude_response={
+                "deal_type": "merger",
+                "counterparty_name": "with Willow Holders Agency LLC",
+                "type_quote": "entered into an Agreement and Plan of Merger with Willow Holders Agency LLC",
+                "counterparty_quote": "Merger with Willow Holders Agency LLC, as representative for the holders",
+                "amounts": [],
+            },
+        )
+        if deal is not None:
+            assert "with " not in deal["counterparty"].lower()
+            assert "holders" not in deal["counterparty"].lower()
+            assert "representative" not in deal["counterparty"].lower()
+        else:
+            assert deal is None
+
+    def test_item5_sixk_cover_act_of_1934_does_not_age_a_plain_licence(self):
+        filing = (
+            "FORM 6-K\nPursuant to Section 13 or 15(d) of the Securities Exchange "
+            "Act of 1934\nDate of Report: October 1, 2026\nPress Release\n"
+            "On October 1, 2026, Cedar Vale plc entered into a License Agreement "
+            "with Willow North GmbH. The Company granted Willow North GmbH an "
+            "exclusive licence.\n"
+        )
+        body = sec_deals._structural_item101(filing)
+        assert body
+        assert "1934" not in body.split("entered into")[0]
+        ags = sec_deals._collect_item101_new_agreements(body, "2026-10-01")
+        assert ags and ags[0].title.lower() == "license agreement"
+
+    def test_item6_effective_lead_and_spa_suffix_still_collect(self):
+        filing = as_item101(
+            "Effective October 1, 2026, Cedar Vale plc entered into a License "
+            "Agreement with Willow North S.p.A. The Company granted Willow "
+            "North S.p.A. an exclusive licence."
+        )
+        ags = sec_deals._collect_item101_new_agreements(
+            sec_deals._structural_item101(filing) or filing, "2026-10-01",
+        )
+        assert ags and ags[0].title.lower() == "license agreement"
+        assert sec_deals._name_has_legal_suffix("Willow North S.p.A.")
+        assert sec_deals._publishable_legal_entity_name("Willow North S.p.A.", filing)
 
 
 # =============================================================================

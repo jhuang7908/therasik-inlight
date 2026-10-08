@@ -69,9 +69,10 @@ COMPANY_ALIASES: dict[str, list[str]] = {
 # Legal suffixes to normalize at end only
 LEGAL_SUFFIXES = [
     r',?\s*Inc\.?$', r',?\s*Ltd\.?$', r',?\s*LLC\.?$', r',?\s*plc\.?$',
-    r',?\s*AG$', r',?\s*S\.A\.?$', r',?\s*Corp\.?$', r',?\s*Corporation$',
-    r',?\s*Company$', r',?\s*Co\.?$', r',?\s*Limited$', r',?\s*L\.P\.?$',
-    r',?\s*N\.V\.?$', r',?\s*GmbH$', r',?\s*SE$',
+    r',?\s*AG$', r',?\s*S\.A\.?$', r',?\s*S\.p\.A\.?$', r',?\s*Corp\.?$',
+    r',?\s*Corporation$', r',?\s*Company$', r',?\s*Co\.?$', r',?\s*Limited$',
+    r',?\s*L\.P\.?$', r',?\s*N\.V\.?$', r',?\s*GmbH(?:\s*&\s*Co\.?\s*KG)?$',
+    r',?\s*SE$', r',?\s*K\.K\.?$',
 ]
 
 # NARROW SCOPE: Only two deal types are ever published
@@ -203,6 +204,33 @@ A field is UNSUPPORTED if there is no explicit evidence or if the evidence contr
         },
         "required": ["company", "counterparty", "deal_type", "amounts", "date"]
     }
+}
+
+# Independent newness deny-gate (final publish step). The installed SDK
+# rejects temperature=, so this call does not pass it.
+CONFIRM_BRAND_NEW_SCHEMA = {
+    "name": "confirm_brand_new",
+    "description": (
+        "Decide whether the filing describes a brand-new agreement first "
+        "entered into on the stated date, not a change to an earlier "
+        "agreement. Name the counterparty legal entity. Quote the proving "
+        "sentence for each answer."
+    ),
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "is_brand_new": {
+                "type": "string",
+                "enum": ["YES", "NO", "DOUBT"],
+            },
+            "newness_quote": {"type": "string"},
+            "counterparty": {"type": "string"},
+            "counterparty_quote": {"type": "string"},
+        },
+        "required": [
+            "is_brand_new", "newness_quote", "counterparty", "counterparty_quote",
+        ],
+    },
 }
 
 
@@ -381,6 +409,86 @@ Do not paraphrase or modify the quotes - they must be exact substrings of the fi
     except Exception as e:
         logging.warning("Verifier error: %s: %s - dropping deal", type(e).__name__, e)
         return None
+
+
+def _is_live_anthropic_client(client: Any) -> bool:
+    if client is None:
+        return False
+    mod = getattr(type(client), "__module__", "") or ""
+    return mod.startswith("anthropic")
+
+
+def confirm_brand_new_agreement(
+    item_text: str,
+    dated: str,
+    counterparty: str,
+    filing_text: str,
+    claude_client: Any = None,
+) -> bool:
+    """Fail-closed LLM deny-gate. Tests without a live Anthropic client skip.
+
+    Publish only on YES plus verbatim quotes and an exact counterparty match.
+    No key, API error, NO, doubt, missing quote, or mismatch → drop.
+    """
+    if not _is_live_anthropic_client(claude_client):
+        logging.info("llm_deny_gate: skip (no live client)")
+        return True
+    body = (item_text or filing_text or "").strip()
+    if not body or not counterparty:
+        logging.info("llm_deny_gate: drop reason=missing_text_or_counterparty")
+        return False
+    prompt = (
+        f"Is this a brand-new agreement first entered into on {dated or 'the stated date'}, "
+        "and NOT an amendment, restatement, renewal, extension, replacement, "
+        "reinstatement, expansion or continuation of any earlier agreement "
+        "between these parties? Who is the counterparty legal entity? "
+        "Quote the sentence proving each answer.\n\n"
+        f"ITEM TEXT:\n{body[:24000]}"
+    )
+    try:
+        model = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5-5")
+        message = claude_client.messages.create(
+            model=model,
+            max_tokens=1200,
+            tools=[CONFIRM_BRAND_NEW_SCHEMA],
+            tool_choice={"type": "auto"},
+            messages=[{"role": "user", "content": prompt}],
+        )
+        if getattr(message, "stop_reason", None) != "tool_use":
+            logging.info("llm_deny_gate: drop reason=stop_reason=%s", getattr(message, "stop_reason", None))
+            return False
+        payload = None
+        for block in message.content:
+            if getattr(block, "type", None) == "tool_use" and getattr(block, "name", None) == "confirm_brand_new":
+                payload = block.input
+                break
+        if not isinstance(payload, dict):
+            logging.info("llm_deny_gate: drop reason=no_tool")
+            return False
+        verdict = (payload.get("is_brand_new") or "").strip().upper()
+        nq = (payload.get("newness_quote") or "").strip()
+        gate_cp = (payload.get("counterparty") or "").strip()
+        cq = (payload.get("counterparty_quote") or "").strip()
+        if verdict != "YES":
+            logging.info("llm_deny_gate: drop reason=verdict=%s", verdict or "missing")
+            return False
+        if not nq or not verify_quote_in_filing(nq, filing_text or body):
+            logging.info("llm_deny_gate: drop reason=newness_quote_not_verbatim")
+            return False
+        if not cq or not verify_quote_in_filing(cq, filing_text or body):
+            logging.info("llm_deny_gate: drop reason=counterparty_quote_not_verbatim")
+            return False
+        if gate_cp.lower() != counterparty.lower():
+            logging.info(
+                "llm_deny_gate: drop reason=counterparty_mismatch extracted=%s gate=%s",
+                counterparty, gate_cp,
+            )
+            return False
+        logging.info("llm_deny_gate: YES cp=%s quote=%s", gate_cp, nq[:80])
+        return True
+    except Exception as e:
+        logging.info("llm_deny_gate: drop reason=api_error %s: %s", type(e).__name__, e)
+        return False
 
 
 # =============================================================================
@@ -637,7 +745,7 @@ def find_quote_position(quote: str, filing_text: str) -> int | None:
 
 _ABBREV_PERIOD_RE = re.compile(
     r'\b(?:Inc|Incorporated|Ltd|LLC|L\.L\.C|Corp|Corporation|Co|Limited|'
-    r'plc|AG|GmbH|S\.r\.l|S\.A|SA|SAS|N\.V|B\.V|K\.K|LP|L\.P|Pte|Pty|'
+    r'plc|AG|GmbH|S\.p\.A|S\.r\.l|S\.A|SA|SAS|N\.V|B\.V|K\.K|LP|L\.P|Pte|Pty|'
     r'A/S|AB|NV|BV|KK|SE)\.',
     re.IGNORECASE,
 )
@@ -2713,8 +2821,8 @@ def _quoted_terms_in(body: str) -> list[str]:
 
 _COMPANY_SUFFIX_RE = re.compile(
     r'(?:,?\s*)?(?:Inc|Incorporated|Ltd|LLC|L\.L\.C|plc|AG|Corp|Corporation|'
-    r'Company|Co|Limited|N\.V|GmbH|SE|L\.P|LP|B\.V|K\.K|S\.A|SA|SAS|'
-    r'Pty|Pte|AB|Oy|NV|BV|KK|A/S)\.?\s*$',
+    r'Company|Co|Limited|N\.V|GmbH(?:\s*&\s*Co\.?\s*KG)?|SE|L\.P|LP|B\.V|'
+    r'K\.K|S\.p\.A|S\.A|SA|SAS|Pty|Pte|AB|Oy|NV|BV|KK|A/S)\.?\s*$',
     re.IGNORECASE,
 )
 _SUFFIX_ONLY_RE = re.compile(
@@ -2722,8 +2830,8 @@ _SUFFIX_ONLY_RE = re.compile(
     (?:the\s+)?
     (?:
         B\.?V\.? | N\.?V\.? | A\.?G\.? | S\.?A\.?S?\.? | plc | Ltd\.? |
-        Inc\.? | Corp\.? | LLC | L\.L\.C\.? | GmbH | SE | A/?S | AB |
-        KK | K\.K\.? | Co\.? | Limited | Company | Corporation |
+        Inc\.? | Corp\.? | LLC | L\.L\.C\.? | GmbH(?:\s*&\s*Co\.?\s*KG)? | SE | A/?S | AB |
+        KK | K\.K\.? | S\.p\.A\.? | Co\.? | Limited | Company | Corporation |
         Incorporated | LP | L\.P\.? | Pty | Pte | Oy | NV | BV
     )
     (?:
@@ -2797,8 +2905,8 @@ _UNQUOTED_ROLE_RE = re.compile(
 )
 _LEGAL_SUFFIX_ALT = (
     r'Inc|Incorporated|Ltd|LLC|L\.L\.C|plc|AG|Corp|Corporation|'
-    r'Company|Co|Limited|N\.V|GmbH|SE|L\.P|LP|'
-    r'B\.V|K\.K|S\.A|SA|SAS|Pty|Pte|AB|Oy|NV|BV|KK|A/S'
+    r'Company|Co|Limited|N\.V|GmbH(?:\s*&\s*Co\.?\s*KG)?|SE|L\.P|LP|'
+    r'B\.V|K\.K|S\.p\.A|S\.A|SA|SAS|Pty|Pte|AB|Oy|NV|BV|KK|A/S'
 )
 # 139767d end-of-clause capture: proper names, or a lowercase brand + suffix.
 _DEFINED_NAME_RE = re.compile(
@@ -3356,6 +3464,59 @@ def _is_capacity_role_term(name: str) -> bool:
     return raw in _CAPACITY_ROLE_WORDS or raw in _BARE_ROLE_WORDS
 
 
+_LEADING_PARTY_CONNECTOR_RE = re.compile(
+    r'^(?:with|and|by|between|among|to|from)\s+',
+    re.IGNORECASE,
+)
+_CAPACITY_OR_DESIGNEE_INTRO_RE = re.compile(
+    r'(?i)(?:in\s+its\s+(?:role|capacity)\s+as|'
+    r'solely\s+in\s+its\s+capacity\s+as|'
+    r'as\s+(?:designee|nominee|agent|representative|trustee)\b)'
+)
+_HOLDERS_REP_RE = re.compile(
+    r"(?i)\b(?:holders?'|stockholders?'|shareholders?')\s+representative\b"
+    r"|\bholder(?:s)?\s+representative\b"
+)
+
+
+def _strip_counterparty_lead(name: str) -> str:
+    n = re.sub(r'\s+', ' ', (name or '').strip())
+    while True:
+        nxt = _LEADING_PARTY_CONNECTOR_RE.sub('', n).strip()
+        if nxt == n:
+            return n
+        n = nxt
+
+
+def _is_holders_representative_name(name: str, filing_text: str = '') -> bool:
+    if _HOLDERS_REP_RE.search(name or ''):
+        return True
+    if not filing_text or not name:
+        return False
+    key = re.sub(r'^the\s+', '', name.strip().lower())
+    blob = filing_text
+    for m in re.finditer(re.escape(name), blob, re.IGNORECASE):
+        window = blob[max(0, m.start() - 80): m.end() + 80]
+        if _HOLDERS_REP_RE.search(window):
+            return True
+    for n in parse_defined_terms(filing_text).get(key, []):
+        if _HOLDERS_REP_RE.search(n):
+            return True
+    return False
+
+
+def _introduced_in_capacity_or_designee(name: str, filing_text: str) -> bool:
+    if not name or not filing_text:
+        return False
+    if _legal_name_for_capacity_role(name, filing_text):
+        return True
+    for m in re.finditer(re.escape(name), filing_text, re.IGNORECASE):
+        window = filing_text[max(0, m.start() - 120): m.end() + 120]
+        if _CAPACITY_OR_DESIGNEE_INTRO_RE.search(window):
+            return True
+    return False
+
+
 def _legal_name_for_capacity_role(claimed: str, filing_text: str) -> str | None:
     """Resolve a defined role term to the legal name that introduces it.
 
@@ -3384,6 +3545,12 @@ def _legal_name_for_capacity_role(claimed: str, filing_text: str) -> str | None:
         rf'\s*,\s*(?:the\s+)?{q}(?P<term>[^"\u201c\u201d\u2018\u2019]+){q}',
         rf'{legal_tok},\s+together\s+with\s+its\s+[\w\s]{{1,40}}',
         rf'{legal_tok},\s+acting\s+through\s+its\s+[\w\s]{{1,40}}',
+        rf'{legal_tok},?\s+in\s+its\s+(?:role|capacity)\s+as\s+(?:the\s+)?'
+        rf'{role_tok}'
+        rf'(?:\s+\([^)]{{0,160}}{q}(?P<term>[^"\u201c\u201d\u2018\u2019]+){q})?',
+        rf'{legal_tok},?\s+as\s+(?:the\s+)?'
+        rf'(?:designee|nominee|agent|representative|trustee)\b'
+        rf'(?:\s+[^.]{{0,80}}(?:the\s+)?{q}(?P<term>[^"\u201c\u201d\u2018\u2019]+){q})?',
     )
     for pat in patterns:
         for m in re.finditer(pat, filing_text, re.IGNORECASE):
@@ -3906,12 +4073,53 @@ _ENTERED_VERB_RE = re.compile(
     r'(?:an?\s+|the\s+)?(?:that\s+certain\s+)?'
 )
 _TITLE_STOP_RE = re.compile(
-    r'(?i)\s+(?:with|between|among|under\s+which|for)\b|,'
+    r'(?i)\s+(?:with|between|among|by\s+and|under\s+which|for)\b|,'
 )
 _FORBIDDEN_TITLE_RE = re.compile(
     r'(?i)\b(?:waivers?|joinders?|term\s+sheets?|'
     r'letter\s+of\s+intent|memorandum\s+of\s+understanding|non-binding)\b'
 )
+# Plain new-instrument titles only. Any extra modifier word → drop.
+_ALLOWED_NEW_TITLES = frozenset({
+    "license agreement",
+    "licence agreement",
+    "exclusive license agreement",
+    "exclusive licence agreement",
+    "collaboration agreement",
+    "collaboration and license agreement",
+    "collaboration and licence agreement",
+    "license and collaboration agreement",
+    "licence and collaboration agreement",
+    "option and license agreement",
+    "option and licence agreement",
+    "agreement and plan of merger",
+    "plan of merger",
+    "business combination agreement",
+    "asset purchase agreement",
+    "stock purchase agreement",
+    "share purchase agreement",
+    "merger agreement",
+    "co-development agreement",
+    "co-commercialization agreement",
+    "co-commercialisation agreement",
+    "co-development and co-commercialization agreement",
+    "co-development and co-commercialisation agreement",
+})
+_LICENSE_COLLAB_TITLES = frozenset(
+    t for t in _ALLOWED_NEW_TITLES
+    if "merger" not in t and "purchase" not in t and "business combination" not in t
+)
+_MERGER_TITLES = frozenset({
+    "agreement and plan of merger",
+    "plan of merger",
+    "business combination agreement",
+    "merger agreement",
+})
+_ACQUISITION_TITLES = _MERGER_TITLES | frozenset({
+    "asset purchase agreement",
+    "stock purchase agreement",
+    "share purchase agreement",
+})
 _NOT_NEW_STEM_RE = re.compile(
     r'(?i)(?:'
     r'\bamend\w*'
@@ -4027,8 +4235,22 @@ def _cover_form(filing_text: str) -> str | None:
     return m.group(1).upper() if m else None
 
 
+def _normalize_instrument_title(title: str) -> str:
+    t = re.sub(r'\([^)]*\)', ' ', title or '')
+    t = re.sub(r'\s+', ' ', t).strip().rstrip('.,;:')
+    t = re.sub(r'^(?:an?|the)\s+', '', t, flags=re.IGNORECASE)
+    return t.lower()
+
+
+def _title_is_allowed_new(title: str) -> bool:
+    """True only for a plain allow-list title with no extra modifier word."""
+    return _normalize_instrument_title(title) in _ALLOWED_NEW_TITLES
+
+
 def _title_is_tainted(title: str) -> bool:
     if not title:
+        return True
+    if not _title_is_allowed_new(title):
         return True
     return bool(
         _FORBIDDEN_TITLE_RE.search(title)
@@ -4041,29 +4263,19 @@ def _title_is_tainted(title: str) -> bool:
 def _title_is_new_license_or_collab(title: str) -> bool:
     if _title_is_tainted(title):
         return False
-    return bool(re.search(r'\b(?:licen[sc](?:e|ing)|collaboration)\b', title, re.IGNORECASE))
+    return _normalize_instrument_title(title) in _LICENSE_COLLAB_TITLES
 
 
 def _title_is_merger_instrument(title: str) -> bool:
     if _title_is_tainted(title):
         return False
-    return bool(re.search(
-        r'(?:agreement\s+and\s+plan\s+of\s+merger|'
-        r'business\s+combination\s+agreement|'
-        r'plan\s+of\s+(?:merger|reorganization|business\s+combination))',
-        title, re.IGNORECASE,
-    ))
+    return _normalize_instrument_title(title) in _MERGER_TITLES
 
 
 def _title_is_acquisition_instrument(title: str) -> bool:
-    if _title_is_merger_instrument(title):
-        return True
     if _title_is_tainted(title):
         return False
-    return bool(re.search(
-        r'\b(?:(?:stock|asset)\s+)?purchase\s+agreement\b|\bmerger\s+agreement\b',
-        title, re.IGNORECASE,
-    ))
+    return _normalize_instrument_title(title) in _ACQUISITION_TITLES
 
 
 def _date_in_or_near_period(dated: date | None, reference_date: str | None) -> bool:
@@ -4148,24 +4360,130 @@ def _window_floor(reference_date: str | None) -> date:
     return ref - _NEAR_PERIOD
 
 
-def _instrument_has_history(text: str, reference_date: str | None, keep_dates: list[date] | None = None) -> bool:
-    """History signal on this instrument, ignoring its own in-window MDY years."""
-    if not text:
+_YEAR_NOT_AGREEMENT_RE = re.compile(
+    r'(?i)(?:'
+    r'securities\s+(?:exchange\s+)?act\s+of\s+(?:19|20)\d{2}'
+    r'|patents?\s+(?:filed|issued|granted|specific|owned)?'
+    r'|(?:founded|incorporated|organized)\s+(?:in\s+)?(?:19|20)\d{2}'
+    r'|prior\s+written\s+notice'
+    r'|(?:will\s+)?continue\s+in\s+effect\s+unless\s+terminated'
+    r')'
+)
+_EARLIER_RELATION_RE = re.compile(
+    r'(?i)(?:'
+    r'\b(?:earlier|existing|already|previous|prior|original|first)\s+'
+    r'(?:version\s+of\s+(?:the\s+)?)?'
+    r'(?:agreement|licen[sc]e|collaboration|relationship|pact)\b'
+    r'|\bremains\s+in\s+effect\b'
+    r'|\bin\s+place\s+of\b'
+    r'|\bfirst\s+agreement\b'
+    r')'
+)
+_OTHER_PARTY_IN_CLAUSE_RE = re.compile(
+    r'\b(?:with|between|among)\s+'
+    r'((?:[A-Z][A-Za-z0-9&.\'-]+(?:\s+(?:and|&|of|[A-Z][A-Za-z0-9&.\'-]+)){0,6})'
+    r'(?:,?\s*(?:' + _LEGAL_SUFFIX_ALT + r')\.?)?)'
+)
+
+
+def _mask_non_agreement_years(text: str) -> str:
+    return _YEAR_NOT_AGREEMENT_RE.sub(' ', text or '')
+
+
+def _clause_names_other_party(clause: str, current_cp: str) -> bool:
+    """True when the clause names a legal entity that is not this instrument's CP."""
+    if not clause:
         return False
-    if _INSTRUMENT_HISTORY_RE.search(text):
+    for m in _OTHER_PARTY_IN_CLAUSE_RE.finditer(clause):
+        name = re.sub(r'\s+', ' ', m.group(1)).strip().rstrip(',')
+        if not name or re.search(r'(?i)^(?:the\s+)?company$', name):
+            continue
+        if current_cp and (
+            match_company_whole_word(current_cp, name)
+            or match_company_whole_word(name, current_cp)
+        ):
+            continue
+        if _looks_like_company_name(name):
+            return True
+    return False
+
+
+def _entered_sentence_counterparty(sentence: str) -> str:
+    m = _OTHER_PARTY_IN_CLAUSE_RE.search(sentence or '')
+    if not m:
+        return ''
+    return re.sub(r'\s+', ' ', m.group(1)).strip().rstrip(',')
+
+
+def _instrument_description(body: str, verb_start: int, title: str) -> str:
+    """Whole description of this instrument, not a 220-char tail."""
+    if not body or verb_start < 0:
+        return ''
+    sent_start = body.rfind('\n', 0, verb_start) + 1
+    rest = body[sent_start:]
+    cut = len(rest)
+    nxt_item = re.search(r'(?i)\n\s*Item\s+\d+\.\d+', rest[80:] if len(rest) > 80 else '')
+    if nxt_item:
+        cut = min(cut, 80 + nxt_item.start())
+    nxt_heading = re.search(
+        r'(?im)^\s*(?:option\s+and\s+licen[sc]e|licen[sc]e\s+agreement|'
+        r'collaboration\s+agreement|agreement\s+and\s+plan)\b.{0,80}$',
+        rest[160:] if len(rest) > 160 else '',
+    )
+    if nxt_heading:
+        cut = min(cut, 160 + nxt_heading.start())
+    scan = rest[40:] if len(rest) > 40 else ''
+    for m in _ENTERED_VERB_RE.finditer(scan):
+        other = _capture_entered_title(scan[m.end(): m.end() + 200])
+        if other and _normalize_instrument_title(other) != _normalize_instrument_title(title):
+            cut = min(cut, 40 + m.start())
+            break
+    return rest[:cut]
+
+
+def _description_has_earlier_relationship(
+    desc: str,
+    current_cp: str,
+    reference_date: str | None,
+    keep_dates: list[date] | None = None,
+) -> bool:
+    """Earlier agreement / same-party relationship on this instrument's description."""
+    if not desc:
+        return False
+    masked = _mask_non_agreement_years(desc)
+    if _INSTRUMENT_HISTORY_RE.search(masked):
+        sent = _sentence_at(masked, _INSTRUMENT_HISTORY_RE.search(masked).start())
+        if not _clause_names_other_party(sent, current_cp):
+            return True
+    for m in _EARLIER_RELATION_RE.finditer(masked):
+        sent = _sentence_at(masked, m.start())
+        if _clause_names_other_party(sent, current_cp):
+            continue
         return True
     keep_years = {d.year for d in (keep_dates or []) if d}
     floor = _window_floor(reference_date)
-    for m in _YEAR_OR_FY_RE.finditer(text):
+    for m in _YEAR_OR_FY_RE.finditer(masked):
         try:
             year = int(m.group(1))
         except (TypeError, ValueError):
             continue
         if year in keep_years:
             continue
-        if date(year, 12, 31) < floor:
-            return True
+        if date(year, 12, 31) >= floor:
+            continue
+        window = masked[max(0, m.start() - 48): m.end() + 48]
+        if not re.search(r'(?i)\b(?:agreement|licen[sc]e|collaboration|pact)\b', window):
+            continue
+        sent = _sentence_at(masked, m.start())
+        if _clause_names_other_party(sent, current_cp):
+            continue
+        return True
     return False
+
+
+def _instrument_has_history(text: str, reference_date: str | None, keep_dates: list[date] | None = None) -> bool:
+    """History signal on this instrument, ignoring its own in-window MDY years."""
+    return _description_has_earlier_relationship(text, '', reference_date, keep_dates)
 
 
 def _date_on_entered_into_sentence(title: str, sentence: str, after_verb: str = '') -> date | None:
@@ -4180,6 +4498,14 @@ def _sentence_is_amend_dated_historic(sentence: str) -> bool:
     return bool(_ORIGIN_YEAR_RE.search(sentence) and _AMEND_EXTEND_ON_RE.search(sentence))
 
 
+_EFFECTIVE_MDY_RE = re.compile(
+    rf'(?i)\beffective(?:\s+as\s+of)?\s+{_MONTH_ALT}\s+(\d{{1,2}}),\s+(\d{{4}})\b'
+)
+_TRAILING_WITH_ON_MDY_RE = re.compile(
+    rf'(?i)\b(?:with|between|among)\b.{{0,160}}?\bon\s+{_MONTH_ALT}\s+(\d{{1,2}}),\s+(\d{{4}})\s*\.?\s*$'
+)
+
+
 def _instrument_own_mdy(sentence: str, after_verb: str = '') -> date | None:
     """Date of the entered-into instrument only — never a later change-verb MDY."""
     if not sentence and not after_verb:
@@ -4189,7 +4515,20 @@ def _instrument_own_mdy(sentence: str, after_verb: str = '') -> date | None:
         return dated
     verb = re.search(r'(?i)\b(?:entered\s+into|executed|signed)\b', sentence or '')
     if verb:
-        return _on_mdy_before(sentence[:verb.start()])
+        prefix = sentence[:verb.start()]
+        em = _EFFECTIVE_MDY_RE.search(prefix)
+        if em and not _ON_MDY_POISON_PREFIX_RE.search(prefix[max(0, em.start() - 48):em.start()]):
+            parsed = _parse_month_day_year(em.group(1), em.group(2), em.group(3))
+            if parsed:
+                return parsed
+        on = _on_mdy_before(prefix)
+        if on:
+            return on
+    tm = _TRAILING_WITH_ON_MDY_RE.search(sentence or '')
+    if tm:
+        pre = (sentence or '')[max(0, tm.start() - 48):tm.start()]
+        if not _ON_MDY_POISON_PREFIX_RE.search(pre):
+            return _parse_month_day_year(tm.group(1), tm.group(2), tm.group(3))
     return None
 
 
@@ -4209,6 +4548,30 @@ def _split_item_bodies(filing_text: str) -> dict[str, str]:
         end = matches[i + 1].start() if i + 1 < len(matches) else len(filing_text)
         bodies[m.group(1)] = filing_text[m.start():end]
     return bodies
+
+
+def _sixk_operative_text(filing_text: str) -> str:
+    """Drop 6-K cover so 'Act of 1934' is not the first sentence or a year hit."""
+    if not filing_text:
+        return ''
+    m = re.search(
+        rf'(?i)(?:^|\n)\s*(?:press\s+release\b|item\s+\d|'
+        rf'on\s+{_MONTH_ALT}\s+\d{{1,2}},\s+\d{{4}}|'
+        rf'effective(?:\s+as\s+of)?\s+{_MONTH_ALT}\s+\d{{1,2}},\s+\d{{4}}|'
+        rf'(?:the\s+(?:company|registrant)\s+)?(?:has\s+)?entered\s+into\b)',
+        filing_text,
+    )
+    if not m:
+        return filing_text[min(len(filing_text), _COVER_SCAN):] or filing_text
+    window = filing_text[m.start(): m.start() + 48]
+    if re.search(r'(?i)act\s+of\s+19\d{2}', window):
+        nxt = re.search(
+            rf'(?i)\b(?:on\s+{_MONTH_ALT}\s+\d{{1,2}},\s+\d{{4}}|entered\s+into)\b',
+            filing_text[m.end():],
+        )
+        if nxt:
+            return filing_text[m.end() + nxt.start():]
+    return filing_text[m.start():]
 
 
 def _structural_item101(filing_text: str, type_quote: str = '') -> str | None:
@@ -4233,10 +4596,10 @@ def _structural_item101(filing_text: str, type_quote: str = '') -> str | None:
                         return None
             return items['1.01']
         if form == '6-K':
-            return filing_text
+            return _sixk_operative_text(filing_text)
         return None
     if form == '6-K':
-        return filing_text
+        return _sixk_operative_text(filing_text)
     if form == '8-K':
         return None
     return None
@@ -4285,8 +4648,7 @@ def _collect_item101_new_agreements(
         sentence = _sentence_at(body, m.start())
         after_verb = body[m.end(): m.end() + 280]
         title = _capture_entered_title(after_verb)
-        qualifier = _instrument_qualifier(after_verb)
-        if _title_is_tainted(title) or _NOT_NEW_STEM_RE.search(qualifier):
+        if not _title_is_allowed_new(title) or _title_is_tainted(title):
             continue
         if _CONDITIONAL_DEAL_RE.search(sentence):
             continue
@@ -4302,7 +4664,9 @@ def _collect_item101_new_agreements(
                 dated = _on_mdy_before(prev)
         if dated is None or not _date_in_or_near_period(dated, reference_date):
             continue
-        if _instrument_has_history(f"{title} {qualifier} {sentence}", reference_date, [dated]):
+        desc = _instrument_description(body, m.start(), title)
+        cp = _entered_sentence_counterparty(sentence)
+        if _description_has_earlier_relationship(desc, cp, reference_date, [dated]):
             continue
         found.append(_NewAgreement(
             title=title,
@@ -5059,7 +5423,8 @@ def process_sec_deal(
     filing_url: str,
     filing_date: str,
     event_date: str | None,
-    claude_response: dict
+    claude_response: dict,
+    claude_client: Any = None,
 ) -> dict | None:
     """Process a single SEC filing to extract and verify a deal.
     
@@ -5096,7 +5461,7 @@ def process_sec_deal(
         logging.info("Deal out_of_scope: deal_type=%s is not in-scope (only license_collaboration, acquisition, merger)", deal_type_str)
         return None
     
-    counterparty = claude_response.get('counterparty_name', '').strip()
+    counterparty = _strip_counterparty_lead(claude_response.get('counterparty_name', '').strip())
     type_quote = claude_response.get('type_quote', '').strip()
     counterparty_quote = claude_response.get('counterparty_quote', '').strip()
     raw_amounts = claude_response.get('amounts', [])
@@ -5181,6 +5546,28 @@ def process_sec_deal(
             return None
         counterparty = parent
 
+    if _introduced_in_capacity_or_designee(counterparty, filing_text):
+        legal = _legal_name_for_capacity_role(counterparty, filing_text)
+        if legal and legal.lower() != counterparty.lower():
+            logging.info("Resolved capacity/designee '%s' to '%s'", counterparty, legal)
+            counterparty = legal
+        elif not _name_has_legal_suffix(counterparty):
+            logging.info("Deal dropped: capacity/designee '%s' is not a legal entity", counterparty)
+            return None
+
+    if _is_holders_representative_name(counterparty, filing_text):
+        if deal_type in (DealType.MERGER, DealType.ACQUISITION):
+            parent = _parent_from_defined_terms(term_map)
+            if parent and not _is_holders_representative_name(parent, filing_text):
+                logging.info("Resolved holders' representative '%s' to Parent '%s'", counterparty, parent)
+                counterparty = parent
+            else:
+                logging.info("Deal dropped: holders' representative '%s'", counterparty)
+                return None
+        else:
+            logging.info("Deal dropped: holders' representative '%s'", counterparty)
+            return None
+
     resolved_cp = resolve_merger_vehicle(
         counterparty, filing_text, type_quote, deal_type=deal_type,
     )
@@ -5227,7 +5614,7 @@ def process_sec_deal(
     if not declared:
         logging.info("Deal dropped: counterparty '%s' is not a declared party name", counterparty)
         return None
-    counterparty = declared
+    counterparty = _strip_counterparty_lead(declared)
     role_legal = _legal_name_for_capacity_role(counterparty, filing_text)
     if role_legal and role_legal.lower() != counterparty.lower():
         counterparty = role_legal
@@ -5475,8 +5862,8 @@ def process_sec_deal(
     display_date = event_date[:7] if event_date else (filing_date[:7] if filing_date else '')
     
     output_money = headline_amount or ''
-    
-    return {
+
+    output = {
         'url': filing_url,
         'title': title,
         'company': filer_name,
@@ -5504,6 +5891,17 @@ def process_sec_deal(
         'filer_role': filer_role,
         'type_quote': type_quote,
     }
+    item_body = _structural_item101(filing_text, type_quote) or filing_text
+    if not confirm_brand_new_agreement(
+        item_text=item_body,
+        dated=event_date or filing_date or '',
+        counterparty=counterparty,
+        filing_text=filing_text,
+        claude_client=claude_client,
+    ):
+        logging.info("Deal dropped: llm_deny_gate rejected %s / %s", filer_name, counterparty)
+        return None
+    return output
 
 
 def _select_relevant_filing_sections(filing_text: str, max_chars: int = 40000) -> str:
@@ -5689,7 +6087,8 @@ IMPORTANT: Every quote must be an EXACT substring of the filing text above. Do n
                 filing_url=filing_url,
                 filing_date=filing.get('date', ''),
                 event_date=event_date,
-                claude_response=claude_response
+                claude_response=claude_response,
+                claude_client=claude_client,
             )
             
             if deal:
