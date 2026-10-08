@@ -184,11 +184,44 @@ def epmc_fulltext_xml(pmcid: str) -> str | None:
     return None
 
 
+SUPERSCRIPT_MAP = {
+    '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴',
+    '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹',
+    '+': '⁺', '-': '⁻', 'n': 'ⁿ',
+}
+
+
+def element_text_with_superscripts(elem) -> str:
+    """Extract text from an XML element, converting <sup> to Unicode superscripts.
+    
+    Example: '5 × 10<sup>6</sup> cells' becomes '5 × 10⁶ cells'.
+    """
+    parts = []
+    if elem.text:
+        parts.append(elem.text)
+    for child in elem:
+        if child.tag == 'sup':
+            # Convert superscript content to Unicode superscript characters
+            sup_text = "".join(child.itertext())
+            sup_converted = "".join(SUPERSCRIPT_MAP.get(c, c) for c in sup_text)
+            parts.append(sup_converted)
+        elif child.tag == 'sub':
+            # Subscripts: just include as plain text with brackets
+            sub_text = "".join(child.itertext())
+            parts.append(f"_{sub_text}")
+        else:
+            # Recursively handle other elements
+            parts.append(element_text_with_superscripts(child))
+        if child.tail:
+            parts.append(child.tail)
+    return "".join(parts)
+
+
 def extract_sections_from_xml(xml_text: str, section_names: tuple[str, ...]) -> str:
     """Extract specific sections from PMC XML.
     
-    Uses itertext() to properly handle nested elements like <sup>, <italic>, etc.
-    Example: '5 × 10<sup>6</sup> cells' becomes '5 × 106 cells', not '5 × 10 cells'.
+    Uses custom text extraction to properly handle nested elements like <sup>, <italic>.
+    Example: '5 × 10<sup>6</sup> cells' becomes '5 × 10⁶ cells'.
     """
     if not xml_text:
         return ""
@@ -205,8 +238,7 @@ def extract_sections_from_xml(xml_text: str, section_names: tuple[str, ...]) -> 
             if any(name.lower() in title for name in section_names):
                 text_parts = []
                 for p in sec.iter("p"):
-                    # Use itertext() to get all text including nested elements
-                    para_text = "".join(p.itertext()).strip()
+                    para_text = element_text_with_superscripts(p).strip()
                     if para_text:
                         text_parts.append(para_text)
                 sections.append(" ".join(text_parts))
@@ -229,8 +261,7 @@ def extract_fig_captions_from_xml(xml_text: str, max_chars: int = 6000) -> str:
     for fig in root.iter("fig"):
         cap = fig.find("caption")
         if cap is not None:
-            # Use itertext() to get all text including nested elements
-            cap_text = "".join(cap.itertext()).strip()
+            cap_text = element_text_with_superscripts(cap).strip()
             if cap_text:
                 captions.append(cap_text)
     
@@ -270,8 +301,7 @@ def extract_design_methods_from_xml(xml_text: str, max_chars: int = 4000) -> str
                         if any(kw in subsec_text for kw in design_keywords):
                             text_parts = []
                             for p in subsec.iter("p"):
-                                # Use itertext() to get all text including nested elements
-                                para_text = "".join(p.itertext()).strip()
+                                para_text = element_text_with_superscripts(p).strip()
                                 if para_text:
                                     text_parts.append(para_text)
                             if text_parts:
@@ -282,27 +312,36 @@ def extract_design_methods_from_xml(xml_text: str, max_chars: int = 4000) -> str
 
 
 def pubmed_efetch_abstract(pmid: str) -> str:
-    """Fetch abstract from PubMed efetch API."""
+    """Fetch abstract from PubMed efetch XML API - extracts ONLY AbstractText.
+    
+    This avoids including author information, affiliations, COI statements,
+    trial IDs, and other metadata that inflates the abstract and causes
+    false positive validation errors.
+    """
     if not pmid:
         return ""
     url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?" + urllib.parse.urlencode({
         "db": "pubmed",
         "id": pmid,
-        "rettype": "abstract",
-        "retmode": "text",
+        "rettype": "xml",
+        "retmode": "xml",
     })
     data = _http_get(url)
     if data:
-        text = data.decode("utf-8", errors="replace")
-        lines = text.strip().split("\n")
-        abstract_lines = []
-        in_abstract = False
-        for line in lines:
-            if line.strip() and not line.startswith("Author information") and not line.startswith("PMID:"):
-                if in_abstract or (len(line) > 50 and not any(line.startswith(x) for x in ["1.", "2.", "3."])):
-                    in_abstract = True
-                    abstract_lines.append(line.strip())
-        return " ".join(abstract_lines)
+        try:
+            root = ET.fromstring(data)
+            abstract_parts = []
+            for abstract_text in root.iter("AbstractText"):
+                text = "".join(abstract_text.itertext()).strip()
+                if text:
+                    label = abstract_text.get("Label", "")
+                    if label and not label.lower().startswith("background"):
+                        abstract_parts.append(f"{label}: {text}")
+                    else:
+                        abstract_parts.append(text)
+            return " ".join(abstract_parts)
+        except ET.ParseError:
+            pass
     return ""
 
 
@@ -435,7 +474,7 @@ def enrich_item(row: dict) -> EnrichedItem:
         abstract = scrape_biorxiv_fulltext(item.url)
         if abstract:
             item.abstract = abstract
-            item.evidence_level = "abstract"
+            item.evidence_level = "preprint"  # bioRxiv/medRxiv are preprints
             item.source_trace.append(f"bioRxiv API: {len(abstract)} chars")
     
     if not item.abstract:
@@ -447,30 +486,98 @@ def enrich_item(row: dict) -> EnrichedItem:
 
 
 def extract_numbers_from_text(text: str) -> set[str]:
-    """Extract all numbers from text, handling %, 倍, units, Chinese numerals."""
+    """Extract meaningful data numbers from text for validation.
+    
+    This function extracts numbers that represent real data (percentages,
+    sample sizes, durations, etc.) while SKIPPING:
+    - Gene/protein names (CD4, CD8, CD14, CD318, IL-23, HLA-DP04)
+    - Trial IDs (NCT..., RPCEC...)
+    - Duration patterns like "1-year", "2-week" (these are descriptive)
+    - Confidence interval labels (95%CI, 95% CI)
+    - Pure identifiers that don't represent quantities
+    
+    Handles thousands separators (1,139 -> 1139).
+    """
     numbers = set()
     
+    # First, mark things we should ignore by replacing them with placeholders
+    text_clean = text
+    
+    # Remove gene/protein names like CD4, CD8, CD14, CD318, IL-23, HLA-DP04, R2, S1, M2
+    text_clean = re.sub(r'CD\d+', ' ', text_clean, flags=re.IGNORECASE)
+    text_clean = re.sub(r'IL-?\d+', ' ', text_clean, flags=re.IGNORECASE)
+    text_clean = re.sub(r'HLA-?[A-Z]*\d+', ' ', text_clean, flags=re.IGNORECASE)
+    text_clean = re.sub(r'NF-?κ?B', ' ', text_clean, flags=re.IGNORECASE)
+    # Remove single letter + number identifiers like R2, S1, M2 (gene/element names)
+    text_clean = re.sub(r'\b[A-Z]\d+\b', ' ', text_clean)
+    # Remove trial IDs (must come before general number extraction)
+    text_clean = re.sub(r'(?:NCT|RPCEC|ISRCTN|EudraCT|ACTRN|ChiCTR|JR?CT|CTRI|DRKS|NTR)\d+', ' ', text_clean, flags=re.IGNORECASE)
+    # Remove duration patterns like "1-year", "2-week", "4-week" (descriptive, not data)
+    text_clean = re.sub(r'\d+-(?:year|month|week|day|hour|年|周|个月|天)', ' ', text_clean, flags=re.IGNORECASE)
+    # Remove "95%CI" or "95% CI" (confidence interval label, not a percentage value)
+    text_clean = re.sub(r'95\s*%\s*CI', ' ', text_clean, flags=re.IGNORECASE)
+    # Remove reference numbers like "(1)", "(2)", "(1)…(5)" etc.
+    text_clean = re.sub(r'\(\d{1,2}\)', ' ', text_clean)
+    
+    # Extract numbers in priority order, removing matched spans to prevent double-counting
+    # Use a set of (start, end) positions to track what's been matched
+    matched_positions = set()
+    
     patterns = [
-        r'\d+(?:\.\d+)?(?:\s*(?:%|％))',
-        r'\d+(?:\.\d+)?(?:\s*倍)',
+        r'\d{1,3}(?:,\d{3})+(?:\.\d+)?(?:\s*(?:%|％))?',  # Numbers with thousands separator (must be first)
+        r'\d+(?:\.\d+)?(?:\s*(?:%|％))',  # Percentages
+        r'\d+(?:\.\d+)?(?:\s*倍)',  # Fold changes
         r'\d+(?:\.\d+)?(?:\s*(?:个月|天|周|年|岁|例|名|只|条|个|位|人|mg|kg|µg|ng|mL|L|µL|nM|pM|µM|mM))',
-        r'(?:HR|OR|RR|CI|P|p)\s*[=<>≤≥]\s*\d+(?:\.\d+)?',
-        r'\d+(?:\.\d+)?\s*[×x]\s*10\^?\d+',
-        r'\d+/\d+',
-        r'\d+(?:\.\d+)?',
+        r'(?:HR|OR|RR|P|p)\s*[=<>≤≥]\s*\d+(?:\.\d+)?',  # NOT CI - CI is confidence level
+        r'\d+(?:\.\d+)?\s*[×x]\s*10[\^⁰¹²³⁴⁵⁶⁷⁸⁹]+',  # Scientific notation with superscripts
+        r'\d+(?:\.\d+)?\s*[×x]\s*10\^\d+',  # Scientific notation with caret
+        r'\d+/\d+',  # Fractions like 19/36
+        r'\d+(?:\.\d+)?',  # Plain numbers (last, most general)
     ]
     
     for pattern in patterns:
-        for match in re.finditer(pattern, text, re.IGNORECASE):
+        for match in re.finditer(pattern, text_clean, re.IGNORECASE):
+            # Check if this position overlaps with already matched positions
+            start, end = match.start(), match.end()
+            overlaps = any(s <= start < e or s < end <= e or (start <= s and end >= e) 
+                          for s, e in matched_positions)
+            if overlaps:
+                continue
+            
             num = match.group(0).strip()
             if num and len(num) > 0:
-                numbers.add(num)
+                # Normalize thousands separators
+                num_normalized = num.replace(",", "").replace("，", "")
+                numbers.add(num_normalized)
+                matched_positions.add((start, end))
     
-    chinese_num_pattern = r'[零一二三四五六七八九十百千万亿]+'
-    for match in re.finditer(chinese_num_pattern, text):
+    # Chinese numerals with units (these ARE data)
+    chinese_data_pattern = r'[零一二三四五六七八九十百千万亿两]+(?:倍|%|％|年|个月|天|周|岁|例|名|只|条|个|位|人)'
+    for match in re.finditer(chinese_data_pattern, text):
         numbers.add(match.group(0))
     
     return numbers
+
+
+# English number words to Arabic
+ENGLISH_NUMBER_WORDS = {
+    'zero': '0', 'one': '1', 'two': '2', 'three': '3', 'four': '4',
+    'five': '5', 'six': '6', 'seven': '7', 'eight': '8', 'nine': '9',
+    'ten': '10', 'eleven': '11', 'twelve': '12', 'thirteen': '13',
+    'fourteen': '14', 'fifteen': '15', 'sixteen': '16', 'seventeen': '17',
+    'eighteen': '18', 'nineteen': '19', 'twenty': '20'
+}
+
+
+def english_number_to_arabic(text: str) -> str:
+    """Convert English number words to Arabic numerals.
+    
+    Examples: "nine doses" -> "9 doses", "five patients" -> "5 patients"
+    """
+    result = text.lower()
+    for word, digit in sorted(ENGLISH_NUMBER_WORDS.items(), key=lambda x: -len(x[0])):
+        result = re.sub(r'\b' + word + r'\b', digit, result, flags=re.IGNORECASE)
+    return result
 
 
 def normalize_whitespace(text: str) -> str:
@@ -627,12 +734,18 @@ def build_article_prompt(item: EnrichedItem, tier: str) -> str:
     """Build prompt for single article drafting."""
     return f"""你是「前沿追踪」的科学编辑。下面是一篇论文的可核实材料，请据此写一篇中文解读。
 
-## 不可违反的三条
+## 不可违反的规则
 
-1. 只能写材料里**已经写明**的事实。材料里没有的数字、作者、适应症、剂量、人群、金额，一律不要写。
-2. 材料里查不到的字段，写「原文未给出」或「未读到该部分」，**不要留空，不要推测，不要用相近的数字代替**。
-3. 你引用的每一个数字，都必须能在材料里找到对应的原句。把这些原句逐字放进 data_points[].source_quote。
+1. **只写材料已经写明的事实**。材料里没有的数字、作者、适应症、剂量、人群、金额，一律不要写。
+2. **材料里查不到的字段，写「原文未给出」或「未读到该部分」**，不要留空，不要推测，不要用相近的数字代替。
+3. **每个数字都要有 source_quote**。你引用的每一个数字，都必须能在材料里找到对应的原句。把这些原句逐字放进 data_points[].source_quote。
    凑不出 source_quote 的数字，就不要写进正文。
+4. **不要把标识符登记为数字**。CD4、CD8、CD14、IL-23、HLA-DP04 等是蛋白/基因名称，不是数据；NCT、RPCEC 等是试验编号，不是数据。
+   data_points 的 meaning 字段不得写「名称中的编号」或类似内容。
+5. **保留原文的推测性语气**。原文说"may"、"might"、"could"、"suggests"时，译文要保留相应的推测词（可能、或许、提示）。
+   不要把推测性结论写成确定性结果。
+6. **不要断言原文没有的事情不存在**。如果原文没有提到人体试验数据，只能写「原文未报告人体数据」，不能写「未涉及人体」或「未在人体验证」。
+   后者暗示研究故意不涉及人体，但实际上可能只是摘要没有报告。
 
 ## 材料等级（已由系统判定，不要自行改写）
 
@@ -765,12 +878,25 @@ def extract_number_core(text: str) -> str:
     """Extract the core numeric value from a number string for comparison.
     
     Examples: "52%" -> "52", "1,139例" -> "1139", "95%CI" -> "", "HR=0.66" -> "0.66"
+    
+    Handles:
+    - Thousands separators (1,139 -> 1139)
+    - Skips confidence interval labels (95%CI)
+    - Skips gene/protein identifiers (CD14 -> "")
     """
     # Remove commas and spaces
     text = text.replace(",", "").replace(" ", "").replace("，", "")
     
-    # Skip things like "95%CI" which is not a percentage value
-    if re.match(r'^\d+%CI', text, re.IGNORECASE):
+    # Skip "95%CI" or "95% CI" - this is a confidence interval label, not data
+    if re.match(r'^\d+\s*%\s*CI', text, re.IGNORECASE):
+        return ""
+    
+    # Skip gene/protein names like CD14, IL-23, HLA-DP04
+    if re.match(r'^(?:CD|IL|HLA|NK|NF)[A-Za-z]?-?[A-Za-z0-9]*$', text, flags=re.IGNORECASE):
+        return ""
+    
+    # Skip trial IDs
+    if re.match(r'^(?:NCT|RPCEC|ISRCTN)\d+$', text, flags=re.IGNORECASE):
         return ""
     
     # Extract the numeric part
@@ -798,73 +924,56 @@ def number_in_text_as_word_boundary(number: str, text: str) -> bool:
     return bool(re.search(pattern, text_clean))
 
 
+def source_has_quantitative_numbers(raw_material: str) -> bool:
+    """Check if source material contains quantitative numbers.
+    
+    Some papers are qualitative (e.g., platform descriptions, methods papers).
+    These should not require numbers in results.
+    """
+    # Remove gene names, trial IDs, etc.
+    text = re.sub(r'\b(?:CD|IL|HLA|NK|NF)[A-Za-z]?-?[A-Za-z0-9]+\b', '', raw_material, flags=re.IGNORECASE)
+    text = re.sub(r'\b(?:NCT|RPCEC|ISRCTN)\d+\b', '', text, flags=re.IGNORECASE)
+    
+    # Look for actual data patterns: percentages, sample sizes, p-values, etc.
+    data_patterns = [
+        r'\d+\s*%',  # Percentages
+        r'n\s*=\s*\d+',  # Sample sizes
+        r'p\s*[<>=]\s*\d',  # P-values
+        r'HR\s*[=:]\s*\d',  # Hazard ratios
+        r'OR\s*[=:]\s*\d',  # Odds ratios
+        r'\d+\s*(?:patient|subject|participant|case)',  # Patient counts
+        r'\d+\s*(?:mg|kg|mL|µg)',  # Doses
+    ]
+    for pattern in data_patterns:
+        if re.search(pattern, text, re.IGNORECASE):
+            return True
+    return False
+
+
 def validate_depth(art: dict, raw_material: str) -> list[str]:
     """Validate generated article meets depth requirements.
     
     Returns list of problems. Empty list means validation passed.
     
     Checks:
-    - Marketing words in title/one_liner
+    - Marketing words in ALL text fields (not just title/one_liner)
     - data_points: quote must be in source, value must match quote
+    - data_points with meaning containing "名称中的编号" are rejected (gaming)
     - Numbers in body must be registered in data_points
     - Numbers checked with word boundaries (500 != 5000)
-    - Chinese numerals converted for comparison
-    - Checks datacard, limitations, title, summary too
-    - Names (person/institution/drug/company) must be in source
+    - Chinese numerals in body are checked against registered values
+    - English number words in quotes are normalized (nine -> 9)
+    - "原文未给出" statements are NOT flagged as containing unregistered numbers
+    - Results only require numbers if the source has quantitative data
     """
     problems = []
     norm = normalize_whitespace(raw_material)
+    # Also prepare version with English numbers converted
+    norm_english = english_number_to_arabic(norm)
     norm_for_numbers = chinese_numeral_to_arabic(norm)
     tier = art.get("tier", "brief")
     
-    # Marketing words check
-    if MARKETING_BLOCKLIST.search(art.get("title", "")):
-        problems.append("标题含有营销词汇")
-    if MARKETING_BLOCKLIST.search(art.get("one_liner", "")):
-        problems.append("一句话结论含有营销词汇")
-    
-    # Validate each data_point: quote must be in source, value must be in quote
-    for dp in art.get("data_points", []):
-        value = dp.get("value", "").strip()
-        quote = dp.get("source_quote", "").strip()
-        quote_norm = normalize_whitespace(quote)
-        
-        # Check quote exists in source
-        if len(quote_norm) < 10:
-            problems.append(f"data_point source_quote 过短：{value}")
-            continue
-        if quote_norm not in norm:
-            problems.append(f"data_point 无法回溯：{value} (quote: {quote_norm[:50]}...)")
-            continue
-        
-        # Check value is not empty
-        if not value:
-            problems.append("data_point value 为空")
-            continue
-        
-        # Check value appears in the quote (with boundary check)
-        value_core = extract_number_core(value)
-        value_cn = extract_number_core(chinese_numeral_to_arabic(value))
-        quote_for_check = chinese_numeral_to_arabic(quote)
-        
-        if value_core and not number_in_text_as_word_boundary(value_core, quote_for_check):
-            # Try Chinese numeral conversion
-            if value_cn and value_cn != value_core and number_in_text_as_word_boundary(value_cn, quote_for_check):
-                pass  # OK after conversion
-            else:
-                problems.append(f"data_point value 不在 quote 中：{value} (quote: {quote[:50]})")
-    
-    # Build set of registered values (with their Arabic equivalents)
-    declared_values = set()
-    for dp in art.get("data_points", []):
-        val = dp.get("value", "").strip()
-        if val:
-            declared_values.add(val)
-            declared_values.add(extract_number_core(val))
-            declared_values.add(extract_number_core(chinese_numeral_to_arabic(val)))
-    declared_values.discard("")
-    
-    # Collect ALL text that needs number checking
+    # Collect ALL text for marketing word check (issue #9)
     all_text_parts = [
         art.get("title", ""),
         art.get("one_liner", ""),
@@ -875,22 +984,91 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
         art.get("significance", ""),
         *art.get("limitations", []),
     ]
-    
-    # Add datacard fields
     datacard = art.get("datacard", {})
     for field_val in datacard.values():
         if isinstance(field_val, str):
             all_text_parts.append(field_val)
-    
     all_text = " ".join(all_text_parts)
     
+    # Marketing words check on ALL text
+    if MARKETING_BLOCKLIST.search(all_text):
+        problems.append("文章含有营销词汇（重磅/颠覆/震撼等）")
+    
+    # Validate each data_point: quote must be in source, value must be in quote
+    for dp in art.get("data_points", []):
+        value = dp.get("value", "").strip()
+        quote = dp.get("source_quote", "").strip()
+        meaning = dp.get("meaning", "").strip()
+        quote_norm = normalize_whitespace(quote)
+        
+        # Reject gaming: data_points that register gene-name digits as values
+        if "名称" in meaning or "编号" in meaning:
+            problems.append(f"data_point 注册了标识符而非数据：{value} ({meaning})")
+            continue
+        
+        # Check quote exists in source
+        if len(quote_norm) < 10:
+            problems.append(f"data_point source_quote 过短：{value}")
+            continue
+        
+        # Allow quotes that match after English number word conversion
+        quote_norm_english = english_number_to_arabic(quote_norm)
+        if quote_norm not in norm and quote_norm_english not in norm_english:
+            problems.append(f"data_point 无法回溯：{value} (quote: {quote_norm[:50]}...)")
+            continue
+        
+        # Check value is not empty
+        if not value:
+            problems.append("data_point value 为空")
+            continue
+        
+        # Check value appears in the quote (with boundary check)
+        # Also try English number word conversion
+        value_core = extract_number_core(value)
+        value_cn = extract_number_core(chinese_numeral_to_arabic(value))
+        quote_for_check = chinese_numeral_to_arabic(quote)
+        quote_for_check_english = english_number_to_arabic(quote_for_check)
+        
+        if value_core:
+            found = (number_in_text_as_word_boundary(value_core, quote_for_check) or
+                     number_in_text_as_word_boundary(value_core, quote_for_check_english))
+            if not found and value_cn and value_cn != value_core:
+                found = number_in_text_as_word_boundary(value_cn, quote_for_check)
+            if not found:
+                problems.append(f"data_point value 不在 quote 中：{value} (quote: {quote[:50]})")
+    
+    # Build set of registered values (with their Arabic equivalents)
+    declared_values = set()
+    for dp in art.get("data_points", []):
+        val = dp.get("value", "").strip()
+        meaning = dp.get("meaning", "").strip()
+        # Skip gaming data_points
+        if "名称" in meaning or "编号" in meaning:
+            continue
+        if val:
+            declared_values.add(val)
+            declared_values.add(extract_number_core(val))
+            declared_values.add(extract_number_core(chinese_numeral_to_arabic(val)))
+    declared_values.discard("")
+    
     # Check numbers in all text are registered
-    all_numbers = extract_numbers_from_text(all_text)
+    # BUT skip "原文未给出" / "原文未报告" / "未给出" statements - these are honest disclaimers
+    text_for_number_check = all_text
+    # Remove disclaimer patterns that contain threshold numbers like "≥3级"
+    text_for_number_check = re.sub(r'[≥>=<≤]?\s*\d+级[^，。；]*原文未给出', '', text_for_number_check)
+    text_for_number_check = re.sub(r'原文未给出[^，。；]*', '', text_for_number_check)
+    text_for_number_check = re.sub(r'原文未报告[^，。；]*', '', text_for_number_check)
+    text_for_number_check = re.sub(r'未给出[具体]?[^，。；]*', '', text_for_number_check)
+    # Remove CI contexts like "具体P值或95%CI"
+    text_for_number_check = re.sub(r'P值或\d+%\s*CI', '', text_for_number_check)
+    text_for_number_check = re.sub(r'\d+%\s*CI', '', text_for_number_check)
+    
+    all_numbers = extract_numbers_from_text(text_for_number_check)
     for num in all_numbers:
         num_clean = num.strip()
         num_core = extract_number_core(num_clean)
         
-        # Skip things that aren't really standalone numbers (like "95%CI")
+        # Skip things that aren't really standalone numbers
         if not num_core:
             continue
         
@@ -911,10 +1089,28 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
             if re.search(r'\d', num_clean):
                 problems.append(f"正文数字未登记：{num_clean}")
     
-    # Check each results paragraph has at least one number
-    for i, para in enumerate(art.get("results", [])):
-        if not re.search(r'\d', para):
-            problems.append(f"results 第 {i+1} 段没有任何数字")
+    # Check Chinese numerals in body that represent data
+    chinese_data_in_body = re.findall(r'[两三四五六七八九十百千]+(?:年|倍|%|％|个月|天|周|例)', all_text)
+    for cn_num in chinese_data_in_body:
+        arabic = chinese_numeral_to_arabic(cn_num)
+        arabic_core = extract_number_core(arabic)
+        if arabic_core and arabic_core not in declared_values:
+            # Check if registered value matches after conversion
+            is_registered = False
+            for dv in declared_values:
+                dv_core = extract_number_core(dv) if dv else ""
+                if dv_core and dv_core == arabic_core:
+                    is_registered = True
+                    break
+            if not is_registered:
+                problems.append(f"正文中文数字未登记：{cn_num} ({arabic})")
+    
+    # Check results paragraphs have numbers ONLY if source has quantitative data
+    source_has_numbers = source_has_quantitative_numbers(raw_material)
+    if source_has_numbers:
+        for i, para in enumerate(art.get("results", [])):
+            if not re.search(r'\d', para):
+                problems.append(f"results 第 {i+1} 段没有任何数字")
     
     # Limitations count and quality
     min_limits = 3 if tier == "deep" else 1
@@ -970,13 +1166,15 @@ def validate_names(art: dict, raw_material: str) -> list[str]:
     """Check that person/institution/drug/company names in output appear in source.
     
     Returns list of problems for names that appear fabricated.
+    
+    Checks:
+    - Latin author names: "Zhang 等", "Li 等", "Smith 等"
+    - Chinese author names: "张等", "李等" 
+    - Institution names mentioned in the article
+    - Company/drug names that look specific
     """
     problems = []
     norm = normalize_whitespace(raw_material).lower()
-    
-    # Extract author references from the article
-    # Pattern: Chinese names like "Zhang 等", "Li 等", "Smith 等"
-    author_pattern = r'([A-Z][a-z]+)\s*等'
     
     all_text = " ".join([
         art.get("title", ""),
@@ -987,15 +1185,52 @@ def validate_names(art: dict, raw_material: str) -> list[str]:
         art.get("mechanism", ""),
         art.get("significance", ""),
         art.get("authors", ""),
+        *art.get("limitations", []),
     ])
     
-    for match in re.finditer(author_pattern, all_text):
+    # Latin author names: "Zhang 等", "Li 等", "Smith 等"
+    latin_author_pattern = r'([A-Z][a-z]+)\s*等'
+    for match in re.finditer(latin_author_pattern, all_text):
         name = match.group(1).lower()
-        # Check if this name appears in the source material
-        if name not in norm and len(name) >= 3:
-            # Also check for variations
+        if name not in norm and len(name) >= 2:
             if f"{name}," not in norm and f"{name} " not in norm:
                 problems.append(f"作者姓氏 '{match.group(1)}' 在原始材料中未找到（可能是编造）")
+    
+    # Chinese author names: "张等", "李等", "王等" followed by 等
+    chinese_surname_pattern = r'([\u4e00-\u9fff]{1,2})等'
+    common_non_surnames = {'作者', '患者', '受试', '研究', '结果', '数据', '其他', '这些', '那些'}
+    for match in re.finditer(chinese_surname_pattern, all_text):
+        name = match.group(1)
+        if name not in common_non_surnames:
+            if name not in norm:
+                problems.append(f"中文作者姓氏 '{name}' 在原始材料中未找到（可能是编造）")
+    
+    # Specific institution patterns (universities, hospitals, centers)
+    institution_pattern = r'([\u4e00-\u9fffA-Za-z\s]+(?:大学|医院|研究所|中心|Institute|University|Hospital|Center|Centre))'
+    for match in re.finditer(institution_pattern, all_text):
+        inst = match.group(1).strip()
+        inst_lower = inst.lower()
+        # Only check specific-looking institutions (not generic phrases)
+        if len(inst) >= 4 and inst_lower not in norm:
+            # Allow generic terms
+            if not any(g in inst_lower for g in ['该研究', '本研究', '这项', '一家', '多家']):
+                problems.append(f"机构名 '{inst}' 在原始材料中未找到（可能是编造）")
+    
+    # Specific drug/compound names (capitalized, not common words)
+    drug_pattern = r'\b([A-Z][a-z]+(?:mab|nib|lib|zumab|ximab|tinib|ciclib|lizumab))\b'
+    for match in re.finditer(drug_pattern, all_text):
+        drug = match.group(1).lower()
+        if drug not in norm:
+            problems.append(f"药物名 '{match.group(1)}' 在原始材料中未找到（可能是编造）")
+    
+    # Company names (patterns like "XYZ公司", "XYZ Inc", "XYZ Ltd")
+    company_pattern = r'([A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+)?)\s*(?:公司|Inc\.?|Ltd\.?|Corp\.?|Therapeutics|Pharma|Bio)'
+    for match in re.finditer(company_pattern, all_text):
+        company = match.group(1).lower()
+        if company not in norm and len(company) >= 3:
+            # Skip very common words
+            if company not in ['the', 'and', 'bio', 'new']:
+                problems.append(f"公司名 '{match.group(1)}' 在原始材料中未找到（可能是编造）")
     
     return problems
 
@@ -1031,14 +1266,27 @@ def triage_items(items: list[EnrichedItem], config: dict) -> list[dict]:
     return []
 
 
-def draft_single_article(item: EnrichedItem, tier: str, config: dict) -> dict | None:
+def draft_single_article(item: EnrichedItem, tier: str, config: dict, problems: list[str] = None) -> dict | None:
     """Draft a single article using Claude.
+    
+    Args:
+        item: The enriched item to draft
+        tier: "deep" or "brief"
+        config: Pipeline config
+        problems: Optional list of problems from previous attempt (for targeted redraft)
     
     Returns the article dict or None on failure.
     """
     from anthropic import Anthropic
     
     prompt = build_article_prompt(item, tier)
+    
+    # If we have problems from a previous attempt, include them
+    if problems:
+        prompt += f"\n\n## 上次生成的问题（请务必修正）\n\n" + "\n".join(f"- {p}" for p in problems)
+    
+    prompt += "\n\n请务必调用 submit_article 工具提交你的文章。"
+    
     model = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5-5")
     # Use higher token limits to avoid thinking consuming the budget
     max_tokens = 16000 if tier == "deep" else 8000
@@ -1053,16 +1301,31 @@ def draft_single_article(item: EnrichedItem, tier: str, config: dict) -> dict | 
             max_tokens=max_tokens,
             tools=[ARTICLE_TOOL_SCHEMA],
             tool_choice={"type": "auto"},
-            messages=[{"role": "user", "content": prompt + "\n\n请务必调用 submit_article 工具提交你的文章。"}],
+            messages=[{"role": "user", "content": prompt}],
         )
     except Exception as e:
         logging.error("API error drafting article for %s: %s", item.title[:50], e)
         return None
     
-    # Check for max_tokens truncation
+    # Check for max_tokens truncation - retry with bigger budget
     if message.stop_reason == "max_tokens":
-        logging.warning("Article draft truncated (max_tokens) for: %s", item.title[:50])
-        return None
+        logging.warning("Article draft truncated (max_tokens), retrying with larger budget: %s", item.title[:50])
+        bigger_max_tokens = 24000 if tier == "deep" else 12000
+        try:
+            message = client.messages.create(
+                model=model,
+                max_tokens=bigger_max_tokens,
+                tools=[ARTICLE_TOOL_SCHEMA],
+                tool_choice={"type": "auto"},
+                messages=[{"role": "user", "content": prompt}],
+            )
+        except Exception as e:
+            logging.error("API error on max_tokens retry for %s: %s", item.title[:50], e)
+            return None
+        
+        if message.stop_reason == "max_tokens":
+            logging.error("Still truncated after retry with %d tokens, giving up: %s", bigger_max_tokens, item.title[:50])
+            return None
     
     for block in message.content:
         if block.type == "tool_use" and block.name == "submit_article":
@@ -1141,58 +1404,39 @@ def process_articles(items: list[dict], config: dict) -> dict:
         if problems:
             logging.warning("Validation issues for %s: %s", url, problems)
             
-            logging.info("Retrying with problems listed...")
-            retry_prompt = build_article_prompt(enriched_item, tier) + f"\n\n## 上次的问题\n\n" + "\n".join(f"- {p}" for p in problems) + "\n\n请务必调用 submit_article 工具提交修正后的文章。"
-            
-            from anthropic import Anthropic
-            client = Anthropic()
-            model = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5-5")
-            max_tokens = 16000 if tier == "deep" else 8000
-            
-            try:
-                message = client.messages.create(
-                    model=model,
-                    max_tokens=max_tokens,
-                    tools=[ARTICLE_TOOL_SCHEMA],
-                    tool_choice={"type": "auto"},
-                    messages=[{"role": "user", "content": retry_prompt}],
-                )
-            except Exception as e:
-                logging.error("API error retrying article %s: %s", url, e)
-                continue
-            
-            # Check for max_tokens truncation on retry
-            if message.stop_reason == "max_tokens":
-                logging.error("Retry also truncated (max_tokens), dropping: %s", url)
-                continue
-            
-            retry_art = None
-            for block in message.content:
-                if block.type == "tool_use" and block.name == "submit_article":
-                    retry_art = block.input
-                    retry_art["source"] = enriched_item.source
-                    retry_art["evidence_level"] = enriched_item.evidence_level
-                    retry_art["source_trace"] = enriched_item.source_trace
-                    retry_art["field"] = field
-                    break
+            # Targeted redraft with specific problems listed
+            logging.info("Targeted redraft with %d problems listed...", len(problems))
+            retry_art = draft_single_article(enriched_item, tier, config, problems=problems)
             
             if retry_art is None:
-                logging.error("Retry did not return tool_use, dropping: %s", url)
-                continue
+                logging.error("Targeted redraft failed for %s", url)
+                if tier == "deep":
+                    # Try brief as fallback
+                    logging.info("Trying brief fallback for: %s", url)
+                    retry_art = draft_single_article(enriched_item, "brief", config)
+                    if retry_art is None:
+                        logging.error("Brief fallback also failed, dropping: %s", url)
+                        continue
+                    tier = "brief"
+                else:
+                    continue
             
+            retry_art["field"] = field
             art = retry_art
             problems = validate_depth(art, raw_material)
             problems.extend(validate_names(art, raw_material))
+            
             if problems:
                 if tier == "deep":
-                    # Actually redraft as brief instead of just re-validating
-                    logging.warning("Downgrading %s from deep to brief after retry - redrafting", url)
-                    brief_art = draft_single_article(enriched_item, "brief", config)
+                    # Downgrade to brief with targeted redraft
+                    logging.warning("Downgrading %s from deep to brief after retry - targeted redraft", url)
+                    brief_art = draft_single_article(enriched_item, "brief", config, problems=problems)
                     if brief_art is None:
-                        logging.error("Brief redraft failed, dropping: %s", url)
+                        logging.error("Brief targeted redraft failed, dropping: %s", url)
                         continue
                     brief_art["field"] = field
                     art = brief_art
+                    tier = "brief"
                     problems = validate_depth(art, raw_material)
                     problems.extend(validate_names(art, raw_material))
                     if problems:
@@ -1238,9 +1482,22 @@ def process_articles(items: list[dict], config: dict) -> dict:
         if not art.get("steps"):
             art["steps"] = ["研究背景", "方法设计", "核心发现", "意义与局限"]
         
-        # Ensure image_prompt is set
+        # Ensure image_prompt is set - use visual-only description, not Chinese title
+        # Chinese text in image prompts risks having Chinese characters rendered in the image
         if not art.get("image_prompt"):
-            art["image_prompt"] = art.get("title", enriched_item.title)
+            # Generate a visual-only description based on the field
+            field_visuals = {
+                "c1": "organoid structure, 3D cell culture, microscopy image, scientific illustration",
+                "c2": "molecular structure, drug binding, AI network diagram, computational biology",
+                "c3": "immune cells attacking tumor, T cells, cancer immunotherapy, medical illustration",
+                "c4": "autoimmune response, antibodies, immune system diagram, medical science",
+                "c5": "laboratory mice, animal model, preclinical research, biomedical science",
+                "c6": "antibody structure, protein engineering, molecular biology, Y-shaped antibody",
+                "c7": "CAR-T cells, cell therapy, immune cells, gene editing illustration",
+                "c8": "vaccine vial, mRNA, lipid nanoparticle, immunization, medical science",
+                "c9": "RNA molecule, lipid nanoparticle, gene therapy, molecular delivery",
+            }
+            art["image_prompt"] = field_visuals.get(field, "scientific research, medical illustration, biomedical science")
         
         articles.append(art)
     
@@ -1386,10 +1643,13 @@ def wechat_html_article(art: dict, include_ai_disclaimer: bool = False) -> str:
         parts.append('<h4 style="font-size:15px;margin:1.2em 0 0.3em;color:#333;">临床/产业意义</h4>')
         parts.append(f'<p style="margin:0.5em 0;">{_escape_html(art["significance"])}</p>')
     
-    # Author and journal
-    parts.append('<p style="font-size:13px;color:#666;margin:1em 0;">')
-    parts.append(f'{_escape_html(art.get("authors", ""))} · {_escape_html(art.get("journal", ""))}')
-    parts.append('</p>')
+    # Author and journal - skip if "原文未给出" 
+    authors = art.get("authors", "")
+    journal = art.get("journal", "")
+    if authors and "原文未给出" not in authors:
+        parts.append(f'<p style="font-size:13px;color:#666;margin:1em 0;">{_escape_html(authors)} · {_escape_html(journal)}</p>')
+    elif journal:
+        parts.append(f'<p style="font-size:13px;color:#666;margin:1em 0;">{_escape_html(journal)}</p>')
     
     # DOI - show for any source that has one
     url = art.get("url", "")
@@ -1404,7 +1664,7 @@ def wechat_html_article(art: dict, include_ai_disclaimer: bool = False) -> str:
     return "\n".join(parts)
 
 
-def wechat_html_full(articles: list[dict], deals: list[dict], week: str) -> str:
+def wechat_html_full(articles: list[dict], deals: list[dict], week: str, all_validated: bool = True) -> str:
     """Generate complete WeChat HTML for all articles and deals.
     
     Features:
@@ -1413,12 +1673,24 @@ def wechat_html_full(articles: list[dict], deals: list[dict], week: str) -> str:
     - DOI shown for any source
     - Single AI disclaimer at footer (not per-article)
     - Industry items as Chinese summaries with money/why
+    
+    Args:
+        articles: List of article dicts
+        deals: List of deal dicts  
+        week: Week string for header
+        all_validated: If True, all articles passed validation; show checked claim.
+                       If False (e.g., deals present from old path), show weaker claim.
     """
     parts = [
         '<section style="font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,sans-serif;font-size:16px;line-height:1.75;color:#333;">',
         f'<p style="font-size:14px;color:#666;">前沿追踪 · {week} · TheraSik 出品</p>',
-        '<p style="margin:1em 0;">本期内容均基于原始来源核对，配图由 AI 生成（示意图，非期刊原图）。</p>',
     ]
+    
+    # Only claim source-checked for validated articles
+    if all_validated and articles and not deals:
+        parts.append('<p style="margin:1em 0;">本期学术内容均基于原始来源核对，配图由 AI 生成（示意图，非期刊原图）。</p>')
+    else:
+        parts.append('<p style="margin:1em 0;">本期配图由 AI 生成（示意图，非期刊原图）。</p>')
     
     # Table of contents
     toc_items = []

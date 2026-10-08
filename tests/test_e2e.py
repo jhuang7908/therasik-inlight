@@ -359,5 +359,316 @@ class TestRenderingConsistency:
         assert "500" in entry, "c8-vac-4 should reference 500 days from source"
 
 
+class TestValidationFalsePositives:
+    """Regression tests for validation false positives that were dropping good articles.
+    
+    These tests verify that the validator correctly PASSES articles that are faithful
+    to their source material. Each test represents a real article that was incorrectly
+    dropped due to over-strict validation.
+    """
+    
+    def test_thousands_separator_1139(self):
+        """1,139 should parse as one number, not '1' and '139'."""
+        from inlight_articles import validate_depth
+        
+        art = {
+            "tier": "brief",
+            "title": "1,139种禽类R2逆转录转座子分析",
+            "one_liner": "研究分析了1,139种禽类R2逆转录转座子的多样性。",
+            "datacard": {
+                "study_type": "基因组学分析",
+                "n": "1,139种",
+                "control": "不适用",
+                "intervention": "不适用",
+                "followup": "不适用",
+                "primary_endpoint": "R2多样性",
+                "primary_endpoint_result": "高度多样化",
+                "statistics": "原文未报告",
+                "safety": "不适用",
+            },
+            "background": "R2逆转录转座子研究。",
+            "design": "分析1,139种禽类R2。",
+            "results": ["共鉴定出1,139种不同的R2元件。"],
+            "mechanism": "",
+            "limitations": ["计算分析，未经实验验证"],
+            "significance": "揭示禽类R2多样性。",
+            "data_points": [
+                {"value": "1,139", "meaning": "R2种类数", "source_quote": "We identified 1,139 distinct R2 elements"},
+            ],
+        }
+        raw = "We identified 1,139 distinct R2 elements from avian genomes."
+        problems = validate_depth(art, raw)
+        
+        # Should NOT flag "139" or "1" as unregistered - 1,139 is one number
+        number_problems = [p for p in problems if "正文数字未登记" in p]
+        assert not any("139" in p for p in number_problems), f"Incorrectly flagged 139: {number_problems}"
+        assert not any(p == "正文数字未登记：1" for p in number_problems), f"Incorrectly flagged 1: {number_problems}"
+    
+    def test_95_percent_ci_not_flagged(self):
+        """95%CI is a confidence interval label, not a standalone 95% value."""
+        from inlight_articles import validate_depth
+        
+        art = {
+            "tier": "brief",
+            "title": "慢性荨麻疹T细胞研究",
+            "one_liner": "研究发现T细胞变化与疾病相关。",
+            "datacard": {
+                "study_type": "临床研究",
+                "n": "50例",
+                "control": "健康对照",
+                "intervention": "不适用",
+                "followup": "不适用",
+                "primary_endpoint": "T细胞比例",
+                "primary_endpoint_result": "显著差异",
+                "statistics": "原文未报告",
+                "safety": "不适用",
+            },
+            "background": "慢性荨麻疹机制不明。",
+            "design": "纳入50例患者。",
+            "results": ["具体P值或95%CI原文未给出。"],  # Honest disclaimer
+            "mechanism": "",
+            "limitations": ["原文未给出具体统计量"],
+            "significance": "提示T细胞参与发病。",
+            "data_points": [
+                {"value": "50", "meaning": "患者数", "source_quote": "50 patients were enrolled"},
+            ],
+        }
+        raw = "50 patients were enrolled. HR 0.75 (95%CI 0.5-1.0)."
+        problems = validate_depth(art, raw)
+        
+        # Should NOT flag "95%" from "95%CI" - it's a label, not data
+        number_problems = [p for p in problems if "正文数字未登记" in p]
+        assert not any("95" in p for p in number_problems), f"Incorrectly flagged 95%CI as data: {number_problems}"
+    
+    def test_english_number_words_nine_doses(self):
+        """English number words in quotes should match their digit forms."""
+        from inlight_articles import validate_depth
+        
+        art = {
+            "tier": "deep",
+            "title": "itolizumab首次人体试验：9剂给药方案安全可耐受",
+            "one_liner": "诱导期A组每周给药100 mg共9次。",
+            "datacard": {
+                "study_type": "I期试验",
+                "n": "原文未给出",
+                "control": "无对照",
+                "intervention": "itolizumab",
+                "followup": "原文未给出",
+                "primary_endpoint": "安全性",
+                "primary_endpoint_result": "无相关严重不良事件",
+                "statistics": "原文未报告",
+                "safety": "可耐受",
+            },
+            "background": "CD6靶点有前景。",
+            "design": "A组每周100mg共9次，B组每两周200mg共5次。",
+            "results": ["A组共9剂给药后无严重不良事件。B组共5剂后同样安全。"],
+            "mechanism": "",
+            "limitations": ["无对照组", "样本量未报告", "随访时长未报告"],
+            "significance": "初步证据支持CD6靶向安全。",
+            "data_points": [
+                {"value": "9", "meaning": "A组给药次数", "source_quote": "nine doses in cohort A"},
+                {"value": "5", "meaning": "B组给药次数", "source_quote": "five doses in cohort B"},
+                {"value": "100", "meaning": "A组剂量", "source_quote": "100 mg weekly"},
+                {"value": "200", "meaning": "B组剂量", "source_quote": "200 mg biweekly"},
+            ],
+        }
+        raw = "Cohort A received nine doses at 100 mg weekly. Cohort B received five doses at 200 mg biweekly."
+        problems = validate_depth(art, raw)
+        
+        # Should NOT flag "9" or "5" as not in quote - "nine" matches "9", "five" matches "5"
+        number_problems = [p for p in problems if "value 不在 quote 中" in p]
+        assert not any("9" in p for p in number_problems), f"Incorrectly flagged 9 (nine): {number_problems}"
+        assert not any("5" in p for p in number_problems), f"Incorrectly flagged 5 (five): {number_problems}"
+    
+    def test_gene_identifiers_not_flagged(self):
+        """Gene names like CD318, CD8, CD14, IL-23 should not be flagged as numbers."""
+        from inlight_articles import validate_depth
+        
+        art = {
+            "tier": "brief",
+            "title": "CD318阳性肿瘤细胞对CD8 T细胞杀伤更敏感",
+            "one_liner": "CD8和NK细胞对CD318阳性肿瘤细胞的杀伤增强。",
+            "datacard": {
+                "study_type": "机制研究",
+                "n": "原文未给出",
+                "control": "同型对照",
+                "intervention": "抗CD6抗体",
+                "followup": "不适用",
+                "primary_endpoint": "肿瘤杀伤",
+                "primary_endpoint_result": "增强",
+                "statistics": "原文未报告",
+                "safety": "不适用",
+            },
+            "background": "CD6靶向可能增强抗肿瘤。",
+            "design": "体外杀伤实验。",
+            "results": ["CD8 T细胞和NK细胞对CD318阳性细胞杀伤增强。"],
+            "mechanism": "",
+            "limitations": ["体外研究，需体内验证"],
+            "significance": "提示CD318可作为生物标志物。",
+            "data_points": [],  # No quantitative data - qualitative study
+        }
+        raw = "CD8 T cells and NK cells showed enhanced killing of CD318-positive tumor cells. CD14 expression was not affected."
+        problems = validate_depth(art, raw)
+        
+        # Should NOT flag CD8, CD14, CD318 as numbers
+        number_problems = [p for p in problems if "正文数字未登记" in p]
+        gene_flags = [p for p in number_problems if any(g in p for g in ["CD8", "CD14", "CD318", "318", "8", "14"])]
+        assert not gene_flags, f"Incorrectly flagged gene identifiers: {gene_flags}"
+    
+    def test_trial_ids_not_flagged(self):
+        """Trial IDs like NCT04443907, RPCEC00000444 should not be flagged."""
+        from inlight_articles import validate_depth
+        
+        art = {
+            "tier": "brief",
+            "title": "NCT04443907试验初步结果",
+            "one_liner": "该试验（NCT04443907）显示安全可耐受。",
+            "datacard": {
+                "study_type": "I期试验",
+                "n": "12例",
+                "control": "无对照",
+                "intervention": "基因编辑",
+                "followup": "原文未给出",
+                "primary_endpoint": "安全性",
+                "primary_endpoint_result": "无严重不良事件",
+                "statistics": "原文未报告",
+                "safety": "可耐受",
+            },
+            "background": "镰状细胞病需要新疗法。",
+            "design": "试验编号NCT04443907。",
+            "results": ["12例患者完成治疗，无严重不良事件。"],
+            "mechanism": "",
+            "limitations": ["单臂研究"],
+            "significance": "初步安全性数据。",
+            "data_points": [
+                {"value": "12", "meaning": "患者数", "source_quote": "12 patients enrolled"},
+            ],
+        }
+        raw = "Trial NCT04443907 enrolled 12 patients. Also registered as RPCEC00000444."
+        problems = validate_depth(art, raw)
+        
+        # Should NOT flag NCT04443907 or parts of it as numbers
+        number_problems = [p for p in problems if "正文数字未登记" in p]
+        trial_flags = [p for p in number_problems if "NCT" in p or "04443907" in p or "RPCEC" in p]
+        assert not trial_flags, f"Incorrectly flagged trial IDs: {trial_flags}"
+    
+    def test_qualitative_paper_no_numbers_required(self):
+        """Papers without quantitative data should not require numbers in results."""
+        from inlight_articles import validate_depth, source_has_quantitative_numbers
+        
+        # Source has no quantitative numbers - qualitative platform description
+        raw = """We present a shotgun genetic engineering platform that enables 
+        exploration of tens of kilobases of sequence space. The system generated 
+        millions of variants across three design dimensions. Two amino acid 
+        substitutions were prioritized based on computational analysis."""
+        
+        # Verify source is detected as qualitative
+        assert not source_has_quantitative_numbers(raw), "Should detect qualitative source"
+        
+        art = {
+            "tier": "brief",
+            "title": "霰弹枪基因工程平台实现大规模序列探索",
+            "one_liner": "新平台能够探索数十千碱基的序列空间。",
+            "datacard": {
+                "study_type": "方法学研究",
+                "n": "不适用",
+                "control": "不适用",
+                "intervention": "基因工程平台",
+                "followup": "不适用",
+                "primary_endpoint": "序列多样性",
+                "primary_endpoint_result": "高度多样",
+                "statistics": "原文未报告",
+                "safety": "不适用",
+            },
+            "background": "传统方法效率有限。",
+            "design": "开发新型基因工程平台。",
+            "results": ["平台生成大量变体。"],  # No specific numbers - qualitative
+            "mechanism": "",
+            "limitations": ["需验证实际应用效果"],
+            "significance": "可加速蛋白质工程。",
+            "data_points": [],
+        }
+        problems = validate_depth(art, raw)
+        
+        # Should NOT require numbers in results for qualitative source
+        number_in_results = [p for p in problems if "没有任何数字" in p]
+        assert not number_in_results, f"Should not require numbers in qualitative paper: {number_in_results}"
+    
+    def test_honest_disclaimer_not_flagged(self):
+        """'原文未给出X' statements should not be flagged for containing numbers."""
+        from inlight_articles import validate_depth
+        
+        art = {
+            "tier": "brief",
+            "title": "研究初步结果",
+            "one_liner": "初步安全性数据。",
+            "datacard": {
+                "study_type": "I期试验",
+                "n": "原文未给出",
+                "control": "无对照",
+                "intervention": "新药",
+                "followup": "原文未给出",
+                "primary_endpoint": "安全性",
+                "primary_endpoint_result": "可耐受",
+                "statistics": "原文未报告",
+                "safety": "≥3级不良事件发生率原文未给出",
+            },
+            "background": "研究背景。",
+            "design": "I期试验。",
+            "results": ["结果显示安全可耐受。"],
+            "mechanism": "",
+            "limitations": ["≥3级不良事件及死亡的具体数据原文未给出"],
+            "significance": "初步证据。",
+            "data_points": [],
+        }
+        raw = "The drug was well tolerated. Safety data for grade 3+ events not reported."
+        problems = validate_depth(art, raw)
+        
+        # Should NOT flag "3" from "≥3级" in "原文未给出" context
+        number_problems = [p for p in problems if "正文数字未登记" in p]
+        disclaimer_flags = [p for p in number_problems if "3" in p]
+        assert not disclaimer_flags, f"Incorrectly flagged numbers in disclaimers: {disclaimer_flags}"
+
+
+class TestDataPointGaming:
+    """Test that the validator rejects data_points that game the checker."""
+    
+    def test_reject_gene_name_as_data_point(self):
+        """data_points with meaning containing '名称中的编号' should be rejected."""
+        from inlight_articles import validate_depth
+        
+        art = {
+            "tier": "brief",
+            "title": "CD4 T细胞研究",
+            "one_liner": "CD4阳性T细胞分析。",
+            "datacard": {
+                "study_type": "机制研究",
+                "n": "原文未给出",
+                "control": "无",
+                "intervention": "无",
+                "followup": "不适用",
+                "primary_endpoint": "CD4表达",
+                "primary_endpoint_result": "升高",
+                "statistics": "原文未报告",
+                "safety": "不适用",
+            },
+            "background": "研究CD4。",
+            "design": "分析CD4 T细胞。",
+            "results": ["CD4阳性细胞增加。"],
+            "mechanism": "",
+            "limitations": ["机制研究"],
+            "significance": "揭示CD4作用。",
+            "data_points": [
+                {"value": "4", "meaning": "CD4 T细胞名称中的编号", "source_quote": "CD4 positive T cells"},
+            ],  # Gaming: registering "4" from "CD4" as a data point
+        }
+        raw = "CD4 positive T cells were analyzed."
+        problems = validate_depth(art, raw)
+        
+        # Should flag the gaming data_point
+        gaming_flags = [p for p in problems if "标识符而非数据" in p]
+        assert gaming_flags, f"Should flag gaming data_point: {problems}"
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

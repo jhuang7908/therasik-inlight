@@ -440,7 +440,8 @@ class TestValidateDepth(unittest.TestCase):
             "limitations": ["局限1", "局限2", "局限3"],
             "data_points": [],
         }
-        raw = "results showed improvement"
+        # Source has quantitative numbers, so results without numbers should be flagged
+        raw = "results showed 52% improvement in n = 36 patients"
         problems = validate_depth(art, raw)
         self.assertTrue(any("第 1 段没有任何数字" in p for p in problems))
 
@@ -486,20 +487,20 @@ class TestXMLExtraction(unittest.TestCase):
     """Test XML text extraction with nested elements."""
     
     def test_itertext_preserves_nested_text(self):
-        """itertext() should preserve text in nested elements like <sup>."""
+        """Superscripts should be converted to Unicode superscript characters."""
         xml = """<article>
             <sec><title>Results</title>
                 <p>We injected 5×10<sup>6</sup> cells into mice (n = 12).</p>
             </sec>
         </article>"""
         result = extract_sections_from_xml(xml, ("Results",))
-        # Should contain the superscript text
+        # Should contain superscript 6 as Unicode ⁶
         self.assertIn("10", result)
-        self.assertIn("6", result)
+        self.assertIn("⁶", result)  # Unicode superscript 6
         self.assertIn("12", result)
     
     def test_fig_captions_preserve_nested(self):
-        """Figure captions should preserve nested text."""
+        """Figure captions should handle nested italic and superscript."""
         xml = """<article>
             <fig>
                 <caption>
@@ -509,7 +510,8 @@ class TestXMLExtraction(unittest.TestCase):
         </article>"""
         result = extract_fig_captions_from_xml(xml)
         self.assertIn("Rag2", result)
-        self.assertIn("-/-", result)
+        # Superscript "-/-" becomes "⁻/⁻"
+        self.assertIn("⁻", result)
 
 
 class TestEnrichItemMocked(unittest.TestCase):

@@ -197,7 +197,7 @@ article .ahead{display:grid;gap:11px;padding-bottom:18px;border-bottom:1px solid
   .datacard-box{max-height:200px;overflow:hidden;position:relative}
   .datacard-box::after{content:"展开数据卡 ↓";position:absolute;bottom:0;left:0;right:0;padding:8px;background:linear-gradient(transparent,var(--surface) 50%);text-align:center;font-size:12px;color:var(--accent);font-weight:700;cursor:pointer}
   .datacard-box.expanded{max-height:none}
-  .datacard-box.expanded::after{display:none}
+  .datacard-box.expanded::after{content:"收起数据卡 ↑";position:static;background:none;padding:12px 0 4px}
   .sec p{max-width:none;overflow-wrap:break-word}
   .primary-endpoint-block .pe-value{font-size:18px}
 }
@@ -1009,10 +1009,9 @@ function renderPaper(id){
     const rows = fields.filter(([k]) => dc[k] && dc[k] !== '不适用')
       .map(([k, label]) => `<div><span class="k">${label}</span><p>${dc[k]}</p></div>`).join('');
     const evidence = a.evidence_level || dc.evidence_level || 'abstract';
-    const evidenceLabels = {fulltext: '全文', abstract: '摘要', press: '新闻稿', secondary: '二手'};
+    const evidenceLabels = {fulltext: '全文', abstract: '摘要', preprint: '预印本', press: '新闻稿', secondary: '二手'};
     return `<div class="datacard-box">${rows}
       <div><span class="k">证据等级</span><p>${evidenceLabels[evidence] || evidence}</p></div>
-      ${a.source_trace ? `<div><span class="k">核对记录</span><p>${Array.isArray(a.source_trace) ? a.source_trace.join('；') : a.source_trace}</p></div>` : ''}
     </div>`;
   }
   
@@ -1234,10 +1233,10 @@ document.addEventListener('click',e=>{
     }
     return;
   }
-  // Handle datacard-box tap-to-expand on mobile
+  // Handle datacard-box tap-to-expand/collapse on mobile
   const dc=e.target.closest&&e.target.closest('.datacard-box');
-  if(dc && !dc.classList.contains('expanded') && window.innerWidth <= 390){
-    dc.classList.add('expanded');
+  if(dc && window.innerWidth <= 390){
+    dc.classList.toggle('expanded');
   }
 });
 function repaintCatalog(){
