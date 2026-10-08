@@ -748,7 +748,11 @@ DEAL_GROUP_NAMES = {
     "inv": "融资/IPO",
 }
 
-# SEC biopharma SIC codes
+# SEC biopharma SIC codes ONLY - no name-based fallback (Fix #4)
+# 2834: Pharmaceutical Preparations
+# 2835: In Vitro & In Vivo Diagnostic Substances
+# 2836: Biological Products (except diagnostic)
+# 8731: Commercial Physical & Biological Research
 SEC_BIOPHARMA_SICS = {"2834", "2835", "2836", "8731"}
 
 # HKEX healthcare/biotech stock codes (Chapter 18A biotechs and healthcare companies)
@@ -822,62 +826,123 @@ def _extract_pdf_text(pdf_bytes: bytes, max_chars: int = 4000) -> str:
         return ""
 
 
-def _normalize_amount(text: str) -> list[str]:
-    """Extract and normalize monetary amounts for verification.
+def _normalize_amount_with_currency(text: str) -> list[tuple[int, str]]:
+    """Extract monetary amounts with their currency.
     
-    Returns list of normalized amount strings like:
-    - "20000000" for $20.0 million / $20,000,000 / 2000万美元
-    - "396000000" for RMB3,960,000,000 / 39.6亿元
+    Returns list of (amount_in_base_units, currency) tuples.
+    Currency is one of: 'USD', 'RMB', 'HKD', 'EUR', 'GBP'
+    Amount is in smallest units (cents/分) for exact comparison.
+    
+    Examples:
+    - "$1.17 billion" -> (117000000000, 'USD')  # 1.17B cents
+    - "11.7亿美元" -> (117000000000, 'USD')     # Same
+    - "RMB100,000,000" -> (10000000000, 'RMB')  # 100M 分
+    - "HK$1,939.78M" -> (193978000000, 'HKD')   # 1939.78M 仙
     """
     amounts = []
     
-    # $X million / $X.X million
-    for m in re.finditer(r'\$\s*([\d,]+(?:\.\d+)?)\s*(?:million|M\b)', text, re.IGNORECASE):
+    # USD patterns - use negative lookbehind to exclude HK$
+    # $X.XX billion (not HK$)
+    for m in re.finditer(r'(?<!HK)\$\s*([\d,]+(?:\.\d+)?)\s*(?:billion|B\b)', text, re.IGNORECASE):
         try:
-            val = float(m.group(1).replace(',', '')) * 1_000_000
-            amounts.append(str(int(val)))
+            val = float(m.group(1).replace(',', '')) * 1_000_000_000 * 100
+            amounts.append((int(val), 'USD'))
         except ValueError:
             pass
     
-    # $X billion
-    for m in re.finditer(r'\$\s*([\d,]+(?:\.\d+)?)\s*(?:billion|B\b)', text, re.IGNORECASE):
+    # $X.XX million (not HK$)
+    for m in re.finditer(r'(?<!HK)\$\s*([\d,]+(?:\.\d+)?)\s*(?:million|M\b)', text, re.IGNORECASE):
         try:
-            val = float(m.group(1).replace(',', '')) * 1_000_000_000
-            amounts.append(str(int(val)))
+            val = float(m.group(1).replace(',', '')) * 1_000_000 * 100
+            amounts.append((int(val), 'USD'))
         except ValueError:
             pass
     
-    # $X,XXX,XXX (raw numbers over 100k)
-    for m in re.finditer(r'\$\s*([\d,]{7,})', text):
+    # $X,XXX,XXX (raw USD numbers over 100k, not HK$)
+    for m in re.finditer(r'(?<!HK)\$\s*([\d,]{7,})', text):
         try:
-            val = int(m.group(1).replace(',', ''))
-            if val >= 100_000:
-                amounts.append(str(val))
+            val = int(m.group(1).replace(',', '')) * 100
+            if val >= 10_000_000:  # $100k+
+                amounts.append((val, 'USD'))
         except ValueError:
             pass
     
-    # X亿美元 / X亿元 / X亿人民币
-    for m in re.finditer(r'([\d.]+)\s*亿\s*(?:美元|元|人民币)?', text):
+    # Chinese USD: X亿美元 / X.X亿美元
+    for m in re.finditer(r'([\d.]+)\s*亿\s*美元', text):
         try:
-            val = float(m.group(1)) * 100_000_000
-            amounts.append(str(int(val)))
+            val = float(m.group(1)) * 100_000_000 * 100
+            amounts.append((int(val), 'USD'))
         except ValueError:
             pass
     
-    # X万美元 / X万元
-    for m in re.finditer(r'([\d,]+(?:\.\d+)?)\s*万\s*(?:美元|元|人民币)?', text):
+    # Chinese USD: X万美元
+    for m in re.finditer(r'([\d,]+(?:\.\d+)?)\s*万\s*美元', text):
         try:
-            val = float(m.group(1).replace(',', '')) * 10_000
-            amounts.append(str(int(val)))
+            val = float(m.group(1).replace(',', '')) * 10_000 * 100
+            amounts.append((int(val), 'USD'))
         except ValueError:
             pass
     
-    # RMB/CNY amounts
-    for m in re.finditer(r'(?:RMB|CNY)\s*([\d,]+(?:\.\d+)?)', text, re.IGNORECASE):
+    # RMB/CNY patterns
+    # RMB X / CNY X
+    for m in re.finditer(r'(?:RMB|CNY)\s*([\d,]+(?:\.\d+)?)\s*(?:million|M\b)?', text, re.IGNORECASE):
         try:
             val = float(m.group(1).replace(',', ''))
-            if val >= 100_000:
-                amounts.append(str(int(val)))
+            if 'million' in text[m.start():m.end()+10].lower() or m.end() < len(text) and text[m.end():m.end()+1] == 'M':
+                val *= 1_000_000
+            val *= 100  # Convert to 分
+            if val >= 10_000_000:
+                amounts.append((int(val), 'RMB'))
+        except ValueError:
+            pass
+    
+    # Chinese RMB: X亿元 / X亿人民币 (NOT 美元)
+    for m in re.finditer(r'([\d.]+)\s*亿\s*(?:元|人民币)(?!美)', text):
+        try:
+            val = float(m.group(1)) * 100_000_000 * 100
+            amounts.append((int(val), 'RMB'))
+        except ValueError:
+            pass
+    
+    # Chinese RMB: X万元 / X万人民币 (NOT 美元)
+    for m in re.finditer(r'([\d,]+(?:\.\d+)?)\s*万\s*(?:元|人民币)(?!美)', text):
+        try:
+            val = float(m.group(1).replace(',', '')) * 10_000 * 100
+            amounts.append((int(val), 'RMB'))
+        except ValueError:
+            pass
+    
+    # HKD patterns
+    # HK$X.XXM / HK$X.XX million
+    for m in re.finditer(r'HK\$\s*([\d,]+(?:\.\d+)?)\s*(?:million|M\b)', text, re.IGNORECASE):
+        try:
+            val = float(m.group(1).replace(',', '')) * 1_000_000 * 100
+            amounts.append((int(val), 'HKD'))
+        except ValueError:
+            pass
+    
+    # HK$X.XXB / HK$X.XX billion
+    for m in re.finditer(r'HK\$\s*([\d,]+(?:\.\d+)?)\s*(?:billion|B\b)', text, re.IGNORECASE):
+        try:
+            val = float(m.group(1).replace(',', '')) * 1_000_000_000 * 100
+            amounts.append((int(val), 'HKD'))
+        except ValueError:
+            pass
+    
+    # HK$X,XXX,XXX raw
+    for m in re.finditer(r'HK\$\s*([\d,]{7,})', text):
+        try:
+            val = int(m.group(1).replace(',', '')) * 100
+            if val >= 10_000_000:
+                amounts.append((val, 'HKD'))
+        except ValueError:
+            pass
+    
+    # Chinese HKD: X亿港元 / X亿港币
+    for m in re.finditer(r'([\d.]+)\s*亿\s*港[元币]', text):
+        try:
+            val = float(m.group(1)) * 100_000_000 * 100
+            amounts.append((int(val), 'HKD'))
         except ValueError:
             pass
     
@@ -885,9 +950,20 @@ def _normalize_amount(text: str) -> list[str]:
 
 
 def _verify_amount_in_text(amount_str: str, filing_text: str) -> bool:
-    """Check if an amount appears in the filing text (normalized comparison).
+    """Check if an amount appears in the filing text with exact match.
+    
+    Fix #2: No tolerance, currency must match.
     
     Precision policy: if we can't verify, return False (drop the amount).
+    
+    Unit test cases from user:
+    - "11亿美元" vs '$1.17 billion' -> FAIL (11 != 1.17)
+    - "1.05亿美元" vs '$100 million' -> FAIL (105M != 100M)
+    - "1亿美元" vs 'RMB100,000,000' -> FAIL (USD != RMB)
+    - "19.4亿美元" vs 'HK$1,939.78M' -> FAIL (USD != HKD)
+    - "1亿首付，最高99亿" vs only '$100 million' in source -> FAIL (99亿 not found)
+    - "1亿美元" vs '$100 million' -> PASS
+    - "11.7亿美元" vs '$1.17 billion' -> PASS
     """
     if not amount_str or amount_str == "未披露":
         return True  # Nothing to verify
@@ -895,56 +971,124 @@ def _verify_amount_in_text(amount_str: str, filing_text: str) -> bool:
     if not filing_text or len(filing_text) < 20:
         return False  # No text to verify against - be conservative
     
-    # Extract numeric value from amount string like "2000 万美元" or "1.5 亿美元"
-    filing_amounts = _normalize_amount(filing_text)
-    claim_amounts = _normalize_amount(amount_str)
+    filing_amounts = _normalize_amount_with_currency(filing_text)
+    claim_amounts = _normalize_amount_with_currency(amount_str)
     
     if not claim_amounts:
-        return False  # Can't parse the claim - be conservative, don't pass
+        return False  # Can't parse the claim
     
     if not filing_amounts:
         return False  # No amounts found in filing text
     
-    # Check if any claimed amount is in filing
-    for claim in claim_amounts:
-        if claim in filing_amounts:
-            return True
-        # Allow 10% tolerance for rounding
-        try:
-            claim_val = int(claim)
-            for filing_amt in filing_amounts:
-                filing_val = int(filing_amt)
-                if abs(claim_val - filing_val) / max(claim_val, filing_val) < 0.1:
-                    return True
-        except ValueError:
-            pass
+    # ALL claimed amounts must be found in filing (exact match, same currency)
+    for claim_val, claim_currency in claim_amounts:
+        found = False
+        for filing_val, filing_currency in filing_amounts:
+            if claim_currency != filing_currency:
+                continue
+            if claim_val == filing_val:
+                found = True
+                break
+        if not found:
+            return False
     
-    return False
+    return True
+
+
+def _test_verify_amount():
+    """Unit tests for _verify_amount_in_text per user requirements."""
+    tests = [
+        # (claim, source_text, expected_result)
+        # Note: source texts must be >= 20 chars (the function rejects short texts)
+        
+        # FAIL cases - wrong amounts or wrong currencies
+        ("11亿美元", "The company paid $1.17 billion in total", False),  # 11 != 1.17
+        ("1.05亿美元", "The upfront payment was $100 million cash", False),  # 105M != 100M
+        ("1亿美元", "RMB100,000,000 consideration paid", False),  # USD vs RMB
+        ("19.4亿美元", "HK$1,939.78M in cash consideration", False),  # USD vs HKD
+        ("1亿首付，最高99亿", "The upfront was only $100 million", False),  # 99亿 not found
+        
+        # PASS cases - exact matches
+        ("1亿美元", "The company paid $100 million in cash", True),
+        ("11.7亿美元", "total deal value of $1.17 billion announced", True),
+        ("100万美元", "The company received $1 million upfront", True),
+        ("1.939亿港元", "HK$193.9M consideration was paid", True),
+        
+        # Edge cases
+        ("未披露", "any text over 20 chars here", True),  # 未披露 always passes
+        ("1亿美元", "", False),  # No filing text
+        ("", "any text over 20 chars here", True),  # No claim
+    ]
+    
+    passed = 0
+    for claim, source, expected in tests:
+        result = _verify_amount_in_text(claim, source)
+        if result == expected:
+            passed += 1
+        else:
+            print(f"FAIL: '{claim}' vs '{source}' -> {result} (expected {expected})")
+    
+    print(f"_test_verify_amount: {passed}/{len(tests)} tests passed")
+    return passed == len(tests)
 
 
 def _classify_deal_type(text: str) -> str | None:
     """Classify deal as lic/acq/inv based on text. Returns None if unclear.
     
+    Fix #7: Use word boundaries to avoid false positives like:
+    - 'lipoprotein' matching 'ipo'
+    - 'data acquisition system' matching 'acquisition'
+    
     Precision policy: only classify if confident, otherwise return None to drop.
     """
     text_lower = text.lower()
     
-    # Strong signals for licensing/collaboration
-    lic_signals = ["license agreement", "collaboration agreement", "exclusive license",
-                   "non-exclusive license", "royalt", "milestone payment", "upfront payment",
-                   "授权协议", "许可协议", "合作协议", "独家授权", "里程碑付款"]
-    lic_count = sum(1 for s in lic_signals if s in text_lower)
+    def count_word_matches(patterns: list[str]) -> int:
+        """Count pattern matches using word boundaries for short patterns."""
+        count = 0
+        for p in patterns:
+            if len(p) <= 5:
+                # Short patterns need word boundaries
+                if re.search(r'\b' + re.escape(p) + r'\b', text_lower):
+                    count += 1
+            else:
+                # Longer patterns are specific enough
+                if p in text_lower:
+                    count += 1
+        return count
     
-    # Strong signals for acquisition/merger
-    acq_signals = ["acquisition", "merger agreement", "tender offer", "definitive agreement to acquire",
-                   "收购协议", "并购", "要约收购", "吸收合并"]
-    acq_count = sum(1 for s in acq_signals if s in text_lower)
+    # Strong signals for licensing/collaboration (multi-word phrases are safe)
+    lic_signals = [
+        "license agreement", "collaboration agreement", "exclusive license",
+        "non-exclusive license", "royalty", "royalties", 
+        "milestone payment", "upfront payment", "option agreement",
+        "授权协议", "许可协议", "合作协议", "独家授权", "里程碑付款",
+    ]
+    lic_count = count_word_matches(lic_signals)
     
-    # Strong signals for financing/IPO
-    inv_signals = ["securities purchase", "private placement", "public offering", "ipo",
-                   "series a", "series b", "series c", "series d", "financing",
-                   "配售", "定向增发", "公开发行", "融资", "首次公开"]
-    inv_count = sum(1 for s in inv_signals if s in text_lower)
+    # Strong signals for acquisition/merger (use phrases to avoid 'acquisition' in 'data acquisition')
+    acq_signals = [
+        "merger agreement", "tender offer", "definitive agreement to acquire",
+        "acquisition agreement", "merger consideration", "acquire all",
+        "to acquire", "has acquired", "will acquire", "acquired by",
+        "收购协议", "并购", "要约收购", "吸收合并",
+    ]
+    acq_count = count_word_matches(acq_signals)
+    
+    # Strong signals for financing/IPO (use word boundary for 'ipo')
+    # 'ipo' needs \b to avoid 'lipoprotein', 'adipose', etc.
+    inv_signals = [
+        "securities purchase", "private placement", "public offering",
+        "series a", "series b", "series c", "series d", "series e",
+        "round a", "round b", "round c", "venture financing",
+        "registered direct offering", "stock offering",
+        "配售", "定向增发", "公开发行", "融资", "首次公开",
+    ]
+    inv_count = count_word_matches(inv_signals)
+    
+    # Check 'ipo' separately with word boundary
+    if re.search(r'\bipo\b', text_lower):
+        inv_count += 1
     
     # Only classify if one category has clear majority
     counts = [("lic", lic_count), ("acq", acq_count), ("inv", inv_count)]
@@ -953,44 +1097,76 @@ def _classify_deal_type(text: str) -> str | None:
     if counts[0][1] >= 2 and counts[0][1] > counts[1][1]:
         return counts[0][0]
     
-    # Single strong signal is enough
+    # Single strong signal is enough if others are zero
     if counts[0][1] >= 1 and counts[1][1] == 0:
         return counts[0][0]
     
     return None  # Unclear - drop this deal
 
 
+def _test_classify_deal_type():
+    """Unit tests for deal type classifier with word boundaries."""
+    tests = [
+        # Should NOT match 'ipo' in 'lipoprotein'
+        ("Study of lipoprotein levels in patients", None),
+        ("Adipose tissue analysis", None),
+        
+        # Should NOT match 'acquisition' in 'data acquisition'
+        ("New data acquisition system for the lab", None),
+        
+        # Should match real IPO
+        ("Company announces IPO pricing", "inv"),
+        ("Initial public offering completed", "inv"),
+        ("Series B financing round", "inv"),
+        
+        # Should match real acquisition
+        ("Merger agreement signed", "acq"),
+        ("Definitive agreement to acquire company", "acq"),
+        
+        # Should match licensing
+        ("License agreement for oncology program", "lic"),
+        ("Exclusive license with milestone payments", "lic"),
+        
+        # Ambiguous - should return None
+        ("Company news update", None),
+    ]
+    
+    passed = 0
+    for text, expected in tests:
+        result = _classify_deal_type(text)
+        if result == expected:
+            passed += 1
+        else:
+            print(f"FAIL: '{text[:50]}...' -> {result} (expected {expected})")
+    
+    print(f"_test_classify_deal_type: {passed}/{len(tests)} tests passed")
+    return passed == len(tests)
+
+
 def _is_biopharma_company(company_name: str, sic_codes: list = None, industry: str = None) -> bool:
     """Check if company is confidently in biopharma sector.
     
-    Precision policy: if uncertain, return False.
+    Fix #4: For SEC filings, use SIC codes ONLY. No name-based fallback.
+    The name fallback caused false positives like:
+    - "Rochester Gas & Electric" matching 'roche'
+    - "Lilly Industries" (paint company) matching 'lilly'
+    
+    Precision policy: if SIC codes provided but don't match, return False.
+    Only fall back to industry/name for non-SEC sources.
     """
     if sic_codes:
-        # SEC SIC codes for biopharma
-        if any(sic in SEC_BIOPHARMA_SICS for sic in sic_codes):
-            return True
+        # SEC SIC codes for biopharma - STRICT, no fallback
+        # If sic_codes are provided (SEC filing), use ONLY this check
+        return any(sic in SEC_BIOPHARMA_SICS for sic in sic_codes)
     
+    # For non-SEC sources (HKEX, cninfo), allow industry classification
     if industry:
         industry_lower = industry.lower()
         if any(kw in industry_lower for kw in ["医药", "生物", "pharma", "biotech", "biopharma"]):
             return True
     
-    # Check company name for strong biopharma signals
-    name_lower = company_name.lower()
-    biopharma_signals = [
-        "pharma", "biotech", "therapeutics", "bioscience", "biopharma",
-        "oncology", "immuno", "vaccine", "antibod", "genomic",
-        "医药", "生物", "制药", "药业", "生科",
-        # Major pharma company name patterns
-        "squibb", "pfizer", "roche", "novartis", "merck", "lilly", "abbvie",
-        "gilead", "amgen", "biogen", "regeneron", "vertex", "moderna",
-        "bms", "gsk", "astrazeneca", "sanofi", "takeda",
-    ]
-    
-    if any(signal in name_lower for signal in biopharma_signals):
-        return True
-    
-    return False  # Uncertain - be conservative
+    # No SIC codes and no industry = can't verify confidently
+    return False
 
 
 def _normalize_company_name(name: str) -> str:
@@ -1024,7 +1200,11 @@ CNINFO_DEAL_KEYWORDS = [
 
 
 def _fetch_sec_filing_text(cik: str, accession: str, sec_ua: str, max_chars: int = 4000) -> str:
-    """Fetch and extract text from SEC filing primary document and EX-99.1 press release."""
+    """Fetch and extract text from SEC filing primary document and EX-99.1 press release.
+    
+    Fix #8: Use the 'type' field from index.json to identify documents, not filename.
+    The type field contains the document type (e.g., '8-K', 'EX-99.1').
+    """
     import time
     import requests
     
@@ -1048,32 +1228,33 @@ def _fetch_sec_filing_text(cik: str, accession: str, sec_ua: str, max_chars: int
             index_data = resp.json()
             items = index_data.get("directory", {}).get("item", [])
             
-            # Find the primary 8-K document (usually ends in .htm, type "8-K" or "6-K")
-            primary_docs = []
+            # Fix #8: Use Type field from index to identify documents
+            primary_doc = None
             press_releases = []
             
             for item in items:
-                name = item.get("name", "").lower()
-                doc_type = item.get("type", "").lower()
+                name = item.get("name", "")
+                doc_type = (item.get("type") or "").upper()  # Type field, not filename
                 
-                # Primary document (8-K form itself)
-                if ("8-k" in name or "6-k" in name) and name.endswith(".htm"):
-                    primary_docs.append(item.get("name"))
-                # Press release / exhibit 99
-                elif "ex99" in name or "ex-99" in name or "press" in name:
-                    if name.endswith(".htm") or name.endswith(".txt"):
-                        press_releases.append(item.get("name"))
+                # Primary document: Type is "8-K" or "6-K" (exactly)
+                if doc_type in ("8-K", "6-K") and name.lower().endswith(".htm"):
+                    if primary_doc is None:  # Take first one
+                        primary_doc = name
+                
+                # Press releases: Type starts with "EX-99" or "99."
+                if doc_type.startswith("EX-99") or doc_type.startswith("99."):
+                    if name.lower().endswith((".htm", ".txt")):
+                        press_releases.append(name)
             
             # Fetch primary document
-            for doc_name in primary_docs[:1]:
+            if primary_doc:
                 time.sleep(0.12)
-                doc_url = f"{base_url}/{doc_name}"
+                doc_url = f"{base_url}/{primary_doc}"
                 doc_resp = requests.get(doc_url, headers=headers, timeout=30)
                 if doc_resp.status_code == 200:
                     text = _strip_html(doc_resp.text)
                     if len(text) > 100:
                         text_parts.append(text[:max_chars // 2])
-                        break
             
             # Fetch press release (usually has the deal details)
             for ex_name in press_releases[:1]:
@@ -1088,7 +1269,7 @@ def _fetch_sec_filing_text(cik: str, accession: str, sec_ua: str, max_chars: int
     except Exception as e:
         logging.debug("SEC filing fetch via index failed: %s", e)
     
-    # Fallback: try common document names directly
+    # Fallback: try common document names directly (only if index fetch failed)
     if not text_parts:
         try:
             time.sleep(0.12)
@@ -1107,10 +1288,50 @@ def _fetch_sec_filing_text(cik: str, accession: str, sec_ua: str, max_chars: int
     return combined[:max_chars]
 
 
+def _extract_event_date_from_filing(filing_text: str) -> str | None:
+    """Extract the event date from an 8-K/6-K filing.
+    
+    The event date is when the reportable event occurred (e.g. deal signed),
+    not when the filing was submitted to SEC. For 8-K/A amendments about
+    July mergers, the filing date might be October but event date is July.
+    
+    Looks for patterns like:
+    - "Date of Report (Date of earliest event reported): July 15, 2026"
+    - "Date of Report: 07/15/2026"
+    """
+    if not filing_text:
+        return None
+    
+    patterns = [
+        r'Date of Report[^:]*:\s*(\w+\s+\d{1,2},?\s+\d{4})',
+        r'Date of Report[^:]*:\s*(\d{1,2}/\d{1,2}/\d{4})',
+        r'Date of earliest event reported[^:]*:\s*(\w+\s+\d{1,2},?\s+\d{4})',
+        r'Date of earliest event reported[^:]*:\s*(\d{1,2}/\d{1,2}/\d{4})',
+    ]
+    
+    for pattern in patterns:
+        match = re.search(pattern, filing_text, re.IGNORECASE)
+        if match:
+            date_str = match.group(1).strip()
+            try:
+                for fmt in ["%B %d, %Y", "%B %d %Y", "%m/%d/%Y"]:
+                    try:
+                        parsed = datetime.strptime(date_str, fmt)
+                        return parsed.date().isoformat()
+                    except ValueError:
+                        continue
+            except Exception:
+                pass
+    
+    return None
+
+
 def fetch_sec_filings(start: datetime, limit: int) -> tuple[list[dict], str]:
     """Fetch recent 8-K and 6-K filings from SEC EDGAR for biopharma companies.
     
     Fetches the primary document and EX-99.1 press release text for each filing.
+    Skips amendments (8-K/A, 6-K/A) which often resurface old deals.
+    Uses event date (when deal occurred) not filing date.
     Returns (rows, status) tuple.
     """
     import time
@@ -1121,15 +1342,17 @@ def fetch_sec_filings(start: datetime, limit: int) -> tuple[list[dict], str]:
         logging.warning("SEC_USER_AGENT 未设置，跳过 SEC EDGAR 来源。请设置格式如 'CompanyName contact@example.com'")
         return [], "skipped"
     
-    logging.info("抓取 SEC EDGAR 8-K/6-K（生物医药 SIC）")
+    logging.info("抓取 SEC EDGAR 8-K/6-K（生物医药 SIC，跳过修订）")
     
     end_date = datetime.now(timezone.utc).date()
     start_date = start.date()
     
     rows = []
+    skipped_amendments = 0
+    skipped_old_events = 0
     headers = {"User-Agent": sec_ua, "Accept": "application/json"}
     
-    # Search for 8-K and 6-K filings with deal keywords
+    # Search for 8-K and 6-K filings with deal keywords (NOT amendments)
     for form_type in ["8-K", "6-K"]:
         for keyword in SEC_DEAL_KEYWORDS[:5]:
             search_url = "https://efts.sec.gov/LATEST/search-index"
@@ -1167,6 +1390,13 @@ def fetch_sec_filings(start: datetime, limit: int) -> tuple[list[dict], str]:
                         if not accession or not cik:
                             continue
                         
+                        # FIX #1: Skip amendments (8-K/A, 6-K/A)
+                        # Amendments add financials to old deals and resurface them
+                        form_upper = form.upper()
+                        if "/A" in form_upper or form_upper.endswith("A"):
+                            skipped_amendments += 1
+                            continue
+                        
                         # Filter by SIC code - strict biopharma only
                         if not _is_biopharma_company(company, sic_codes=sics):
                             continue
@@ -1177,8 +1407,25 @@ def fetch_sec_filings(start: datetime, limit: int) -> tuple[list[dict], str]:
                         items = source.get("items", [])
                         description = ", ".join(items) if items else f"{form} filing"
                         
-                        # Fetch actual filing text (Fix #1)
+                        # Fetch actual filing text
                         filing_text = _fetch_sec_filing_text(cik, accession, sec_ua)
+                        
+                        # FIX #1: Use event date from filing, not filing date
+                        # Event date is when deal occurred; filing date is when SEC received it
+                        event_date = _extract_event_date_from_filing(filing_text)
+                        
+                        if event_date:
+                            try:
+                                event_dt = datetime.strptime(event_date, "%Y-%m-%d").date()
+                                if event_dt < start_date:
+                                    skipped_old_events += 1
+                                    logging.debug("跳过旧事件日期：%s (%s)", company, event_date)
+                                    continue
+                                use_date = event_date
+                            except ValueError:
+                                use_date = filed_date[:10] if filed_date else end_date.isoformat()
+                        else:
+                            use_date = filed_date[:10] if filed_date else end_date.isoformat()
                         
                         # Use filing text as summary if available
                         if filing_text and len(filing_text) > 100:
@@ -1192,11 +1439,12 @@ def fetch_sec_filings(start: datetime, limit: int) -> tuple[list[dict], str]:
                             "filing_source": "sec",
                             "title": f"{company}: {description[:80]}",
                             "url": doc_url,
-                            "date": filed_date[:10] if filed_date else end_date.isoformat(),
+                            "date": use_date,
                             "summary": summary,
-                            "filing_text": filing_text,  # Keep full text for amount verification
+                            "filing_text": filing_text,
                             "company": company,
                             "filing_type": form,
+                            "event_date": event_date,  # Keep for debugging
                         })
                         
             except Exception as e:
@@ -1207,6 +1455,11 @@ def fetch_sec_filings(start: datetime, limit: int) -> tuple[list[dict], str]:
                 break
         if len(rows) >= limit * 2:
             break
+    
+    if skipped_amendments:
+        logging.info("跳过 %d 条修订版（8-K/A, 6-K/A）", skipped_amendments)
+    if skipped_old_events:
+        logging.info("跳过 %d 条事件日期过早的披露", skipped_old_events)
     
     # Dedupe by URL
     seen = set()
@@ -1544,7 +1797,13 @@ def fetch_cninfo_announcements(start: datetime, limit: int) -> tuple[list[dict],
 
 
 def fetch_filing_sources(start: datetime, limit: int) -> tuple[list[dict], dict[str, tuple[int, str]]]:
-    """Fetch deal filings from all official sources (SEC, HKEX, cninfo).
+    """Fetch deal filings from official sources.
+    
+    Fix #5 & #6: HKEX and cninfo are disabled until we can verify:
+    - HKEX: Chapter 18A + Hang Seng Healthcare Index codes properly
+    - cninfo: CSRC C27 (医药制造业) filter, exclude 一般性授权
+    
+    Currently only SEC EDGAR is enabled with SIC code filtering.
     
     Returns:
         Tuple of (all_rows, source_stats) where source_stats maps source name to (count, status)
@@ -1552,7 +1811,7 @@ def fetch_filing_sources(start: datetime, limit: int) -> tuple[list[dict], dict[
     all_rows = []
     source_stats = {}
     
-    # SEC EDGAR
+    # SEC EDGAR - enabled with strict SIC code filtering
     try:
         sec_rows, sec_status = fetch_sec_filings(start, limit)
         all_rows.extend(sec_rows)
@@ -1561,23 +1820,21 @@ def fetch_filing_sources(start: datetime, limit: int) -> tuple[list[dict], dict[
         logging.warning("SEC 来源失败: %s", e)
         source_stats["SEC EDGAR"] = (0, "failed")
     
-    # HKEX
-    try:
-        hkex_rows, hkex_status = fetch_hkex_announcements(start, limit)
-        all_rows.extend(hkex_rows)
-        source_stats["HKEX 披露易"] = (len(hkex_rows), hkex_status)
-    except Exception as e:
-        logging.warning("HKEX 来源失败: %s", e)
-        source_stats["HKEX 披露易"] = (0, "failed")
+    # HKEX - DISABLED (Fix #5)
+    # The HKEX_HEALTHCARE_CODES list contains wrong companies:
+    # - 9988 (Alibaba), 9999 (NetEase - not biotech!), New Oriental, Yum China
+    # - Stock code parsing also broken (extracts year 2026 from URL path)
+    # Re-enable when we have verified Chapter 18A + Hang Seng Healthcare codes
+    logging.info("HKEX 披露易：暂停使用（需验证公司列表）")
+    source_stats["HKEX 披露易"] = (0, "disabled")
     
-    # cninfo (may fail from outside China)
-    try:
-        cninfo_rows, cninfo_status = fetch_cninfo_announcements(start, limit)
-        all_rows.extend(cninfo_rows)
-        source_stats["巨潮资讯"] = (len(cninfo_rows), cninfo_status)
-    except Exception as e:
-        logging.warning("巨潮资讯来源失败: %s", e)
-        source_stats["巨潮资讯"] = (0, "failed")
+    # cninfo - DISABLED (Fix #6)
+    # Issues:
+    # - No CSRC C27 (医药制造业) filter to verify actual biopharma
+    # - 一般性授权 (general authorization) filings create noise
+    # Re-enable when we have proper CSRC industry code filtering
+    logging.info("巨潮资讯：暂停使用（需添加 CSRC 行业过滤）")
+    source_stats["巨潮资讯"] = (0, "disabled")
     
     logging.info("官方披露来源总计 %d 条", len(all_rows))
     return all_rows, source_stats
@@ -1722,22 +1979,18 @@ def fetch_all(config: dict) -> list[dict]:
     start_for_filings = end - timedelta(days=default_days)
     filing_rows, filing_stats = fetch_filing_sources(start_for_filings, filing_limit)
     
-    # Dedup filings vs news by company+deal type (Fix #6)
-    filing_keys = set()  # (normalized_company, deal_type)
+    # Fix #9: Dedup by company+deal type - prefer filings over news
+    # Build set of (normalized_company, deal_type) from filings
+    filing_keys = set()
     for row in filing_rows:
         company = _normalize_company_name(row.get("company", ""))
-        # Classify deal type
+        # Classify deal type using the robust classifier
         title_lower = row.get("title", "").lower() + " " + row.get("summary", "").lower()
-        if any(kw in title_lower for kw in ["license", "collaboration", "授权", "许可", "合作"]):
-            deal_type = "lic"
-        elif any(kw in title_lower for kw in ["acqui", "merger", "收购", "并购"]):
-            deal_type = "acq"
-        else:
-            deal_type = "inv"
+        deal_type = _classify_deal_type(title_lower) or "inv"
         filing_keys.add((company, deal_type))
         row["_dedup_key"] = (company, deal_type)
     
-    # Add filing rows, deduping against existing
+    # Add filing rows, deduping against existing URLs
     filing_count = 0
     for row in filing_rows:
         url = row["url"]
@@ -1746,6 +1999,12 @@ def fetch_all(config: dict) -> list[dict]:
         seen.add(url)
         rows.append(row)
         filing_count += 1
+    
+    # Now mark any existing news items that duplicate a filing
+    # This happens later in claude_draft when we select deals
+    # Store filing_keys on the config for later use
+    if filing_keys:
+        logging.info("Filing dedup keys: %d unique (company, deal_type) pairs", len(filing_keys))
     
     # Add filing sources to stats (Fix #9)
     for source_name, (count, status) in filing_stats.items():
@@ -2068,16 +2327,20 @@ steps 必须是 3-5 个简短步骤（每个≤25字），描述论文的核心�
         # Ensure space before 亿
         money = re.sub(r'(\d)亿', r'\1 亿', money)
         
-        # Amount verification (Fix #4)
-        if is_filing and money != "未披露":
-            if not _verify_amount_in_text(money, filing_text):
-                logging.warning("金额未在披露文件中找到，改为未披露：%s -> %s", url, money)
+        # Fix #2 & #3: Amount verification for BOTH filings AND news
+        # Precision policy: if amount can't be verified in source text, mark as 未披露
+        source_text = filing_text if is_filing else src.get("summary", "")
+        
+        if money != "未披露":
+            if not _verify_amount_in_text(money, source_text):
+                if is_filing:
+                    logging.warning("金额未在披露文件中找到，改为未披露：%s -> %s", url, money)
+                else:
+                    logging.warning("金额未在新闻来源中找到，改为未披露：%s -> %s", url, money)
                 money = "未披露"
         
-        # For news-sourced amounts, label as 据报道 (Fix #4)
+        # Label amount source for display (据报道 for news)
         amount_source = "filing" if is_filing else "news"
-        if not is_filing and money != "未披露":
-            amount_source = "news"
         
         deal_entry = {
             "url": url,
@@ -2115,6 +2378,29 @@ steps 必须是 3-5 个简短步骤（每个≤25字），描述论文的核心�
                 deal_entry["equity"] = raw["equity"].strip()
             news_deals.append(deal_entry)
     
+    # Fix #9: Apply company+deal_type dedup - prefer filings over news
+    # Build set of (company, deal_type) from filings to exclude duplicate news
+    filing_dedup_keys = set()
+    for deal in filing_deals:
+        company = _normalize_company_name(deal.get("title", "").split(":")[0])
+        deal_type = deal.get("kinds", ["inv"])[0] if deal.get("kinds") else "inv"
+        filing_dedup_keys.add((company, deal_type))
+    
+    # Filter news_deals to remove those that duplicate a filing
+    deduped_news_deals = []
+    news_dupes_removed = 0
+    for deal in news_deals:
+        company = _normalize_company_name(deal.get("title", "").split(":")[0])
+        deal_type = deal.get("kinds", ["inv"])[0] if deal.get("kinds") else "inv"
+        if (company, deal_type) in filing_dedup_keys:
+            news_dupes_removed += 1
+            logging.debug("News deal dupes filing: %s (%s)", deal.get("title", ""), deal_type)
+            continue
+        deduped_news_deals.append(deal)
+    
+    if news_dupes_removed:
+        logging.info("去重：%d 条新闻与披露重复，已移除", news_dupes_removed)
+    
     # Deal slot allocation (Fix #5)
     # Reserve slots for filing-backed deals, then fill with news
     cap_a = int(config.get("max_academic") or 6)
@@ -2124,7 +2410,7 @@ steps 必须是 3-5 个简短步骤（每个≤25字），描述论文的核心�
     # Take filing deals first (up to max_filing_deals), then fill remainder with news
     selected_filings = filing_deals[:max_filing_deals]
     remaining_slots = max_deals - len(selected_filings)
-    selected_news = news_deals[:remaining_slots]
+    selected_news = deduped_news_deals[:remaining_slots]
     
     deals = selected_filings + selected_news
     
@@ -2284,6 +2570,18 @@ def wechat_html(articles: list[dict], deals: list[dict], week: str) -> str:
                     elif deal.get("is_filing"):
                         amount_note = "（披露文件）"
                     parts.append(f'<p style="margin:0.3em 0;"><strong>{money}</strong>{amount_note}</p>')
+                
+                # Fix #10: Show upfront/milestones if available
+                amount_details = []
+                if deal.get("upfront"):
+                    amount_details.append(f"首付：{deal['upfront']}")
+                if deal.get("milestones"):
+                    amount_details.append(f"里程碑：{deal['milestones']}")
+                if deal.get("equity"):
+                    amount_details.append(f"股权：{deal['equity']}")
+                if amount_details:
+                    details_text = " · ".join(amount_details)
+                    parts.append(f'<p style="margin:0.2em 0;font-size:14px;color:#555;">{details_text}</p>')
                 
                 if deal.get("why"):
                     parts.append(f'<p style="margin:0.3em 0;">{deal["why"]}</p>')
