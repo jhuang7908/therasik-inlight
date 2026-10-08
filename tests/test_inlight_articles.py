@@ -1092,7 +1092,7 @@ class TestDataPointValidation(unittest.TestCase):
         self.assertTrue(len(no_digit_problems) > 0, f"Should reject 'nine doses': {problems}")
 
     def test_ordinal_time_phrase_not_hard_fail(self):
-        """Source-faithful 'first week' must not hard-fail; invented ordinals must."""
+        """Source-faithful word quantities must not hard-fail; invented ones must."""
         from inlight_articles import validate_depth
 
         pad = "测" * 80
@@ -1119,12 +1119,33 @@ class TestDataPointValidation(unittest.TestCase):
                 },
             ],
         }
-        raw = "Sampling in the first week showed recovery in 10 patients."
+        raw = (
+            "Sampling in the first week showed recovery in 10 patients. "
+            "Mice were split into five groups. Expression rose twofold. "
+            "分为五组，信号增加两倍。"
+        )
         problems = validate_depth(art, raw)
         self.assertFalse(
             any("必须包含数字" in p and "first week" in p for p in problems),
             problems,
         )
+
+        for value, quote in (
+            ("five groups", "Mice were split into five groups"),
+            ("twofold", "Expression rose twofold"),
+            ("五组", "分为五组，信号增加两倍"),
+            ("两倍", "分为五组，信号增加两倍"),
+        ):
+            art["data_points"] = [{
+                "value": value,
+                "meaning": "数量",
+                "source_quote": quote,
+            }]
+            ok = validate_depth(art, raw, allow_word_quantities=True)
+            self.assertFalse(
+                any("必须包含数字" in p and value in p for p in ok),
+                (value, ok),
+            )
 
         art["data_points"] = [{
             "value": "nineteenth week",
@@ -1135,6 +1156,16 @@ class TestDataPointValidation(unittest.TestCase):
         self.assertTrue(
             any("数字" in p for p in invented),
             invented,
+        )
+        art["data_points"] = [{
+            "value": "nineteen groups",
+            "meaning": "编造分组",
+            "source_quote": "Mice were split into five groups",
+        }]
+        invented_grp = validate_depth(art, raw, allow_word_quantities=True)
+        self.assertTrue(
+            any("数字" in p for p in invented_grp),
+            invented_grp,
         )
 
     def test_clinical_class_uses_own_sentence(self):

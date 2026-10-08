@@ -413,7 +413,7 @@ class TestQcGateAndGemini(unittest.TestCase):
         self.assertNotIn('empty_check("claims", True', src)
         self.assertIn('empty_check("claims", claim_ok', src)
 
-    def test_length_only_deep_redrafts_not_brief(self):
+    def test_length_only_after_targeted_retry_stays_deep(self):
         item = EnrichedItem(
             url="https://doi.org/10.1/ft-len",
             title="T", source="N", date="2026-01-01", pmcid="PMC3",
@@ -423,9 +423,14 @@ class TestQcGateAndGemini(unittest.TestCase):
         drafts = []
         vd_n = {"n": 0}
 
-        def vd(draft, src):
+        def vd(draft, src, **kwargs):
             vd_n["n"] += 1
-            if vd_n["n"] <= 2:
+            if vd_n["n"] == 1:
+                return [
+                    "标识符 'ZZ9' 在原始材料中未找到",
+                    "background 字数 80，要求 180–240",
+                ]
+            if vd_n["n"] == 2:
                 return ["background 字数 80，要求 180–240"]
             return []
 
@@ -459,9 +464,31 @@ class TestQcGateAndGemini(unittest.TestCase):
         self.assertTrue(all(tier == "deep" for tier, _ in drafts))
         self.assertGreaterEqual(len(drafts), 3)
         self.assertTrue(any(
-            probs and any("仅因各段字数" in str(p) or "实测差距" in str(p) for p in (probs or []))
+            probs and any("必须压缩" in str(p) or "必须扩写" in str(p) or "实测" in str(p) for p in (probs or []))
             for _, probs in drafts
         ))
+
+    def test_section_band_slack_logged_when_body_in_range(self):
+        from inlight_articles import _apply_section_band_slack
+        from inlight_qc import han_len
+
+        art = _deep_art()
+        body = han_len([
+            art.get("one_liner"), art.get("background"), art.get("design"),
+            art.get("results"), art.get("mechanism"), art.get("limitations"),
+            art.get("significance"),
+        ])
+        self.assertTrue(1400 <= body <= 1900, body)
+        kept, overs = _apply_section_band_slack(
+            art, ["results 字数 760，要求 500–700", "核心结果须为 3–5 段"],
+        )
+        self.assertIn("核心结果须为 3–5 段", kept)
+        self.assertTrue(any(o.get("section") == "results" for o in overs), overs)
+        far, far_overs = _apply_section_band_slack(
+            art, ["results 字数 1200，要求 500–700"],
+        )
+        self.assertEqual(far, ["results 字数 1200，要求 500–700"])
+        self.assertFalse(far_overs)
 
     def test_out_of_scope_field_is_dropped(self):
         item = EnrichedItem(
@@ -533,6 +560,8 @@ class TestTriageBackfillAndPublishedQc(unittest.TestCase):
                 mock_client = mock_cls.return_value
                 mock_client.messages.create.return_value = make_triage_response([
                     {"url": items[0].url, "tier": "deep", "field": "f1"},
+                    {"url": items[1].url, "tier": "deep", "field": "f4"},
+                    {"url": items[2].url, "tier": "deep", "field": "f6"},
                 ])
                 out = triage_items(items, {"min_deep": 3, "max_deep": 5, "acir_qc": True})
         finally:
@@ -544,9 +573,14 @@ class TestTriageBackfillAndPublishedQc(unittest.TestCase):
         self.assertEqual(len(deep_urls), 4)
         self.assertNotIn(items[4].url, deep_urls)
         self.assertTrue(any("backfill" in str(s.get("reason") or "") for s in out))
+        self.assertIn(items[3].url, deep_urls)
         skip_txt = "\n".join(records)
         self.assertIn("no legally accessible full text", skip_txt)
         self.assertIn("Triage backfill", skip_txt)
+        self.assertTrue(
+            any("pool exhausted" in m or "try cap" in m for m in records),
+            skip_txt,
+        )
 
     def test_published_qc_has_must_cover_blind_removed(self):
         from inlight_audit import apply_dual_blind_to_week, BLIND_DIMS
@@ -606,6 +640,7 @@ class TestTriageBackfillAndPublishedQc(unittest.TestCase):
         self.assertIn("must_cover_item_count", entry)
         self.assertIn("must_cover_coverage", entry)
         self.assertIn("removed_numbers", entry)
+        self.assertIn("section_overages", entry)
         runs = entry.get("blind_judge_runs") or []
         self.assertTrue(runs or entry.get("blind_scores"))
 

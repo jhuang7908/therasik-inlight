@@ -1062,12 +1062,69 @@ ENGLISH_ORDINALS = {
 }
 
 
+_QUANTITY_UNIT_RE = re.compile(
+    r'(?i)(doses?|groups?|folds?|weeks?|days?|months?|years?|hours?|'
+    r'patients?|arms?|cohorts?|kinds?|types?|'
+    r'组|倍|次|例|名|周|天|月|年|剂)'
+)
+_FOLD_WORD_RE = re.compile(r'(?i)\b((?:once|twice|thrice|[a-z]+))-?fold\b')
+_EN_CARDINAL_RE = re.compile(
+    r'(?i)\b(?:'
+    + "|".join(sorted({
+        *ENGLISH_ONES, *ENGLISH_TEENS, *ENGLISH_TENS, *ENGLISH_ORDINALS,
+    }, key=len, reverse=True))
+    + r')\b'
+)
+
+
 def _english_ordinal_quantity_to_arabic(text: str) -> str:
     """Map English cardinals and ordinals (first week → 1 week) to digits."""
     result = english_number_to_arabic(text)
     for word, digit in sorted(ENGLISH_ORDINALS.items(), key=lambda x: -len(x[0])):
         result = re.sub(r'\b' + word + r'\b', digit, result, flags=re.IGNORECASE)
     return re.sub(r'\b(\d+)(?:st|nd|rd|th)\b', r'\1', result, flags=re.IGNORECASE)
+
+
+def _quantity_words_to_arabic(text: str) -> str:
+    """Normalize English/Chinese cardinals, ordinals, and fold words to digits."""
+    result = _english_ordinal_quantity_to_arabic(text or "")
+
+    def _fold(m: re.Match) -> str:
+        word = m.group(1).lower()
+        special = {"once": "1", "twice": "2", "thrice": "3"}
+        if word in special:
+            return special[word] + " fold"
+        conv = _english_ordinal_quantity_to_arabic(word)
+        return (conv + " fold") if re.search(r'\d', conv) else m.group(0)
+
+    result = _FOLD_WORD_RE.sub(_fold, result)
+    return chinese_numeral_to_arabic(result)
+
+
+def _canonical_quantity(text: str) -> str:
+    t = normalize_whitespace(_quantity_words_to_arabic(text))
+    t = re.sub(r'(?i)groups?|组', '组', t)
+    t = re.sub(r'(?i)folds?|倍', '倍', t)
+    t = re.sub(r'(?i)doses?|剂', '次', t)
+    t = re.sub(r'(?i)weeks?|周', '周', t)
+    t = re.sub(r'(?i)days?|天', '天', t)
+    t = re.sub(r'(?i)months?|月', '月', t)
+    t = re.sub(r'(?i)years?|年', '年', t)
+    return t
+
+
+def _is_word_quantity_phrase(value: str) -> bool:
+    """True for ordinal time, fold words, or a cardinal/Chinese numeral + unit."""
+    if not value:
+        return False
+    if _ORDINAL_TIME_RE.search(value) or re.search(r'(?i)fold|倍', value):
+        return True
+    if not _QUANTITY_UNIT_RE.search(value):
+        return False
+    return bool(
+        _EN_CARDINAL_RE.search(value)
+        or re.search(r'[零一二三四五六七八九十两]', value)
+    )
 
 
 def english_number_to_arabic(text: str) -> str:
@@ -3372,7 +3429,7 @@ def _strip_unmatched_number_claims(art: dict, nums: list[str]) -> list[dict]:
     return removed
 
 
-def validate_depth(art: dict, raw_material: str) -> list[str]:
+def validate_depth(art: dict, raw_material: str, *, allow_word_quantities: bool = False) -> list[str]:
     """Validate generated article against SOURCE TEXT.
     
     Design principle: Every number in output must exist in source.
@@ -3487,17 +3544,18 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
         if not re.search(r'\d', value):
             if _is_qualitative_datapoint(value, meaning):
                 continue
-            # Source-faithful ordinal time phrases ("first week") are not
-            # invented values. Other digit-less strings still hard-fail.
-            if _ORDINAL_TIME_RE.search(value):
-                converted = _english_ordinal_quantity_to_arabic(value)
+            # Source-faithful word quantities (first week / five groups /
+            # twofold / 五组 / 两倍) are not invented. Bare cardinals
+            # without a unit still hard-fail (locked-suite contract).
+            allow_words = allow_word_quantities or bool(_ORDINAL_TIME_RE.search(value))
+            if allow_words and _is_word_quantity_phrase(value):
+                converted = _quantity_words_to_arabic(value)
                 value_norm = normalize_whitespace(value)
-                conv_norm = normalize_whitespace(converted)
-                src_ord = _english_ordinal_quantity_to_arabic(norm)
+                src_qty = _canonical_quantity(norm)
+                val_qty = _canonical_quantity(value)
                 if value_norm and (
                     value_norm in norm
-                    or value_norm in src_ord
-                    or (conv_norm != value_norm and conv_norm in src_ord)
+                    or val_qty and val_qty in src_qty
                 ):
                     continue
                 if re.search(r'\d', converted):
@@ -4295,6 +4353,11 @@ def _backfill_deep_selections(
         1 for s in selections if s.get("tier") == "deep" and _is_ft(s.get("url") or "")
     )
     try_cap = max(int(t["min_deep"]) * 2, int(t["min_deep"]))
+    ft_pool = [it for it in items if item_has_real_fulltext(it)]
+    logging.info(
+        "Triage full-text pool %d, deep selected %d, try cap %d",
+        len(ft_pool), deep_ft_n, try_cap,
+    )
 
     for it in items:
         if it.url in selected_urls:
@@ -4305,19 +4368,30 @@ def _backfill_deep_selections(
                 it.url,
             )
 
-    if deep_ft_n >= t["min_deep"]:
-        return selections
-
     unused_ft = [
         it for it in items
         if item_has_real_fulltext(it) and it.url not in selected_urls
     ]
+    need = max(0, try_cap - deep_ft_n)
+    if need == 0:
+        logging.info(
+            "Triage backfill stop: already have %d deep full-text (≥ try cap %d)",
+            deep_ft_n, try_cap,
+        )
+        return selections
+    if not unused_ft:
+        logging.info(
+            "Triage backfill stop: OA/PMC full-text pool exhausted "
+            "(%d deep full-text, try cap %d, unused 0)",
+            deep_ft_n, try_cap,
+        )
+        return selections
+
     ranked = sorted(
         unused_ft,
         key=lambda it: _score_fields_for_item(it, cfg)[1],
         reverse=True,
     )
-    need = max(0, try_cap - deep_ft_n)
     out = list(selections)
     for it in ranked[:need]:
         field, score = _score_fields_for_item(it, cfg)
@@ -4339,6 +4413,13 @@ def _backfill_deep_selections(
         logging.info(
             "Triage skip %s: try cap %d reached (ranked below other full-text candidates)",
             it.url, try_cap,
+        )
+    filled = sum(1 for s in out if s.get("tier") == "deep" and _is_ft(s.get("url") or ""))
+    if filled < try_cap and len(ranked) <= need:
+        logging.info(
+            "Triage backfill stop: OA/PMC full-text pool exhausted "
+            "(%d deep full-text after backfill, try cap %d)",
+            filled, try_cap,
         )
     return out
 
@@ -5048,31 +5129,114 @@ def _section_length_targets(art: dict, problems: list[str]) -> list[str]:
     """Explicit per-section targets plus measured overages/shortfalls."""
     from inlight_qc import SECTION_RANGES, han_len
 
-    lines = [
-        "仅因各段字数或结构未达标，请按下列实测差距重写为 deep，不得改数字或主张：",
-        *problems,
-    ]
-    for name, (lo, hi) in SECTION_RANGES.items():
-        n = han_len(art.get(name) if art else "")
-        if n < lo:
-            lines.append(f"{name} 现 {n} 字，目标 {lo}–{hi}（少 {lo - n} 字）")
-        elif n > hi:
-            lines.append(f"{name} 现 {n} 字，目标 {lo}–{hi}（多 {n - hi} 字）")
-        else:
-            lines.append(f"{name} 现 {n} 字，已在 {lo}–{hi}")
     body = han_len([
         (art or {}).get("one_liner"), (art or {}).get("background"),
         (art or {}).get("design"), (art or {}).get("results"),
         (art or {}).get("mechanism"), (art or {}).get("limitations"),
         (art or {}).get("significance"),
     ])
+    lines = [
+        "仅因各段字数或结构未达标。按下列实测重写为 deep：",
+        "只改被点名段落的长短；已核对数字、主张、标识符必须逐字保留，不得改数或换名。",
+        "超标段删次要句压到目标上限；不足段只补材料里已有的事实，不得编数字。",
+        *problems,
+        f"正文合计现 {body} 字，硬性目标 1400–1900。",
+    ]
+    for name, (lo, hi) in SECTION_RANGES.items():
+        n = han_len(art.get(name) if art else "")
+        if n < lo:
+            lines.append(
+                f"【必须扩写】{name} 现 {n} 字 → 目标 {lo}–{hi}（少 {lo - n} 字）。"
+                f"只补材料已写明的事实，保留全部已核实数字。"
+            )
+        elif n > hi:
+            lines.append(
+                f"【必须压缩】{name} 现 {n} 字 → 目标 {lo}–{hi}（多 {n - hi} 字）。"
+                f"删次要细节，保留全部已核实数字。"
+            )
+        else:
+            lines.append(f"{name} 现 {n} 字，已在 {lo}–{hi}，保持。")
     if body < 1400:
-        lines.append(f"正文合计 {body} 字，目标 1400–1900（少 {1400 - body} 字）")
+        lines.append(f"正文合计少 {1400 - body} 字，先扩写不足段。")
     elif body > 1900:
-        lines.append(f"正文合计 {body} 字，目标 1400–1900（多 {body - 1900} 字）")
-    else:
-        lines.append(f"正文合计 {body} 字，已在 1400–1900")
+        lines.append(f"正文合计多 {body - 1900} 字，先压缩超标段。")
     return lines
+
+
+_SECTION_BAND_RE = re.compile(r'^(\S+) 字数 (\d+)，要求 (\d+)–(\d+)$')
+SECTION_BAND_SLACK_FRAC = 0.15
+SECTION_BAND_SLACK_MIN = 30
+SECTION_BAND_SLACK_MAX = 120
+
+
+def _apply_section_band_slack(art: dict, struct_probs: list[str]) -> tuple[list[str], list[dict]]:
+    """Modest per-section slack when body is already 1400–1900 and claims are clean."""
+    from inlight_qc import han_len
+
+    body = han_len([
+        (art or {}).get("one_liner"), (art or {}).get("background"),
+        (art or {}).get("design"), (art or {}).get("results"),
+        (art or {}).get("mechanism"), (art or {}).get("limitations"),
+        (art or {}).get("significance"),
+    ])
+    if not (1400 <= body <= 1900):
+        return list(struct_probs), []
+    kept: list[str] = []
+    overages: list[dict] = []
+    for p in struct_probs:
+        m = _SECTION_BAND_RE.match(p.strip())
+        if not m:
+            kept.append(p)
+            continue
+        name, n, lo, hi = m.group(1), int(m.group(2)), int(m.group(3)), int(m.group(4))
+        slack = min(
+            SECTION_BAND_SLACK_MAX,
+            max(SECTION_BAND_SLACK_MIN, int(round(hi * SECTION_BAND_SLACK_FRAC))),
+        )
+        if lo - slack <= n <= hi + slack:
+            delta = (n - hi) if n > hi else (n - lo)
+            overages.append({
+                "section": name, "n": n, "lo": lo, "hi": hi,
+                "slack": slack, "delta": delta,
+            })
+            logging.info(
+                "Section band slack %s: %d vs %d–%d (slack %d, delta %+d)",
+                name, n, lo, hi, slack, delta,
+            )
+        else:
+            kept.append(p)
+    return kept, overages
+
+
+def _run_deep_length_redrafts(
+    art: dict,
+    problems: list[str],
+    enriched_item,
+    config: dict,
+    url: str,
+    prepare,
+) -> tuple[dict, list[str], str | None]:
+    """Up to 2 deep redrafts for length/structure-only. No brief downgrade."""
+    for attempt in (1, 2):
+        targets = _section_length_targets(art, problems)
+        logging.info(
+            "Deep length/structure redraft %d/2 for %s: %s",
+            attempt, url, problems,
+        )
+        retry_len = draft_single_article(enriched_item, "deep", config, problems=targets)
+        if retry_len is None:
+            continue
+        art, problems = prepare(retry_len)
+        if not _hard_problems(problems):
+            return art, problems, None
+        if not _length_structure_only(problems):
+            return art, problems, None
+    if _hard_problems(problems) and _length_structure_only(problems):
+        return art, problems, (
+            "deep length/structure still failing after 2 redrafts: "
+            + "; ".join(_hard_problems(problems)[:4])
+        )
+    return art, problems, None
 
 
 def _source_bucket(item: EnrichedItem) -> str:
@@ -5341,10 +5505,18 @@ def _process_single_article(
         if isinstance(draft.get("datacard"), dict):
             draft["datacard"]["evidence_level"] = draft["evidence_level"]
             draft["datacard"].pop("read_note", None)
-        probs = validate_depth(draft, src)
+        probs = validate_depth(draft, src, allow_word_quantities=strict)
         probs.extend(validate_names(draft, src))
         if strict and draft.get("tier") == "deep":
-            probs.extend(validate_acir_structure(draft))
+            struct = validate_acir_structure(draft)
+            depth_content = [
+                p for p in _hard_problems(probs) if not _is_length_structure_problem(p)
+            ]
+            if not depth_content:
+                struct, overages = _apply_section_band_slack(draft, struct)
+                if overages:
+                    draft.setdefault("qc_section_overages", []).extend(overages)
+            probs.extend(struct)
             from inlight_qc import verified_data_points
             if len(verified_data_points(draft, src)) < 6:
                 n = len(verified_data_points(draft, src))
@@ -5384,30 +5556,11 @@ def _process_single_article(
         and _length_structure_only(problems)
         and strict
     ):
-        for attempt in (1, 2):
-            targets = _section_length_targets(art, problems)
-            logging.info(
-                "Deep length/structure redraft %d/2 for %s: %s",
-                attempt, url, problems,
-            )
-            retry_len = draft_single_article(enriched_item, "deep", config, problems=targets)
-            if retry_len is None:
-                continue
-            art, problems = _prepare(retry_len)
-            if not _hard_problems(problems):
-                first_hard_problems = []
-                first_soft_problems = problems
-                break
-            if not _length_structure_only(problems):
-                first_hard_problems = _hard_problems(problems)
-                first_soft_problems = [p for p in problems if p not in first_hard_problems]
-                break
-        else:
-            if _hard_problems(problems) and _length_structure_only(problems):
-                return drop(
-                    "deep length/structure still failing after 2 redrafts: "
-                    + "; ".join(_hard_problems(problems)[:4])
-                )
+        art, problems, drop_reason = _run_deep_length_redrafts(
+            art, problems, enriched_item, config, url, _prepare,
+        )
+        if drop_reason:
+            return drop(drop_reason)
         first_hard_problems = _hard_problems(problems)
         first_soft_problems = [p for p in problems if p not in first_hard_problems]
 
@@ -5462,7 +5615,23 @@ def _process_single_article(
                 soft_problems = [p for p in problems if p not in hard_problems]
 
                 if hard_problems:
-                    if tier == "deep":
+                    if (
+                        tier == "deep"
+                        and real_ft
+                        and strict
+                        and _length_structure_only(problems)
+                    ):
+                        art, problems, drop_reason = _run_deep_length_redrafts(
+                            art, problems, enriched_item, config, url, _prepare,
+                        )
+                        if drop_reason:
+                            return drop(drop_reason)
+                        hard_problems = _hard_problems(problems)
+                        soft_problems = [p for p in problems if p not in hard_problems]
+                    if not hard_problems:
+                        if soft_problems:
+                            logging.warning("Accepting %s with soft-only problems: %s", url, soft_problems)
+                    elif tier == "deep":
                         logging.warning("Downgrading %s from deep to brief after retry - hard problems: %s", url, hard_problems)
                         brief_art = draft_single_article(enriched_item, "brief", config, problems=problems)
                         if brief_art is None:
@@ -5704,11 +5873,13 @@ def _process_single_article(
             "must_cover_coverage": None,
             "blind_scores": [],
             "blind_judge_runs": [],
+            "section_overages": art.get("qc_section_overages") or [],
         }
         if audit:
             from inlight_audit import attach_audit_fields
             extra = attach_audit_fields(extra, audit)
             extra["removed_numbers"] = art.get("qc_removed_numbers") or []
+            extra["section_overages"] = art.get("qc_section_overages") or []
         return extra
 
     if failed and strict:
