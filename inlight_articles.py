@@ -1660,14 +1660,18 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
     body = " ".join(body_parts)
     total_chars = cn_len(body) + cn_len(" ".join(limitations))
     
+    # Character count validation - hard limits
+    # Brief: minimum 450 Han chars (no tolerance)
+    # Deep: 1400-1900 with 15% tolerance
     if tier == "deep":
         if total_chars < 1400 * 0.85:
             problems.append(f"deep 档正文 {total_chars} 字，低于下限 1190 字")
         elif total_chars > 1900 * 1.15:
             problems.append(f"deep 档正文 {total_chars} 字，超过上限 2185 字")
     else:
-        if total_chars < 450 * 0.85:
-            problems.append(f"brief 档正文 {total_chars} 字，低于下限 383 字")
+        # Hard minimum for brief - no tolerance below 450
+        if total_chars < 450:
+            problems.append(f"brief 档正文 {total_chars} 字，低于下限 450 字")
         elif total_chars > 650 * 1.15:
             problems.append(f"brief 档正文 {total_chars} 字，超过上限 748 字")
     
@@ -1678,6 +1682,23 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
         evidence = art.get("evidence_level", "abstract")
     if tier == "deep" and evidence in ("press", "secondary"):
         problems.append("仅有新闻稿，不得写成深度解读")
+    
+    # Results must contain at least one verifiable number from source
+    results_text = " ".join(art.get("results", []))
+    results_numbers = extract_numbers_with_context(results_text)
+    found_valid_number = False
+    for num, context in results_numbers:
+        num_core = extract_number_core(num)
+        if num_core and number_in_text_as_word_boundary(num_core, source_norm):
+            found_valid_number = True
+            break
+    
+    if not found_valid_number and results_numbers:
+        # Has numbers but none match source
+        problems.append("结果字段中的数字无法在原文中核实")
+    elif not results_numbers:
+        # No numbers at all in results
+        problems.append("结果字段应包含至少一个可核实的数字（来自原文）")
     
     # Check for excessive "未给出" boilerplate (soft warning)
     # If an article has too many "未给出" phrases, it may lack substantive content

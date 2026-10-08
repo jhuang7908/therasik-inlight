@@ -675,10 +675,11 @@ class TestIntegrationMocked(unittest.TestCase):
         # Simulate a well-formed article that passes validation
         # IMPORTANT: ALL numbers and claims must match the source exactly
         # Source: "36 patients", "52% (19/36)" response, "12 months" follow-up, "28%" adverse events
+        # Brief tier requires minimum 450 Han characters
         simulated_article = {
             "tier": "brief",
             "title": "难治性疾病CAR-T治疗客观缓解率52%",
-            "one_liner": "纳入36例难治性疾病患者的研究显示客观缓解率为52%（19/36例），中位随访12个月，三级及以上不良事件发生率28%。",
+            "one_liner": "纳入36例难治性疾病患者的研究显示客观缓解率为52%（19/36例），中位随访12个月，三级及以上不良事件发生率28%，提示该疗法在难治性患者中具有良好的抗肿瘤活性。",
             "datacard": {
                 "study_type": "临床研究",
                 "n": "36例",
@@ -690,12 +691,12 @@ class TestIntegrationMocked(unittest.TestCase):
                 "statistics": "原文未报告统计学检验",
                 "safety": "三级及以上不良事件发生率28%",
             },
-            "background": "针对难治性疾病，传统治疗方案疗效有限，需要探索新型治疗方法。本研究评估了CAR-T细胞治疗的疗效和安全性。研究背景部分需要参照原文进行解读。CAR-T细胞治疗是一种新兴的细胞免疫疗法，通过基因工程改造患者自身的T细胞，使其能够识别并杀伤肿瘤细胞。",
-            "design": "研究纳入36例难治性疾病患者接受治疗。本研究为描述性研究，主要终点为客观缓解率。研究设计相对简单，原文未提供对照组和盲法等详细信息。研究者对所有入组患者进行了疗效和安全性评估。",
-            "results": ["研究显示客观缓解率为52%，即36例患者中有19例达到缓解。中位随访时间为12个月。安全性方面，三级及以上不良事件发生率为28%。以上数据均直接来自原文报告，反映了该治疗方案的临床表现。"],
+            "background": "针对难治性疾病，传统治疗方案疗效有限，需要探索新型治疗方法。本研究评估了细胞治疗的疗效和安全性。该疗法是一种新兴的细胞免疫疗法，通过基因工程改造患者自身的T细胞，使其能够识别并杀伤肿瘤细胞，在血液肿瘤领域已展现出显著疗效。",
+            "design": "研究纳入36例难治性疾病患者接受治疗。本研究为描述性研究，主要终点为客观缓解率。研究设计相对简单，原文未提供对照组和盲法等详细信息。研究者对所有入组患者进行了疗效和安全性评估，随访观察治疗后的缓解持久性。",
+            "results": ["研究显示客观缓解率为52%，即36例患者中有19例达到缓解。中位随访时间为12个月，大部分缓解患者维持疗效。安全性方面，三级及以上不良事件发生率为28%。以上数据均直接来自原文报告，反映了该治疗方案在难治性患者中的临床表现。"],
             "mechanism": "",
-            "limitations": ["原文未报告对照组，无法评估相对疗效；原文未报告随访期间的疾病进展或复发数据"],
-            "significance": "该研究为难治性疾病患者提供了一种潜在治疗选择的初步证据。然而，需要更多研究验证这些发现。",
+            "limitations": ["原文未报告对照组，无法评估相对疗效；原文未报告随访期间的疾病进展或复发数据；样本量较小，结果外推需谨慎"],
+            "significance": "该研究为难治性疾病患者提供了一种潜在治疗选择的初步证据。若后续大样本研究能重复这些结果，可能为这类患者带来新的治疗希望。",
             "data_points": [
                 {"value": "52%", "meaning": "客观缓解率", "source_quote": "The objective response rate was 52%"},
                 {"value": "36", "meaning": "患者例数", "source_quote": "we enrolled 36 patients"},
