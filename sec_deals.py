@@ -197,6 +197,50 @@ def find_quote_position(quote: str, filing_text: str) -> int | None:
     return pos if pos >= 0 else None
 
 
+def _find_item_section(filing_text: str, position: int) -> str | None:
+    """Find the Item section (e.g., 'Item 1.01') containing the given position.
+    
+    Returns the Item identifier (e.g., 'Item 1.01') or None if not in an Item section.
+    """
+    # Look backwards from position for the nearest Item header
+    text_before = filing_text[:position]
+    item_pattern = re.compile(r'Item\s+(\d+\.\d+)', re.IGNORECASE)
+    
+    # Find all Item matches before this position
+    matches = list(item_pattern.finditer(text_before))
+    if matches:
+        return matches[-1].group().lower()
+    return None
+
+
+def _extract_item_section_text(filing_text: str, item_id: str) -> str | None:
+    """Extract the full text of an Item section.
+    
+    Returns the text from the Item header to the next Item header (or end of file).
+    """
+    if not item_id:
+        return None
+    
+    # Find the start of this Item section
+    item_pattern = re.compile(re.escape(item_id), re.IGNORECASE)
+    match = item_pattern.search(filing_text)
+    if not match:
+        return None
+    
+    start = match.start()
+    
+    # Find the next Item section (end boundary)
+    next_item_pattern = re.compile(r'Item\s+\d+\.\d+', re.IGNORECASE)
+    next_match = next_item_pattern.search(filing_text, start + len(item_id))
+    
+    if next_match:
+        end = next_match.start()
+    else:
+        end = len(filing_text)
+    
+    return filing_text[start:end]
+
+
 # =============================================================================
 # PARAGRAPH / PASSAGE DETECTION
 # =============================================================================
@@ -604,11 +648,23 @@ def parse_amount_from_quote(quote: str, kind: AmountKind) -> ParsedAmount | None
     - Units must be explicit (million/billion) - bare $7,500,000 is raw dollars, not millions.
     - Sanity cap: amounts > $100 billion are dropped.
     - EUR/GBP require € or £ symbol or EUR/GBP/euro/pound word, not character class matching.
+    - Analyst/media estimates are rejected - only contractual amounts allowed.
     """
     if not quote:
         return None
     
     text = quote.lower()
+    
+    # Reject analyst/media estimates - these are not contractual amounts
+    estimate_patterns = [
+        r'\b(?:analyst|analysts|media|estimate[sd]?|estimated|valuation|valued at|worth|potentially|reportedly|sources?\s+(?:say|said|report))\b',
+        r'\b(?:according\s+to|per|sources?\s+familiar)\b',
+        r'\b(?:market\s+(?:cap|capitalization|value)|stock\s+(?:price|value))\b',
+    ]
+    for pattern in estimate_patterns:
+        if re.search(pattern, text):
+            logging.debug("Amount dropped: analyst/media estimate: %s", quote[:50])
+            return None
     up_to = False
     
     # Check for 'up to' / 'maximum' / 'aggregate'
@@ -1014,7 +1070,23 @@ DEAL_TYPE_VALIDATORS = {
         r'\bentered\s+into\b.*\b(?:loan|credit)\b.*\bagreement\b',
         r'\b(?:tranche|draw(?:down)?|fund(?:ing|ed)?)\b.*\b(?:million|loan|facility)\b',
     ],
+    DealType.EQUITY_FINANCING: [
+        # True equity financing: investment/financing language
+        r'\b(?:invest(?:ed|s|ment|ing)?)\s+(?:in|from)\b',
+        r'\bseries\s+[a-z]\s+(?:financing|round|funding)\b',
+        r'\b(?:equity|venture)\s+(?:financing|investment|round)\b',
+        r'\b(?:private\s+placement|public\s+offering|ipo)\b',
+        r'\bpurchas(?:ed?|es?|ing)\s+(?:shares?|stock|equity)\s+(?:of|from|in)\b',
+    ],
 }
+
+# Patterns that REJECT equity_financing - shares issued as payment, not investment
+EQUITY_FINANCING_REJECT_PATTERNS = [
+    r'\b(?:consideration|payment)\b',
+    r'\bissued\s+.*\bshares?\s+.*\b(?:to|as)\b',
+    r'\bas\s+(?:partial\s+)?consideration\b',
+    r'\bamendment\s+consideration\b',
+]
 
 
 def is_non_deal_agreement(type_quote: str) -> bool:
@@ -1062,6 +1134,13 @@ def validate_deal_type_from_quote(
             # Try to infer correct type
             return infer_deal_type_from_quote(type_quote)
     
+    # Additional validation for equity_financing - reject payment/consideration language
+    if claimed_type == DealType.EQUITY_FINANCING:
+        for pattern in EQUITY_FINANCING_REJECT_PATTERNS:
+            if re.search(pattern, text_lower):
+                logging.info("Deal type equity_financing rejected: payment/consideration language")
+                return infer_deal_type_from_quote(type_quote)
+    
     # Additional validation for acquisitions - the acquirer must be the grammatical subject
     if claimed_type == DealType.ACQUISITION:
         # Check for patterns where someone other than the filer/counterparty is acquiring
@@ -1106,26 +1185,41 @@ def is_historical_agreement(type_quote: str) -> bool:
     references to the original agreement's date (e.g., "dated as of November 29, 2017")
     are NOT historical - the current event is the amendment itself.
     
-    We should only mark as historical when the quote describes a PAST action that is
-    NOT the current event being reported.
+    BUT: "previously entered into...as amended" is STILL historical - "as amended" is just
+    a parenthetical describing the prior agreement's state, not indicating a current amendment event.
+    
+    We look for CURRENT amendment language: "entered into Amendment No. X" or "entered into 
+    the Sixth Amendment" - these indicate the current event IS an amendment.
     """
     if not type_quote:
         return False
     
     text_lower = type_quote.lower()
     
-    # If quote mentions amendment/amendment no./sixth amendment etc., the event IS current
-    # Even if it references an original agreement date
-    if re.search(r'\b(?:amendment\s+no\.?\s*\d+|(?:first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth)\s+amendment|amending|amended)\b', text_lower, re.IGNORECASE):
-        return False
+    # First check for CURRENT amendment event patterns:
+    # "entered into Amendment No. X" or "entered into the Sixth Amendment"
+    # These indicate the current 8-K is ABOUT an amendment, so it's NOT historical
+    current_amendment_patterns = [
+        # Explicit amendment action: "entered into Amendment No. 4"
+        r'\b(?:enter(?:ed|s)?|execut(?:ed|es)?|sign(?:ed|s)?)\s+(?:into\s+)?(?:the\s+)?(?:amendment\s+no\.?\s*\d+|(?:first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth)\s+amendment)\b',
+        # "The Amendment removes" - describing current amendment action
+        r'\bthe\s+amendment\s+(?:removes?|eliminates?|terminates?|provides?|grants?)\b',
+    ]
     
-    # Only these patterns indicate truly historical (not the current event):
+    for pattern in current_amendment_patterns:
+        if re.search(pattern, text_lower):
+            return False
+    
+    # Now check for historical patterns - these indicate past, not current event:
     historical_patterns = [
         # "previously entered" clearly indicates past, not current
         r'\bpreviously\s+(?:entered|agreed|executed|signed)\b',
         # "original agreement" when not in context of amendment
         r'\boriginal\s+agreement\b',
-        # "as amended through" or "prior to" (describing history, not current event)
+        # Any ", as amended" parenthetical (describing state of a prior agreement)
+        # This catches "previously entered...as amended" which is still historical
+        r',\s*as\s+amended\b',
+        # "as amended through" or "prior to" (describing history)
         r'\bas\s+amended\s+(?:and\s+restated\s+)?(?:from\s+time\s+to\s+time\s+)?(?:through|prior\s+to)\b',
     ]
     
@@ -1230,10 +1324,19 @@ def build_deal_lines(
                 lines.append(f"股权：{rendered}")
         
         elif amount.kind == AmountKind.FACILITY_SIZE:
-            lines.append(f"贷款额度：{rendered}")
+            # Facility size label only for debt deals
+            if deal_type == DealType.DEBT_FACILITY:
+                lines.append(f"贷款额度：{rendered}")
+            else:
+                # For non-debt deals, conditional amounts go to milestones
+                lines.append(f"里程碑：{rendered}")
         
         elif amount.kind == AmountKind.DRAWN:
-            lines.append(f"已提取：{rendered}")
+            # Drawn label only for debt deals
+            if deal_type == DealType.DEBT_FACILITY:
+                lines.append(f"已提取：{rendered}")
+            else:
+                lines.append(f"付款金额：{rendered}")
         
         else:
             lines.append(rendered)
@@ -1394,26 +1497,23 @@ def process_sec_deal(
                         counterparty_in_same_para = True
                         break
         
-        # Also check if amount is in a paragraph that follows a counterparty paragraph
-        # and discusses the same agreement (e.g., "The Term Loans" referring to loans from Hercules)
-        in_related_section = False
+        # STRICT: Amount must be in SAME PARAGRAPH as counterparty, or in same Item/Exhibit section
+        # where the counterparty is mentioned (for defined terms like "The Term Loans")
+        in_same_item_section = False
         if not counterparty_in_quote and not counterparty_in_same_para:
-            # Check if amount is within ~5 paragraphs of a paragraph mentioning counterparty
-            paragraphs = split_into_paragraphs(filing_text)
-            norm_quote = normalize_whitespace(quote).lower()
-            for idx, (_, _, para_text) in enumerate(paragraphs):
-                norm_para = normalize_whitespace(para_text).lower()
-                if norm_quote in norm_para:
-                    # Check nearby paragraphs for counterparty
-                    for nearby_idx in range(max(0, idx - 5), min(len(paragraphs), idx + 2)):
-                        nearby_para = paragraphs[nearby_idx][2]
-                        if match_company_whole_word(counterparty, nearby_para):
-                            in_related_section = True
-                            break
-                    break
+            # Find the Item/Exhibit section containing the amount
+            amount_pos = find_quote_position(quote, filing_text)
+            if amount_pos is not None:
+                # Find enclosing Item section for amount
+                amount_section = _find_item_section(filing_text, amount_pos)
+                if amount_section:
+                    # Check if counterparty is mentioned in this same section
+                    section_text = _extract_item_section_text(filing_text, amount_section)
+                    if section_text and match_company_whole_word(counterparty, section_text):
+                        in_same_item_section = True
         
-        if not counterparty_in_quote and not counterparty_in_same_para and not in_related_section:
-            logging.debug("Amount dropped: neither names counterparty nor in same paragraph: %s", quote[:50])
+        if not counterparty_in_quote and not counterparty_in_same_para and not in_same_item_section:
+            logging.debug("Amount dropped: not in same paragraph or Item section as counterparty: %s", quote[:50])
             continue
         
         # Additional check: amount quote should be contextually near the type_quote
@@ -1668,7 +1768,7 @@ IMPORTANT: Every quote must be an EXACT substring of the filing text above. Do n
                 # Check stop_reason
                 stop_reason = message.stop_reason
                 if stop_reason == "max_tokens":
-                    logging.warning("Filing %s: Claude response truncated (max_tokens), retrying with deal_type=none assumption", filing_url)
+                    logging.warning("Filing %s: Claude response truncated (max_tokens), dropping this filing", filing_url)
                     # If truncated, we can't trust the response - treat as no deal
                     failed_count += 1
                     break
@@ -1827,11 +1927,16 @@ def extract_numbers_from_text(text: str) -> set[str]:
     
     # Chinese numerals - only extract when they represent QUANTITIES
     # Pattern: Chinese number + unit suffix (亿/万/百/千 + currency or 例/名/人/组 etc.)
-    # This matches "三亿美元" but not "一种方法"
+    # This matches "三亿美元" and "两百亿" but not "一种方法"
+    # Note: \b doesn't work reliably with CJK, so we use explicit end patterns
     quantity_patterns = [
+        # Amount with currency: 三亿美元, 1.5亿美元
         r'([零一二三四五六七八九十百千万亿两〇]+)\s*(?:亿|万|百|千)?\s*(?:美元|欧元|英镑|元|人民币|港币|日元)',
-        r'([零一二三四五六七八九十百千万亿两〇]+)\s*(?:亿|万|百|千)\b',  # standalone large numbers
-        r'([零一二三四五六七八九十百千万亿两〇]+)\s*(?:例|名|位|人|个|家|项|条|篇|份|次|组|期|年|月|日|周|天)\b',
+        # Standalone large numbers followed by non-number CJK or end of word
+        # "两百亿市场" → extracts "两百亿"
+        r'([零一二三四五六七八九十百千万亿两〇]+)\s*(?:亿|万)(?![零一二三四五六七八九十百千万亿两〇])',
+        # Count units: 三例患者, 120名
+        r'([零一二三四五六七八九十百千万亿两〇]+)\s*(?:例|名|位|人|个|家|项|条|篇|份|次|组|年|月|日|周|天)(?![零一二三四五六七八九十百千万亿两〇])',
     ]
     
     for pattern in quantity_patterns:
