@@ -147,8 +147,10 @@ For each amount, provide a quote containing BOTH the dollar amount AND a role ke
 
 # Module-level flag for disabling verifier in tests
 VERIFIER_ENABLED = True
-# Production default: no live client → drop. Tests set this False via conftest.
+# Production default: no live client → drop. Tests set the env skip via conftest
+# (acceptance reloads this module, so the env var is the durable test-only flag).
 LLM_DENY_GATE_REQUIRED = True
+LLM_DENY_GATE_TEST_SKIP_ENV = "INLIGHT_LLM_DENY_GATE_TEST_SKIP"
 LLM_DENY_GATE_TIMEOUT_SECONDS = 60
 LLM_DENY_GATE_RETRIES = 1
 
@@ -439,6 +441,13 @@ _GATE_NONBINDING_RE = re.compile(
 )
 
 
+def _deny_gate_test_skip() -> bool:
+    """Explicit test-only skip. Production never sets the env or the flag."""
+    if os.environ.get(LLM_DENY_GATE_TEST_SKIP_ENV) == "1":
+        return True
+    return not LLM_DENY_GATE_REQUIRED
+
+
 def confirm_brand_new_agreement(
     item_text: str,
     dated: str,
@@ -448,16 +457,16 @@ def confirm_brand_new_agreement(
 ) -> bool:
     """Fail-closed LLM deny-gate.
 
-    No live client: drop unless LLM_DENY_GATE_REQUIRED is False (tests only).
+    No live client: drop unless the test-only skip flag is set.
     Timeout, API error, NO, doubt, missing/non-verbatim quote, name mismatch,
     name missing from its quote, or a non-binding LOI/term sheet → drop.
     """
     if not _is_live_anthropic_client(claude_client):
-        if LLM_DENY_GATE_REQUIRED:
-            logging.info("llm_deny_gate: drop reason=no_live_client")
-            return False
-        logging.info("llm_deny_gate: skip (test-only flag)")
-        return True
+        if _deny_gate_test_skip():
+            logging.info("llm_deny_gate: skip (test-only flag)")
+            return True
+        logging.info("llm_deny_gate: drop reason=no_live_client")
+        return False
     body = (item_text or filing_text or "").strip()
     if not body or not counterparty:
         logging.info("llm_deny_gate: drop reason=missing_text_or_counterparty")
@@ -4512,14 +4521,24 @@ _EARLIER_RELATION_RE = re.compile(
     r')'
 )
 _DEFINED_TERM_CHANGE_RE = re.compile(
-    r'(?i)["\u201c\u201d\u2018\u2019]'
-    r'[^"\u201c\u201d\u2018\u2019]{0,100}?'
-    r'\b(?:amend|restat|replac|supersed|renew|extend|revis|updat|'
+    r'(?i)\b(?:amend|restat|supersed|renew|extend|revis|updat|'
     r'reinstat|expand|prolong|convert|consolidat|renegotiat|refresh|'
-    r'enlarg|modif)\w*'
-    r'[^"\u201c\u201d\u2018\u2019]{0,100}?'
-    r'["\u201c\u201d\u2018\u2019]'
+    r'enlarg|modif|replac(?:e|es|ed|ing))\w*'
 )
+_QUOTED_DEFINED_TERM_RE = re.compile(
+    r'"([^"]{1,120})"'
+    r'|\u201c([^\u201d]{1,120})\u201d'
+    r'|\u2018([^\u2019]{1,120})\u2019'
+)
+
+
+def _defined_term_has_change_word(text: str) -> bool:
+    """True when a quoted defined term itself names an amended/restated deal."""
+    for m in _QUOTED_DEFINED_TERM_RE.finditer(text or ''):
+        inner = next((g for g in m.groups() if g), "")
+        if inner and _DEFINED_TERM_CHANGE_RE.search(inner):
+            return True
+    return False
 _OTHER_PARTY_IN_CLAUSE_RE = re.compile(
     r'\b(?:with|between|among)\s+'
     r'((?:[A-Z][A-Za-z0-9&.\'-]+(?:\s+(?:and|&|of|[A-Z][A-Za-z0-9&.\'-]+)){0,6})'
@@ -4601,9 +4620,9 @@ def _description_has_earlier_relationship(
         if _clause_names_other_party(sent, current_cp):
             continue
         return True
-    chg = _DEFINED_TERM_CHANGE_RE.search(masked)
-    if chg:
-        sent = _sentence_at(masked, chg.start())
+    if _defined_term_has_change_word(masked):
+        chg = _QUOTED_DEFINED_TERM_RE.search(masked)
+        sent = _sentence_at(masked, chg.start()) if chg else masked
         if not _clause_names_other_party(sent, current_cp):
             return True
     keep_years = {d.year for d in (keep_dates or []) if d}

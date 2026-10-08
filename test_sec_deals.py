@@ -19,7 +19,8 @@ sys.path.insert(0, str(Path(__file__).parent))
 import sec_deals
 
 # Production default is fail-closed. Unit tests call process_sec_deal
-# without a live client; skip the gate only here.
+# without a live client; skip the gate only here (env survives reloads).
+os.environ[sec_deals.LLM_DENY_GATE_TEST_SKIP_ENV] = "1"
 sec_deals.LLM_DENY_GATE_REQUIRED = False
 
 logging.basicConfig(level=logging.INFO)
@@ -3687,13 +3688,17 @@ class TestReview3832546:
             "counterparty_quote": "entered into a License Agreement with Willow North GmbH",
         }
         prev = sec_deals.LLM_DENY_GATE_REQUIRED
+        prev_env = os.environ.get(sec_deals.LLM_DENY_GATE_TEST_SKIP_ENV)
         try:
             sec_deals.LLM_DENY_GATE_REQUIRED = True
+            os.environ.pop(sec_deals.LLM_DENY_GATE_TEST_SKIP_ENV, None)
             assert sec_deals.confirm_brand_new_agreement(
                 body, "2026-10-01", "Willow North GmbH", filing, None,
             ) is False
         finally:
             sec_deals.LLM_DENY_GATE_REQUIRED = prev
+            if prev_env is not None:
+                os.environ[sec_deals.LLM_DENY_GATE_TEST_SKIP_ENV] = prev_env
         client.messages.create.return_value = _msg(yes_payload)
         assert sec_deals.confirm_brand_new_agreement(
             body, "2026-10-01", "Willow North GmbH", filing, client,
