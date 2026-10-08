@@ -1626,10 +1626,6 @@ def number_meaning_matches_source(num_str: str, output_context: str, source_text
         if output_is_rate and source_has_count and not source_has_rate:
             return False, f"数字 '{num_str}' 含义不匹配：单位不匹配，输出为百分比（%），原文为人数（例/名）"
     
-    # Now check for metric keyword contradictions
-    if not output_keywords:
-        return True, ""  # No recognizable metric immediately attached
-    
     source_keywords = set()
     for match in re.finditer(pattern, source_norm):
         if span_covers(match.start(), match.end(), source_id_spans):
@@ -1641,19 +1637,33 @@ def number_meaning_matches_source(num_str: str, output_context: str, source_text
     
     if not source_keywords:
         return True, ""  # Number not found with metrics in source
-    
-    # Check for contradictory pairs
-    for set1, set2 in CONTRADICTORY_METRIC_PAIRS:
-        output_has_set1 = bool(output_keywords & set1)
-        output_has_set2 = bool(output_keywords & set2)
-        source_has_set1 = bool(source_keywords & set1)
-        source_has_set2 = bool(source_keywords & set2)
-        
-        # Contradiction: output uses set1 keywords, source only has set2 (or vice versa)
-        if output_has_set1 and source_has_set2 and not source_has_set1:
-            return False, f"数字 '{num_str}' 含义不匹配：输出用于{output_keywords & set1}类指标，原文用于{source_keywords & set2}类指标"
-        if output_has_set2 and source_has_set1 and not source_has_set2:
-            return False, f"数字 '{num_str}' 含义不匹配：输出用于{output_keywords & set2}类指标，原文用于{source_keywords & set1}类指标"
+
+    # Check EACH claimed occurrence on its own. A title that mentions both
+    # safety and a 25% DCR must not poison the DCR number. Only a
+    # one-sided local window that contradicts the source is a mismatch.
+    for num_match in re.finditer(re.escape(num_core), output_context):
+        if span_covers(num_match.start(), num_match.end(), id_spans):
+            continue
+        immediate_start = max(0, num_match.start() - 16)
+        immediate_end = min(len(output_context), num_match.end() + 10)
+        local_kw = extract_metric_keywords(
+            output_context[immediate_start:immediate_end]
+        )
+        if not local_kw:
+            continue
+        for set1, set2 in CONTRADICTORY_METRIC_PAIRS:
+            loc1, loc2 = bool(local_kw & set1), bool(local_kw & set2)
+            src1, src2 = bool(source_keywords & set1), bool(source_keywords & set2)
+            if loc1 and not loc2 and src2 and not src1:
+                return False, (
+                    f"数字 '{num_str}' 含义不匹配："
+                    f"输出用于{local_kw & set1}类指标，原文用于{source_keywords & set2}类指标"
+                )
+            if loc2 and not loc1 and src1 and not src2:
+                return False, (
+                    f"数字 '{num_str}' 含义不匹配："
+                    f"输出用于{local_kw & set2}类指标，原文用于{source_keywords & set1}类指标"
+                )
     
     return True, ""
 
@@ -1752,6 +1762,25 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
     # Marketing words check on ALL text
     if MARKETING_BLOCKLIST.search(all_text):
         problems.append("文章含有营销词汇（重磅/颠覆/震撼等）")
+
+    # Identifier tokens in the output (NCT…, IL-6, CD19, …) must occur in
+    # the source. Skipping their digits as claimed numbers must not let an
+    # invented registry ID through.
+    src_id_keys = {
+        re.sub(r'[\s-]+', '', m.group(0).lower())
+        for m in _IDENTIFIER_TOKEN_RE.finditer(raw_material)
+    }
+    src_lower = raw_material.lower()
+    seen_ids: set[str] = set()
+    for match in _IDENTIFIER_TOKEN_RE.finditer(all_text):
+        tok = match.group(0)
+        key = re.sub(r'[\s-]+', '', tok.lower())
+        if key in seen_ids:
+            continue
+        seen_ids.add(key)
+        if key in src_id_keys or tok.lower() in src_lower:
+            continue
+        problems.append(f"标识符 '{tok}' 在原始材料中未找到")
     
     # Validate data_points
     norm = normalize_whitespace(raw_material)
@@ -1967,7 +1996,20 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
             found_valid_number = True
             break
 
-    source_has_standalone = bool(extract_numbers_with_context(raw_material))
+    def _is_bibliographic_number(num: str, context: str) -> bool:
+        """Dates, years and DOI fragments are not study data."""
+        ctx = (context or "").lower()
+        if re.search(r'doi|published online|volume|pages?|issn', ctx):
+            return True
+        core = extract_number_core(num) or ""
+        if re.fullmatch(r'(?:19|20)\d{2}', core):
+            return True
+        return False
+
+    source_has_standalone = any(
+        not _is_bibliographic_number(num, ctx)
+        for num, ctx in extract_numbers_with_context(raw_material)
+    )
     if source_has_standalone:
         if results_claims and not found_valid_number:
             problems.append("结果字段中的数字无法在原文中核实")
