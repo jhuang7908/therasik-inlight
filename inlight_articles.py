@@ -1253,9 +1253,9 @@ def extract_identifiers_from_source(source: str) -> set[str]:
     for match in re.finditer(r'\b[A-Z][A-Za-z0-9Δ]*\d[A-Za-z0-9Δ/-]*(?:/[A-Za-z0-9Δ/-]+)?\b', source):
         identifiers.add(match.group(0))
     
-    # Strain / line designations: a capitalized genus or strain name + number
-    # (Nissle 1917, BALB 3, etc.) — not a one-strain special case.
-    for match in re.finditer(r'\b[A-Z][a-z]{2,}\s+\d+\b', source):
+    # Strain / line designations: CapitalizedName + 3–4 digit accession
+    # (Nissle 1917). Not "was 52" / "itolizumab 18".
+    for match in re.finditer(r'\b[A-Z][a-z]{2,}\s+\d{3,4}\b', source):
         identifiers.add(match.group(0))
     
     # Drug compounds with numbers: TAK-981, TAK981
@@ -1280,7 +1280,6 @@ _IDENTIFIER_TOKEN_RE = re.compile(
     # Gene/protein/strain/compound tokens: letters + digits (Dsg2, CD14, p38, MK-25)
     r'(?<![A-Za-z0-9])[A-Za-z][A-Za-z]{0,10}-?\d+[A-Za-z0-9./-]*'
     r'|(?:NCT|RPCEC|ISRCTN|EudraCT|ACTRN|ChiCTR)\d+'
-    r'|[A-Z][a-z]{2,}\s+\d+'
     r')'
 )
 
@@ -1421,7 +1420,7 @@ def classify_noun_after(text: str, num_end: int) -> str | None:
         return NOUN_SAMPLE
     if re.match(r'[\s]*(?:mice|mouse|animals?|rats?|只)', after):
         return NOUN_ANIMAL
-    if re.match(r'[\s]*(?:组|臂|项|groups?|arms?|cohorts?)', after):
+    if re.match(r'[\s]*(?:组|臂|groups?|arms?|cohorts?)', after):
         return NOUN_GROUP
     if re.match(r'[\s]*(例|名|位|patients?|subjects?|participants?|cases?|患者|病人)', after):
         return NOUN_PATIENT
@@ -1604,7 +1603,7 @@ def _source_has_grouping(num_core: str, source: str) -> bool:
     src = source.lower()
     return bool(re.search(
         rf'(?<![a-zA-Z0-9.]){re.escape(num_core)}\s*'
-        rf'(?:groups?|arms?|cohorts?|组|臂|项|队列)|'
+        rf'(?:groups?|arms?|cohorts?|组|臂|队列)|'
         rf'(?:randomized|randomised|randomly|divided|assigned)'
         rf'.{{0,40}}(?<![a-zA-Z0-9.]){re.escape(num_core)}',
         src,
@@ -1691,7 +1690,20 @@ def number_exists_in_source(num_str: str, source_norm: str, source_identifiers: 
         return True
     if _source_has_once_or_one(num_core, ctx, raw) or _source_has_once_or_one(num_core, ctx, source_norm):
         return True
-    if re.search(r'组|臂|项', ctx) and not (
+    # N组 / 三组 is a grouping claim. 入组 / 基因组 are not.
+    claims_group = bool(re.search(
+        rf'(?:{re.escape(num_core)}|[零一二三四五六七八九十两])\s*[组臂]',
+        ctx,
+    ))
+    out_noun = None
+    id_spans_ctx = identifier_spans(ctx)
+    for m in re.finditer(re.escape(num_core), ctx):
+        if span_covers(m.start(), m.end(), id_spans_ctx):
+            continue
+        out_noun = classify_noun_after(ctx, m.end())
+        if out_noun:
+            break
+    if (out_noun == NOUN_GROUP or claims_group) and not (
         _source_has_grouping(num_core, raw) or _source_has_grouping(num_core, source_norm)
     ):
         return False
@@ -2030,14 +2042,26 @@ def check_comparison_direction(output_text: str, source_text: str) -> list[str]:
                 windows.append(src[max(0, m.start() - 48):m.end() + 48])
         if not windows:
             # Metric-only claim: "DCR更低" with no number in the sentence.
-            for _cls, kw in METRIC_CLASS_KEYWORDS:
+            # Look up every keyword of the same class (DCR ↔ disease control).
+            classes_in_sent = set()
+            sent_l = sent.lower()
+            for cls, kw in METRIC_CLASS_KEYWORDS:
                 if kw in _SHORT_METRIC_KEYWORDS:
-                    if not re.search(r'(?<![a-z])' + re.escape(kw) + r'(?![a-z])', sent.lower()):
-                        continue
-                elif kw not in sent.lower():
+                    if re.search(r'(?<![a-z])' + re.escape(kw) + r'(?![a-z])', sent_l):
+                        classes_in_sent.add(cls)
+                elif kw in sent_l:
+                    classes_in_sent.add(cls)
+            src_l = src.lower()
+            for cls, kw in METRIC_CLASS_KEYWORDS:
+                if cls not in classes_in_sent:
                     continue
-                for m in re.finditer(re.escape(kw), src.lower()):
-                    windows.append(src[max(0, m.start() - 48):m.end() + 48])
+                start = 0
+                while True:
+                    idx = src_l.find(kw, start)
+                    if idx < 0:
+                        break
+                    windows.append(src[max(0, idx - 48):idx + len(kw) + 48])
+                    start = idx + 1
         if not windows:
             continue
         src_hi = any(_DIR_HIGHER.search(w) for w in windows)
@@ -2083,10 +2107,11 @@ def extract_chinese_numbers_with_context(text: str) -> list[tuple[str, str]]:
     """
     results = []
     
-    # Chinese numerals with units, plus classifier nouns (三组, 两项, 两臂)
+    # Chinese numerals with units, plus grouping classifiers (三组, 两臂).
+    # Do not treat 一项研究 as a counted "1 item" — that is a determiner.
     cn_data_pattern = (
         r'[零一二三四五六七八九十百千万亿两]+(?:多)?'
-        r'(?:年|倍|%|％|个月|天|周|小时|例|名|位|人|剂|次|万|亿|组|项|臂|份|条|个)'
+        r'(?:年|倍|%|％|个月|天|周|小时|例|名|位|人|剂|次|万|亿|组|臂|份|条|个)'
     )
     for match in re.finditer(cn_data_pattern, text):
         cn_num = match.group(0)
@@ -2305,7 +2330,7 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
         if is_exempt_number_context(context, arabic_core):
             continue
         
-        if re.search(r'组|臂|项', cn_num) and not (
+        if re.search(r'组|臂', cn_num) and not (
             _source_has_grouping(arabic_core, source_norm_units)
             or _source_has_grouping(arabic_core, source_raw_units)
         ):
