@@ -170,9 +170,13 @@ def main() -> None:
         if articles:
             digest = (articles[0].get("lead") or articles[0].get("t") or "")[:116] + "…"
         
-        # content_source_url for "阅读原文" link - point to this week's page
-        # Using http:// since HTTPS cert is not configured yet
-        content_url = f"http://inlight.therasik.com/#archive"
+        # 阅读原文 points at this issue's lead article. HTTPS cert is not ready.
+        lead_id = articles[0].get("id") if articles else ""
+        content_url = (
+            f"http://inlight.therasik.com/#p-{lead_id}"
+            if lead_id
+            else "http://inlight.therasik.com/#archive"
+        )
         
         draft = api_json(
             f"{API}/cgi-bin/draft/add?access_token={access}",

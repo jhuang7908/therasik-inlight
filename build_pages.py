@@ -98,6 +98,9 @@ def generate_article_page(article: dict, dry_run: bool = False) -> str | None:
     
     # Check for article-specific image
     img_candidates = [
+        f"img/papers/{article_id}.jpg",
+        f"img/papers/{article_id}.png",
+        f"img/figs/{article_id}.jpg",
         f"img/{article_id}.webp",
         f"img/{article_id}.png",
         f"img/{article_id}.jpg",
