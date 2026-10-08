@@ -1826,14 +1826,23 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
             continue
         
         quote_norm_english = english_number_to_arabic(quote_norm)
-        if quote_norm not in norm and quote_norm_english not in norm_english:
+        quote_cmp = normalize_unit_spacing(quote_norm_english)
+        src_cmp = normalize_unit_spacing(norm_english)
+        if (
+            quote_norm not in norm
+            and quote_norm_english not in norm_english
+            and quote_cmp not in src_cmp
+        ):
             problems.append(f"data_point 无法回溯：{value} (quote: {quote_norm[:50]}...)")
             continue
         
-        # Check value appears in quote
+        # Check value appears in quote. Unit spacing is ignored so
+        # "100mg" matches a quote that says "100 mg".
         value_core = extract_number_core(value)
         if value_core:
-            quote_for_check = chinese_numeral_to_arabic(english_number_to_arabic(quote))
+            quote_for_check = normalize_unit_spacing(
+                chinese_numeral_to_arabic(english_number_to_arabic(quote))
+            )
             if not number_in_text_as_word_boundary(value_core, quote_for_check):
                 problems.append(f"data_point value 不在 quote 中：{value}")
     
@@ -1958,10 +1967,12 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
             found_valid_number = True
             break
 
-    if results_claims and not found_valid_number:
-        problems.append("结果字段中的数字无法在原文中核实")
-    elif not results_claims:
-        problems.append("结果字段应包含至少一个可核实的数字（来自原文）")
+    source_has_standalone = bool(extract_numbers_with_context(raw_material))
+    if source_has_standalone:
+        if results_claims and not found_valid_number:
+            problems.append("结果字段中的数字无法在原文中核实")
+        elif not results_claims:
+            problems.append("结果字段应包含至少一个可核实的数字（来自原文）")
     
     return problems
 
@@ -2466,8 +2477,9 @@ def _hard_problems(problems: list[str]) -> list[str]:
     markers = (
         "未找到", "无法回溯", "编造", "营销词汇", "新闻稿",
         "含义不匹配", "单位不匹配", "汉字", "上限", "下限",
-        "data_point", "作者", "术语翻译", "必须包含数字",
-        "必须使用阿拉伯", "过短", "过长", "结果字段",
+        "必须包含数字", "必须使用阿拉伯", "过于模糊",
+        "不是数值数据", "注册了标识符",
+        "作者", "术语翻译", "过短", "过长", "结果字段",
     )
     return [p for p in problems if any(m in p for m in markers)]
 
