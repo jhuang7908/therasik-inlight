@@ -1633,6 +1633,57 @@ class TestHoldoutGeneralRules(unittest.TestCase):
         )
         self.assertFalse(ok)
 
+    def test_listed_rate_inherits_preceding_metric(self):
+        """A later rate in a list keeps the preceding metric, not the next one.
+
+        '20% in group B, and the 1-year survival was 26%' must not treat 20% as OS.
+        """
+        from inlight_articles import closest_metric_class, number_meaning_matches_source
+
+        src = (
+            "disease control was achieved in 25% in group A and 20% in group B, "
+            "and the 1-year survival rate was 26% in group A and 15% in group B."
+        )
+        src_l = src.lower()
+        self.assertEqual(closest_metric_class(src_l, src_l.find("20%")), "dcr")
+        self.assertEqual(closest_metric_class(src_l, src_l.find("25%")), "dcr")
+        self.assertEqual(closest_metric_class(src_l, src_l.find("26%")), "os")
+        self.assertEqual(closest_metric_class(src_l, src_l.find("15%")), "os")
+
+        out = (
+            "A组疾病控制比例为25%，B组为20%。"
+            "A组1年生存率为26%，B组为15%。"
+            "目前25%与20%的疾病控制比例及26%与15%的1年生存率缺乏对照。"
+        )
+        for num in ("20%", "25%", "26%", "15%"):
+            ok, reason = number_meaning_matches_source(num, out, src)
+            self.assertTrue(ok, f"{num}: {reason}")
+
+        cn = "目前25%与20%的疾病控制比例及26%与15%的1年生存率"
+        self.assertEqual(closest_metric_class(cn, cn.find("20%")), "dcr")
+        self.assertEqual(closest_metric_class(cn, cn.find("26%")), "os")
+
+        listed = "疾病控制率A组25%、B组20%，1年生存率26%与15%。"
+        self.assertEqual(closest_metric_class(listed, listed.find("20%")), "dcr")
+        self.assertEqual(closest_metric_class(listed, listed.find("26%")), "os")
+
+        died = "A组25%的患者死亡。"
+        self.assertEqual(closest_metric_class(died, died.find("25%")), "death")
+        ok, _ = number_meaning_matches_source("25%", died, src)
+        self.assertFalse(ok)
+
+    def test_nearby_group_word_does_not_drop_a_rate(self):
+        """'两组' in the same window is not a grouping claim for 25%."""
+        from inlight_articles import number_exists_in_source, normalize_source_text
+
+        src = "disease control was achieved in 25% in group A and 20% in group B"
+        norm = normalize_source_text(src)
+        raw = normalize_source_text(src, convert_english_words=False)
+        self.assertTrue(number_exists_in_source(
+            "25%", norm, set(), "无法判断25%与20%的差别，摘要未比较两组",
+            source_raw=raw,
+        ))
+
     def test_time_and_noun_must_match(self):
         from inlight_articles import number_exists_in_source, normalize_source_text
 

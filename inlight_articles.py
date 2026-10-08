@@ -1358,6 +1358,11 @@ def source_has_equivalent_number(num_core: str, context: str, source_norm: str) 
         return True
     if re.search(r'年', ctx) and has(n * 12, r'months?|mo|个?月'):
         return True
+    # Same duration, different language: 1年 ↔ 1-year / 1 year
+    if re.search(r'年', ctx) and has(n, r'years?|yrs?|yr\b'):
+        return True
+    if re.search(r'(?i)years?|yrs?\b', ctx) and has(n, r'年'):
+        return True
     return False
 
 
@@ -1597,18 +1602,31 @@ def _source_has_once_or_one(num_core: str, context: str, source: str) -> bool:
 
 
 def _source_has_grouping(num_core: str, source: str) -> bool:
-    """N组 / N项 / N臂 must be backed by N groups/arms/cohorts in the source."""
+    """N组 / N臂 must be backed by N groups/arms/cohorts in the source."""
     if not num_core or not source:
         return False
     src = source.lower()
-    return bool(re.search(
+    if re.search(
         rf'(?<![a-zA-Z0-9.]){re.escape(num_core)}\s*'
         rf'(?:groups?|arms?|cohorts?|组|臂|队列)|'
         rf'(?:randomized|randomised|randomly|divided|assigned)'
         rf'.{{0,40}}(?<![a-zA-Z0-9.]){re.escape(num_core)}',
         src,
         re.IGNORECASE,
-    ))
+    ):
+        return True
+    try:
+        n = int(float(num_core))
+    except ValueError:
+        return False
+    if n < 2:
+        return False
+    labels = set(re.findall(r'(?:cohort|group|arm)\s*([a-z0-9])', src, re.I))
+    if len(labels) >= n:
+        return True
+    if n == 2 and re.search(r'two\s+(?:cohorts|groups|arms)|both\s+(?:cohorts|groups|arms)', src, re.I):
+        return True
+    return False
 
 
 def _noun_mismatch(num_core: str, context: str, source: str) -> bool:
@@ -1690,9 +1708,13 @@ def number_exists_in_source(num_str: str, source_norm: str, source_identifiers: 
         return True
     if _source_has_once_or_one(num_core, ctx, raw) or _source_has_once_or_one(num_core, ctx, source_norm):
         return True
-    # N组 / 三组 is a grouping claim. 入组 / 基因组 are not.
+    # 1个 / 一个 is the Chinese indefinite article, not a counted quantity.
+    if num_core == "1" and re.search(r'1\s*个|一个', ctx):
+        return True
+    # N组 / 三组 is a grouping claim only when THIS number is the count.
+    # A nearby "两组" must not poison an unrelated 25%.
     claims_group = bool(re.search(
-        rf'(?:{re.escape(num_core)}|[零一二三四五六七八九十两])\s*[组臂]',
+        rf'(?<![0-9.]){re.escape(num_core)}\s*[组臂]',
         ctx,
     ))
     out_noun = None
@@ -1763,6 +1785,10 @@ EXEMPT_NUMBER_PATTERNS = [
     r'每\s*(周|天|日|月)\s*[一二三四五六七八九十\d]+\s*次',
     r'每\s*\d+\s*(天|日|周|月)\s*一次',
     r'every\s+\d+\s+(?:days?|weeks?|months?)',
+    # Time-horizon labels: the digit in 1年生存 / 1-year survival is not a count
+    r'\d+\s*年生存',
+    r'\d+\s*[- ]\s*year survival',
+    r'[一二三四五六七八九十]\s*年生存',
     # Roman / class labels (MHC II类, class II) — not invented numbers
     r'(?:mhc|hla|class|级|类)\s*[ivxⅠ-Ⅻ]+',
     r'[ivxⅠ-Ⅻ]+\s*(?:类|期|class)',
@@ -1848,6 +1874,10 @@ METRIC_CLASS_KEYWORDS: list[tuple[str, str]] = [
     ("pfs", "无进展"),
     ("pfs", "pfs"),
     ("os", "overall survival"),
+    ("os", "1-year survival"),
+    ("os", "1 year survival"),
+    ("os", "一年生存"),
+    ("os", "1年生存"),
     ("os", "总生存"),
     ("os", "os"),
     ("dor", "duration of response"),
@@ -1914,35 +1944,133 @@ def _metric_class_for_keyword(kw: str) -> str | None:
     return None
 
 
-def closest_metric_class(text: str, num_start: int) -> str | None:
-    """Single metric class attached to this number (nearest, then longest)."""
-    if not text or num_start < 0:
-        return None
-    window_start = max(0, num_start - 40)
-    window_end = min(len(text), num_start + 24)
-    window = text[window_start:window_end]
+def _clause_around(text: str, pos: int) -> tuple[int, int]:
+    """Span of the conjunct containing pos.
+
+    Split on sentence stops and the Chinese conjunct 及 ("A及B").
+    Do not split on ASCII/Chinese commas or 、: those join listed rates
+    of the same metric ("A组25%、B组20%，1年生存率26%").
+    """
+    seps = "。！？；;\n及"
+    left = pos
+    while left > 0 and text[left - 1] not in seps:
+        left -= 1
+    right = pos
+    while right < len(text) and text[right] not in seps:
+        right += 1
+    return left, right
+
+
+def _metric_hits(text: str, start: int, end: int) -> list[tuple[int, int, str]]:
+    """Metric labels in text[start:end] as (kw_start, kw_end, class)."""
+    if start < 0:
+        start = 0
+    if end > len(text):
+        end = len(text)
+    if start >= end:
+        return []
+    window = text[start:end]
     lower = window.lower()
     found: list[tuple[int, int, str]] = []
     for cls, kw in METRIC_CLASS_KEYWORDS:
         if kw in _SHORT_METRIC_KEYWORDS:
             for m in re.finditer(r'(?<![a-z])' + re.escape(kw) + r'(?![a-z])', lower):
-                abs_pos = window_start + m.start()
-                dist = min(abs(abs_pos - num_start), abs(window_start + m.end() - num_start))
-                found.append((dist, -len(kw), cls))
+                found.append((start + m.start(), start + m.end(), cls))
         else:
-            start = 0
+            idx = 0
             while True:
-                idx = lower.find(kw, start)
-                if idx < 0:
+                hit = lower.find(kw, idx)
+                if hit < 0:
                     break
-                abs_pos = window_start + idx
-                dist = min(abs(abs_pos - num_start), abs(abs_pos + len(kw) - num_start))
-                found.append((dist, -len(kw), cls))
-                start = idx + 1
-    if not found:
+                found.append((start + hit, start + hit + len(kw), cls))
+                idx = hit + 1
+    return found
+
+
+def _number_token_end(text: str, num_start: int) -> int:
+    i = num_start
+    while i < len(text) and (text[i].isdigit() or text[i] in ",.，"):
+        i += 1
+    if i < len(text) and text[i] in "%％":
+        i += 1
+    return i
+
+
+_RIGHT_PARTICLE_RE = re.compile(
+    r"^[的为是于在\s:：]*"
+    r"(?:患者|病人|受试者|小鼠|大鼠|动物|病例|"
+    r"patients?|subjects?|recipients?|mice|mouse|rats?|animals?|cases?)?"
+    r"\s*"
+)
+# Coordinated number list only (25%与20%的). A comma is a new phrase,
+# not a list gap — otherwise 20% binds to the following 1年生存.
+_LIST_GAP_RE = re.compile(
+    r"^(?:\s|[的为是与和及、])*(?:\d+(?:\.\d+)?\s*[%％]?(?:\s|[的为是与和及、])*)*$"
+)
+
+
+def closest_metric_class(text: str, num_start: int) -> str | None:
+    """Metric class attached to this number.
+
+    Nearest-label is wrong for listed rates: in "DCR 25% and 20%, and the
+    1-year survival was 26%", 20% is closer to survival than to DCR.
+    Attachment order:
+    1. a label that begins immediately after the number (20%特异性);
+    2. a label immediately before the number, with no other number in between;
+    3. the most recent preceding label in the same clause (the 20% inherits DCR);
+    4. a following label reached only through a number list (25%与20%的疾病控制).
+    """
+    if not text or num_start < 0:
         return None
-    found.sort()
-    return found[0][2]
+    clause_start, clause_end = _clause_around(text, num_start)
+    num_end = _number_token_end(text, num_start)
+
+    # 0. Digit sits inside the metric name itself (1年生存, 1-year survival).
+    covering = [
+        h for h in _metric_hits(text, max(0, num_start - 24), min(len(text), num_end + 24))
+        if h[0] <= num_start < h[1]
+    ]
+    if covering:
+        covering.sort(key=lambda h: -(h[1] - h[0]))
+        return covering[0][2]
+
+    # 1. Tight right: metric starts after optional 的/为/是/counted-noun.
+    rest = text[num_end:clause_end]
+    skip = _RIGHT_PARTICLE_RE.match(rest)
+    attach_at = num_end + (skip.end() if skip else 0)
+    right_immediate = [
+        h for h in _metric_hits(text, attach_at, min(clause_end, attach_at + 24))
+        if h[0] == attach_at
+    ]
+    if right_immediate:
+        right_immediate.sort(key=lambda h: -(h[1] - h[0]))
+        return right_immediate[0][2]
+
+    # 2. Tight left: nearest preceding label with no other digit in the gap.
+    left_hits = _metric_hits(text, clause_start, num_start)
+    tight_left = []
+    for start, end, cls in left_hits:
+        gap = text[end:num_start]
+        if re.search(r"\d", gap):
+            continue
+        tight_left.append((num_start - end, - (end - start), cls))
+    if tight_left:
+        tight_left.sort()
+        return tight_left[0][2]
+
+    # 3. Inherit the most recent preceding label in this clause.
+    if left_hits:
+        left_hits.sort(key=lambda h: h[1])
+        return left_hits[-1][2]
+
+    # 4. Forward through a coordinated number list to a following label.
+    right_hits = _metric_hits(text, num_end, clause_end)
+    if right_hits:
+        right_hits.sort(key=lambda h: h[0])
+        start, _end, cls = right_hits[0]
+        if _LIST_GAP_RE.match(text[num_end:start]):
+            return cls
+    return None
 
 
 def closest_metric_keywords(text: str, num_start: int) -> set[str]:
@@ -2111,7 +2239,7 @@ def extract_chinese_numbers_with_context(text: str) -> list[tuple[str, str]]:
     # Do not treat 一项研究 as a counted "1 item" — that is a determiner.
     cn_data_pattern = (
         r'[零一二三四五六七八九十百千万亿两]+(?:多)?'
-        r'(?:年|倍|%|％|个月|天|周|小时|例|名|位|人|剂|次|万|亿|组|臂|份|条|个)'
+        r'(?:年|倍|%|％|个月|天|周|小时|例|名|位|人|剂|次|万|亿|组|臂)'
     )
     for match in re.finditer(cn_data_pattern, text):
         cn_num = match.group(0)
@@ -2450,6 +2578,12 @@ _GENE_ACRONYM_ALLOW = {
     "EBV", "CMV", "MHC", "HLA", "APC", "TCR", "BCR", "CAR", "NCT",
     "DOI", "PMID", "PMC", "USA", "UK", "EU", "COVID", "IFN", "TNF",
     "IL", "NK", "DC", "OS", "HR", "OR", "RR", "CI", "AE", "CR", "PR",
+    # Assay / buffer / cofactor tokens that are not gene symbols.
+    "ITC", "ATP", "GTP", "GDP", "ADP", "AMP", "NAD", "FAD", "PBS",
+    "TBS", "BSA", "DMSO", "EDTA", "SDS", "PEG", "ANOVA", "ELISA",
+    "FACS", "NMR", "HPLC", "MALDI", "SPR",
+    "RECIST", "CTCAE", "ECOG", "NYHA", "CONSORT", "STROBE", "PRISMA",
+    "IMWG", "LUGANO", "IUPAC",
 }
 
 
