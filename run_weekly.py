@@ -942,16 +942,20 @@ def write_output(draft: dict, dest: Path, week: str) -> None:
     for index, item in enumerate(draft["articles"], start=1):
         filename = f"a{index}.png"
         try:
-            draw_image(item["image_prompt"], img_dir / filename)
+            draw_image(item.get("image_prompt", ""), img_dir / filename)
             rel = f"{dest.relative_to(ROOT).as_posix()}/images/{filename}"
         except Exception:
-            logging.exception("配图失败：%s", item["title"])
+            logging.exception("配图失败：%s", item.get("title", index))
             rel = ""
-        art = site_article(item, rel)
-        art["lead"] = item["lead"]
-        art["body"] = item["body"]
-        art["discuss"] = item["discuss"]
-        articles.append(art)
+        try:
+            art = site_article(item, rel)
+            art["lead"] = item.get("lead", "")
+            art["body"] = item.get("body", "")
+            art["discuss"] = item.get("discuss", "")
+            articles.append(art)
+        except Exception:
+            logging.exception("渲染失败，跳过该篇：%s", item.get("title", index))
+            continue
     
     # Check for ID collisions
     seen_ids = {}
@@ -977,31 +981,38 @@ def write_output(draft: dict, dest: Path, week: str) -> None:
     
     # Use wechat_html_full for new format articles (with datacard), wechat_html for legacy
     has_new_format = any(art.get("datacard") or art.get("results") for art in articles)
-    if has_new_format and ARTICLE_MODULE_AVAILABLE:
-        # Transform articles to the format expected by wechat_html_full
-        wechat_articles = []
-        for art in articles:
-            wechat_art = {
-                "title": art.get("t", art.get("title", "")),
-                "tier": art.get("tier", "brief"),
-                "one_liner": art.get("one_liner", art.get("lead", "")),
-                "datacard": art.get("datacard", {}),
-                "evidence_level": art.get("evidence_level", "abstract"),
-                "background": art.get("background", ""),
-                "design": art.get("design", ""),
-                "results": art.get("results", []),
-                "mechanism": art.get("mechanism", ""),
-                "limitations": art.get("limitations", []),
-                "significance": art.get("significance", ""),
-                "authors": art.get("au", art.get("authors", "")),
-                "journal": art.get("j", art.get("journal", "")),
-                "url": art.get("url", ""),
-                "img": art.get("img", ""),
-            }
-            wechat_articles.append(wechat_art)
-        html = wechat_html_full(wechat_articles, deals, week)
-    else:
-        html = wechat_html(articles, deals, week)
+    html = ""
+    try:
+        if has_new_format and ARTICLE_MODULE_AVAILABLE:
+            wechat_articles = []
+            for art in articles:
+                try:
+                    wechat_art = {
+                        "title": art.get("t", art.get("title", "")),
+                        "tier": art.get("tier", "brief"),
+                        "one_liner": art.get("one_liner", art.get("lead", "")),
+                        "datacard": art.get("datacard", {}),
+                        "evidence_level": art.get("evidence_level", "abstract"),
+                        "background": art.get("background", ""),
+                        "design": art.get("design", ""),
+                        "results": art.get("results", []),
+                        "mechanism": art.get("mechanism", ""),
+                        "limitations": art.get("limitations", []),
+                        "significance": art.get("significance", ""),
+                        "authors": art.get("au", art.get("authors", "")),
+                        "journal": art.get("j", art.get("journal", "")),
+                        "url": art.get("url", ""),
+                        "img": art.get("img", ""),
+                    }
+                    wechat_articles.append(wechat_art)
+                except Exception:
+                    logging.exception("WeChat 条目转换失败，跳过该篇：%s", art.get("t", art.get("url", "")))
+            html = wechat_html_full(wechat_articles, deals, week)
+        else:
+            html = wechat_html(articles, deals, week)
+    except Exception:
+        logging.exception("WeChat HTML 生成失败，仍写出 articles.json")
+        html = "<section><p>本期微信稿生成失败，请见网站全文。</p></section>"
     (dest / "wechat" / "article.html").write_text(html, encoding="utf-8")
     logging.info("写出 %s", dest)
 

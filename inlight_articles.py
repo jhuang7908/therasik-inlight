@@ -2730,6 +2730,8 @@ def _validate_article_structure(art: dict, title_snippet: str) -> dict | None:
         elif not isinstance(val, dict):
             logging.error("Article field '%s' has unexpected type %s: %s", field, type(val).__name__, title_snippet)
             return None
+        if isinstance(art.get(field), dict):
+            art[field] = {k: coerce_publish_text(v) for k, v in art[field].items()}
     
     # Validate and coerce list-of-strings fields
     for field in list_string_fields:
@@ -2751,19 +2753,7 @@ def _validate_article_structure(art: dict, title_snippet: str) -> dict | None:
                 # Single string - wrap in list
                 art[field] = [val]
         elif isinstance(val, list):
-            # Ensure all items are strings
-            coerced = []
-            for item in val:
-                if isinstance(item, str):
-                    coerced.append(item)
-                elif isinstance(item, dict):
-                    # Try to extract text
-                    coerced.append(str(item.get("text", item)))
-                elif isinstance(item, (int, float)):
-                    coerced.append(str(item))
-                else:
-                    coerced.append(str(item))
-            art[field] = coerced
+            art[field] = flatten_string_list(val)
         else:
             # Single non-list value - wrap in list
             art[field] = [str(val)]
@@ -3192,8 +3182,66 @@ def _process_single_article(selection: dict, url_to_enriched: dict, config: dict
     return art
 
 
-def _escape_html(text: str) -> str:
-    """Escape HTML special characters."""
+def coerce_publish_text(val) -> str:
+    """Turn any datacard / field value into publishable text.
+
+    Nested lists are flattened. Dict and list reprs are never published.
+    """
+    if val is None or val is False:
+        return ""
+    if isinstance(val, bool):
+        return ""
+    if isinstance(val, (int, float)):
+        return str(val)
+    if isinstance(val, str):
+        s = val.strip()
+        if len(s) >= 2 and s[0] in "[({" and s[-1] in "])}":
+            try:
+                parsed = ast.literal_eval(s)
+            except (ValueError, SyntaxError):
+                return val
+            if isinstance(parsed, (list, dict, tuple)):
+                return coerce_publish_text(parsed)
+        return val
+    if isinstance(val, (list, tuple)):
+        parts = [coerce_publish_text(x) for x in val]
+        return "、".join(p for p in parts if p)
+    if isinstance(val, dict):
+        if "text" in val:
+            return coerce_publish_text(val["text"])
+        return ""
+    return str(val)
+
+
+def flatten_string_list(val) -> list[str]:
+    """Flatten nested lists/dicts into a list of strings; drop repr text."""
+    if val is None:
+        return []
+    if isinstance(val, str):
+        s = val.strip()
+        if len(s) >= 2 and s[0] in "[({" and s[-1] in "])}":
+            try:
+                parsed = ast.literal_eval(s)
+            except (ValueError, SyntaxError):
+                return [val] if val else []
+            return flatten_string_list(parsed)
+        return [val] if val else []
+    if isinstance(val, (list, tuple)):
+        out: list[str] = []
+        for item in val:
+            out.extend(flatten_string_list(item))
+        return out
+    if isinstance(val, dict):
+        text = coerce_publish_text(val)
+        return [text] if text else []
+    if isinstance(val, (int, float)):
+        return [str(val)]
+    return []
+
+
+def _escape_html(text) -> str:
+    """Escape HTML special characters after coercing any field to text."""
+    text = coerce_publish_text(text)
     if not text:
         return ""
     return (text
@@ -3406,8 +3454,11 @@ def wechat_html_full(articles: list[dict], deals: list[dict], week: str, all_val
     if articles:
         parts.append('<h2 style="border-left:4px solid #0f6b5c;padding-left:12px;margin:2em 0 1em;">学术</h2>')
         for art in articles:
-            # Don't include per-article AI disclaimer; use single footer disclaimer
-            parts.append(wechat_html_article(art, include_ai_disclaimer=False))
+            try:
+                parts.append(wechat_html_article(art, include_ai_disclaimer=False))
+            except Exception:
+                logging.exception("WeChat 单篇渲染失败，跳过：%s", art.get("title", art.get("t", "")))
+                continue
     
     # Industry deals - show as Chinese summaries, not raw English headlines
     if deals:
