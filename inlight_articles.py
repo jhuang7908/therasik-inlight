@@ -1514,6 +1514,16 @@ RATE_UNIT_PATTERNS = re.compile(r'%|％|率|rate|percent', re.IGNORECASE)
 # Short English metric tokens that would otherwise match inside longer words
 # ("os" in "survival", "cr" in "secretory").
 _SHORT_METRIC_KEYWORDS = {"os", "cr", "pr", "ae", "or", "hr", "dcr", "orr", "pfs", "dfs", "efs", "crr"}
+METRIC_KEYWORDS = [
+    "response", "缓解", "orr", "crr", "cr", "pr", "客观缓解", "完全缓解", "部分缓解",
+    "有效", "efficacy", "疾病控制", "dcr", "控制率", "disease control", "disease-control",
+    "survival", "生存", "os", "pfs", "dfs", "efs", "存活",
+    "无进展", "progression-free", "progression free", "总生存", "overall survival",
+    "一年生存", "1-year", "1 year", "1年",
+    "死亡", "mortality", "death", "致死", "died",
+    "adverse", "不良", "ae", "toxicity", "毒性", "safety", "side effect", "副作用",
+    "trae", "teae",
+]
 
 
 def extract_metric_keywords(context: str) -> set[str]:
@@ -1524,19 +1534,7 @@ def extract_metric_keywords(context: str) -> set[str]:
     context_lower = context.lower()
     keywords = set()
     
-    # Key metrics to detect
-    all_keywords = [
-        "response", "缓解", "orr", "crr", "cr", "pr", "客观缓解", "完全缓解", "部分缓解",
-        "有效", "efficacy", "疾病控制", "dcr", "控制率", "disease control", "disease-control",
-        "survival", "生存", "os", "pfs", "dfs", "efs", "存活",
-        "无进展", "progression-free", "progression free", "总生存", "overall survival",
-        "一年生存", "1-year", "1 year", "1年",
-        "死亡", "mortality", "death", "致死", "died",
-        "adverse", "不良", "ae", "toxicity", "毒性", "safety", "side effect", "副作用",
-        "trae", "teae",
-    ]
-    
-    for kw in all_keywords:
+    for kw in METRIC_KEYWORDS:
         if kw in _SHORT_METRIC_KEYWORDS:
             if re.search(r'(?<![a-z])' + re.escape(kw) + r'(?![a-z])', context_lower):
                 keywords.add(kw)
@@ -1544,6 +1542,42 @@ def extract_metric_keywords(context: str) -> set[str]:
             keywords.add(kw)
     
     return keywords
+
+
+def closest_metric_keywords(text: str, num_start: int) -> set[str]:
+    """Keywords attached to this number, preferring the closest phrase.
+
+    "A组1年无进展生存率为26%" attaches 无进展/生存, not a distant safety clause.
+    "25%的患者死亡" still picks up 死亡 after the number.
+    """
+    if not text or num_start < 0:
+        return set()
+    before = text[max(0, num_start - 24):num_start]
+    after = text[num_start:min(len(text), num_start + 12)]
+    lower = before.lower()
+    found: list[tuple[int, str]] = []
+    for kw in METRIC_KEYWORDS:
+        start = 0
+        needle = kw
+        while True:
+            if kw in _SHORT_METRIC_KEYWORDS:
+                m = re.search(r'(?<![a-z])' + re.escape(kw) + r'(?![a-z])', lower[start:])
+                if not m:
+                    break
+                idx = start + m.start()
+                found.append((idx + len(kw), kw))
+                start = idx + 1
+            else:
+                idx = lower.find(needle, start)
+                if idx < 0:
+                    break
+                found.append((idx + len(kw), kw))
+                start = idx + 1
+    if found:
+        found.sort(key=lambda x: -x[0])
+        nearest_end = found[0][0]
+        return {kw for end, kw in found if nearest_end - end <= 4}
+    return extract_metric_keywords(before[-12:] + after)
 
 
 def number_meaning_matches_source(num_str: str, output_context: str, source_text: str) -> tuple[bool, str]:
@@ -1644,11 +1678,7 @@ def number_meaning_matches_source(num_str: str, output_context: str, source_text
     for num_match in re.finditer(re.escape(num_core), output_context):
         if span_covers(num_match.start(), num_match.end(), id_spans):
             continue
-        immediate_start = max(0, num_match.start() - 16)
-        immediate_end = min(len(output_context), num_match.end() + 10)
-        local_kw = extract_metric_keywords(
-            output_context[immediate_start:immediate_end]
-        )
+        local_kw = closest_metric_keywords(output_context, num_match.start())
         if not local_kw:
             continue
         for set1, set2 in CONTRADICTORY_METRIC_PAIRS:
