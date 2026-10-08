@@ -1182,6 +1182,7 @@ def build_deal_lines(
     Rules:
     - '首付' only for kind=upfront whose quote contains 'upfront'
     - Shares can be shown only if quoted
+    - Amount labels must match deal type (no 收购对价 for license deals)
     """
     lines = []
     
@@ -1195,7 +1196,14 @@ def build_deal_lines(
                 lines.append(f"初期付款：{rendered}")
         
         elif amount.kind == AmountKind.PURCHASE_PRICE:
-            lines.append(f"收购对价：{rendered}")
+            # Use appropriate label based on deal type
+            if deal_type in (DealType.ACQUISITION, DealType.MERGER):
+                lines.append(f"收购对价：{rendered}")
+            elif deal_type == DealType.OBLIGATION_BUYOUT:
+                lines.append(f"买断金额：{rendered}")
+            else:
+                # For license/other deals, use generic payment label
+                lines.append(f"付款金额：{rendered}")
         
         elif amount.kind == AmountKind.MILESTONES_TOTAL:
             lines.append(f"里程碑：{rendered}")
@@ -1351,18 +1359,21 @@ def process_sec_deal(
             continue
         
         # Verification: amount quote must name counterparty OR be in a paragraph that names counterparty
+        # AND the amount should be in a section discussing the main deal (near type_quote)
         # Per design: "Each amount quote must name or be within the same paragraph as counterparty"
         counterparty_in_quote = match_company_whole_word(counterparty, quote)
         
         # Check if the amount quote's paragraph contains the counterparty name
         counterparty_in_same_para = False
+        amount_para_idx = -1
         if not counterparty_in_quote:
             # Find the paragraph containing this amount quote
             paragraphs = split_into_paragraphs(filing_text)
             norm_quote = normalize_whitespace(quote).lower()
-            for _, _, para_text in paragraphs:
+            for idx, (_, _, para_text) in enumerate(paragraphs):
                 norm_para = normalize_whitespace(para_text).lower()
                 if norm_quote in norm_para:
+                    amount_para_idx = idx
                     # Found the paragraph - check if counterparty is in it
                     if match_company_whole_word(counterparty, para_text):
                         counterparty_in_same_para = True
@@ -1371,6 +1382,27 @@ def process_sec_deal(
         if not counterparty_in_quote and not counterparty_in_same_para:
             logging.debug("Amount dropped: neither names counterparty nor in same paragraph: %s", quote[:50])
             continue
+        
+        # Additional check: amount quote should be contextually near the type_quote
+        # This prevents picking up amounts from unrelated transactions in the same filing
+        if type_quote:
+            type_pos = find_quote_position(type_quote, filing_text)
+            amount_pos = find_quote_position(quote, filing_text)
+            if type_pos is not None and amount_pos is not None:
+                distance = abs(amount_pos - type_pos)
+                # If amount is very far from type_quote (>10000 chars), it might be from a different transaction
+                # Allow if it's in an exhibit or press release section
+                if distance > 10000:
+                    # Check if amount is in a different Item section
+                    type_item_match = re.search(r'Item\s+\d+\.\d+', filing_text[max(0, type_pos-500):type_pos+100], re.IGNORECASE)
+                    amount_item_match = re.search(r'Item\s+\d+\.\d+', filing_text[max(0, amount_pos-500):amount_pos+100], re.IGNORECASE)
+                    if type_item_match and amount_item_match:
+                        type_item = type_item_match.group().lower()
+                        amount_item = amount_item_match.group().lower()
+                        if type_item != amount_item:
+                            logging.debug("Amount dropped: in different Item section (type: %s, amount: %s): %s", 
+                                         type_item, amount_item, quote[:50])
+                            continue
         
         try:
             kind = AmountKind(kind_str)
