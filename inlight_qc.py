@@ -31,6 +31,31 @@ PARA_SPLIT_RE = re.compile(r"(?<=[。！？\n])")
 
 MIN_RESULTS_WORDS = 1500
 MIN_RESULTS_HAN = 2000
+FULLTEXT_WINDOW = 20000
+_RESULTS_TITLE = r"results?(?:\s+and\s+discussion)?"
+_NEXT_MAJOR = r"(?:discussion|references|acknowledg|funding|conclusion|bibliography|methods)"
+LANDING_RE = re.compile(
+    r"(?i)subscribe to (?:read|access)|buy this article|"
+    r"log ?in to (?:read|access)|purchase (?:pdf|access|this article)|"
+    r"access this article|get access|this article is available to subscribers|"
+    r"full text is available to|accept (?:all )?cookies|"
+    r"news feature|news & views|research highlight|"
+    r"download pdf to view|this is a preview|"
+    r"the copyright holder for this preprint|this article is a preprint|"
+    r"full text html|subject areas?"
+)
+_PAGE_MARKERS_RE = re.compile(
+    r"(?i)<html|<body|<nav\b|authors?\s+and\s+affiliations|subject areas?|"
+    r"download pdf|full text html|the copyright holder for this preprint|"
+    r"this article is a preprint"
+)
+CHROME_HEAD_RE = re.compile(
+    r"(?is)(?:^|\n)\s*(?:references?|bibliography|acknowledg(?:e)?ments?|"
+    r"funding|author contributions?|competing interests?|ethics(?:\s+statement)?|"
+    r"supplementary(?:\s+information)?|subject index|keywords?|"
+    r"affiliations?|corresponding author|authors?\s+and\s+affiliations|"
+    r"copyright|privacy|related articles|cited by)\s*(?:\n|:)"
+)
 GEMINI_SCORE_KEYS = (
     "structure_completeness",
     "depth",
@@ -141,15 +166,161 @@ def paragraphs(text: Any) -> list[str]:
     return parts or [raw]
 
 
+def strip_page_chrome(text: str) -> str:
+    """Drop nav, authors, affiliations, references, funding, indexes, site chrome."""
+    blob = str(text or "")
+    blob = re.sub(r"(?is)<nav\b.*?</nav>", " ", blob)
+    blob = re.sub(r"(?is)<header\b.*?</header>", " ", blob)
+    blob = re.sub(r"(?is)<footer\b.*?</footer>", " ", blob)
+    blob = re.sub(
+        r"(?is)<(?:div|section|aside)[^>]*(?:id|class)=[\"'][^\"']*"
+        r"(?:nav|menu|footer|cookie|author|affiliat|reference|funding|sidebar|toolbar)"
+        r"[^\"']*[\"'][^>]*>.*?</(?:div|section|aside)>",
+        " ",
+        blob,
+    )
+    cut = CHROME_HEAD_RE.search(blob)
+    if cut:
+        blob = blob[: cut.start()]
+    return blob
+
+
+def html_visible_text(html: str) -> str:
+    raw = str(html or "")
+    raw = re.sub(r"(?is)<script[^>]*>.*?</script>", " ", raw)
+    raw = re.sub(r"(?is)<style[^>]*>.*?</style>", " ", raw)
+    raw = re.sub(r"(?is)<noscript[^>]*>.*?</noscript>", " ", raw)
+    raw = re.sub(r"(?is)<!--.*?-->", " ", raw)
+    raw = re.sub(r"(?is)<[^>]+>", " ", raw)
+    raw = raw.replace("&nbsp;", " ").replace("&amp;", "&")
+    raw = raw.replace("&lt;", "<").replace("&gt;", ">")
+    return re.sub(r"\s+", " ", raw).strip()
+
+
+def extract_results_from_html(html: str) -> str:
+    """Results body from a heading or <sec sec-type=results>. Never the whole page."""
+    if not html:
+        return ""
+    m = re.search(
+        rf'(?is)<sec[^>]*sec-type\s*=\s*["\']results["\'][^>]*>(.*?)(?:</sec>|<sec\b)',
+        html,
+    )
+    if m:
+        return html_visible_text(strip_page_chrome(m.group(1)))
+    m = re.search(
+        rf'(?is)<(?:h[1-4]|header)[^>]*>\s*(?:<[^>]+>\s*)*{_RESULTS_TITLE}'
+        rf'\s*(?:</[^>]+>\s*)*</(?:h[1-4]|header)>(.*?)'
+        rf'(?=<(?:h[1-4]|header)[^>]*>\s*(?:<[^>]+>\s*)*{_NEXT_MAJOR}|\Z)',
+        html,
+    )
+    if m:
+        return html_visible_text(strip_page_chrome(m.group(1)))
+    m = re.search(
+        rf'(?is)<(?:div|section)[^>]*(?:id|class)\s*=\s*["\'][^"\']*\bresults?\b'
+        rf'[^"\']*["\'][^>]*>(.*?)'
+        rf'(?=<(?:div|section|h[1-4])[^>]*(?:id|class|)\s*(?:=)?[^>]{{0,80}}{_NEXT_MAJOR}|\Z)',
+        html,
+    )
+    if m:
+        body = html_visible_text(strip_page_chrome(m.group(1)))
+        if english_word_count(body) >= 80:
+            return body
+    return ""
+
+
+def looks_like_whole_page(text: str) -> bool:
+    """True for HTML documents, landings, or multi-section dumps — not isolated Results."""
+    blob = str(text or "")
+    if _PAGE_MARKERS_RE.search(blob) or LANDING_RE.search(blob) or STUB_RE.search(blob):
+        return True
+    if re.search(r"(?is)</(?:p|div|section|sec|article|h[1-6])>", blob):
+        return True
+    heads = len(re.findall(
+        r"(?im)^(?:abstract|introduction|methods|discussion|references|acknowledgements?)\b",
+        blob,
+    ))
+    return heads >= 2
+
+
+def isolate_results_text(text: str) -> str:
+    """Heading/XML Results only. Empty when no Results section can be isolated."""
+    raw = str(text or "")
+    if not raw.strip():
+        return ""
+    if "<" in raw:
+        hit = extract_results_from_html(raw)
+        if hit:
+            return hit
+        if re.search(r"(?i)<(?:sec|article)\b", raw):
+            hit = extract_results_from_xml(raw)
+            if hit:
+                return hit
+        if looks_like_whole_page(raw):
+            return ""
+    if looks_like_whole_page(raw):
+        m = re.search(rf"(?im)^{_RESULTS_TITLE}\s*$", raw)
+        if not m:
+            return ""
+        body = raw[m.end():]
+        cut = re.search(rf"(?im)^{_NEXT_MAJOR}\b", body)
+        return (body[:cut.start()] if cut else body).strip()
+    return raw
+
+
+def extract_results_from_xml(xml_text: str) -> str:
+    """Results from structured JATS: sec-type=results or a Results title."""
+    if not xml_text:
+        return ""
+    import xml.etree.ElementTree as ET
+
+    try:
+        root = ET.fromstring(xml_text)
+    except ET.ParseError:
+        return ""
+    sections: list[str] = []
+    for sec in root.iter("sec"):
+        sec_type = (sec.get("sec-type") or "").lower()
+        title_elem = sec.find("title")
+        title = ""
+        if title_elem is not None and (title_elem.text or "").strip():
+            title = title_elem.text.strip().lower()
+        if "results" in sec_type or title == "results" or title.startswith("results"):
+            parts = ["".join(p.itertext()).strip() for p in sec.iter("p")]
+            parts = [p for p in parts if p]
+            if parts:
+                sections.append(" ".join(parts))
+    return strip_page_chrome("\n\n".join(sections))
+
+
+def is_landing_or_chrome(text: str) -> bool:
+    blob = str(text or "")
+    if LANDING_RE.search(blob) or STUB_RE.search(blob):
+        return True
+    # Long reference list / author index without experimental prose
+    if len(re.findall(r"(?i)\(\d{4}\)", blob)) >= 25 and english_word_count(blob) < 4000:
+        return True
+    if re.search(r"(?i)\breferences\b", blob) and not re.search(r"(?i)\bresults\b", blob):
+        if english_word_count(blob) < MIN_RESULTS_WORDS:
+            return True
+    return False
+
+
 def is_real_results_text(text: str) -> bool:
-    """True only for real Results prose, not a landing page / abstract / stub."""
+    """True only for isolated Results prose, never a whole landing page."""
     if not text or not str(text).strip():
         return False
-    blob = str(text)
+    raw = str(text)
+    if looks_like_whole_page(raw):
+        blob = isolate_results_text(raw)
+        if not blob:
+            return False
+    else:
+        blob = raw
+    blob = strip_page_chrome(blob)
+    if is_landing_or_chrome(blob):
+        return False
     words = english_word_count(blob)
     han = han_len(blob)
-    if STUB_RE.search(blob) and words < 3000:
-        return False
     if words >= MIN_RESULTS_WORDS:
         return True
     if han >= MIN_RESULTS_HAN and (words + han) >= MIN_RESULTS_WORDS:
@@ -171,6 +342,8 @@ def record_fulltext(
     source_label: str = "",
 ) -> bool:
     """Set evidence_level=fulltext only when Results text is real. Mutates item."""
+    if looks_like_whole_page(results):
+        results = isolate_results_text(results)
     if not is_real_results_text(results):
         words = english_word_count(results or "")
         if results:
@@ -178,7 +351,7 @@ def record_fulltext(
                 f"rejected non-Results/stub ({words} words) from {source_label or 'source'}"
             )
         return False
-    item.fulltext_results = (results or "")[:20000]
+    item.fulltext_results = (results or "")[:FULLTEXT_WINDOW]
     if methods:
         item.methods_design = methods[:4000]
     if figs:
@@ -279,21 +452,46 @@ def apply_extra_env_gemini_key(config: dict | None = None) -> bool:
     return False
 
 
+_MECH_HINT = re.compile(
+    r"(?i)pathway|receptor|bind|ligand|signal|phosphoryl|transduc|"
+    r"engag|synapse|internali|traffick|caspase|apoptos|cytokine|"
+    r"antibody|car-?t|tcr|checkpoint|antigen|epitope|nucleosome|"
+    r"机制|通路|受体|结合|信号|磷酸化"
+)
+
+
+def _mechanism_subject(results_text: str, mechanism: str) -> str:
+    """Subject from verified mechanism prose, not the first words of a fetch dump."""
+    stop = {
+        "this", "that", "with", "from", "were", "been", "have",
+        "study", "result", "results", "using", "these", "those", "into",
+        "graphical", "abstract", "outcome", "section", "http", "https",
+        "doi", "pmc", "copyright", "author", "authors",
+    }
+    parts: list[str] = []
+    mech = str(mechanism or "").strip()
+    if mech:
+        parts.append(mech)
+    for sent in re.split(r"(?<=[。．.!?])\s+", str(results_text or "")):
+        if _MECH_HINT.search(sent):
+            parts.append(sent)
+    blob = " ".join(parts) if parts else mech
+    words = [w for w in WORD_RE.findall(blob) if len(w) >= 4 and w.lower() not in stop]
+    if words:
+        return ", ".join(words[:8])
+    han = HAN_RE.findall(mech)
+    if len(han) >= 8:
+        return mech[:80]
+    return "cellular signaling cascade"
+
+
 def mechanism_image_prompt(
     results_text: str,
     mechanism: str = "",
     placement_index: int | None = None,
 ) -> str:
-    """House-style mechanism figure prompt from full-text Results, not the paper abstract."""
-    blob = f"{results_text or ''} {mechanism or ''}"
-    words = [w for w in WORD_RE.findall(blob) if len(w) >= 4]
-    stop = {
-        "this", "that", "with", "from", "were", "been", "have", "that",
-        "study", "result", "results", "using", "these", "those", "into",
-        "graphical", "abstract",
-    }
-    keys = [w for w in words if w.lower() not in stop][:8]
-    subject = ", ".join(keys) if keys else "cellular signaling cascade"
+    """House-style figure from the article's mechanism statements, not fetch chrome."""
+    subject = _mechanism_subject(results_text, mechanism)
     if placement_index is None:
         placement_index = sum(ord(c) for c in subject)
     placement = GOLDEN_PLACEMENTS[placement_index % len(GOLDEN_PLACEMENTS)]
@@ -404,23 +602,33 @@ def verified_data_points(art: dict, source: str) -> list[dict]:
 
 
 def comparable_verified_points(art: dict, source: str) -> list[dict]:
-    """≥2 verified points that share a unit or meaning, for a code-drawn chart."""
+    """True like-for-like pairs only (same endpoint, X% vs Y%). Else []."""
     verified = verified_data_points(art, source)
     groups: dict[str, list[dict]] = {}
     for dp in verified:
         meaning = str(dp.get("meaning") or "").strip().lower()
         value = str(dp.get("value") or "")
-        unit = ""
-        m = re.search(r"(%|％|例|名|mg|kg|个月|周|天|年|倍)", value)
-        if m:
-            unit = m.group(1)
-        key = unit or meaning
+        quote = str(dp.get("source_quote") or "")
+        unit_m = re.search(r"(%|％|例|名|mg|kg|个月|周|天|年|倍)", value)
+        if not unit_m:
+            continue
+        unit = unit_m.group(1)
+        vs_hit = bool(re.search(r"(?i)\bvs\.?\b|versus|相比|对照|对比|control|placebo", f"{meaning} {quote} {value}"))
+        meaning_key = re.sub(r"(?i)^(对照|control|placebo)\s*", "", meaning)
+        meaning_key = re.sub(r"(?i)(对照|control|placebo)$", "", meaning_key).strip()
+        key = f"{meaning_key}|{unit}" if meaning_key else ""
         if not key:
             continue
+        dp = dict(dp)
+        dp["_unit"] = unit
+        dp["_vs"] = vs_hit
         groups.setdefault(key, []).append(dp)
     for pts in groups.values():
-        if len(pts) >= 2:
-            return pts
+        if len(pts) < 2:
+            continue
+        if any(p.get("_vs") for p in pts) or len({str(p.get("value")) for p in pts}) >= 2:
+            if all(p.get("source_quote") for p in pts):
+                return pts
     return []
 
 
@@ -432,26 +640,35 @@ def render_data_chart_svg(points: list[dict], title: str = "") -> str:
         m = re.search(r"(\d+(?:\.\d+)?)", raw.replace(",", ""))
         if not m:
             continue
-        label = str(dp.get("meaning") or raw)[:12]
-        parsed.append((label, float(m.group(1))))
+        unit = str(dp.get("_unit") or "")
+        if not unit:
+            um = re.search(r"(%|％|例|名|mg|kg|个月|周|天|年|倍)", raw)
+            unit = um.group(1) if um else ""
+        n_m = re.search(r"(?i)(?:n\s*=\s*|例)\s*(\d+)", f"{raw} {dp.get('meaning') or ''} {dp.get('source_quote') or ''}")
+        n_lab = f" n={n_m.group(1)}" if n_m else ""
+        src_m = re.search(r"(?i)((?:fig(?:ure)?|table|图|表)\s*[\w\d.-]+)", str(dp.get("source_quote") or ""))
+        src_lab = f" {src_m.group(1)}" if src_m else ""
+        label = f"{str(dp.get('meaning') or raw)[:10]}{n_lab}"
+        parsed.append((label, float(m.group(1)), unit, src_lab))
     if len(parsed) < 2:
         return ""
-    width, height, pad = 360, 180, 36
-    vmax = max(v for _, v in parsed) or 1
+    width, height, pad = 360, 200, 36
+    vmax = max(v for _, v, _, _ in parsed) or 1
     bar_w = (width - 2 * pad) / len(parsed)
     bars = []
-    for i, (label, val) in enumerate(parsed):
-        h = max(4, (val / vmax) * (height - 2 * pad))
+    src_note = next((s for _, _, _, s in parsed if s), "")
+    for i, (label, val, unit, _src) in enumerate(parsed):
+        h = max(4, (val / vmax) * (height - 2 * pad - 16))
         x = pad + i * bar_w + 8
         y = height - pad - h
         bars.append(
             f'<rect x="{x:.1f}" y="{y:.1f}" width="{bar_w-16:.1f}" height="{h:.1f}" fill="#0F6B5C"/>'
-            f'<text x="{x + (bar_w-16)/2:.1f}" y="{height-12}" text-anchor="middle" '
+            f'<text x="{x + (bar_w-16)/2:.1f}" y="{height-14}" text-anchor="middle" '
             f'font-size="10" fill="#5C6B67">{_svg_escape(label)}</text>'
             f'<text x="{x + (bar_w-16)/2:.1f}" y="{y-4:.1f}" text-anchor="middle" '
-            f'font-size="10" fill="#0F6B5C">{val:g}</text>'
+            f'font-size="10" fill="#0F6B5C">{val:g}{_svg_escape(unit)}</text>'
         )
-    cap = _svg_escape(title or "核对后的关键对比")
+    cap = _svg_escape((title or "核对后的关键对比") + src_note)
     return (
         f'<svg class="data-chart" viewBox="0 0 {width} {height}" '
         f'xmlns="http://www.w3.org/2000/svg" role="img" aria-label="{cap}">'
@@ -562,10 +779,10 @@ Pass requires every score >= 7 and factual_mismatch false.
 Compare the article to the FULL TEXT excerpt. Flag any number or claim not in the excerpt.
 
 ## Article
-{drafted[:12000]}
+{drafted[:FULLTEXT_WINDOW]}
 
 ## Full text excerpt
-{(fulltext or "")[:12000]}
+{(fulltext or "")[:FULLTEXT_WINDOW]}
 """
     try:
         raw = _gemini_generate(prompt, model, key)

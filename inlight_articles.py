@@ -171,6 +171,10 @@ def pipeline_targets(config: dict | None) -> dict:
 
 
 _PUBLISHER_MARKERS = (
+    ("biorxiv", ("biorxiv",)),
+    ("medrxiv", ("medrxiv",)),
+    ("pmc", ("pmc.ncbi", "europepmc", "nih.gov/pmc")),
+    ("pubmed", ("pubmed", "nih.gov")),
     ("nature", ("nature", "10.1038", "nature.com")),
     ("cell", ("cell.com", "cell press", "cell ")),
     ("science", ("science.org", "sciencemag", "science ")),
@@ -178,10 +182,11 @@ _PUBLISHER_MARKERS = (
     ("nejm", ("nejm", "new england journal")),
     ("wiley", ("wiley", "onlinelibrary")),
     ("springer", ("springer", "link.springer")),
-    ("biorxiv", ("biorxiv",)),
-    ("medrxiv", ("medrxiv",)),
-    ("pubmed", ("pubmed", "nih.gov")),
+    ("plos", ("plos", "plosone", "plos.org")),
+    ("elife", ("elifesciences", "elife")),
+    ("frontiers", ("frontiersin",)),
 )
+_OA_FAMILIES = ("biorxiv", "medrxiv", "pmc", "plos", "elife")
 
 
 def publisher_family(row: dict | None) -> str:
@@ -200,19 +205,38 @@ def publisher_family(row: dict | None) -> str:
     return host or "other"
 
 
+def _oa_pref_key(row: dict) -> tuple[int, int]:
+    fam = publisher_family(row)
+    url = str(row.get("url") or "").lower()
+    src = str(row.get("source") or "").lower()
+    oa = (
+        fam in _OA_FAMILIES
+        or "pmc" in url
+        or "biorxiv" in url
+        or "medrxiv" in url
+        or "europepmc" in url
+        or "open" in src
+        or "elife" in url
+        or "plos" in url
+    )
+    return (0 if oa else 1, 0)
+
+
 def balance_academic_candidates(rows: list[dict], n: int) -> list[dict]:
-    """Round-robin by publisher family before applying the candidate cap."""
+    """Round-robin by publisher family before the cap; OA families first."""
     if n <= 0 or len(rows) <= n:
         return list(rows)
     from collections import defaultdict, deque
 
+    indexed = list(rows)
     buckets: dict[str, deque] = defaultdict(deque)
     order: list[str] = []
-    for row in rows:
+    for row in sorted(indexed, key=_oa_pref_key):
         fam = publisher_family(row)
         if fam not in buckets:
             order.append(fam)
         buckets[fam].append(row)
+    order = [f for f in order if f in _OA_FAMILIES] + [f for f in order if f not in _OA_FAMILIES]
     out: list[dict] = []
     while len(out) < n and any(buckets.values()):
         progressed = False
@@ -380,9 +404,11 @@ def extract_sections_from_xml(xml_text: str, section_names: tuple[str, ...]) -> 
     
     Uses custom text extraction to properly handle nested elements like <sup>, <italic>.
     Example: '5 × 10<sup>6</sup> cells' becomes '5 × 10⁶ cells'.
+    Results prefer sec-type=results or a Results title; never the whole document.
     """
     if not xml_text:
         return ""
+    want = {n.lower() for n in section_names}
     try:
         root = ET.fromstring(xml_text)
     except ET.ParseError:
@@ -390,15 +416,19 @@ def extract_sections_from_xml(xml_text: str, section_names: tuple[str, ...]) -> 
     
     sections = []
     for sec in root.iter("sec"):
+        sec_type = (sec.get("sec-type") or "").lower()
         title_elem = sec.find("title")
-        if title_elem is not None and title_elem.text:
-            title = title_elem.text.strip().lower()
-            if any(name.lower() in title for name in section_names):
-                text_parts = []
-                for p in sec.iter("p"):
-                    para_text = element_text_with_superscripts(p).strip()
-                    if para_text:
-                        text_parts.append(para_text)
+        title = (title_elem.text or "").strip().lower() if title_elem is not None else ""
+        is_results = "results" in want and (
+            "results" in sec_type or title == "results" or title.startswith("results")
+        )
+        if is_results or sec_type in want or any(name in title for name in want):
+            text_parts = []
+            for p in sec.iter("p"):
+                para_text = element_text_with_superscripts(p).strip()
+                if para_text:
+                    text_parts.append(para_text)
+            if text_parts:
                 sections.append(" ".join(text_parts))
     return "\n\n".join(sections)
 
@@ -579,7 +609,9 @@ def fetch_biorxiv_record(url: str) -> dict:
 
 
 def scrape_biorxiv_fulltext(url: str) -> str:
-    """Open HTML full text from a bioRxiv/medRxiv article page (no paywall)."""
+    """Results section from a bioRxiv/medRxiv HTML full text. Never the landing page."""
+    from inlight_qc import extract_results_from_html, is_real_results_text
+
     if "biorxiv.org" not in url and "medrxiv.org" not in url:
         return ""
     page = url.split("?")[0].rstrip("/")
@@ -591,9 +623,16 @@ def scrape_biorxiv_fulltext(url: str) -> str:
             continue
         seen.add(cand)
         data = _http_get(cand)
-        text = _html_visible_text(data)
-        if len(text) >= 800:
-            return text
+        if not data:
+            continue
+        try:
+            html = data.decode("utf-8", errors="ignore")
+        except Exception:
+            continue
+        text = extract_results_from_html(html)
+        if is_real_results_text(text):
+            from inlight_qc import FULLTEXT_WINDOW
+            return text[:FULLTEXT_WINDOW]
     return ""
 
 
@@ -722,8 +761,8 @@ def unpaywall_oa_url(doi: str) -> str:
 
 
 def fetch_oa_fulltext(oa_url: str) -> str:
-    """Results-like prose from a public OA HTML page. No login, no paywall bypass."""
-    from inlight_qc import is_real_results_text
+    """Results section from a public OA HTML page. Never the whole landing page."""
+    from inlight_qc import extract_results_from_html, is_real_results_text, FULLTEXT_WINDOW
 
     if not oa_url or not oa_url.startswith("http"):
         return ""
@@ -736,13 +775,8 @@ def fetch_oa_fulltext(oa_url: str) -> str:
         html = data.decode("utf-8", errors="ignore")
     except Exception:
         return ""
-    section = re.search(
-        r"(?is)<(?:h[1-3]|div|section)[^>]*>\s*results?\s*</(?:h[1-3]|div|section)>(.*?)(?:<(?:h[1-3]|div|section)[^>]*>\s*(?:discussion|references|acknowledg))",
-        html,
-    )
-    chunk = section.group(1) if section else html
-    text = _html_visible_text(chunk.encode("utf-8", errors="ignore"))
-    return text[:20000] if is_real_results_text(text) else ""
+    text = extract_results_from_html(html)
+    return text[:FULLTEXT_WINDOW] if is_real_results_text(text) else ""
 
 
 def fetch_press_coverage(title: str, doi: str) -> str:
@@ -835,11 +869,16 @@ def enrich_item(row: dict) -> EnrichedItem:
         if item.pmcid and core.get("isOpenAccess") == "Y":
             xml = epmc_fulltext_xml(item.pmcid)
             if xml:
-                from inlight_qc import record_fulltext
-                results = extract_sections_from_xml(xml, ("Results", "Discussion"))[:20000]
+                from inlight_qc import record_fulltext, FULLTEXT_WINDOW
+                results = extract_sections_from_xml(xml, ("Results",))
                 figs = extract_fig_captions_from_xml(xml)
                 methods = extract_design_methods_from_xml(xml)
-                record_fulltext(item, results, methods=methods, figs=figs, source_label=f"PMC {item.pmcid}")
+                if record_fulltext(item, results, methods=methods, figs=figs, source_label=f"PMC {item.pmcid}"):
+                    discussion = extract_sections_from_xml(xml, ("Discussion",))
+                    if discussion:
+                        item.fulltext_results = (
+                            (item.fulltext_results or "") + "\n\n" + discussion
+                        )[:FULLTEXT_WINDOW]
     
     # Collect every public abstract and keep the longest BEFORE the
     # 1200-character deep-tier gate. A short EPMC teaser must not hide
@@ -1146,6 +1185,26 @@ ARTICLE_TOOL_SCHEMA = {
 }
 
 
+def _triage_field_map(config: dict | None) -> dict:
+    from inlight_qc import acir_strict
+    if acir_strict(config):
+        from inlight_fields import FIELDS as NEW_FIELDS
+        return dict(NEW_FIELDS)
+    return dict(FIELDS)
+
+
+def _triage_field_rules(config: dict | None) -> str:
+    from inlight_qc import acir_strict
+    if acir_strict(config):
+        from inlight_fields import FIELD_PROMPT_RULES
+        return FIELD_PROMPT_RULES
+    return (
+        "分类基于研究的主要对象，而非使用的工具。\n"
+        "- 类器官工作不得归入动物模型。\n"
+        "- 肿瘤类器官资源库/药敏归精准肿瘤（生产字段 f9）。\n"
+    )
+
+
 def build_triage_prompt(items: list[EnrichedItem], config: dict) -> str:
     """Build prompt for triage stage."""
     t = pipeline_targets(config)
@@ -1170,6 +1229,7 @@ def build_triage_prompt(items: list[EnrichedItem], config: dict) -> str:
             "results_words": (item.sections_read or {}).get("results", {}).get("words", 0),
             "abstract_preview": item.abstract[:500] if item.abstract else item.rss_summary[:500],
         })
+    items_json.sort(key=lambda r: (0 if r.get("has_fulltext") else 1))
 
     if max_brief:
         brief_rule = (
@@ -1201,9 +1261,11 @@ def build_triage_prompt(items: list[EnrichedItem], config: dict) -> str:
 
 ## 领域分类
 
-{json.dumps(FIELDS, ensure_ascii=False)}
+{json.dumps(_triage_field_map(config), ensure_ascii=False)}
 
-分类基于研究的主要对象，而非使用的工具。
+{_triage_field_rules(config)}
+
+不属于以上任一领域的条目选 field=none，不要硬塞到最接近的领域。
 
 调用 submit_triage 工具提交选题结果。
 
@@ -1238,6 +1300,7 @@ def _article_prompt_abstract(item: EnrichedItem) -> str:
 
 def build_article_prompt(item: EnrichedItem, tier: str) -> str:
     """Build prompt for single article drafting."""
+    from inlight_qc import FULLTEXT_WINDOW
     return f"""你是「前沿追踪」的科学编辑。下面是一篇论文的可核实材料，请据此写一篇中文解读。
 
 ## 不可违反的规则
@@ -1315,7 +1378,7 @@ DOI / 链接：{item.url}
 {_article_prompt_abstract(item) if item.evidence_level != "fulltext" else "（深度解读以全文 Results 为准，摘要仅供对照）"}
 
 全文结果与讨论（仅在 evidence_level=fulltext 时提供，必须作为数字与机制的唯一依据）：
-{item.fulltext_results[:15000] if item.evidence_level == "fulltext" and item.fulltext_results else '无'}
+{item.fulltext_results[:FULLTEXT_WINDOW] if item.evidence_level == "fulltext" and item.fulltext_results else '无'}
 
 图注（若有）：
 {item.fig_captions[:4000] if item.evidence_level == "fulltext" and item.fig_captions else '无'}
@@ -1666,6 +1729,8 @@ _IDENTIFIER_TOKEN_RE = re.compile(
     r'(?i)(?:'
     # Gene/protein/strain/compound tokens: letters + digits (Dsg2, CD14, p38, MK-25)
     r'(?<![A-Za-z0-9])[A-Za-z][A-Za-z]{0,10}-?\d+[A-Za-z0-9./-]*'
+    # Leading-digit names: 4-1BB, 4-1BBL
+    r'|(?<![A-Za-z0-9])\d+-\d+[A-Za-z]{1,8}'
     r'|(?:NCT|RPCEC|ISRCTN|EudraCT|ACTRN|ChiCTR)\d+'
     r')'
 )
@@ -2110,16 +2175,12 @@ def number_exists_in_source(num_str: str, source_norm: str, source_identifiers: 
         return True
     # N组 / 三组 is a grouping claim only when THIS number is the count.
     # A nearby "两组" must not poison an unrelated 25%.
+    # Only this number + 组/臂 is a grouping claim. Nearby 一组/两组
+    # must not poison an unrelated rate or count.
     claims_group = bool(re.search(
         rf'(?<![0-9.]){re.escape(num_core)}\s*[组臂]',
         ctx_cls,
-    )) or bool(re.search(
-        rf'(?:[零一二三四五六七八九十两]+)\s*[组臂]',
-        ctx,
-    ) and chinese_numeral_to_arabic(re.search(
-        rf'([零一二三四五六七八九十两]+)\s*[组臂]',
-        ctx,
-    ).group(1)) == num_core)
+    ))
     out_noun = None
     id_spans_ctx = identifier_spans(ctx_cls)
     for m in re.finditer(re.escape(num_core), ctx_cls):
@@ -2630,10 +2691,15 @@ def check_comparison_direction(output_text: str, source_text: str) -> list[str]:
             continue
         src_hi = any(_DIR_HIGHER.search(w) for w in windows)
         src_lo = any(_DIR_LOWER.search(w) for w in windows)
-        if hi and src_lo and not src_hi:
+        lower_better = bool(re.search(
+            r'(?i)lower is better|越小越好|越低越好|毒性|ae|不良反应|'
+            r'肿瘤负荷|residual|safer|less toxicity|grade\s*[≥>=]?\s*\d',
+            sent,
+        ))
+        if hi and src_lo and not src_hi and not lower_better:
             problems.append(f"比较方向不匹配：输出写更高/延长，原文为更低/缩短（{sent.strip()[:40]}）")
             break
-        if lo and src_hi and not src_lo:
+        if lo and src_hi and not src_lo and not lower_better:
             problems.append(f"比较方向不匹配：输出写更低/缩短，原文为更高/延长（{sent.strip()[:40]}）")
             break
     return problems
@@ -2672,11 +2738,10 @@ def extract_chinese_numbers_with_context(text: str) -> list[tuple[str, str]]:
     """
     results = []
     
-    # Chinese numerals with units, plus grouping classifiers (三组, 两臂).
-    # Do not treat 一项研究 as a counted "1 item" — that is a determiner.
+    # Chinese numerals with units. 一组/两组 are grouping words, not data.
     cn_data_pattern = (
         r'[零一二三四五六七八九十百千万亿两]+(?:多)?'
-        r'(?:年|倍|%|％|个月|天|周|小时|例|名|位|人|剂|次|万|亿|组|臂)'
+        r'(?:年|倍|%|％|个月|天|周|小时|例|名|位|人|剂|次|万|亿)'
     )
     for match in re.finditer(cn_data_pattern, text):
         cn_num = match.group(0)
@@ -2693,8 +2758,9 @@ def _is_qualitative_datapoint(value: str, meaning: str) -> bool:
     blob = f"{value} {meaning}"
     return bool(re.search(
         r'(?i)[ivxⅠ-Ⅻ]+期|phase\s*[ivx]|wild[- ]type|knock[- ]?out|'
-        r'genotype|biomarker|'
-        r'阳性|阴性|野生型|突变型|组织分型|瘤种|内型|分型',
+        r'genotype|biomarker|high|low|mild|moderate|severe|'
+        r'阳性|阴性|野生型|突变型|组织分型|瘤种|内型|分型|'
+        r'高|低|轻|中|重',
         blob,
     ))
 
@@ -2710,7 +2776,9 @@ def _invented_numeric_range(output: str, source: str) -> list[str]:
     ):
         a, b, unit = m.group(1), m.group(2), m.group(3) or ""
         window = output[max(0, m.start() - 16):m.end() + 12]
-        if not re.search(r'(?i)CI|置信|剂量|随访|个月|周|天|年|mg|range|interval', window):
+        if not re.search(r'(?i)CI|置信|剂量|随访|个月|周|天|年|mg|range|interval|至|到', window):
+            continue
+        if re.search(r'(?i)CD\d|IL-?\d|HLA|NCT|p38|MK-\d', window):
             continue
         pat = re.compile(
             rf'(?<![0-9.]){re.escape(a)}\s*[-–—~to至到]\s*{re.escape(b)}',
@@ -2760,8 +2828,11 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
         *(_text_chunks(art.get("limitations"))),
     ]
     datacard = art.get("datacard", {})
+    _SYSTEM_NOTE_KEYS = {"read_note", "citation", "source_trace", "url", "doi"}
     if isinstance(datacard, dict):
-        for field_val in datacard.values():
+        for field_key, field_val in datacard.items():
+            if field_key in _SYSTEM_NOTE_KEYS:
+                continue
             if isinstance(field_val, str):
                 all_text_parts.append(field_val)
     elif isinstance(datacard, str):
@@ -2795,6 +2866,8 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
         if key in seen_ids:
             continue
         seen_ids.add(key)
+        if re.match(r'(?i)(?:10\.\d{4,}/|pmc\d+|pmid\d*|doi$)', key):
+            continue
         if key in src_id_keys or tok.lower() in src_lower:
             continue
         problems.append(f"标识符 '{tok}' 在原始材料中未找到")
@@ -3031,7 +3104,7 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
     def _is_bibliographic_number(num: str, context: str) -> bool:
         """Dates, years and DOI fragments are not study data."""
         ctx = (context or "").lower()
-        if re.search(r'doi|published online|volume|pages?|issn', ctx):
+        if re.search(r'doi|published online|volume|pages?|issn|pmcid|pmid|核对记录|pmc\d+', ctx):
             return True
         core = extract_number_core(num) or ""
         if re.fullmatch(r'(?:19|20)\d{2}', core):
@@ -3333,6 +3406,7 @@ def span_exists_in_source(span: str, source: str) -> bool:
 
 
 def build_claim_audit_prompt(art: dict, raw_material: str, item: EnrichedItem | None) -> str:
+    from inlight_qc import FULLTEXT_WINDOW
     meta = []
     if item:
         meta.append(f"title: {item.title}")
@@ -3366,15 +3440,15 @@ def build_claim_audit_prompt(art: dict, raw_material: str, item: EnrichedItem | 
 
 ## 来源
 
-{chr(10).join(meta) if meta else source[:12000]}
+{chr(10).join(meta) if meta else source[:FULLTEXT_WINDOW]}
 
 ## 来源全文（校验用）
 
-{source[:12000]}
+{source[:FULLTEXT_WINDOW]}
 
 ## 待审解读
 
-{drafted[:12000]}
+{drafted[:FULLTEXT_WINDOW]}
 """
 
 
@@ -3421,10 +3495,14 @@ def verify_article_claims(
 
         client = Anthropic()
         model = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5-5")
-        message = client.messages.create(
+        tools = [CLAIM_AUDIT_TOOL]
+        if not fail_closed:
+            tools.append(_CLAIM_AUDIT_HARNESS_TOOL)
+        message = _claude_create(
+            client,
             model=model,
             max_tokens=4000,
-            tools=[CLAIM_AUDIT_TOOL, _CLAIM_AUDIT_HARNESS_TOOL],
+            tools=tools,
             tool_choice={"type": "auto"},
             messages=[{"role": "user", "content": build_claim_audit_prompt(art, raw_material, item)}],
         )
@@ -3501,6 +3579,9 @@ def triage_items(items: list[EnrichedItem], config: dict) -> list[dict]:
     Returns list of {url, tier, field} dicts.
     """
     from anthropic import Anthropic
+    from inlight_qc import item_has_real_fulltext
+
+    items = sorted(items, key=lambda it: (0 if item_has_real_fulltext(it) else 1))
     
     prompt = build_triage_prompt(items, config)
     model = os.environ.get("ANTHROPIC_TRIAGE_MODEL", os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5-5"))
@@ -3508,10 +3589,11 @@ def triage_items(items: list[EnrichedItem], config: dict) -> list[dict]:
     logging.info("Triage: calling %s for %d items", model, len(items))
     
     client = Anthropic()
-    message = client.messages.create(
+    message = _claude_create(
+        client,
         model=model,
         max_tokens=4000,
-        tools=[TRIAGE_TOOL_SCHEMA],
+        tools=_triage_tools_for(config),
         tool_choice={"type": "auto"},
         messages=[{"role": "user", "content": prompt}],
     )
@@ -3524,6 +3606,81 @@ def triage_items(items: list[EnrichedItem], config: dict) -> list[dict]:
     
     logging.warning("Triage did not return tool_use, using fallback")
     return []
+
+
+def _claude_create(client, **kwargs):
+    """messages.create compatible with anthropic 1.12.0 (stream or ≤8192 tokens)."""
+    kwargs.pop("temperature", None)
+    max_tok = int(kwargs.get("max_tokens") or 0)
+
+    def _create(**kw):
+        return client.messages.create(**kw)
+
+    def _stream(**kw):
+        stream_fn = getattr(client.messages, "stream", None)
+        if callable(stream_fn):
+            with stream_fn(**kw) as stream:
+                return stream.get_final_message()
+        stream = client.messages.create(**kw, stream=True)
+        if hasattr(stream, "get_final_message"):
+            return stream.get_final_message()
+        final = None
+        for event in stream:
+            if getattr(event, "message", None) is not None:
+                final = event.message
+            elif getattr(event, "type", None) == "message":
+                final = event
+        if final is not None:
+            return final
+        raise RuntimeError("Claude streaming returned no message")
+
+    if max_tok <= 8192:
+        try:
+            return _create(**kwargs)
+        except Exception as exc:
+            if "streaming is required" not in str(exc).lower():
+                raise
+            return _stream(**kwargs)
+    try:
+        return _stream(**kwargs)
+    except Exception:
+        small = dict(kwargs)
+        small["max_tokens"] = 8192
+        return _create(**small)
+
+
+def _article_tools_for(config: dict | None) -> list[dict]:
+    from inlight_qc import acir_strict
+    if not acir_strict(config):
+        return [ARTICLE_TOOL_SCHEMA]
+    import copy
+    from inlight_fields import FIELDS as NEW_FIELDS, NONE_FIELD
+    schema = copy.deepcopy(ARTICLE_TOOL_SCHEMA)
+    schema["input_schema"]["properties"]["field"]["enum"] = list(NEW_FIELDS.keys()) + [NONE_FIELD]
+    schema["input_schema"]["properties"]["related_fields"] = {
+        "type": "array",
+        "items": {"type": "string", "enum": list(NEW_FIELDS.keys())},
+        "description": "Other related fields, not including the primary",
+    }
+    return [schema]
+
+
+def _triage_tools_for(config: dict | None) -> list[dict]:
+    from inlight_qc import acir_strict
+    if not acir_strict(config):
+        return [TRIAGE_TOOL_SCHEMA]
+    import copy
+    from inlight_fields import FIELDS as NEW_FIELDS, NONE_FIELD
+    schema = copy.deepcopy(TRIAGE_TOOL_SCHEMA)
+    schema["input_schema"]["properties"]["selections"]["items"]["properties"]["field"]["enum"] = (
+        list(NEW_FIELDS.keys()) + [NONE_FIELD]
+    )
+    schema["input_schema"]["properties"]["selections"]["items"]["properties"]["related_fields"] = {
+        "type": "array",
+        "items": {"type": "string", "enum": list(NEW_FIELDS.keys())},
+        "description": "Other related fields, not including the primary",
+    }
+    return [schema]
 
 
 def draft_single_article(item: EnrichedItem, tier: str, config: dict, problems: list[str] = None) -> dict | None:
@@ -3560,10 +3717,11 @@ def draft_single_article(item: EnrichedItem, tier: str, config: dict, problems: 
     client = Anthropic()
     
     try:
-        message = client.messages.create(
+        message = _claude_create(
+            client,
             model=model,
             max_tokens=max_tokens,
-            tools=[ARTICLE_TOOL_SCHEMA],
+            tools=_article_tools_for(config),
             tool_choice={"type": "auto"},
             messages=[{"role": "user", "content": prompt}],
         )
@@ -3571,15 +3729,16 @@ def draft_single_article(item: EnrichedItem, tier: str, config: dict, problems: 
         logging.error("API error drafting article for %s: %s", item.title[:50], e)
         return None
     
-    # Check for max_tokens truncation - retry with bigger budget
+    # Truncation retry: stream (anthropic 1.12.0 rejects huge non-stream max_tokens)
     if message.stop_reason == "max_tokens":
-        logging.warning("Article draft truncated (max_tokens), retrying with larger budget: %s", item.title[:50])
-        bigger_max_tokens = 24000 if tier == "deep" else 12000
+        logging.warning("Article draft truncated (max_tokens), retrying via stream: %s", item.title[:50])
+        bigger_max_tokens = 16000 if tier == "deep" else 8000
         try:
-            message = client.messages.create(
+            message = _claude_create(
+                client,
                 model=model,
                 max_tokens=bigger_max_tokens,
-                tools=[ARTICLE_TOOL_SCHEMA],
+                tools=_article_tools_for(config),
                 tool_choice={"type": "auto"},
                 messages=[{"role": "user", "content": prompt}],
             )
@@ -3588,7 +3747,7 @@ def draft_single_article(item: EnrichedItem, tier: str, config: dict, problems: 
             return None
         
         if message.stop_reason == "max_tokens":
-            logging.error("Still truncated after retry with %d tokens, giving up: %s", bigger_max_tokens, item.title[:50])
+            logging.error("Still truncated after streamed retry with %d tokens, giving up: %s", bigger_max_tokens, item.title[:50])
             return None
     
     for block in message.content:
@@ -3976,6 +4135,7 @@ def _run_claim_verifier_stage(
     audit_src = verifier_source_text(enriched_item, raw_material)
     closed = acir_strict(config)
     audit = verify_article_claims(art, audit_src, enriched_item, fail_closed=closed)
+    LAST_CLAIM_AUDIT.update(audit)
     extra_calls = audit.get("calls", 0)
     extra_in = audit.get("input_tokens", 0)
     extra_out = audit.get("output_tokens", 0)
@@ -4004,7 +4164,8 @@ def _run_claim_verifier_stage(
         if not retry or _hard_problems(retry_probs):
             logging.error("NOT_IN_SOURCE redraft still hard, dropping: %s", enriched_item.url)
             return None, True
-        audit2 = verify_article_claims(retry, raw_material, enriched_item, fail_closed=closed)
+        audit2 = verify_article_claims(retry, audit_src, enriched_item, fail_closed=closed)
+        LAST_CLAIM_AUDIT.update(audit2)
         extra_calls += audit2.get("calls", 0)
         extra_in += audit2.get("input_tokens", 0)
         extra_out += audit2.get("output_tokens", 0)
@@ -4033,7 +4194,8 @@ def _hard_problems(problems: list[str]) -> list[str]:
         "作者", "术语翻译", "过短", "过长", "结果字段",
         "比较方向", "机构", "基因", "药物", "蛋白质",
         "预印本正文", "同行评议", "主张与原文矛盾", "原文未支持",
-        "数字范围",
+        "数字范围", "字数", "要求", "核心结果", "局限须", "数据卡",
+        "段落超过", "evidence_level", "可核实数字",
     )
     return [p for p in problems if any(m in p for m in markers)]
 
@@ -4190,6 +4352,10 @@ def _process_single_article(
     url = selection["url"]
     tier = selection["tier"]
     field = selection["field"]
+    related_fields = [
+        r for r in (selection.get("related_fields") or [])
+        if r and r != field
+    ]
 
     def drop(reason: str):
         logging.error("Dropping %s: %s", url, reason)
@@ -4199,6 +4365,9 @@ def _process_single_article(
                 assemble_qc_entry(url, False, [empty_check("gate", False, reason)])
             )
         return None
+
+    if field in ("none", None, ""):
+        return drop("out-of-scope (logged); not forced into a field")
     
     enriched_item = url_to_enriched.get(url)
     if not enriched_item:
@@ -4248,15 +4417,23 @@ def _process_single_article(
         draft["tier"] = tier
         src = verifier_source_text(enriched_item, raw_material) if real_ft else raw_material
         draft["evidence_level"] = "fulltext" if real_ft else enriched_item.evidence_level
-        draft["read_note"] = enriched_item.read_note
         draft["sections_read"] = enriched_item.sections_read
         if isinstance(draft.get("datacard"), dict):
             draft["datacard"]["evidence_level"] = draft["evidence_level"]
-            draft["datacard"]["read_note"] = enriched_item.read_note
+            draft["datacard"].pop("read_note", None)
         probs = validate_depth(draft, src)
         probs.extend(validate_names(draft, src))
         if strict and draft.get("tier") == "deep":
             probs.extend(validate_acir_structure(draft))
+            from inlight_qc import verified_data_points
+            if len(verified_data_points(draft, src)) < 6:
+                n = len(verified_data_points(draft, src))
+                probs.append(f"可核实数字不足 6 个（{n}）")
+        # System notes after number/identifier checks so DOI/PMCID/核对记录
+        # are not treated as invented identifiers.
+        draft["read_note"] = enriched_item.read_note
+        if isinstance(draft.get("datacard"), dict) and enriched_item.read_note:
+            draft["datacard"]["read_note"] = enriched_item.read_note
         return draft, probs
 
     art = draft_single_article(enriched_item, tier, config)
@@ -4415,7 +4592,8 @@ def _process_single_article(
         art["fig_caption"] = ""
     elif art.get("tier") == "deep":
         art["image_prompt"] = mechanism_image_prompt(
-            enriched_item.fulltext_results, art.get("mechanism") or "",
+            art.get("results") or art.get("mechanism") or "",
+            art.get("mechanism") or "",
         )
         art["fig_caption"] = FIG_DISCLAIMER
         art["skip_mechanism_figure"] = False
@@ -4444,7 +4622,8 @@ def _process_single_article(
                         if gemini_result.get("pass"):
                             art = retry
                             art["image_prompt"] = mechanism_image_prompt(
-                                enriched_item.fulltext_results, art.get("mechanism") or "",
+                                art.get("results") or art.get("mechanism") or "",
+                                art.get("mechanism") or "",
                             )
                             art["fig_caption"] = FIG_DISCLAIMER
                             art["skip_mechanism_figure"] = False
@@ -4472,18 +4651,38 @@ def _process_single_article(
         else:
             art["data_chart_svg"] = ""
 
-    if art.get("field") not in FIELDS:
-        return drop("field not in the 9 domains")
+    allowed_fields = _triage_field_map(config)
+    raw_field = art.get("field") or field
+    if raw_field in ("none", "", None) or raw_field not in allowed_fields:
+        if strict and raw_field in ("none", "", None):
+            return drop("out-of-scope (logged); not forced into a field")
+        if raw_field not in allowed_fields and raw_field not in FIELDS:
+            return drop("field not in the 9 domains")
+        if raw_field in FIELDS and raw_field not in allowed_fields:
+            from inlight_fields import OLD_TO_NEW
+            art["field"] = OLD_TO_NEW.get(raw_field, raw_field)
+            if art["field"] not in allowed_fields:
+                return drop("out-of-scope (logged); not forced into a field")
+    else:
+        art["field"] = raw_field
 
+    draft_related = art.get("related_fields") or related_fields
+    art["related_fields"] = [
+        r for r in draft_related
+        if r in allowed_fields and r != art.get("field")
+    ]
+
+    claim_status = LAST_CLAIM_AUDIT.get("status") or "ok"
+    claim_ok = claim_status == "ok"
+    struct_probs = validate_acir_structure(art) if (strict and art.get("tier") == "deep") else []
+    number_probs = [p for p in (problems or []) if ("数字" in p and "未找到" in p) or "可核实数字" in p]
     checks = [
         empty_check("admission", real_ft if art.get("tier") == "deep" else True,
                     enriched_item.read_note or "not fulltext"),
-        empty_check("structure", not (strict and art.get("tier") == "deep" and validate_acir_structure(art)),
-                    "; ".join(validate_acir_structure(art)) if strict else "n/a"),
-        empty_check("numbers", not any("数字" in p and "未找到" in p for p in (problems or [])),
-                    "; ".join(p for p in (problems or []) if "数字" in p) or "ok"),
-        empty_check("claims", True, "claim verifier passed"),
-        empty_check("field", art.get("field") in FIELDS, art.get("field") or ""),
+        empty_check("structure", not struct_probs, "; ".join(struct_probs) or "ok"),
+        empty_check("numbers", not number_probs, "; ".join(number_probs) or "ok"),
+        empty_check("claims", claim_ok, claim_status if claim_ok else "; ".join(LAST_CLAIM_AUDIT.get("problems") or [claim_status])),
+        empty_check("field", art.get("field") in allowed_fields, art.get("field") or ""),
         empty_check("images",
                     (art.get("tier") != "deep") or (real_ft and not art.get("skip_mechanism_figure")),
                     "mechanism figure requires fulltext"),
@@ -4491,6 +4690,11 @@ def _process_single_article(
     if gemini_result is not None:
         checks.append(empty_check("gemini", bool(gemini_result.get("pass")),
                                   str(gemini_result.get("reasons") or "")))
+    failed = [c for c in checks if not c.get("pass")]
+    if failed:
+        return drop("QC check failed: " + "; ".join(
+            f"{c['name']}: {c.get('reason') or ''}" for c in failed[:4]
+        ))
     if stats is not None:
         stats.setdefault("qc_report", {}).setdefault("articles", []).append(
             assemble_qc_entry(url, True, checks, {

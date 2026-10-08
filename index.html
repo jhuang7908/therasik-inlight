@@ -29,15 +29,18 @@ img{max-width:100%}
 :root{
   --bg:#f5f7f6; --surface:#ffffff; --raise:#eef2f0; --fg:#1d2a27; --muted:#5c6b67; --line:#d6dedb; --accent:#0f6b5c;
   --c1:#2f7d6d; --c2:#5a55b5; --c3:#c0492f; --c4:#b07a12; --c5:#3d6fa8; --c6:#9a3f7e; --c7:#6f7d10; --c8:#1d7f9c; --c9:#8a5a2b;
+  --f1:#2f7d6d; --f2:#3d6fa8; --f3:#5a55b5; --f4:#c0492f; --f5:#b07a12; --f6:#1d7f9c; --f7:#9a3f7e; --f8:#8a5a2b; --f9:#6f7d10;
   --display:"Noto Serif SC","Songti SC",serif; --body:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#111715; --surface:#1a2220; --raise:#222b29; --fg:#e4ece9; --muted:#9aaba6; --line:#2e3a37; --accent:#5cc4ae;
   --c1:#5cc4ae; --c2:#9d98f0; --c3:#f08a6e; --c4:#e2b24e; --c5:#7fb0e8; --c6:#e08cc7; --c7:#c3d45a; --c8:#6cc8e4; --c9:#dba878;
+  --f1:#5cc4ae; --f2:#7fb0e8; --f3:#9d98f0; --f4:#f08a6e; --f5:#e2b24e; --f6:#6cc8e4; --f7:#e08cc7; --f8:#dba878; --f9:#c3d45a;
   color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#111715; --surface:#1a2220; --raise:#222b29; --fg:#e4ece9; --muted:#9aaba6; --line:#2e3a37; --accent:#5cc4ae;
   --c1:#5cc4ae; --c2:#9d98f0; --c3:#f08a6e; --c4:#e2b24e; --c5:#7fb0e8; --c6:#e08cc7; --c7:#c3d45a; --c8:#6cc8e4; --c9:#dba878;
+  --f1:#5cc4ae; --f2:#7fb0e8; --f3:#9d98f0; --f4:#f08a6e; --f5:#e2b24e; --f6:#6cc8e4; --f7:#e08cc7; --f8:#dba878; --f9:#c3d45a;
   color-scheme:dark}
 body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.65}
 h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;line-height:1.35}
@@ -887,8 +890,8 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 </footer>
 
 <script>
-const FNAMES={c1:'类器官',c2:'AI 药物设计',c3:'肿瘤免疫',c7:'细胞治疗',c8:'疫苗',c4:'自身免疫疾病',c9:'小核酸与 LNP',c5:'动物模型',c6:'抗体工程'};
-const FIELDS=[{k:'c1',n:'类器官',d:'疾病建模、药物筛选、器官芯片'},{k:'c2',n:'AI 药物设计',d:'结构预测、生成式蛋白设计、药效预测'},{k:'c3',n:'肿瘤免疫',d:'检查点、微环境、新抗原'},{k:'c7',n:'细胞治疗',d:'CAR-T、TCR-T、CAR-NK、TIL'},{k:'c8',n:'疫苗',d:'mRNA 新抗原疫苗、佐剂、递送'},{k:'c4',n:'自身免疫疾病',d:'狼疮、类风湿、多发性硬化'},{k:'c9',n:'小核酸与 LNP',d:'siRNA、ASO、脂质纳米颗粒递送'},{k:'c5',n:'动物模型',d:'人源化小鼠、基因编辑、PDX'},{k:'c6',n:'抗体工程',d:'双抗、ADC、纳米抗体、Fc 改造'}];
+const FNAMES={f1:'类器官',f2:'动物模型',f3:'AI 药物设计',f4:'肿瘤免疫与细胞治疗',f5:'自身免疫与移植免疫',f6:'疫苗与感染免疫',f7:'抗体工程',f8:'核酸与基因治疗（含 LNP 递送）',f9:'精准肿瘤与临床转化',c1:'类器官',c2:'AI 药物设计',c3:'肿瘤免疫',c7:'细胞治疗',c8:'疫苗',c4:'自身免疫疾病',c9:'小核酸与 LNP',c5:'动物模型',c6:'抗体工程'};
+const FIELDS=[{k:'f1',n:'类器官',d:'疾病建模、培养方法、器官芯片'},{k:'f2',n:'动物模型',d:'人源化小鼠、基因编辑、模型验证'},{k:'f3',n:'AI 药物设计',d:'结构预测、生成式设计、药效预测'},{k:'f4',n:'肿瘤免疫与细胞治疗',d:'检查点、微环境、抗肿瘤细胞治疗'},{k:'f5',n:'自身免疫与移植免疫',d:'自免机制、免疫重置、移植免疫'},{k:'f6',n:'疫苗与感染免疫',d:'疫苗、佐剂、感染免疫'},{k:'f7',n:'抗体工程',d:'双抗、ADC 格式、纳米抗体、Fc 改造'},{k:'f8',n:'核酸与基因治疗（含 LNP 递送）',d:'siRNA、ASO、LNP 与体内基因递送'},{k:'f9',n:'精准肿瘤与临床转化',d:'患者来源肿瘤模型、药敏、临床转化'}];
 const CAT=[
  {id:'c7-cell-2',f:'c7',t:'无需单采与清淋的体内BCMA CAR-T长期随访（I 期, n=4）：骨髓瘤缓解率100%，但髓外病灶复发成主要短板',ds:'2026-10-06',disp:'2026.10',j:'Nature Medicine',url:'https://doi.org/10.1038/s41591-026-04704-z',au:'Heng Mei（梅恒）, 华中科技大学同济医学院附属协和医院（武汉协和医院）/生物靶向治疗教育部重点实验室',tags:['c7','c3'],sum:'武汉协和医院梅恒团队报告了体内BCMA CAR-T产品ESO-T01（纳米抗体导向、免疫屏蔽的慢病毒载体）治疗复发/难治多发性骨髓瘤的I期单臂研究长期随访。4名患者仅接受一次静脉输注，不需要白细胞单采，也不做清淋化疗。最长随访15个月，客观缓解率100%（2例严格意义完全缓解，2例部分缓解），其中1例严格完全缓解维持15个月；中位无进展生存4.0个月。3例出现复发或进展，均伴髓外病变，随访期间死亡。所有患者都出现1–3级双相细胞因子释放综合征和≥3级血液学毒性，未见免疫原性或整合相关毒性。这是体内CAR-T在血液肿瘤中较早的长期数据：它证实了“现货式”体内CAR-T的可行性，也暴露出疗效持久性和髓外病灶控制方面的问题。',note:'Nature Medicine页面未明确标注通讯作者，梅恒按数据索取邮箱（hmei@hust.edu.cn）及末位作者身份认定。ESO-T01使用慢病毒载体（非LNP），故移除c9标签。同一产品的首篇I期论文（10.1038/s41591-026-04244-6，同济医院李春蕊团队）于2026-03-25上线，不在窗口内，未收录。'},
  {id:'a-trap',f:'c3',t:'用机器人批量组装 TCR，再让 AlphaFold3 预测它能不能认出抗原',ds:'2026-10-01',disp:'2026.10',j:'Immunity',url:'#a-trap',au:'Messemaker、Kwee 等（Schumacher 组）',tags:['c3','c2','c7'],sum:'功能验证后发现，公共数据库里平均只有 56% 的 TCR 真的具有标注的反应性。按来源拆开后波动很大（<10% 到 >95%），提示数据库噪声水平因来源而异。本站写了完整解读。',deep:'a-trap'},
@@ -973,13 +976,13 @@ function icon(kind,cvar,cls){
     ${ICONS[kind]||ICONS.cell}</svg></span>`;
 }
 // 九张领域固定图，放在 img/fields/ 下即自动生效；缺图时退回 SVG 图标
-const FIELD_IMG={c1:'organoid.jpg',c2:'ai-drug-design.jpg',c3:'tumor-immunology.jpg',
+const FIELD_IMG={f1:'organoid.jpg',f2:'animal-model.jpg',f3:'ai-drug-design.jpg',f4:'tumor-immunology.jpg',f5:'autoimmune.jpg',f6:'vaccine.jpg',f7:'antibody-engineering.jpg',f8:'lnp-oligo.jpg',f9:'cell-therapy.jpg',c1:'organoid.jpg',c2:'ai-drug-design.jpg',c3:'tumor-immunology.jpg',
   c4:'autoimmune.jpg',c5:'animal-model.jpg',c6:'antibody-engineering.jpg',
   c7:'cell-therapy.jpg',c8:'vaccine.jpg',c9:'lnp-oligo.jpg'};
 function fieldThumb(k){
   return `<span class="fthumb">${icon(FIELD_MOTIF[k],k)}<img src="img/fields/${FIELD_IMG[k]}?v=4" alt="" loading="lazy" onerror="this.remove()"></span>`;
 }
-const FIELD_MOTIF={c1:'organoid',c2:'net',c3:'cell',c4:'antibody',c5:'model',c6:'antibody',c7:'cell',c8:'vaccine',c9:'lnp'};
+const FIELD_MOTIF={f1:'organoid',f2:'model',f3:'net',f4:'cell',f5:'antibody',f6:'vaccine',f7:'antibody',f8:'lnp',f9:'clin',c1:'organoid',c2:'net',c3:'cell',c4:'antibody',c5:'model',c6:'antibody',c7:'cell',c8:'vaccine',c9:'lnp'};
 const KIND_MOTIF={acq:'acq',lic:'lic',newco:'newco',clin:'clin',inv:'inv',policy:'model'};
 const KIND_CVAR={acq:'c3',lic:'c2',newco:'c7',clin:'c1',inv:'c5',policy:'c6'};
 

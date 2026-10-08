@@ -1706,6 +1706,26 @@ class TestHoldoutGeneralRules(unittest.TestCase):
         )
         self.assertTrue(problems)
 
+    def test_lower_is_better_toxicity_not_flagged(self):
+        from inlight_articles import check_comparison_direction
+
+        problems = check_comparison_direction(
+            "联合组毒性更低，lower is better。",
+            "Disease control was higher in the combination arm. Grade 3 adverse events were reduced.",
+        )
+        self.assertFalse(problems)
+
+    def test_name_prefix_digits_not_extracted(self):
+        from inlight_articles import extract_numbers_with_context, validate_depth
+
+        text = "p38 MAPK and MK-25 and 4-1BB ligand were expressed."
+        nums = [n for n, _ in extract_numbers_with_context(text)]
+        self.assertFalse(any(n in {"38", "25", "4", "1"} for n in nums), nums)
+        art = _skilight_brief()
+        art["results"] = list(art["results"]) + ["通路涉及 p38 与 MK-25 及 4-1BB。"]
+        problems = validate_depth(art, _SKYLIGHT + " p38 MAPK MK-25 4-1BB ligand")
+        self.assertFalse(any("p38" in p or "MK-25" in p or "4-1BB" in p for p in problems if "标识符" in p), problems)
+
     def test_chinese_drug_requires_source_inn(self):
         from inlight_articles import validate_names
 
@@ -2014,7 +2034,7 @@ class TestClaimVerifier(unittest.TestCase):
 
         with patch("anthropic.Anthropic") as cls:
             cls.return_value.messages.create.return_value = self._msg([])
-            verify_article_claims(_skilight_brief(), _SKYLIGHT)
+            verify_article_claims(_skilight_brief(), _SKYLIGHT, fail_closed=False)
             kwargs = cls.return_value.messages.create.call_args.kwargs
         self.assertNotIn("temperature", kwargs)
         names = [t["name"] for t in kwargs["tools"]]
@@ -2048,6 +2068,82 @@ class TestClaimVerifier(unittest.TestCase):
             out = verify_article_claims(_skilight_brief(), _SKYLIGHT, fail_closed=False)
         self.assertEqual(out["status"], "ok")
         self.assertEqual(out["problems"], [])
+
+    def test_production_claim_tools_omit_stub(self):
+        from inlight_articles import verify_article_claims
+
+        with patch("anthropic.Anthropic") as cls:
+            cls.return_value.messages.create.return_value = self._msg([])
+            verify_article_claims(_skilight_brief(), _SKYLIGHT, fail_closed=True)
+            kwargs = cls.return_value.messages.create.call_args.kwargs
+        names = [t["name"] for t in kwargs["tools"]]
+        self.assertEqual(names, ["submit_claim_audit"])
+        self.assertNotIn("test_tool", names)
+
+    def test_streaming_required_falls_back_on_anthropic_112(self):
+        from inlight_articles import _claude_create
+
+        class _Msg:
+            content = []
+            stop_reason = "end_turn"
+
+        final = _Msg()
+
+        class _Messages:
+            def create(self, **kwargs):
+                if kwargs.get("stream"):
+                    ev = type("E", (), {})()
+                    ev.type = "message"
+                    ev.message = final
+                    return [ev]
+                raise RuntimeError("Streaming is required")
+
+        client = type("C", (), {})()
+        client.messages = _Messages()
+        out = _claude_create(client, model="x", max_tokens=4000, messages=[])
+        self.assertIs(out, final)
+        streamed = _claude_create(client, model="x", max_tokens=16000, messages=[])
+        self.assertIs(streamed, final)
+
+    def test_shared_fulltext_window(self):
+        from inlight_qc import FULLTEXT_WINDOW, gemini_review_deep, GEMINI_SCORE_KEYS
+        from inlight_articles import build_article_prompt, build_claim_audit_prompt, EnrichedItem
+
+        self.assertEqual(FULLTEXT_WINDOW, 20000)
+        long_ft = ("Z" * FULLTEXT_WINDOW) + "UNIQUE_TAIL_MARKER"
+        item = EnrichedItem(
+            url="https://doi.org/10.1/w", title="T", source="N", date="2026-01-01",
+            evidence_level="fulltext", fulltext_results=long_ft,
+        )
+        draft_prompt = build_article_prompt(item, "deep")
+        self.assertNotIn("UNIQUE_TAIL_MARKER", draft_prompt)
+        claim_prompt = build_claim_audit_prompt({"title": "t", "results": ["64%"]}, long_ft, item)
+        self.assertNotIn("UNIQUE_TAIL_MARKER", claim_prompt)
+        captured = {}
+
+        def fake_gen(prompt, model, key):
+            captured["p"] = prompt
+            return json.dumps({
+                "scores": {k: 8 for k in GEMINI_SCORE_KEYS},
+                "factual_mismatch": False, "reasons": "ok",
+            })
+
+        with patch.dict(os.environ, {"GEMINI_API_KEY": "k"}):
+            with patch("inlight_qc._gemini_generate", side_effect=fake_gen):
+                gemini_review_deep({"title": "t"}, long_ft, {})
+        self.assertNotIn("UNIQUE_TAIL_MARKER", captured["p"])
+        self.assertIn("Z" * 100, captured["p"])
+
+    def test_system_notes_doi_not_flagged(self):
+        from inlight_articles import validate_depth
+
+        art = _skilight_brief()
+        art["datacard"] = dict(art.get("datacard") or {})
+        art["datacard"]["read_note"] = "核对记录：读了 PMC 全文 PMC999 的 Results。DOI 10.1016/S0140-6736(22)02056-0"
+        art["datacard"]["doi"] = "10.1016/S0140-6736(22)02056-0"
+        problems = validate_depth(art, _SKYLIGHT)
+        self.assertFalse(any("标识符" in p and ("10.1016" in p or "PMC999" in p or "DOI" in p) for p in problems), problems)
+        self.assertFalse(any("数字" in p and "未找到" in p and "10.1016" in p for p in problems), problems)
 
     def test_contradicted_stage_drops_article(self):
         from inlight_articles import EnrichedItem, _process_single_article
@@ -2263,6 +2359,18 @@ class TestYieldAndSourceFetch(unittest.TestCase):
         self.assertEqual(len(seen), 12)
         self.assertGreaterEqual(enriched_families.count("cell"), 1)
         self.assertGreaterEqual(enriched_families.count("pubmed"), 1)
+
+    def test_oa_sources_not_crowded_out_by_one_family(self):
+        from inlight_articles import balance_academic_candidates, publisher_family
+
+        rows = (
+            [{"source": "Nature", "url": f"https://www.nature.com/articles/s{i}", "kind": "academic"} for i in range(25)]
+            + [{"source": "bioRxiv", "url": f"https://www.biorxiv.org/content/10.1/{i}", "kind": "academic"} for i in range(8)]
+        )
+        out = balance_academic_candidates(rows, 12)
+        families = [publisher_family(r) for r in out]
+        self.assertGreaterEqual(families.count("biorxiv"), 1)
+        self.assertLess(families.count("nature"), 12)
 
     def test_press_url_is_not_bare_search_path(self):
         from inlight_articles import fetch_press_coverage

@@ -32,6 +32,30 @@ try:
 except ImportError:
     ARTICLE_MODULE_AVAILABLE = False
 
+try:
+    from inlight_fields import (
+        FIELD_PROMPT_RULES as NEW_FIELD_PROMPT_RULES,
+        FIELDS as NEW_FIELDS,
+        site_classification_fields,
+    )
+    FIELD_MODULE_AVAILABLE = True
+except ImportError:
+    FIELD_MODULE_AVAILABLE = False
+    NEW_FIELDS = {
+        "f1": "类器官",
+        "f2": "动物模型",
+        "f3": "AI 药物设计",
+        "f4": "肿瘤免疫与细胞治疗",
+        "f5": "自身免疫与移植免疫",
+        "f6": "疫苗与感染免疫",
+        "f7": "抗体工程",
+        "f8": "核酸与基因治疗（含 LNP 递送）",
+        "f9": "精准肿瘤与临床转化",
+    }
+    NEW_FIELD_PROMPT_RULES = "领域 field 只能是：" + ", ".join(NEW_FIELDS)
+    def site_classification_fields(item):
+        return {"f": item.get("field")}
+
 ROOT = Path(__file__).resolve().parent
 FIELDS = {
     "c1": "类器官",
@@ -878,7 +902,7 @@ def site_article(item: dict, image_rel: str) -> dict:
         "j": item.get("journal") or item.get("source", ""),
         "url": item["url"],
         "au": item.get("authors") or "",
-        "tags": [item["field"]],
+        "tags": [item["field"]] if item.get("field") else [],
         "sum": item.get("lead", ""),
         "lead": item.get("lead", ""),
         "body": item.get("body", ""),
@@ -895,6 +919,17 @@ def site_article(item: dict, image_rel: str) -> dict:
         result["n"] = item["n"]
     if item.get("evidence_level"):
         result["evidence_level"] = item["evidence_level"]
+    if item.get("related_fields"):
+        result["rf"] = [r for r in item["related_fields"] if r and r != item.get("field")]
+        primary = item.get("field")
+        result["tags"] = ([primary] if primary else []) + list(result["rf"])
+    if FIELD_MODULE_AVAILABLE and str(item.get("field") or "").startswith("f"):
+        extra = site_classification_fields(item)
+        if extra.get("f"):
+            result.update(extra)
+            if result.get("rf"):
+                primary = result.get("f")
+                result["tags"] = [primary, *result["rf"]] if primary else list(result["rf"])
     
     # Include new format fields if present
     if item.get("tier"):

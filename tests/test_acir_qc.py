@@ -6,6 +6,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import re
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -15,6 +16,7 @@ from inlight_qc import (
     FIG_DISCLAIMER,
     GEMINI_SCORE_KEYS,
     comparable_verified_points,
+    extract_results_from_html,
     gemini_review_deep,
     is_real_results_text,
     item_has_real_fulltext,
@@ -159,12 +161,60 @@ class TestFulltextAdmission(unittest.TestCase):
         self.assertNotEqual(item.evidence_level, "fulltext")
         self.assertTrue(any("rejected" in t for t in item.source_trace))
 
+    def test_landing_news_and_paywall_pages_rejected(self):
+        from inlight_qc import extract_results_from_xml, looks_like_whole_page
+
+        refs = " ".join(f"Smith et al. ({1990 + i}) Nature {i}." for i in range(40))
+        landing = (
+            "<html><nav>Home Journal</nav><h1>News Feature</h1>"
+            "<p>Authors and affiliations. Download PDF to view the full article.</p>"
+            f"<h2>References</h2><p>{refs}</p></html>"
+        )
+        self.assertEqual(extract_results_from_html(landing), "")
+        self.assertFalse(is_real_results_text(re.sub(r"<[^>]+>", " ", landing)))
+        paywall = "<html><p>Subscribe to read. This article is available to subscribers. Get access.</p></html>"
+        self.assertEqual(extract_results_from_html(paywall), "")
+        biorxiv_landing = (
+            "<html><body><nav>bioRxiv</nav>"
+            "<p>The copyright holder for this preprint is the author/funder.</p>"
+            "<h2>Abstract</h2><p>" + ("background method finding " * 400) + "</p>"
+            "<h2>Authors and affiliations</h2><p>Jane Doe University</p>"
+            "<p>Download PDF Full Text HTML Subject Area Immunology</p>"
+            f"<h2>References</h2><p>{refs}</p></body></html>"
+        )
+        self.assertTrue(looks_like_whole_page(biorxiv_landing))
+        self.assertEqual(extract_results_from_html(biorxiv_landing), "")
+        self.assertFalse(is_real_results_text(biorxiv_landing))
+        self.assertFalse(record_fulltext(
+            EnrichedItem(url="u", title="T", source="bioRxiv", date="2026-01-01"),
+            biorxiv_landing, source_label="bioRxiv landing",
+        ))
+        real = (
+            "<html><h2><span>Results</span></h2><p>" + ("outcome " * 1600) +
+            "response rate was 64% among 527 women.</p><h2>Discussion</h2><p>ok</p></html>"
+        )
+        extracted = extract_results_from_html(real)
+        self.assertIn("64%", extracted)
+        self.assertNotIn("Discussion", extracted)
+        self.assertTrue(is_real_results_text(extracted))
+        xml = (
+            '<article><sec sec-type="results"><title>Results</title><p>'
+            + ("measured response " * 1600) +
+            "64% of 527 women.</p></sec>"
+            '<sec sec-type="discussion"><title>Discussion</title><p>ok</p></sec></article>'
+        )
+        xml_results = extract_results_from_xml(xml)
+        self.assertIn("64%", xml_results)
+        self.assertNotIn("Discussion", xml_results)
+        self.assertTrue(is_real_results_text(xml_results))
+
     def test_no_mechanism_figure_without_fulltext(self):
         prompt = mechanism_image_prompt(_results(), "pathway blocked")
         self.assertIn("#0F6B5C", prompt)
         self.assertIn("#C0492F", prompt)
         self.assertIn("Subject:", prompt)
-        self.assertIn("outcome", prompt.lower())
+        self.assertIn("pathway", prompt.lower())
+        self.assertNotIn("outcome outcome", prompt.lower())
         item = EnrichedItem(
             url="https://doi.org/10.1/abs2", title="T", source="N", date="2026-01-01",
             abstract="x" * 2000, evidence_level="abstract",
@@ -357,6 +407,81 @@ class TestQcGateAndGemini(unittest.TestCase):
             self.assertNotIn("should-not-load", joined)
 
 
+    def test_claims_qc_uses_audit_not_constant_pass(self):
+        from pathlib import Path
+        src = Path(__file__).resolve().parent.parent.joinpath("inlight_articles.py").read_text()
+        self.assertNotIn('empty_check("claims", True', src)
+        self.assertIn('empty_check("claims", claim_ok', src)
+
+    def test_brief_downgrade_rechecks_brief_limits(self):
+        item = EnrichedItem(
+            url="https://doi.org/10.1/ft-brief",
+            title="T", source="N", date="2026-01-01", pmcid="PMC3",
+        )
+        record_fulltext(item, _results(), source_label="PMC PMC3")
+        art = _deep_art()
+        seen = []
+
+        def vd(draft, src):
+            seen.append(draft.get("tier"))
+            if draft.get("tier") == "deep":
+                return ["deep 档正文 200 汉字，低于下限 450 字"]
+            return []
+
+        def fake_draft(it, tier, config, problems=None):
+            out = dict(art)
+            out["tier"] = tier
+            return out
+
+        with patch.dict(os.environ, {"GEMINI_API_KEY": "test-gemini"}):
+            with patch("inlight_articles.validate_depth", side_effect=vd):
+                with patch("inlight_articles.validate_names", return_value=[]):
+                    with patch("inlight_qc.validate_acir_structure", return_value=[]):
+                        with patch("inlight_articles.draft_single_article", side_effect=fake_draft):
+                            with patch("inlight_articles.verify_article_claims", return_value={
+                                "status": "ok", "problems": [], "calls": 1,
+                                "input_tokens": 1, "output_tokens": 1,
+                            }):
+                                out = _process_single_article(
+                                    {"url": item.url, "tier": "deep", "field": "c3"},
+                                    {item.url: item},
+                                    {"min_deep": 3, "max_brief": 2, "acir_qc": True},
+                                )
+        self.assertIsNotNone(out)
+        self.assertEqual(out["tier"], "brief")
+        self.assertIn("brief", seen)
+
+    def test_out_of_scope_field_is_dropped(self):
+        item = EnrichedItem(
+            url="https://doi.org/10.1/none", title="T", source="N", date="2026-01-01",
+            abstract="x" * 200, evidence_level="abstract",
+        )
+        stats = {"drops": [], "qc_report": {"articles": []}}
+        out = _process_single_article(
+            {"url": item.url, "tier": "brief", "field": "none"},
+            {item.url: item},
+            {"min_deep": 3, "max_brief": 2},
+            stats=stats,
+        )
+        self.assertIsNone(out)
+        self.assertTrue(any("out-of-scope" in d["reason"] for d in stats["drops"]))
+
+    def test_production_fields_match_pr8(self):
+        from inlight_fields import FIELDS, FIELD_PROMPT_RULES
+        from inlight_articles import _triage_field_map, _triage_field_rules
+
+        self.assertEqual(list(FIELDS), [f"f{i}" for i in range(1, 10)])
+        self.assertEqual(FIELDS["f1"], "类器官")
+        self.assertEqual(FIELDS["f2"], "动物模型")
+        self.assertEqual(FIELDS["f9"], "精准肿瘤与临床转化")
+        rules = _triage_field_rules({"min_deep": 3})
+        self.assertIn("肿瘤类器官", rules)
+        self.assertIn("f2", rules)
+        self.assertIn("none", rules)
+        self.assertEqual(_triage_field_map({"min_deep": 3}), dict(FIELDS))
+        self.assertIn("类器官", FIELD_PROMPT_RULES)
+
+
 class TestQcReportWritten(unittest.TestCase):
     def test_process_articles_writes_qc_entries(self):
         item = EnrichedItem(
@@ -543,6 +668,9 @@ class TestHouseStylePromptsAndImageQc(unittest.TestCase):
         self.assertIn("${escHtml(x.t)}", css)
         self.assertIn("${escHtml(x.m)}", css)
         self.assertIn("${escHtml(a.j)}", css)
+        self.assertIn("${escHtml(a.t)}", css)
+        self.assertIn("const FNAMES={f1:'类器官'", css)
+        self.assertIn("k:'f9',n:'精准肿瘤与临床转化'", css)
 
 
 if __name__ == "__main__":
