@@ -673,41 +673,42 @@ class TestIntegrationMocked(unittest.TestCase):
         self.assertIn("36 patients", item.abstract)
         
         # Simulate a well-formed article that passes validation
-        # Need to meet minimum character count for brief (383 chars)
+        # IMPORTANT: ALL numbers and claims must match the source exactly
+        # Source: "36 patients", "52% (19/36)" response, "12 months" follow-up, "28%" adverse events
         simulated_article = {
             "tier": "brief",
-            "title": "CAR-T治疗难治性疾病客观缓解率52%",
-            "one_liner": "一项纳入36例难治性血液肿瘤患者的单臂研究显示，CAR-T细胞治疗的客观缓解率为52%，中位随访时间为12个月，安全性可接受。",
+            "title": "难治性疾病CAR-T治疗客观缓解率52%",
+            "one_liner": "纳入36例难治性疾病患者的研究显示客观缓解率为52%（19/36例），中位随访12个月，三级及以上不良事件发生率28%。",
             "datacard": {
-                "study_type": "临床试验",
+                "study_type": "临床研究",
                 "n": "36例",
-                "control": "单臂无对照",
-                "intervention": "CAR-T细胞治疗",
-                "followup": "12个月",
+                "control": "原文未报告对照组信息",
+                "intervention": "原文未报告具体干预措施",
+                "followup": "中位12个月",
                 "primary_endpoint": "客观缓解率",
-                "primary_endpoint_result": "52%（19/36）",
+                "primary_endpoint_result": "52%（19/36例）",
                 "statistics": "原文未报告统计学检验",
-                "safety": "三级及以上不良事件28%",
+                "safety": "三级及以上不良事件发生率28%",
             },
-            "background": "针对难治性血液肿瘤，传统化疗方案、靶向药物和免疫检查点抑制剂的疗效往往有限，急需新型治疗方法来改善患者预后。CAR-T细胞治疗是一种前沿免疫疗法。",
-            "design": "这是一项单中心单臂开放标签临床研究，连续纳入36例经二线及以上标准治疗后复发或难治的患者，均接受CAR-T细胞治疗，主要终点为客观缓解率，次要终点包括生存期。",
-            "results": ["研究显示客观缓解率达到52%（19/36例），其中完全缓解率为28%。中位随访12个月后大部分缓解患者仍维持缓解状态。安全性方面，三级及以上不良事件发生率为28%，无治疗相关死亡。"],
+            "background": "针对难治性疾病，传统治疗方案疗效有限，需要探索新型治疗方法。本研究评估了CAR-T细胞治疗的疗效和安全性。研究背景部分需要参照原文进行解读。CAR-T细胞治疗是一种新兴的细胞免疫疗法，通过基因工程改造患者自身的T细胞，使其能够识别并杀伤肿瘤细胞。",
+            "design": "研究纳入36例难治性疾病患者接受治疗。本研究为描述性研究，主要终点为客观缓解率。研究设计相对简单，原文未提供对照组和盲法等详细信息。研究者对所有入组患者进行了疗效和安全性评估。",
+            "results": ["研究显示客观缓解率为52%，即36例患者中有19例达到缓解。中位随访时间为12个月。安全性方面，三级及以上不良事件发生率为28%。以上数据均直接来自原文报告，反映了该治疗方案的临床表现。"],
             "mechanism": "",
-            "limitations": ["单臂设计缺乏对照组，无法评估相对疗效；单中心研究，患者选择偏倚风险高，外推性有限"],
-            "significance": "这项研究表明CAR-T细胞治疗为难治性血液肿瘤患者提供了一个有前景的治疗选择。若后续随机对照试验能验证疗效并确认安全性，有望改变现有临床实践格局。",
+            "limitations": ["原文未报告对照组，无法评估相对疗效；原文未报告随访期间的疾病进展或复发数据"],
+            "significance": "该研究为难治性疾病患者提供了一种潜在治疗选择的初步证据。然而，需要更多研究验证这些发现。",
             "data_points": [
-                {"value": "52%", "meaning": "缓解率", "source_quote": "The objective response rate was 52%"},
-                {"value": "36", "meaning": "患者数", "source_quote": "we enrolled 36 patients"},
-                {"value": "19/36", "meaning": "缓解人数", "source_quote": "The objective response rate was 52% (19/36)"},
+                {"value": "52%", "meaning": "客观缓解率", "source_quote": "The objective response rate was 52%"},
+                {"value": "36", "meaning": "患者例数", "source_quote": "we enrolled 36 patients"},
+                {"value": "19/36", "meaning": "缓解例数/总例数", "source_quote": "The objective response rate was 52% (19/36)"},
                 {"value": "12", "meaning": "随访月数", "source_quote": "Median follow-up was 12 months"},
-                {"value": "28%", "meaning": "AE比例", "source_quote": "Grade 3+ adverse events occurred in 28%"},
+                {"value": "28%", "meaning": "不良事件发生率", "source_quote": "Grade 3+ adverse events occurred in 28%"},
             ],
         }
         
         raw_material = "In this study, we enrolled 36 patients with refractory disease. The objective response rate was 52% (19/36). Median follow-up was 12 months. Grade 3+ adverse events occurred in 28% of patients."
         problems = validate_depth(simulated_article, raw_material)
         
-        # This well-formed article should pass
+        # This well-formed article with source-matched claims should pass
         self.assertEqual(len(problems), 0, f"Unexpected validation problems: {problems}")
 
 
@@ -726,6 +727,529 @@ class TestLiveEPMC(unittest.TestCase):
         
         self.assertIsNotNone(result.get("abstractText"))
         self.assertTrue(len(result.get("abstractText", "")) > 100)
+
+
+class TestIdentifierSubstringBug(unittest.TestCase):
+    """Regression tests for P0 bug: invented numbers passing via identifier substrings.
+    
+    Bug: number_exists_in_source accepted digits found inside identifiers.
+    Example: "31例" passed because CD318 contains "31".
+    
+    These tests verify the fix catches invented numbers even when identifiers
+    containing those digits exist in source.
+    """
+    
+    def test_31_via_cd318_rejected(self):
+        """'共纳入31例' must be caught when source only has CD318."""
+        from inlight_articles import number_exists_in_source, extract_identifiers_from_source, normalize_source_text
+        
+        source = "CD318 positive tumor cells were analyzed. CD6 is a target."
+        source_norm = normalize_source_text(source)
+        identifiers = extract_identifiers_from_source(source)
+        
+        # "31例" context does NOT mention CD318, so 31 should be rejected
+        result = number_exists_in_source("31", source_norm, identifiers, "共纳入31例患者")
+        self.assertFalse(result, "Invented '31' should be caught - not in source as standalone")
+    
+    def test_8_via_cd8_rejected(self):
+        """'8例死亡' must be caught when source only has CD8."""
+        from inlight_articles import number_exists_in_source, extract_identifiers_from_source, normalize_source_text
+        
+        source = "CD8 T cells showed enhanced killing. The antibody targets CD6."
+        source_norm = normalize_source_text(source)
+        identifiers = extract_identifiers_from_source(source)
+        
+        # "8例死亡" context does NOT mention CD8, so 8 should be rejected
+        result = number_exists_in_source("8", source_norm, identifiers, "8例死亡事件")
+        self.assertFalse(result, "Invented '8' should be caught - not in source as standalone")
+    
+    def test_44_via_rpcec_rejected(self):
+        """'客观缓解率44%' must be caught when source only has RPCEC00000444."""
+        from inlight_articles import number_exists_in_source, extract_identifiers_from_source, normalize_source_text
+        
+        source = "Trial registered as RPCEC00000444. Response rate was 25%."
+        source_norm = normalize_source_text(source)
+        identifiers = extract_identifiers_from_source(source)
+        
+        # "44%" is invented - source has 25%, not 44%
+        result = number_exists_in_source("44", source_norm, identifiers, "客观缓解率44%")
+        self.assertFalse(result, "Invented '44%' should be caught - not in source as standalone")
+    
+    def test_18_via_cd318_rejected(self):
+        """'中位随访18个月' must be caught when source only has CD318."""
+        from inlight_articles import number_exists_in_source, extract_identifiers_from_source, normalize_source_text
+        
+        source = "CD318 expression was measured. Follow-up duration not reported."
+        source_norm = normalize_source_text(source)
+        identifiers = extract_identifiers_from_source(source)
+        
+        # "18个月" is invented
+        result = number_exists_in_source("18", source_norm, identifiers, "中位随访18个月")
+        self.assertFalse(result, "Invented '18' should be caught - not in source as standalone")
+    
+    def test_cd8_identifier_in_context_allowed(self):
+        """'CD8细胞' should be allowed when CD8 is in source AND context mentions CD8."""
+        from inlight_articles import number_exists_in_source, extract_identifiers_from_source, normalize_source_text
+        
+        source = "CD8 T cells showed enhanced killing."
+        source_norm = normalize_source_text(source)
+        identifiers = extract_identifiers_from_source(source)
+        
+        # "8" appears in context as part of "CD8细胞" - should be OK
+        result = number_exists_in_source("8", source_norm, identifiers, "CD8细胞呈现杀伤表型")
+        self.assertTrue(result, "CD8 identifier digit should be allowed when identifier is in context")
+    
+    def test_standalone_number_allowed(self):
+        """Numbers that actually exist in source should pass."""
+        from inlight_articles import number_exists_in_source, extract_identifiers_from_source, normalize_source_text
+        
+        source = "Response rate was 52%. We enrolled 36 patients."
+        source_norm = normalize_source_text(source)
+        identifiers = extract_identifiers_from_source(source)
+        
+        result_52 = number_exists_in_source("52", source_norm, identifiers, "缓解率52%")
+        result_36 = number_exists_in_source("36", source_norm, identifiers, "纳入36例患者")
+        
+        self.assertTrue(result_52, "52% should be found in source")
+        self.assertTrue(result_36, "36 should be found in source")
+
+
+class TestChineseAuthorFalsePositives(unittest.TestCase):
+    """Regression tests for Chinese 'X等' false positives.
+    
+    Bug: '皮疹等' (rashes, etc.) was flagged as author surname '疹'.
+    Fix: Only flag 'X等' in author-like contexts (e.g., "X等发现").
+    """
+    
+    def test_pi_zhen_deng_not_flagged(self):
+        """'乏力、皮疹等' (fatigue, rash, etc.) should not be flagged as author."""
+        from inlight_articles import validate_names
+        
+        art = {
+            "title": "药物安全性研究",
+            "one_liner": "常见不良事件包括乏力、皮疹等。",
+            "background": "",
+            "design": "",
+            "results": ["常见不良事件包括乏力、皮疹等轻微症状。"],
+            "mechanism": "",
+            "significance": "",
+            "authors": "原文未给出",
+            "limitations": [],
+        }
+        raw = "Common adverse events included fatigue, rash, and other mild symptoms."
+        problems = validate_names(art, raw)
+        
+        # Should NOT flag '疹' as an author surname
+        author_problems = [p for p in problems if "作者姓氏" in p and "疹" in p]
+        self.assertEqual(author_problems, [], f"Should not flag '皮疹等' as author: {author_problems}")
+    
+    def test_xi_bao_yin_zi_deng_not_flagged(self):
+        """'细胞因子等' (cytokines, etc.) should not be flagged as author."""
+        from inlight_articles import validate_names
+        
+        art = {
+            "title": "炎症机制研究",
+            "one_liner": "检测了IL-6、TNF等细胞因子等。",
+            "background": "",
+            "design": "",
+            "results": ["细胞因子等炎症标志物升高。"],
+            "mechanism": "",
+            "significance": "",
+            "authors": "原文未给出",
+            "limitations": [],
+        }
+        raw = "Cytokines and other inflammatory markers were elevated."
+        problems = validate_names(art, raw)
+        
+        # Should NOT flag '子' as an author surname
+        author_problems = [p for p in problems if "作者姓氏" in p and "子" in p]
+        self.assertEqual(author_problems, [], f"Should not flag '细胞因子等' as author: {author_problems}")
+    
+    def test_real_author_zhang_deng_flagged(self):
+        """'张等发现' (Zhang et al. found) SHOULD be flagged if Zhang not in source."""
+        from inlight_articles import validate_names
+        
+        art = {
+            "title": "研究结果",
+            "one_liner": "张等发现该药物有效。",
+            "background": "",
+            "design": "",
+            "results": ["张等报道了临床结果。"],
+            "mechanism": "",
+            "significance": "",
+            "authors": "原文未给出",
+            "limitations": [],
+        }
+        raw = "The drug was found to be effective. Results were reported."
+        problems = validate_names(art, raw)
+        
+        # SHOULD flag '张' as an invented author
+        author_problems = [p for p in problems if "作者姓氏" in p and "张" in p]
+        self.assertTrue(len(author_problems) > 0, "Should flag invented author '张等发现'")
+
+
+class TestDataPointValidation(unittest.TestCase):
+    """Test that non-numeric data_points are rejected."""
+    
+    def test_millions_rejected(self):
+        """'millions' as data_point value should be rejected."""
+        from inlight_articles import validate_depth
+        
+        art = {
+            "tier": "brief",
+            "title": "测试",
+            "one_liner": "测试",
+            "datacard": {
+                "study_type": "研究",
+                "n": "原文未给出",
+                "control": "无",
+                "intervention": "无",
+                "followup": "无",
+                "primary_endpoint": "测试",
+                "primary_endpoint_result": "测试",
+                "statistics": "无",
+                "safety": "无",
+            },
+            "results": ["结果"],
+            "limitations": ["局限"],
+            "data_points": [
+                {"value": "millions", "meaning": "细胞数", "source_quote": "millions of cells were generated"},
+            ],
+        }
+        raw = "millions of cells were generated through the platform"
+        problems = validate_depth(art, raw)
+        
+        # Should reject vague 'millions'
+        vague_problems = [p for p in problems if "模糊" in p or "数字" in p]
+        self.assertTrue(len(vague_problems) > 0, f"Should reject 'millions': {problems}")
+    
+    def test_tens_of_kilobases_rejected(self):
+        """'tens of kilobases' should be rejected as too vague."""
+        from inlight_articles import validate_depth
+        
+        art = {
+            "tier": "brief",
+            "title": "测试",
+            "one_liner": "测试",
+            "datacard": {
+                "study_type": "研究",
+                "n": "原文未给出",
+                "control": "无",
+                "intervention": "无",
+                "followup": "无",
+                "primary_endpoint": "测试",
+                "primary_endpoint_result": "测试",
+                "statistics": "无",
+                "safety": "无",
+            },
+            "results": ["结果"],
+            "limitations": ["局限"],
+            "data_points": [
+                {"value": "tens of kilobases", "meaning": "序列长度", "source_quote": "tens of kilobases of sequence"},
+            ],
+        }
+        raw = "exploration of tens of kilobases of sequence space"
+        problems = validate_depth(art, raw)
+        
+        # Should reject vague 'tens of' - it contains no actual numbers
+        no_number_problems = [p for p in problems if "必须包含数字" in p or "模糊" in p]
+        self.assertTrue(len(no_number_problems) > 0, f"Should reject 'tens of kilobases': {problems}")
+    
+    def test_disease_name_rejected(self):
+        """Disease names should not be registered as data_points."""
+        from inlight_articles import validate_depth
+        
+        art = {
+            "tier": "brief",
+            "title": "测试",
+            "one_liner": "测试",
+            "datacard": {
+                "study_type": "研究",
+                "n": "原文未给出",
+                "control": "无",
+                "intervention": "无",
+                "followup": "无",
+                "primary_endpoint": "测试",
+                "primary_endpoint_result": "测试",
+                "statistics": "无",
+                "safety": "无",
+            },
+            "results": ["结果"],
+            "limitations": ["局限"],
+            "data_points": [
+                {"value": "melanoma and breast cancer", "meaning": "非数值数据 - 肿瘤类型", 
+                 "source_quote": "melanoma and breast cancer models were used"},
+            ],
+        }
+        raw = "melanoma and breast cancer models were used in the study"
+        problems = validate_depth(art, raw)
+        
+        # Should reject non-numeric content
+        non_numeric = [p for p in problems if "数值" in p or "数字" in p]
+        self.assertTrue(len(non_numeric) > 0, f"Should reject disease names: {problems}")
+    
+    def test_specific_number_allowed(self):
+        """Specific numbers like '52%' should be allowed."""
+        from inlight_articles import validate_depth
+        
+        art = {
+            "tier": "brief",
+            "title": "测试",
+            "one_liner": "测试52%",
+            "datacard": {
+                "study_type": "研究",
+                "n": "36例",
+                "control": "无",
+                "intervention": "药物",
+                "followup": "12月",
+                "primary_endpoint": "缓解率",
+                "primary_endpoint_result": "52%",
+                "statistics": "无",
+                "safety": "无",
+            },
+            "results": ["缓解率52%"],
+            "limitations": ["局限"],
+            "data_points": [
+                {"value": "52%", "meaning": "缓解率", "source_quote": "response rate was 52%"},
+                {"value": "36", "meaning": "患者数", "source_quote": "36 patients enrolled"},
+            ],
+        }
+        raw = "response rate was 52% in 36 patients enrolled"
+        problems = validate_depth(art, raw)
+        
+        # Should NOT reject specific numbers
+        value_problems = [p for p in problems if "52" in p or "36" in p]
+        self.assertEqual(value_problems, [], f"Should allow specific numbers: {value_problems}")
+
+
+class TestNumberMeaningMismatch(unittest.TestCase):
+    """Test that numbers are flagged when used with contradictory metrics."""
+    
+    def test_ae_rate_as_cr_rate_flagged(self):
+        """Using an AE rate (28%) as CR rate should be flagged."""
+        from inlight_articles import validate_depth
+        
+        art = {
+            "tier": "brief",
+            "title": "测试",
+            "one_liner": "完全缓解率为28%。",  # Output says 28% is CR rate
+            "datacard": {
+                "study_type": "研究",
+                "n": "100例",
+                "control": "无",
+                "intervention": "无",
+                "followup": "无",
+                "primary_endpoint": "缓解率",
+                "primary_endpoint_result": "缓解率28%",  # Claims 28% is response
+                "statistics": "无",
+                "safety": "无",
+            },
+            "background": "背景部分不含数据。背景部分不含数据。背景部分不含数据。背景部分不含数据。背景部分不含数据。背景部分不含数据。背景部分不含数据。背景部分不含数据。背景部分不含数据。背景部分不含数据。背景部分不含数据。背景部分不含数据。",
+            "design": "设计部分不含数据。设计部分不含数据。设计部分不含数据。",
+            "results": ["缓解率28%"],  # Output attributes 28% to response
+            "limitations": ["局限"],
+            "data_points": [
+                {"value": "28%", "meaning": "缓解率", "source_quote": "Grade 3+ adverse events occurred in 28% of patients"},
+            ],
+        }
+        # Source says 28% is AE rate, not CR rate
+        raw = "In this study, 100 patients were enrolled. Grade 3+ adverse events occurred in 28% of patients."
+        problems = validate_depth(art, raw)
+        
+        # Should flag the meaning mismatch - 缓解率28% when source says adverse 28%
+        mismatch_problems = [p for p in problems if "含义不匹配" in p]
+        self.assertTrue(len(mismatch_problems) > 0, f"Should flag CR/AE mismatch: {problems}")
+    
+    def test_correct_meaning_passes(self):
+        """Number used with correct metric should pass."""
+        from inlight_articles import validate_depth
+        
+        art = {
+            "tier": "brief",
+            "title": "测试",
+            "one_liner": "不良事件发生率28%。",  # Correctly attributes to AE
+            "datacard": {
+                "study_type": "研究",
+                "n": "36例",
+                "control": "无",
+                "intervention": "无",
+                "followup": "无",
+                "primary_endpoint": "无",
+                "primary_endpoint_result": "无",
+                "statistics": "无",
+                "safety": "不良事件28%",  # Correctly in safety field
+            },
+            "background": "背景部分不含数据。背景部分不含数据。背景部分不含数据。背景部分不含数据。背景部分不含数据。背景部分不含数据。背景部分不含数据。背景部分不含数据。背景部分不含数据。背景部分不含数据。背景部分不含数据。背景部分不含数据。",
+            "design": "设计部分",
+            "results": ["不良事件发生率为28%"],  # Correctly used as AE
+            "limitations": ["局限"],
+            "data_points": [
+                {"value": "28%", "meaning": "不良事件率", "source_quote": "adverse events in 28%"},
+            ],
+        }
+        raw = "Grade 3+ adverse events occurred in 28% of patients."
+        problems = validate_depth(art, raw)
+        
+        # Should NOT flag meaning mismatch
+        mismatch_problems = [p for p in problems if "含义不匹配" in p]
+        self.assertEqual(mismatch_problems, [], f"Should not flag correct meaning: {mismatch_problems}")
+
+
+class TestTerminologyGlossary(unittest.TestCase):
+    """Test terminology translation checks."""
+    
+    def test_mesaconate_mistranslation_flagged(self):
+        """'美康酸' should be flagged when source has 'mesaconate'."""
+        from inlight_articles import validate_names
+        
+        art = {
+            "title": "美康酸在肠道炎症中的作用",
+            "one_liner": "美康酸可以抑制炎症。",
+            "background": "",
+            "design": "",
+            "results": ["美康酸处理后炎症减轻。"],
+            "mechanism": "",
+            "significance": "",
+            "authors": "原文未给出",
+            "limitations": [],
+        }
+        raw = "Mesaconate delivery to the gut reduces inflammation."
+        problems = validate_names(art, raw)
+        
+        # Should flag the mistranslation
+        term_problems = [p for p in problems if "中康酸" in p or "美康酸" in p]
+        self.assertTrue(len(term_problems) > 0, f"Should flag '美康酸' mistranslation: {problems}")
+
+
+class TestMalformedModelResponse(unittest.TestCase):
+    """Regression tests for malformed model responses that caused crashes.
+    
+    Based on real crash capture from server_run1_crash/ where the model returned
+    datacard, results, data_points as strings with embedded XML-like tags.
+    """
+    
+    def test_string_datacard_rejected(self):
+        """Model returning datacard as string should be caught, not crash."""
+        from inlight_articles import _validate_article_structure
+        
+        # This is the actual malformed response structure from the crash
+        malformed_art = {
+            "url": "https://pubmed.ncbi.nlm.nih.gov/42843925/",
+            "tier": "deep",
+            "field": "c3",
+            "title": "测试文章",
+            "datacard": '\n<parameter name="study_type">概念验证研究',  # STRING, not dict!
+            "results": '\n<parameter name="__placeholder__">',  # STRING, not list!
+            "limitations": '\n<parameter name="__placeholder__">',  # STRING, not list!
+            "data_points": '\n<parameter name="__placeholder__">',  # STRING, not list!
+            "steps": '\n<parameter name="__placeholder__">',  # STRING, not list!
+        }
+        
+        # Should return None (reject) instead of crashing
+        result = _validate_article_structure(malformed_art, "test")
+        self.assertIsNone(result)
+    
+    def test_valid_dict_datacard_passes(self):
+        """Properly formed article should pass validation."""
+        from inlight_articles import _validate_article_structure
+        
+        valid_art = {
+            "url": "https://example.com",
+            "tier": "brief",
+            "field": "c3",
+            "title": "测试",
+            "datacard": {
+                "study_type": "临床试验",
+                "n": "36例",
+                "control": "无",
+                "intervention": "药物",
+                "followup": "12个月",
+                "primary_endpoint": "安全性",
+                "primary_endpoint_result": "可耐受",
+                "statistics": "原文未报告",
+                "safety": "可接受",
+            },
+            "results": ["结果1", "结果2"],
+            "limitations": ["局限1"],
+            "data_points": [
+                {"value": "36", "meaning": "患者数", "source_quote": "36 patients"},
+            ],
+            "steps": ["步骤1", "步骤2", "步骤3"],
+        }
+        
+        result = _validate_article_structure(valid_art, "test")
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result["datacard"], dict)
+        self.assertIsInstance(result["results"], list)
+    
+    def test_json_string_datacard_coerced(self):
+        """JSON-parseable string datacard should be coerced to dict."""
+        from inlight_articles import _validate_article_structure
+        
+        # Model might return valid JSON as a string
+        art_with_json_string = {
+            "url": "https://example.com",
+            "tier": "brief",
+            "field": "c3",
+            "title": "测试",
+            "datacard": '{"study_type": "试验", "n": "10"}',  # Valid JSON string
+            "results": '["结果1", "结果2"]',  # Valid JSON list string
+            "limitations": '["局限1"]',
+            "data_points": '[{"value": "10", "meaning": "n", "source_quote": "10 patients"}]',
+            "steps": '["步骤1", "步骤2", "步骤3"]',
+        }
+        
+        result = _validate_article_structure(art_with_json_string, "test")
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result["datacard"], dict)
+        self.assertEqual(result["datacard"]["study_type"], "试验")
+        self.assertIsInstance(result["results"], list)
+        self.assertEqual(result["results"], ["结果1", "结果2"])
+    
+    def test_missing_fields_handled(self):
+        """Missing required fields should be initialized, not crash."""
+        from inlight_articles import _validate_article_structure
+        
+        # Minimal article missing some fields
+        minimal_art = {
+            "url": "https://example.com",
+            "tier": "brief",
+            "title": "测试",
+        }
+        
+        result = _validate_article_structure(minimal_art, "test")
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result.get("datacard"), dict)
+        self.assertIsInstance(result.get("results"), list)
+        self.assertIsInstance(result.get("data_points"), list)
+    
+    def test_validate_depth_with_string_datacard_does_not_crash(self):
+        """validate_depth should handle malformed articles gracefully.
+        
+        Regression test for the actual crash at inlight_articles.py:1132
+        where datacard.values() was called on a string.
+        """
+        from inlight_articles import validate_depth
+        
+        # This would have crashed before the fix
+        art = {
+            "tier": "brief",
+            "title": "测试",
+            "one_liner": "测试",
+            "datacard": "这是一个字符串不是字典",  # WRONG TYPE
+            "results": ["结果"],
+            "limitations": ["局限"],
+            "data_points": [],
+        }
+        
+        # After fix: validate_depth expects validated input, but we also guard
+        # against edge cases. This should not raise AttributeError.
+        try:
+            problems = validate_depth(art, "source text")
+            # May have validation problems, but should not crash
+            self.assertIsInstance(problems, list)
+        except AttributeError as e:
+            self.fail(f"validate_depth crashed with AttributeError: {e}")
 
 
 if __name__ == "__main__":

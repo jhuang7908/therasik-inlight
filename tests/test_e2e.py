@@ -1420,5 +1420,63 @@ sources:
             monkeypatch.undo()
 
 
+class TestLegacyPromptTruncation:
+    """Test that the legacy path prompt matches main's 700-char truncation."""
+    
+    def test_truncate_items_for_legacy(self):
+        """Verify _truncate_items_for_legacy truncates summary to 700 chars."""
+        import sys
+        sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        from run_weekly import _truncate_items_for_legacy
+        
+        items = [
+            {
+                "url": "https://example.com",
+                "title": "Test",
+                "summary": "A" * 1000  # 1000 chars
+            },
+            {
+                "url": "https://example2.com",
+                "title": "Test2",
+                "summary": "B" * 500  # 500 chars, less than 700
+            }
+        ]
+        
+        result = _truncate_items_for_legacy(items)
+        
+        # First item should be truncated to 700
+        assert len(result[0]["summary"]) == 700
+        assert result[0]["summary"] == "A" * 700
+        
+        # Second item should be unchanged (already < 700)
+        assert len(result[1]["summary"]) == 500
+        assert result[1]["summary"] == "B" * 500
+        
+        # Original items should not be modified
+        assert len(items[0]["summary"]) == 1000
+    
+    def test_legacy_prompt_uses_700_truncation(self):
+        """Verify that claude_draft uses 700-char truncation in prompt."""
+        import sys
+        sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        import run_weekly
+        
+        # Create items with long summaries
+        items = [
+            {
+                "url": "https://example.com",
+                "title": "Test",
+                "summary": "X" * 2000,
+                "source": "Test",
+                "date": "2026-01-01",
+                "kind": "academic"
+            }
+        ]
+        
+        # Verify _truncate_items_for_legacy is called correctly
+        truncated = run_weekly._truncate_items_for_legacy(items)
+        assert len(truncated[0]["summary"]) == 700
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

@@ -39,6 +39,13 @@ FIELDS = {
 
 MARKETING_BLOCKLIST = re.compile(r"重磅|颠覆|改写教科书|震撼|碾压|轰动|史诗级|划时代", re.IGNORECASE)
 
+# Terminology glossary: correct translations for scientific terms
+# Format: {English term: (correct Chinese, common incorrect translations)}
+TERMINOLOGY_GLOSSARY = {
+    "mesaconate": ("中康酸", ["美康酸", "梅沙康酸", "麦康酸"]),
+    "mesaconic acid": ("中康酸", ["美康酸", "梅沙康酸", "麦康酸"]),
+}
+
 CHINESE_NUMBER_MAP = {
     "零": "0", "一": "1", "二": "2", "三": "3", "四": "4",
     "五": "5", "六": "6", "七": "7", "八": "8", "九": "9",
@@ -918,9 +925,19 @@ def extract_number_core(text: str) -> str:
 
 
 def number_in_text_as_word_boundary(number: str, text: str) -> bool:
-    """Check if a number appears in text with word boundaries.
+    """Check if a number appears in text as STANDALONE DATA with word boundaries.
     
-    Prevents '500' from matching '5000' or '1500'.
+    Returns True only if the number appears as a data value, not embedded in an identifier.
+    
+    Examples:
+    - "52% response rate" contains "52" as standalone data -> True
+    - "CD8 T cells" does NOT contain "8" as standalone data -> False (it's part of CD8)
+    - "36 patients" contains "36" as standalone data -> True
+    
+    Prevents:
+    - '500' from matching '5000' or '1500'
+    - '8' from matching 'CD8', 'IL-8', 'TAK-981'
+    - '31' from matching 'CD318'
     """
     # Remove commas from both
     number_clean = number.replace(",", "").replace("，", "").strip()
@@ -929,9 +946,16 @@ def number_in_text_as_word_boundary(number: str, text: str) -> bool:
     if not number_clean:
         return False
     
-    # Build pattern with word boundaries
-    # Numbers should be bounded by non-digit characters
-    pattern = r'(?<!\d)' + re.escape(number_clean) + r'(?!\d)'
+    # Build pattern that requires the number to NOT be part of an identifier
+    # Numbers should be bounded by non-alphanumeric characters (not just non-digits)
+    # This prevents CD8 from providing "8", CD318 from providing "31", etc.
+    #
+    # Valid boundaries: start, end, whitespace, punctuation, CJK characters
+    # Invalid boundaries: letters (part of identifier), digits (part of larger number)
+    
+    # Pattern: number must be preceded and followed by non-alphanumeric or string boundary
+    # We use negative lookbehind/lookahead for ASCII letters and digits
+    pattern = r'(?<![a-zA-Z0-9])' + re.escape(number_clean) + r'(?![a-zA-Z0-9])'
     return bool(re.search(pattern, text_clean))
 
 
@@ -1019,15 +1043,20 @@ def number_exists_in_source(num_str: str, source_norm: str, source_identifiers: 
                             context_window: str = "") -> bool:
     """Check if a number exists in the source text (after normalization).
     
-    Returns True if:
-    - The number appears in source with word boundaries
-    - The number is part of an identifier that appears verbatim in source
+    Returns True ONLY if the number appears as a STANDALONE data value in source,
+    not as a substring of an identifier.
+    
+    Design: Identifiers like CD318, CD8, RPCEC00000444 should NOT make their
+    embedded digits (31, 8, 44) available as data. For example:
+    - Source has "CD318" -> "31例" should NOT pass
+    - Source has "52% response rate" -> "52%" should pass
     
     Args:
         num_str: The number string from output (e.g., "50", "3.5倍", "72小时")
-        source_norm: Normalized source text
-        source_identifiers: Set of identifiers extracted from source
-        context_window: Optional surrounding text for better context matching
+        source_norm: Normalized source text (lowercased, whitespace normalized)
+        source_identifiers: Set of identifiers extracted from source (for reference only)
+        context_window: Surrounding text from output (used to check if number appears
+                        as part of an identifier that exists in source)
     """
     # Normalize the number
     num_clean = num_str.replace(',', '').replace('，', '').strip()
@@ -1037,14 +1066,24 @@ def number_exists_in_source(num_str: str, source_norm: str, source_identifiers: 
     if not num_core:
         return True  # Not a number (empty after extraction)
     
-    # Check if this is part of an identifier in source
-    for ident in source_identifiers:
-        ident_lower = ident.lower()
-        if num_core in ident_lower:
-            # The number is part of an identifier - allow if identifier exists in source
-            return True
+    # Check if the number in output is part of an identifier FROM SOURCE
+    # Only allow if the FULL identifier appears in the context_window of output
+    # This handles: output says "CD8细胞" and source has "CD8" -> the "8" is OK
+    # But NOT: output says "8例死亡" and source has "CD8" -> the "8" is INVENTED
+    if context_window:
+        for ident in source_identifiers:
+            ident_lower = ident.lower()
+            # Only relevant if the identifier contains this number
+            if num_core in ident_lower:
+                # Check if the FULL identifier appears near the number in output
+                context_lower = context_window.lower()
+                if ident_lower in context_lower:
+                    # The identifier (e.g., CD8) appears in output context
+                    # AND the number is part of that identifier -> allow
+                    return True
     
-    # Check if the number exists in source with word boundary
+    # Check if the number exists in source with word boundaries
+    # This is the primary check: the number must appear as standalone data
     if number_in_text_as_word_boundary(num_core, source_norm):
         return True
     
@@ -1056,6 +1095,114 @@ def number_exists_in_source(num_str: str, source_norm: str, source_identifiers: 
             return True
     
     return False
+
+
+# Contradictory metric pairs - if output uses one and source uses the other, it's a mismatch
+# These are pairs where using the same number would be semantically wrong
+CONTRADICTORY_METRIC_PAIRS = [
+    # Response rate vs adverse events - completely different metrics
+    ({"response", "缓解", "orr", "crr", "cr", "pr", "客观缓解", "完全缓解", "部分缓解", "有效"},
+     {"adverse", "不良", "ae", "toxicity", "毒性", "side effect", "副作用", "trae", "teae"}),
+    # Response rate vs mortality - one is good, one is bad
+    ({"response", "缓解", "orr", "有效"},
+     {"死亡", "mortality", "death", "致死"}),
+    # Survival vs adverse events
+    ({"survival", "生存", "os", "pfs", "存活"},
+     {"adverse", "不良", "ae", "toxicity", "毒性"}),
+]
+
+
+def extract_metric_keywords(context: str) -> set[str]:
+    """Extract specific metric keywords from context (not categories).
+    
+    Returns a set of found keywords, lowercase.
+    """
+    context_lower = context.lower()
+    keywords = set()
+    
+    # Key metrics to detect
+    all_keywords = [
+        "response", "缓解", "orr", "crr", "cr", "pr", "客观缓解", "完全缓解", "部分缓解",
+        "有效", "efficacy",
+        "survival", "生存", "os", "pfs", "dfs", "efs", "存活",
+        "死亡", "mortality", "death", "致死",
+        "adverse", "不良", "ae", "toxicity", "毒性", "safety", "side effect", "副作用",
+        "trae", "teae",
+    ]
+    
+    for kw in all_keywords:
+        if kw in context_lower:
+            keywords.add(kw)
+    
+    return keywords
+
+
+def number_meaning_matches_source(num_str: str, output_context: str, source_text: str) -> tuple[bool, str]:
+    """Check if a number is used with a matching metric in source.
+    
+    Only flags CONTRADICTORY metric usage when a number is DIRECTLY attributed
+    to a contradicting metric (e.g., "死亡率28%" when source says "28% adverse events").
+    
+    Uses a narrow context window (8 chars before number) to avoid false positives
+    from distant text.
+    
+    Args:
+        num_str: The number string (e.g., "28%")
+        output_context: Context window around number in output  
+        source_text: Full source text
+        
+    Returns:
+        (matches, reason) tuple. matches=True if meaning is consistent or unclear.
+    """
+    num_core = extract_number_core(num_str)
+    if not num_core:
+        return True, ""
+    
+    # Only look at IMMEDIATE context (8 chars before number) for metric keywords
+    # This catches "死亡率28%" or "CR rate 28%" but not distant mentions
+    # Find the number in the output context and look at what's immediately before it
+    num_match = re.search(rf'{re.escape(num_core)}', output_context)
+    if not num_match:
+        return True, ""
+    
+    # Get the 8 characters immediately before the number
+    immediate_start = max(0, num_match.start() - 8)
+    immediate_context = output_context[immediate_start:num_match.end()].lower()
+    
+    output_keywords = extract_metric_keywords(immediate_context)
+    if not output_keywords:
+        return True, ""  # No recognizable metric immediately attached
+    
+    # Find all occurrences of this number in source and their metric keywords
+    source_norm = source_text.lower()
+    
+    # Find number in source with moderate context (30 chars before/after)
+    # Needs to be wider than output window to capture the full phrase
+    pattern = rf'(?<![a-zA-Z0-9]){re.escape(num_core)}(?![a-zA-Z0-9])'
+    source_keywords = set()
+    for match in re.finditer(pattern, source_norm):
+        start = max(0, match.start() - 30)
+        end = min(len(source_norm), match.end() + 15)
+        source_context = source_norm[start:end]
+        source_keywords.update(extract_metric_keywords(source_context))
+    
+    if not source_keywords:
+        return True, ""  # Number not found with metrics in source
+    
+    # Check for contradictory pairs
+    for set1, set2 in CONTRADICTORY_METRIC_PAIRS:
+        output_has_set1 = bool(output_keywords & set1)
+        output_has_set2 = bool(output_keywords & set2)
+        source_has_set1 = bool(source_keywords & set1)
+        source_has_set2 = bool(source_keywords & set2)
+        
+        # Contradiction: output uses set1 keywords, source only has set2 (or vice versa)
+        if output_has_set1 and source_has_set2 and not source_has_set1:
+            return False, f"数字 '{num_str}' 含义不匹配：输出用于{output_keywords & set1}类指标，原文用于{source_keywords & set2}类指标"
+        if output_has_set2 and source_has_set1 and not source_has_set2:
+            return False, f"数字 '{num_str}' 含义不匹配：输出用于{output_keywords & set2}类指标，原文用于{source_keywords & set1}类指标"
+    
+    return True, ""
 
 
 def extract_numbers_with_context(text: str) -> list[tuple[str, str]]:
@@ -1129,9 +1276,12 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
         *art.get("limitations", []),
     ]
     datacard = art.get("datacard", {})
-    for field_val in datacard.values():
-        if isinstance(field_val, str):
-            all_text_parts.append(field_val)
+    if isinstance(datacard, dict):
+        for field_val in datacard.values():
+            if isinstance(field_val, str):
+                all_text_parts.append(field_val)
+    elif isinstance(datacard, str):
+        all_text_parts.append(datacard)
     all_text = " ".join(all_text_parts)
     
     # Marketing words check on ALL text
@@ -1148,8 +1298,38 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
         meaning = dp.get("meaning", "").strip()
         
         # Reject gaming: non-numeric values
-        if value in ('无', '不适用', '两种', '三种', '两种模型', '三种干预'):
-            problems.append(f"data_point value 必须是数值，不能是 '{value}'")
+        # data_points must contain actual numeric data, not:
+        # - Vague quantifiers (millions, tens of)
+        # - Disease names or other non-numeric content
+        # - Placeholder values
+        
+        # Check if value contains at least one digit
+        if not re.search(r'\d', value):
+            # No digits at all - reject
+            problems.append(f"data_point value 必须包含数字：'{value}'")
+            continue
+        
+        # Check for vague/imprecise quantifiers that lack specific numbers
+        vague_patterns = [
+            r'^millions?$',
+            r'^tens? of\b',
+            r'^hundreds? of\b',
+            r'^thousands? of\b',
+            r'^多种',
+            r'^数十',
+            r'^数百',
+            r'^数千',
+            r'^若干',
+            r'^部分',
+        ]
+        is_vague = any(re.search(p, value.lower()) for p in vague_patterns)
+        if is_vague:
+            problems.append(f"data_point value 过于模糊，需要具体数字：'{value}'")
+            continue
+        
+        # Reject disease names and other non-quantitative content
+        if meaning and any(x in meaning.lower() for x in ['非数值', 'disease', 'condition', '疾病', '病症']):
+            problems.append(f"data_point 不是数值数据：{value} ({meaning})")
             continue
         
         # Reject gaming: registering identifier digits
@@ -1183,6 +1363,11 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
     for num, context in extract_numbers_with_context(all_text):
         if not number_exists_in_source(num, source_norm, source_identifiers, context):
             problems.append(f"数字 '{num}' 在原始材料中未找到")
+        else:
+            # Number exists - also check if meaning matches
+            meaning_ok, meaning_reason = number_meaning_matches_source(num, context, raw_material)
+            if not meaning_ok:
+                problems.append(meaning_reason)
     
     # Extract Chinese numerals with context (万/亿 included)
     for cn_num, context in extract_chinese_numbers_with_context(all_text):
@@ -1190,6 +1375,11 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
         arabic_core = extract_number_core(arabic)
         if arabic_core and not number_in_text_as_word_boundary(arabic_core, source_norm):
             problems.append(f"中文数字 '{cn_num}' ({arabic}) 在原始材料中未找到")
+        else:
+            # Chinese number exists - also check meaning
+            meaning_ok, meaning_reason = number_meaning_matches_source(cn_num, context, raw_material)
+            if not meaning_ok:
+                problems.append(meaning_reason)
     
     # Limitations count and quality
     min_limits = 3 if tier == "deep" else 1
@@ -1205,10 +1395,13 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
     # Datacard required fields
     required_fields = ["study_type", "n", "control", "intervention", "followup",
                       "primary_endpoint", "primary_endpoint_result", "statistics", "safety"]
-    for field in required_fields:
-        val = str(datacard.get(field, "")).strip()
-        if not val:
-            problems.append(f"数据卡字段为空：{field}（应写'原文未给出'或'不适用'）")
+    if isinstance(datacard, dict):
+        for field in required_fields:
+            val = str(datacard.get(field, "")).strip()
+            if not val:
+                problems.append(f"数据卡字段为空：{field}（应写'原文未给出'或'不适用'）")
+    else:
+        problems.append("datacard 字段格式错误（应为对象）")
     
     # Character count check
     body_parts = [
@@ -1234,7 +1427,10 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
             problems.append(f"brief 档正文 {total_chars} 字，超过上限 748 字")
     
     # Evidence level check
-    evidence = art.get("evidence_level", datacard.get("evidence_level", "abstract"))
+    if isinstance(datacard, dict):
+        evidence = art.get("evidence_level", datacard.get("evidence_level", "abstract"))
+    else:
+        evidence = art.get("evidence_level", "abstract")
     if tier == "deep" and evidence in ("press", "secondary"):
         problems.append("仅有新闻稿，不得写成深度解读")
     
@@ -1278,43 +1474,44 @@ def validate_names(art: dict, raw_material: str) -> list[str]:
                 problems.append(f"作者姓氏 '{match.group(1)}' 在原始材料中未找到")
     
     # 2. Chinese 'X等' author patterns (single surname + 等)
-    # Only check surnames, not common words
+    # ONLY flag when the pattern looks like an author reference, not enumeration
+    # 
+    # Examples that ARE author patterns (flag if not in source):
+    #   - "张等发现" (Zhang et al. found)
+    #   - "由李等报道" (reported by Li et al.)
+    #
+    # Examples that are NOT author patterns (don't flag):
+    #   - "乏力、皮疹等" (fatigue, rash, etc.) - list enumeration
+    #   - "细胞因子等" (cytokines, etc.) - noun enumeration
+    #   - "活动等" (activities, etc.) - noun enumeration
+    #
+    # Heuristic: "X等" is likely an author pattern only if:
+    # - Preceded by a sentence boundary (。？！), comma (，), or start of text
+    # - AND followed by a verb or attribution word (发现, 报道, 称, 指出, 认为)
+    
     chinese_surname_pattern = r'([\u4e00-\u9fff])等'
-    # Common single-char words that are NOT surnames when followed by 等
-    common_non_surnames = {'者', '后', '外', '内', '上', '下', '前', '中', '果', '据', '他', '她', '它', '此', '其'}
-    for match in re.finditer(chinese_surname_pattern, all_text):
-        char = match.group(1)
-        if char not in common_non_surnames:
-            # This looks like a surname - check if it appears in source
-            if char not in raw_material:
-                problems.append(f"中文作者姓氏 '{char}' 在原始材料中未找到")
+    author_context_pattern = r'(?:^|[。？！，、])\s*[\u4e00-\u9fff]等\s*(?:发现|报道|称|指出|认为|表示|提出|观察|测定|检测|分析)'
+    
+    # Only flag if we find author-context pattern
+    author_contexts = set(re.findall(r'([\u4e00-\u9fff])等(?=\s*(?:发现|报道|称|指出|认为|表示|提出|观察|测定|检测|分析))', all_text))
+    for char in author_contexts:
+        if char not in raw_material:
+            problems.append(f"中文作者姓氏 '{char}' 在原始材料中未找到")
     
     # 3. Chinese institution patterns: PROPER NAME + suffix
     # Only match if there's a clear proper name before the suffix
     # Proper name indicators: capitalized/title case, or known institution name patterns
     # E.g., "北京大学", "哈佛医院", but NOT "单中心", "中心数"
     
-    # Look for specific named institutions (proper name + suffix)
-    # Proper names in Chinese are typically 2-4 chars of specific place/person names
-    institution_suffixes = r'(?:大学|医院|研究所|研究院|学院)'
-    institution_pattern = rf'([\u4e00-\u9fff]{{2,4}}){institution_suffixes}'
-    
-    # Known generic terms to skip
-    generic_terms = {'单中心', '多中心', '中心数', '该中心', '本中心', '数据中', '研究中'}
-    
-    for match in re.finditer(institution_pattern, all_text):
-        full_name = match.group(0)
-        prefix = match.group(1)
-        
-        # Skip if prefix looks generic (contains numbers or common descriptive words)
-        if any(c in prefix for c in '一二三四五六七八九十百千万零数该本某各'):
-            continue
-        if full_name in generic_terms:
-            continue
-        
-        # Check if this institution name appears in source
-        if full_name.lower() not in norm:
-            problems.append(f"机构名 '{full_name}' 在原始材料中未找到")
+    # 3. Chinese institution patterns: SKIP
+    # 
+    # We no longer flag Chinese institution names because:
+    # 1. Translated institution names (哈佛医学院 for Harvard Medical School) are legitimate
+    # 2. Real institutions mentioned in affiliations are standard practice
+    # 3. False positives (e.g., "分子免疫中心" flagged for "子") cause article drops
+    #
+    # Instead, we rely on number/data validation to catch fabrication.
+    # Institutional affiliation fabrication is rare and lower priority than data fabrication.
     
     # 4. Latin-script drug/compound names (specific patterns)
     drug_pattern = r'\b([A-Z][a-z]+(?:mab|nib|lib|zumab|ximab|tinib|ciclib|lizumab))\b'
@@ -1322,6 +1519,15 @@ def validate_names(art: dict, raw_material: str) -> list[str]:
         drug = match.group(1).lower()
         if drug not in norm:
             problems.append(f"药物名 '{match.group(1)}' 在原始材料中未找到")
+    
+    # 5. Terminology check: flag incorrect translations
+    for eng_term, (correct, incorrect_list) in TERMINOLOGY_GLOSSARY.items():
+        # Check if source mentions the English term
+        if eng_term.lower() in norm:
+            # Check if output uses an incorrect translation
+            for wrong in incorrect_list:
+                if wrong in all_text:
+                    problems.append(f"术语翻译错误：'{wrong}' 应为 '{correct}'（英文：{eng_term}）")
     
     # 5. Latin-script company names
     company_pattern = r'([A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+)?)\s*(?:公司|Inc\.?|Ltd\.?|Corp\.?|Therapeutics|Pharma|Biopharma)'
@@ -1430,13 +1636,113 @@ def draft_single_article(item: EnrichedItem, tier: str, config: dict, problems: 
     for block in message.content:
         if block.type == "tool_use" and block.name == "submit_article":
             art = block.input
-            art["source"] = item.source
-            art["evidence_level"] = item.evidence_level
-            art["source_trace"] = item.source_trace
-            return art
+            
+            # Validate and coerce field types - model may return strings for dict/list fields
+            # This happens when the model outputs XML-like tags embedded in strings
+            validated = _validate_article_structure(art, item.title[:50])
+            if validated is None:
+                return None
+            
+            validated["source"] = item.source
+            validated["evidence_level"] = item.evidence_level
+            validated["source_trace"] = item.source_trace
+            return validated
     
     logging.warning("Article draft did not return tool_use for: %s", item.title[:50])
     return None
+
+
+def _validate_article_structure(art: dict, title_snippet: str) -> dict | None:
+    """Validate and coerce article field types.
+    
+    The model may return malformed responses where dict/list fields are strings
+    (e.g., with embedded XML-like tags). This function:
+    - Validates required fields exist
+    - Coerces string lists/dicts where possible (JSON parsing)
+    - Rejects malformed articles with logging
+    
+    Returns validated article dict, or None if unrecoverable.
+    """
+    # Required dict fields
+    dict_fields = ["datacard"]
+    # Required list fields
+    list_fields = ["results", "limitations", "data_points", "steps"]
+    # Optional list fields
+    optional_list_fields = ["unknowns"]
+    
+    for field in dict_fields:
+        val = art.get(field)
+        if val is None:
+            # Missing dict field - try to continue with empty dict
+            art[field] = {}
+            logging.warning("Article missing required dict field '%s': %s", field, title_snippet)
+        elif isinstance(val, str):
+            # Try to parse as JSON
+            try:
+                parsed = json.loads(val)
+                if isinstance(parsed, dict):
+                    art[field] = parsed
+                else:
+                    logging.error("Article field '%s' parsed to non-dict type: %s", field, title_snippet)
+                    return None
+            except json.JSONDecodeError:
+                logging.error("Article field '%s' is malformed string (not valid JSON): %s", field, title_snippet)
+                return None
+        elif not isinstance(val, dict):
+            logging.error("Article field '%s' has unexpected type %s: %s", field, type(val).__name__, title_snippet)
+            return None
+    
+    for field in list_fields:
+        val = art.get(field)
+        if val is None:
+            # Missing list field - use empty list
+            art[field] = []
+            logging.warning("Article missing required list field '%s': %s", field, title_snippet)
+        elif isinstance(val, str):
+            # Try to parse as JSON
+            try:
+                parsed = json.loads(val)
+                if isinstance(parsed, list):
+                    art[field] = parsed
+                else:
+                    logging.error("Article field '%s' parsed to non-list type: %s", field, title_snippet)
+                    return None
+            except json.JSONDecodeError:
+                logging.error("Article field '%s' is malformed string (not valid JSON): %s", field, title_snippet)
+                return None
+        elif not isinstance(val, list):
+            logging.error("Article field '%s' has unexpected type %s: %s", field, type(val).__name__, title_snippet)
+            return None
+    
+    for field in optional_list_fields:
+        val = art.get(field)
+        if val is None:
+            art[field] = []
+        elif isinstance(val, str):
+            try:
+                parsed = json.loads(val)
+                if isinstance(parsed, list):
+                    art[field] = parsed
+                else:
+                    art[field] = []
+            except json.JSONDecodeError:
+                art[field] = []
+        elif not isinstance(val, list):
+            art[field] = []
+    
+    # Validate data_points structure - each item must have value, meaning, source_quote
+    valid_data_points = []
+    for i, dp in enumerate(art.get("data_points", [])):
+        if not isinstance(dp, dict):
+            logging.warning("data_point %d is not a dict, skipping: %s", i, title_snippet)
+            continue
+        if not all(k in dp for k in ["value", "meaning", "source_quote"]):
+            logging.warning("data_point %d missing required keys, skipping: %s", i, title_snippet)
+            continue
+        valid_data_points.append(dp)
+    art["data_points"] = valid_data_points
+    
+    return art
 
 
 def process_articles(items: list[dict], config: dict) -> dict:

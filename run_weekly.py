@@ -514,6 +514,21 @@ def fetch_all(config: dict) -> list[dict]:
     return rows
 
 
+def _truncate_items_for_legacy(items: list[dict]) -> list[dict]:
+    """Truncate item summaries to 700 chars for legacy claude_draft path.
+    
+    This maintains byte-identical prompts with main branch which used [:700].
+    The new pipeline uses full summaries via enrich_item.
+    """
+    result = []
+    for item in items:
+        truncated = dict(item)
+        if "summary" in truncated:
+            truncated["summary"] = truncated["summary"][:700]
+        result.append(truncated)
+    return result
+
+
 def claude_draft(items: list[dict], config: dict) -> dict:
     """Use Claude with tool_use for reliable JSON output."""
     from anthropic import Anthropic
@@ -575,6 +590,9 @@ def claude_draft(items: list[dict], config: dict) -> dict:
         },
     }
 
+    # Truncate summaries to 700 chars for legacy path (maintains byte-identical prompts with main)
+    items_for_prompt = _truncate_items_for_legacy(items)
+
     prompt = f"""你是前沿追踪的编辑。下面是过去 {config.get('window_days', 7)} 天从固定来源抓到的条目，每条只有标题、链接、日期和来源摘要。
 
 ## 规则
@@ -611,7 +629,7 @@ steps 必须是 3-5 个简短步骤（每个≤25字），描述论文的核心�
 调用 submit_weekly_digest 工具提交你的筛选结果。
 
 输入：
-{json.dumps(items, ensure_ascii=False)}
+{json.dumps(items_for_prompt, ensure_ascii=False)}
 """
     model = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5-5")
     logging.info("调用 Claude %s (tool_use, tool_choice=auto)", model)
