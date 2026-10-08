@@ -1244,7 +1244,7 @@ sources:
             "results": ["在24例可评估患者中，客观缓解率达到58%（14/24例），提示治疗具有临床意义的疗效。中位随访时间为18个月，多数获得缓解的患者能够维持疗效，显示缓解具有持久性。安全性方面，三级及以上不良事件发生率为21%，未观察到剂量限制性毒性，药物总体耐受性良好，支持在后续试验中进一步探索。"],
             "mechanism": "",
             "limitations": ["单臂研究设计，缺乏对照组无法评估与现有治疗方案的相对疗效"],
-            "significance": "这项首次人体试验提供了itolizumab在自身免疫病患者中的初步安全性和疗效证据，为后续临床开发奠定了基础。",
+            "significance": "这项首次人体试验提供了itolizumab在自身免疫病患者中的初步安全性和疗效证据，为后续临床开发奠定了基础。该研究同时记录了给药间隔、随访时长与不良事件分布，为后续更大样本的对照试验提供了剂量和安全性方面的参考依据。",
             "data_points": [
                 {"value": "24", "meaning": "患者数", "source_quote": "24 patients with autoimmune disease were enrolled"},
                 {"value": "58%", "meaning": "缓解率", "source_quote": "objective response rate was 58%"},
@@ -1401,7 +1401,7 @@ sources:
             "results": ["在24例可评估患者中，客观缓解率达到58%（14/24例），提示治疗具有临床意义的疗效。中位随访时间为18个月，多数获得缓解的患者能够维持疗效，显示缓解具有持久性。安全性方面，三级及以上不良事件发生率为21%，未观察到剂量限制性毒性，药物总体耐受性良好，支持在后续试验中进一步探索。"],
             "mechanism": "",
             "limitations": ["单臂研究设计，缺乏对照组无法评估与现有治疗方案的相对疗效"],
-            "significance": "这项首次人体试验提供了itolizumab在自身免疫病患者中的初步安全性和疗效证据，为后续临床开发奠定了基础。",
+            "significance": "这项首次人体试验提供了itolizumab在自身免疫病患者中的初步安全性和疗效证据，为后续临床开发奠定了基础。该研究同时记录了给药间隔、随访时长与不良事件分布，为后续更大样本的对照试验提供了剂量和安全性方面的参考依据。",
             "data_points": [
                 {"value": "24", "meaning": "患者数", "source_quote": "24 patients with autoimmune disease were enrolled"},
                 {"value": "58%", "meaning": "缓解率", "source_quote": "objective response rate was 58%"},
@@ -1499,6 +1499,23 @@ class TestLegacyPromptTruncation:
         
         # Original items should not be modified
         assert len(items[0]["summary"]) == 1000
+
+    def test_truncate_strips_journal_key(self):
+        """Legacy prompt must not serialize the new-pipeline journal key."""
+        from run_weekly import _truncate_items_for_legacy
+
+        items = [{
+            "source": "PubMed",
+            "kind": "academic",
+            "title": "T",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/1/",
+            "date": "2026-01-01",
+            "summary": "Journal name. Authors",
+            "journal": "Journal name",
+        }]
+        result = _truncate_items_for_legacy(items)
+        assert "journal" not in result[0]
+        assert items[0]["journal"] == "Journal name"
     
     def test_legacy_prompt_uses_700_truncation(self):
         """Verify that claude_draft uses 700-char truncation in prompt."""

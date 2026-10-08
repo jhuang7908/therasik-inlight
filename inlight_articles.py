@@ -1164,7 +1164,7 @@ _IDENTIFIER_TOKEN_RE = re.compile(
     r'(?:CD|IL|HLA|IFN|NK|NF|CCR|CCL|CXCL|CXCR|Th|TAK|PD|MK|p)\s*-?\s*[A-Za-z]?\d+[A-Za-z0-9./-]*'
     r'|(?:NCT|RPCEC|ISRCTN|EudraCT|ACTRN|ChiCTR)\d+'
     r'|Nissle\s+\d+'
-    r'|\b[A-Z]\d+\b'
+    r'|(?<![A-Za-z0-9])[A-Z]\d+(?![A-Za-z0-9])'
     r')'
 )
 
