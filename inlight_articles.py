@@ -1516,6 +1516,12 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
     if tier == "deep" and evidence in ("press", "secondary"):
         problems.append("仅有新闻稿，不得写成深度解读")
     
+    # Check for excessive "未给出" boilerplate (soft warning)
+    # If an article has too many "未给出" phrases, it may lack substantive content
+    not_given_count = all_text.count("未给出") + all_text.count("未报告") + all_text.count("未提供")
+    if not_given_count > 8:
+        problems.append(f"文章含有过多「未给出/未报告」({not_given_count}处)，内容可能过于空洞")
+    
     return problems
 
 
