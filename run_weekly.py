@@ -362,6 +362,388 @@ def fetch_pubmed(source: dict, start: date, end: date, limit: int) -> list[dict]
     return rows
 
 
+# =============================================================================
+# DEAL FILING SOURCES (SEC, HKEX, cninfo)
+# =============================================================================
+
+FILING_DEAL_CATEGORIES = {
+    "lic": "授权合作",  # licensing/collaboration
+    "acq": "并购",      # M&A
+    "inv": "融资/IPO",  # financing/IPO
+}
+
+# SEC biopharma SIC codes
+SEC_BIOPHARMA_SICS = {"2834", "2835", "2836", "8731"}
+
+# Keywords for filtering filings
+SEC_DEAL_KEYWORDS = [
+    "license", "collaboration", "acquisition", "merger", "upfront", "milestone",
+    "partnership", "agreement", "exclusive rights", "royalt", "option",
+]
+HKEX_DEAL_KEYWORDS = [
+    "licensing", "license", "collaboration", "acquisition", "merger",
+    "major transaction", "discloseable transaction", "placing", "subscription",
+    "授权", "许可", "合作", "收购", "并购", "配售", "认购",
+]
+CNINFO_DEAL_KEYWORDS = [
+    "许可", "授权", "合作协议", "重大合同", "对外投资", "收购", "并购",
+    "战略合作", "技术转让", "独家", "里程碑",
+]
+
+
+def fetch_sec_filings(start: datetime, limit: int) -> list[dict]:
+    """Fetch recent 8-K and 6-K filings from SEC EDGAR for biopharma companies."""
+    import time
+    import requests
+    
+    sec_ua = os.environ.get("SEC_USER_AGENT")
+    if not sec_ua:
+        logging.warning("SEC_USER_AGENT 未设置，跳过 SEC EDGAR 来源。请设置格式如 'CompanyName contact@example.com'")
+        return []
+    
+    logging.info("抓取 SEC EDGAR 8-K/6-K（生物医药 SIC）")
+    
+    # Use EDGAR full-text search API
+    end_date = datetime.now(timezone.utc).date()
+    start_date = start.date()
+    
+    rows = []
+    headers = {"User-Agent": sec_ua, "Accept": "application/json"}
+    
+    # Search for 8-K and 6-K filings with deal keywords
+    for form_type in ["8-K", "6-K"]:
+        for keyword in SEC_DEAL_KEYWORDS[:4]:  # Limit to avoid too many requests
+            search_url = "https://efts.sec.gov/LATEST/search-index"
+            params = {
+                "q": keyword,
+                "dateRange": "custom",
+                "startdt": start_date.isoformat(),
+                "enddt": end_date.isoformat(),
+                "forms": form_type,
+                "from": "0",
+                "size": "20",
+            }
+            
+            try:
+                time.sleep(0.15)  # Respect SEC's 10 req/sec limit
+                resp = requests.get(search_url, params=params, headers=headers, timeout=30)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    hits = data.get("hits", {}).get("hits", [])
+                    
+                    for hit in hits[:limit]:
+                        source = hit.get("_source", {})
+                        
+                        # Filter by SIC code
+                        sics = source.get("sics", [])
+                        if not any(sic in SEC_BIOPHARMA_SICS for sic in sics):
+                            continue
+                        
+                        company = source.get("display_names", ["Unknown"])[0]
+                        filed_date = source.get("file_date", "")
+                        form = source.get("form", form_type)
+                        accession = source.get("adsh", "").replace("-", "")
+                        cik = source.get("ciks", [""])[0]
+                        
+                        if not accession or not cik:
+                            continue
+                        
+                        # Build filing URL
+                        filing_url = f"https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={cik}&type={form}&dateb=&owner=include&count=40&search_text="
+                        doc_url = f"https://www.sec.gov/Archives/edgar/data/{cik}/{accession}"
+                        
+                        # Get filing description from items
+                        items = source.get("items", [])
+                        description = ", ".join(items) if items else f"{form} filing"
+                        
+                        rows.append({
+                            "source": f"SEC {form}",
+                            "kind": "industry",
+                            "filing_source": "sec",
+                            "title": f"{company}: {description[:80]}",
+                            "url": doc_url,
+                            "date": filed_date[:10] if filed_date else end_date.isoformat(),
+                            "summary": f"SEC {form} filing. {description}",
+                            "company": company,
+                            "filing_type": form,
+                        })
+                        
+            except Exception as e:
+                logging.warning("SEC 搜索失败 (%s, %s): %s", form_type, keyword, e)
+                continue
+            
+            if len(rows) >= limit:
+                break
+        if len(rows) >= limit:
+            break
+    
+    # Dedupe by URL
+    seen = set()
+    unique_rows = []
+    for row in rows:
+        if row["url"] not in seen:
+            seen.add(row["url"])
+            unique_rows.append(row)
+    
+    logging.info("SEC EDGAR 得到 %d 条", len(unique_rows))
+    return unique_rows[:limit]
+
+
+def fetch_hkex_announcements(start: datetime, limit: int) -> list[dict]:
+    """Fetch announcements from HKEX 披露易 for healthcare/biotech companies."""
+    import time
+    import requests
+    
+    logging.info("抓取 HKEX 披露易（医药公告）")
+    
+    end_date = datetime.now(timezone.utc).date()
+    start_date = start.date()
+    
+    rows = []
+    headers = {"User-Agent": BROWSER_UA, "Accept": "application/json"}
+    
+    # HKEX news API endpoint
+    api_url = "https://www1.hkexnews.hk/search/titlesearch.xhtml"
+    
+    # Search for healthcare sector announcements
+    params = {
+        "lang": "EN",
+        "category": "0",  # All categories
+        "market": "SEHK",
+        "from": start_date.strftime("%Y%m%d"),
+        "to": end_date.strftime("%Y%m%d"),
+        "headline": "",
+        "searchType": "0",
+        "t": "en",
+    }
+    
+    try:
+        # Try the search endpoint
+        resp = requests.get(api_url, params=params, headers=headers, timeout=30)
+        
+        if resp.status_code != 200:
+            logging.warning("HKEX API 返回 %d", resp.status_code)
+            return []
+        
+        # Parse response - HKEX returns HTML, need to extract
+        content = resp.text
+        if not content:
+            logging.warning("HKEX 返回空内容")
+            return []
+        
+        # Look for PDF announcement links - they're in format /listedco/listconews/.../*.pdf
+        # Also extract the title from nearby text
+        # Pattern: find all PDF links and get context
+        pdf_pattern = r'href="(/listedco/listconews/[^"]+\.pdf)"'
+        pdf_matches = re.findall(pdf_pattern, content)
+        
+        # Try to extract title from table structure
+        # Typical structure: <td>...<a href="/listedco/...">Title</a>...</td>
+        link_title_pattern = r'<a[^>]*href="(/listedco/listconews/[^"]+\.pdf)"[^>]*>([^<]+)</a>'
+        link_title_matches = re.findall(link_title_pattern, content)
+        
+        # If we got titles, use those
+        if link_title_matches:
+            import html
+            for url_path, title in link_title_matches[:limit * 3]:
+                title = html.unescape(title.strip())
+                if not title:
+                    continue
+                
+                # Filter by keywords (be more lenient since HKEX has structured titles)
+                title_lower = title.lower()
+                has_keyword = any(kw.lower() in title_lower for kw in HKEX_DEAL_KEYWORDS)
+                # Also accept common HK deal types
+                hk_deal_types = ['major', 'discloseable', 'connected', 'placing', 'subscription', 
+                                 'acquisition', 'disposal', 'joint venture', 'collaboration']
+                has_deal_type = any(dt in title_lower for dt in hk_deal_types)
+                
+                if not has_keyword and not has_deal_type:
+                    continue
+                
+                url = f"https://www1.hkexnews.hk{url_path}"
+                
+                rows.append({
+                    "source": "HKEX 披露易",
+                    "kind": "industry",
+                    "filing_source": "hkex",
+                    "title": title[:100],
+                    "url": url,
+                    "date": end_date.isoformat(),
+                    "summary": f"HKEX announcement: {title}",
+                    "filing_type": "announcement",
+                })
+                
+                if len(rows) >= limit:
+                    break
+        else:
+            # Fallback: just use PDF links without titles
+            for url_path in pdf_matches[:limit]:
+                url = f"https://www1.hkexnews.hk{url_path}"
+                rows.append({
+                    "source": "HKEX 披露易",
+                    "kind": "industry",
+                    "filing_source": "hkex",
+                    "title": "HKEX Announcement",
+                    "url": url,
+                    "date": end_date.isoformat(),
+                    "summary": "HKEX filing",
+                    "filing_type": "announcement",
+                })
+                
+    except Exception as e:
+        logging.warning("HKEX 抓取失败: %s", e)
+    
+    logging.info("HKEX 披露易 得到 %d 条", len(rows))
+    return rows
+
+
+def fetch_cninfo_announcements(start: datetime, limit: int) -> list[dict]:
+    """Fetch announcements from 巨潮资讯 for biopharma A-share companies."""
+    import time
+    import requests
+    
+    logging.info("抓取巨潮资讯（医药生物公告）")
+    
+    end_date = datetime.now(timezone.utc).date()
+    start_date = start.date()
+    
+    rows = []
+    headers = {
+        "User-Agent": BROWSER_UA,
+        "Accept": "application/json",
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Referer": "http://www.cninfo.com.cn/new/commonUrl/pageOfSearch",
+    }
+    
+    # cninfo search API
+    api_url = "http://www.cninfo.com.cn/new/hisAnnouncement/query"
+    
+    # Search parameters
+    data = {
+        "pageNum": "1",
+        "pageSize": str(limit * 2),
+        "column": "szse",  # Shenzhen + Shanghai
+        "tabName": "fulltext",
+        "plate": "",
+        "stock": "",
+        "searchkey": "许可 OR 授权 OR 合作协议 OR 重大合同",
+        "secid": "",
+        "category": "category_ndbg_szsh;category_bndbg_szsh;category_yjdbg_szsh;category_sjdbg_szsh",
+        "trade": "医药生物",  # Biopharma sector
+        "seDate": f"{start_date.strftime('%Y-%m-%d')}~{end_date.strftime('%Y-%m-%d')}",
+        "sortName": "",
+        "sortType": "",
+        "isHLtitle": "true",
+    }
+    
+    try:
+        # Use longer timeout and retry for cninfo (may be slow from outside China)
+        for attempt in range(3):
+            try:
+                resp = requests.post(api_url, data=data, headers=headers, timeout=45)
+                if resp.status_code == 200:
+                    break
+            except requests.exceptions.Timeout:
+                if attempt < 2:
+                    logging.info("巨潮资讯超时，重试...")
+                    time.sleep(2 * (attempt + 1))
+                continue
+        else:
+            logging.warning("巨潮资讯多次超时，跳过")
+            return []
+        
+        if resp.status_code != 200:
+            logging.warning("巨潮资讯 API 返回 %d", resp.status_code)
+            return []
+        
+        try:
+            result = resp.json()
+        except Exception:
+            logging.warning("巨潮资讯返回非 JSON")
+            return []
+        
+        if not result:
+            logging.warning("巨潮资讯返回空结果")
+            return []
+        
+        announcements = result.get("announcements") or []
+        
+        for ann in announcements[:limit]:
+            title = ann.get("announcementTitle", "").strip()
+            if not title:
+                continue
+            
+            # Filter by deal keywords
+            if not any(kw in title for kw in CNINFO_DEAL_KEYWORDS):
+                continue
+            
+            code = ann.get("secCode", "")
+            name = ann.get("secName", "")
+            ann_id = ann.get("announcementId", "")
+            ann_time = ann.get("announcementTime", 0)
+            
+            # Parse timestamp
+            if ann_time:
+                try:
+                    ann_date = datetime.fromtimestamp(ann_time / 1000, tz=timezone.utc).date()
+                except (ValueError, OSError):
+                    ann_date = end_date
+            else:
+                ann_date = end_date
+            
+            # Build URL
+            url = f"http://www.cninfo.com.cn/new/disclosure/detail?announcementId={ann_id}&announcementTime={ann_time}"
+            
+            rows.append({
+                "source": "巨潮资讯",
+                "kind": "industry",
+                "filing_source": "cninfo",
+                "title": f"{name}({code}): {title[:60]}",
+                "url": url,
+                "date": ann_date.isoformat(),
+                "summary": f"A股公告: {title}",
+                "company": name,
+                "stock_code": code,
+                "filing_type": "announcement",
+            })
+            
+    except Exception as e:
+        logging.warning("巨潮资讯抓取失败（可能被境外IP屏蔽）: %s", e)
+    
+    logging.info("巨潮资讯 得到 %d 条", len(rows))
+    return rows
+
+
+def fetch_filing_sources(start: datetime, limit: int) -> list[dict]:
+    """Fetch deal filings from all official sources (SEC, HKEX, cninfo)."""
+    all_rows = []
+    
+    # SEC EDGAR
+    try:
+        sec_rows = fetch_sec_filings(start, limit)
+        all_rows.extend(sec_rows)
+    except Exception as e:
+        logging.warning("SEC 来源失败: %s", e)
+    
+    # HKEX
+    try:
+        hkex_rows = fetch_hkex_announcements(start, limit)
+        all_rows.extend(hkex_rows)
+    except Exception as e:
+        logging.warning("HKEX 来源失败: %s", e)
+    
+    # cninfo (may fail from outside China)
+    try:
+        cninfo_rows = fetch_cninfo_announcements(start, limit)
+        all_rows.extend(cninfo_rows)
+    except Exception as e:
+        logging.warning("巨潮资讯来源失败: %s", e)
+    
+    logging.info("官方披露来源总计 %d 条", len(all_rows))
+    return all_rows
+
+
 def normalize_doi(url: str) -> str:
     """Normalize URL to DOI identifier for deduplication.
     
@@ -503,6 +885,25 @@ def fetch_all(config: dict) -> list[dict]:
             logging.info("  %s: 失败", stat["name"])
         else:
             logging.info("  %s: %d 条", stat["name"], stat["count"])
+    
+    # Fetch official filing sources for deals
+    filing_limit = int(config.get("max_filing_deals") or 10)
+    start_for_filings = end - timedelta(days=default_days)
+    filing_rows = fetch_filing_sources(start_for_filings, filing_limit)
+    
+    # Add filing rows, deduping against existing
+    filing_count = 0
+    for row in filing_rows:
+        url = row["url"]
+        if url in seen or url in existing:
+            continue
+        seen.add(url)
+        rows.append(row)
+        filing_count += 1
+    
+    if filing_count:
+        logging.info("  官方披露来源: %d 条", filing_count)
+    
     logging.info("总计 %d 条新内容", len(rows))
     
     return rows
@@ -549,17 +950,22 @@ def claude_draft(items: list[dict], config: dict) -> dict:
                 },
                 "deals": {
                     "type": "array",
-                    "description": "Industry deals and news",
+                    "description": "Industry deals and news. For SEC/HKEX/cninfo filings, extract only amounts explicitly stated in the filing.",
                     "items": {
                         "type": "object",
                         "properties": {
                             "url": {"type": "string", "description": "Original URL from input"},
                             "title": {"type": "string", "description": "Chinese title"},
                             "kinds": {"type": "array", "items": {"type": "string", "enum": list(DEAL_KINDS)}},
-                            "money": {"type": "string", "description": "Deal value in format 'X 亿美元' or '未披露'"},
+                            "money": {"type": "string", "description": "Deal value in format 'X 亿美元' or '未披露'. Only from filing text."},
+                            "upfront": {"type": "string", "description": "Upfront payment if disclosed, e.g. '1.5 亿美元首付'"},
+                            "milestones": {"type": "string", "description": "Milestone payments if disclosed, e.g. '最高 8 亿美元里程碑'"},
+                            "equity": {"type": "string", "description": "Equity stake if disclosed, e.g. '19.9% 股权'"},
                             "structure": {"type": "string", "description": "Deal structure details"},
                             "why": {"type": "string", "description": "Why this deal matters"},
                             "source_name": {"type": "string", "description": "Source name"},
+                            "is_filing": {"type": "boolean", "description": "True if source is an official SEC/HKEX/cninfo filing"},
+                            "amount_source": {"type": "string", "enum": ["filing", "news", "unknown"], "description": "Where the financial figures came from"},
                         },
                         "required": ["url", "title", "kinds", "money"],
                     },
@@ -593,6 +999,15 @@ def claude_draft(items: list[dict], config: dict) -> dict:
 kinds 只能是这些词的子集：acq 收购、lic 授权、newco NewCo、clin 临床进展、inv 投资融资、policy 监管政策。
 - policy 仅限监管机构的正式政策或审批决定。裁员、战略调整、公司重组不是 policy。
 - 金额格式统一为"X 亿美元"或"X 亿元人民币"或"未披露"。不要写"$26亿"这种混合格式。
+
+## 官方披露来源（SEC/HKEX/巨潮）
+
+来源名含 "SEC"、"HKEX"、"巨潮" 的条目是官方公司披露，优先处理：
+- is_filing 设为 true
+- amount_source 设为 "filing"
+- money、upfront、milestones、equity 只填披露文件里明确写出的数字，没有就写"未披露"
+- 绝不从新闻报道补充金额——如果只有新闻来源提到金额，amount_source 设为 "news" 并注明
+- 交易分类：授权/合作协议归 lic；收购/并购归 acq；融资/配售/IPO 归 inv
 
 ## authors 字段
 
@@ -732,7 +1147,7 @@ steps 必须是 3-5 个简短步骤（每个≤25字），描述论文的核心�
         # Ensure space before 亿
         money = re.sub(r'(\d)亿', r'\1 亿', money)
         
-        deals.append({
+        deal_entry = {
             "url": url,
             "title": (raw.get("title") or src["title"]).strip(),
             "kinds": kinds,
@@ -741,7 +1156,21 @@ steps 必须是 3-5 个简短步骤（每个≤25字），描述论文的核心�
             "why": (raw.get("why") or "").strip(),
             "source_name": (raw.get("source_name") or src["source"]).strip(),
             "date": src["date"][:7],
-        })
+        }
+        
+        # Add filing-specific fields
+        if raw.get("is_filing") or src.get("filing_source"):
+            deal_entry["is_filing"] = True
+            deal_entry["filing_source"] = src.get("filing_source", "unknown")
+            deal_entry["amount_source"] = raw.get("amount_source", "filing")
+        if raw.get("upfront"):
+            deal_entry["upfront"] = raw["upfront"].strip()
+        if raw.get("milestones"):
+            deal_entry["milestones"] = raw["milestones"].strip()
+        if raw.get("equity"):
+            deal_entry["equity"] = raw["equity"].strip()
+        
+        deals.append(deal_entry)
     cap_a = int(config.get("max_academic") or 6)
     cap_d = int(config.get("max_industry") or 4)
     return {"articles": articles[:cap_a], "deals": deals[:cap_d]}
@@ -801,7 +1230,7 @@ def site_article(item: dict, image_rel: str) -> dict:
 
 
 def site_deal(item: dict) -> dict:
-    return {
+    result = {
         "d": item["date"],
         "kinds": item["kinds"],
         "t": item["title"],
@@ -811,6 +1240,18 @@ def site_deal(item: dict) -> dict:
         "src": item["source_name"],
         "url": item["url"],
     }
+    # Add filing-specific fields if present
+    if item.get("is_filing"):
+        result["is_filing"] = True
+        result["filing_source"] = item.get("filing_source", "unknown")
+        result["amount_source"] = item.get("amount_source", "filing")
+    if item.get("upfront"):
+        result["upfront"] = item["upfront"]
+    if item.get("milestones"):
+        result["milestones"] = item["milestones"]
+    if item.get("equity"):
+        result["equity"] = item["equity"]
+    return result
 
 
 def wechat_html(articles: list[dict], deals: list[dict], week: str) -> str:
