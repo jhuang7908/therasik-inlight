@@ -508,17 +508,36 @@ class TestXMLExtraction(unittest.TestCase):
     
     def test_fig_captions_preserve_nested(self):
         """Figure captions should handle nested italic and superscript."""
+        from inlight_articles import extract_design_methods_from_xml
+        from inlight_qc import section_ranges_for_material
+
         xml = """<article>
             <fig>
                 <caption>
                     <p>Figure showing <italic>Rag2</italic><sup>-/-</sup> mice.</p>
                 </caption>
             </fig>
+            <sec sec-type="methods">
+                <title>Methods</title>
+                <sec>
+                    <title>Statistical analysis</title>
+                    <p>Mice were randomized 1:1. Primary endpoint was ORR.</p>
+                </sec>
+            </sec>
         </article>"""
         result = extract_fig_captions_from_xml(xml)
         self.assertIn("Rag2", result)
         # Superscript "-/-" becomes "⁻/⁻"
         self.assertIn("⁻", result)
+        methods = extract_design_methods_from_xml(xml)
+        self.assertIn("randomized", methods)
+        self.assertIn("ORR", methods)
+        scaled = section_ranges_for_material(
+            sections_read={"methods": {"chars": 0}, "fig_captions": {"chars": 0},
+                           "results": {"chars": 9000}},
+        )
+        self.assertLess(scaled["design"][0], 200)
+        self.assertLess(scaled["design"][1], 200)
 
 
 class TestEnrichItemMocked(unittest.TestCase):
@@ -1135,6 +1154,9 @@ class TestDataPointValidation(unittest.TestCase):
             ("twofold", "Expression rose twofold"),
             ("五组", "分为五组，信号增加两倍"),
             ("两倍", "分为五组，信号增加两倍"),
+            ("five", "Mice were split into five groups"),
+            ("five mice", "Mice were split into five groups"),
+            ("两倍", "Expression rose twofold"),
         ):
             art["data_points"] = [{
                 "value": value,
@@ -2502,6 +2524,32 @@ class TestMatcherToleratesFaithfulDrafts(unittest.TestCase):
         )
         self.assertTrue(any("雷利珠单抗" in p for p in bad), bad)
 
+    def test_institution_lead_trim_and_english_alias(self):
+        from inlight_articles import validate_names
+
+        art = {
+            "title": "使用中山大学肿瘤防治中心队列",
+            "one_liner": "和中山大学合作完成入组。",
+            "background": "",
+            "design": "由中山大学肿瘤防治中心入组。",
+            "results": ["缓解率64%。"],
+            "mechanism": "",
+            "significance": "",
+            "authors": "",
+            "limitations": [],
+        }
+        raw = (
+            "Patients were enrolled at Sun Yat-sen University Cancer Center (SYSUCC). "
+            "Objective response rate was 64%."
+        )
+        ok = validate_names(art, raw)
+        self.assertFalse(any("机构名" in p for p in ok), ok)
+        invented = validate_names(
+            {**art, "design": "由虚构医科大学入组。", "title": "虚构医科大学队列"},
+            raw,
+        )
+        self.assertTrue(any("机构名" in p and "虚构医科大学" in p for p in invented), invented)
+
     def test_drop_model_journal_when_source_has_none(self):
         from inlight_articles import EnrichedItem, sanitize_published_article
 
@@ -2516,6 +2564,26 @@ class TestMatcherToleratesFaithfulDrafts(unittest.TestCase):
         art = sanitize_published_article({"journal": "Nature Metabolism", "title": "x"}, item)
         self.assertNotEqual(art.get("journal"), "Nature Metabolism")
         self.assertEqual(art.get("journal"), "PubMed")
+
+    def test_strip_source_does_not_report_sentences(self):
+        from inlight_articles import (
+            strip_unreported_disclaimer_sentences, _is_unreported_disclaimer,
+        )
+
+        art = strip_unreported_disclaimer_sentences({
+            "title": "缓解率达64%",
+            "results": [
+                "客观缓解率为64%。原文未报告总生存期。",
+                "The source does not report median OS.",
+            ],
+            "limitations": ["原文未给出随访上限。随访18个月。"],
+        })
+        blob = " ".join(str(x) for x in (art.get("results"), art.get("limitations")))
+        self.assertNotIn("原文未报告", blob)
+        self.assertNotIn("source does not report", blob.lower())
+        self.assertIn("64%", blob)
+        self.assertTrue(_is_unreported_disclaimer("the source does not report X"))
+        self.assertTrue(_is_unreported_disclaimer("原文未报告人体数据"))
 
     def test_preprint_body_cannot_claim_peer_review(self):
         from inlight_articles import validate_depth
@@ -2672,9 +2740,11 @@ class TestClaimVerifier(unittest.TestCase):
             stop_reason = "end_turn"
 
         final = _Msg()
+        calls = []
 
         class _Messages:
             def create(self, **kwargs):
+                calls.append(dict(kwargs))
                 if kwargs.get("stream"):
                     ev = type("E", (), {})()
                     ev.type = "message"
@@ -2686,8 +2756,11 @@ class TestClaimVerifier(unittest.TestCase):
         client.messages = _Messages()
         out = _claude_create(client, model="x", max_tokens=4000, messages=[])
         self.assertIs(out, final)
-        streamed = _claude_create(client, model="x", max_tokens=16000, messages=[])
+        calls.clear()
+        streamed = _claude_create(client, model="x", max_tokens=24000, messages=[])
         self.assertIs(streamed, final)
+        self.assertTrue(calls)
+        self.assertTrue(all(c.get("stream") for c in calls), calls)
 
     def test_shared_fulltext_window(self):
         from inlight_qc import FULLTEXT_WINDOW, gemini_review_deep, GEMINI_SCORE_KEYS

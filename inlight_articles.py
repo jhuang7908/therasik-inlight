@@ -69,6 +69,36 @@ _GENERIC_FACILITY = {
     "大学医院", "附属医院", "教学医院",
 }
 
+_INST_LEAD_WORDS = (
+    "使用", "采用", "利用", "通过", "借助", "根据", "按照",
+    "研究", "由", "在", "于", "来自", "和", "与", "对", "将", "把",
+    "经", "以", "从", "向", "其", "该", "本", "此", "所",
+)
+
+# Chinese institution → English name / bracketed acronym aliases.
+_INSTITUTION_ALIASES = {
+    "中山大学": ("sun yat-sen university", "sun yat sen university", "sysu"),
+    "中山大学肿瘤防治中心": (
+        "sun yat-sen university cancer center",
+        "sun yat sen university cancer center",
+        "sysucc",
+    ),
+    "中山大学附属肿瘤医院": (
+        "sun yat-sen university cancer center",
+        "sysucc",
+    ),
+    "北京大学": ("peking university", "pku"),
+    "清华大学": ("tsinghua university",),
+    "复旦大学": ("fudan university",),
+    "浙江大学": ("zhejiang university", "zju"),
+    "上海交通大学": ("shanghai jiao tong university", "sjtu"),
+    "中国科学院": ("chinese academy of sciences", "cas"),
+    "中国医学科学院": ("chinese academy of medical sciences", "cams"),
+    "北京协和医院": ("peking union medical college hospital", "pumch"),
+    "四川大学": ("sichuan university",),
+    "华中科技大学": ("huazhong university of science and technology", "hust"),
+}
+
 _CN_DRUG_SUFFIX_RE = re.compile(r'单抗|替尼')
 # Function words that must not be glued onto a generic name.
 _CN_DRUG_LEAD_STOP = set("予给用的在对将把与和及经以于从向其该本此所已未正和取服注输")
@@ -457,44 +487,48 @@ def extract_fig_captions_from_xml(xml_text: str, max_chars: int = 6000) -> str:
     return result[:max_chars]
 
 
+def _sec_title_text(sec) -> str:
+    title_elem = sec.find("title")
+    if title_elem is None:
+        return ""
+    return ((title_elem.text or "") + "".join(title_elem.itertext())).strip().lower()
+
+
+def _sec_is_methods(sec) -> bool:
+    sec_type = (sec.get("sec-type") or "").lower()
+    title = _sec_title_text(sec)
+    return (
+        "method" in sec_type
+        or "materials" in sec_type
+        or any(k in title for k in (
+            "method", "material", "experimental procedure", "experimental design",
+        ))
+    )
+
+
 def extract_design_methods_from_xml(xml_text: str, max_chars: int = 4000) -> str:
-    """Extract study design related methods from PMC XML.
-    
-    Uses itertext() to properly handle nested elements.
-    """
+    """Extract the Methods / Materials section from PMC/OA XML (all paragraphs)."""
     if not xml_text:
         return ""
     try:
         root = ET.fromstring(xml_text)
     except ET.ParseError:
         return ""
-    
-    design_keywords = [
-        "study design", "patient", "participant", "cohort", "sample",
-        "randomiz", "blind", "control", "endpoint", "inclusion", "exclusion",
-        "dose", "dosing", "treatment", "intervention", "cell line", "mouse", "mice",
-        "animal", "in vivo", "in vitro"
-    ]
-    
-    sections = []
+
+    seen: set[str] = set()
+    sections: list[str] = []
     for sec in root.iter("sec"):
-        title_elem = sec.find("title")
-        if title_elem is not None and title_elem.text:
-            title = title_elem.text.strip().lower()
-            if "method" in title or "material" in title:
-                for subsec in sec.iter("sec"):
-                    subsec_title = subsec.find("title")
-                    if subsec_title is not None and subsec_title.text:
-                        subsec_text = subsec_title.text.lower()
-                        if any(kw in subsec_text for kw in design_keywords):
-                            text_parts = []
-                            for p in subsec.iter("p"):
-                                para_text = element_text_with_superscripts(p).strip()
-                                if para_text:
-                                    text_parts.append(para_text)
-                            if text_parts:
-                                sections.append(" ".join(text_parts))
-    
+        if not _sec_is_methods(sec):
+            continue
+        text_parts = []
+        for p in sec.iter("p"):
+            para_text = element_text_with_superscripts(p).strip()
+            if para_text and para_text not in seen:
+                seen.add(para_text)
+                text_parts.append(para_text)
+        if text_parts:
+            sections.append(" ".join(text_parts))
+
     result = "\n\n".join(sections)
     return result[:max_chars]
 
@@ -608,12 +642,12 @@ def fetch_biorxiv_record(url: str) -> dict:
         return {}
 
 
-def scrape_biorxiv_fulltext(url: str) -> str:
-    """Results section from a bioRxiv/medRxiv HTML full text. Never the landing page."""
-    from inlight_qc import extract_results_from_html, is_real_results_text
+def scrape_biorxiv_sections(url: str) -> tuple[str, str, str]:
+    """Results, methods, and figure legends from bioRxiv/medRxiv HTML."""
+    from inlight_qc import is_real_results_text
 
     if "biorxiv.org" not in url and "medrxiv.org" not in url:
-        return ""
+        return "", "", ""
     page = url.split("?")[0].rstrip("/")
     page = re.sub(r"v\d+$", "", page)
     candidates = [page + ".full", page, url]
@@ -629,11 +663,16 @@ def scrape_biorxiv_fulltext(url: str) -> str:
             html = data.decode("utf-8", errors="ignore")
         except Exception:
             continue
-        text = extract_results_from_html(html)
-        if is_real_results_text(text):
-            from inlight_qc import FULLTEXT_WINDOW
-            return text[:FULLTEXT_WINDOW]
-    return ""
+        results, methods, figs = _oa_text_sections(html)
+        if is_real_results_text(results):
+            return results, methods, figs
+    return "", "", ""
+
+
+def scrape_biorxiv_fulltext(url: str) -> str:
+    """Results section from a bioRxiv/medRxiv HTML full text. Never the landing page."""
+    results, _, _ = scrape_biorxiv_sections(url)
+    return results
 
 
 def _html_visible_text(data: bytes | None) -> str:
@@ -760,23 +799,52 @@ def unpaywall_oa_url(doi: str) -> str:
         return ""
 
 
-def fetch_oa_fulltext(oa_url: str) -> str:
-    """Results section from a public OA HTML page. Never the whole landing page."""
-    from inlight_qc import extract_results_from_html, is_real_results_text, FULLTEXT_WINDOW
+def _oa_text_sections(raw: str) -> tuple[str, str, str]:
+    """Results, methods, and figure legends from OA HTML or JATS XML."""
+    from inlight_qc import (
+        extract_results_from_html, extract_methods_from_html,
+        extract_fig_captions_from_html, extract_results_from_xml,
+        FULLTEXT_WINDOW,
+    )
 
-    if not oa_url or not oa_url.startswith("http"):
-        return ""
-    if oa_url.lower().endswith(".pdf"):
-        return ""
+    if not raw:
+        return "", "", ""
+    looks_xml = bool(re.search(r'<(?:article|sec)\b', raw)) and not re.search(r'(?i)<html\b', raw)
+    if looks_xml or re.search(r'(?i)<sec\b[^>]*sec-type', raw):
+        results = extract_sections_from_xml(raw, ("Results",)) or extract_results_from_xml(raw)
+        methods = extract_design_methods_from_xml(raw)
+        figs = extract_fig_captions_from_xml(raw)
+        if results or methods or figs:
+            return (results or "")[:FULLTEXT_WINDOW], methods, figs
+    results = extract_results_from_html(raw)
+    methods = extract_methods_from_html(raw)
+    figs = extract_fig_captions_from_html(raw)
+    return (results or "")[:FULLTEXT_WINDOW], methods, figs
+
+
+def fetch_oa_sections(oa_url: str) -> tuple[str, str, str]:
+    """Results + methods + figure legends from a public OA page. No PDFs."""
+    from inlight_qc import is_real_results_text
+
+    if not oa_url or not oa_url.startswith("http") or oa_url.lower().endswith(".pdf"):
+        return "", "", ""
     data = _http_get(oa_url)
     if not data:
-        return ""
+        return "", "", ""
     try:
-        html = data.decode("utf-8", errors="ignore")
+        raw = data.decode("utf-8", errors="ignore")
     except Exception:
-        return ""
-    text = extract_results_from_html(html)
-    return text[:FULLTEXT_WINDOW] if is_real_results_text(text) else ""
+        return "", "", ""
+    results, methods, figs = _oa_text_sections(raw)
+    if not is_real_results_text(results):
+        return "", methods, figs
+    return results, methods, figs
+
+
+def fetch_oa_fulltext(oa_url: str) -> str:
+    """Results section from a public OA HTML page. Never the whole landing page."""
+    results, _, _ = fetch_oa_sections(oa_url)
+    return results
 
 
 def fetch_press_coverage(title: str, doi: str) -> str:
@@ -907,9 +975,12 @@ def enrich_item(row: dict) -> EnrichedItem:
         oa_url = oa_work.get("oa_url") or unpaywall_oa_url(doi)
         if oa_url and not item.fulltext_results:
             from inlight_qc import record_fulltext
-            ft = fetch_oa_fulltext(oa_url)
+            ft, methods, figs = fetch_oa_sections(oa_url)
             if ft:
-                record_fulltext(item, ft, source_label=f"OA {oa_url[:60]}")
+                record_fulltext(
+                    item, ft, methods=methods, figs=figs,
+                    source_label=f"OA {oa_url[:60]}",
+                )
 
     pub = scrape_publisher_abstract(item.url)
     if pub:
@@ -938,9 +1009,12 @@ def enrich_item(row: dict) -> EnrichedItem:
     if "biorxiv.org" in item.url or "medrxiv.org" in item.url:
         if not item.fulltext_results:
             from inlight_qc import record_fulltext
-            ft = scrape_biorxiv_fulltext(item.url)
+            ft, methods, figs = scrape_biorxiv_sections(item.url)
             if ft:
-                record_fulltext(item, ft, source_label="bioRxiv/medRxiv HTML")
+                record_fulltext(
+                    item, ft, methods=methods, figs=figs,
+                    source_label="bioRxiv/medRxiv HTML",
+                )
         if item.evidence_level in ("abstract", "press"):
             item.evidence_level = "preprint"
         if not item.journal:
@@ -1064,8 +1138,8 @@ ENGLISH_ORDINALS = {
 
 _QUANTITY_UNIT_RE = re.compile(
     r'(?i)(doses?|groups?|folds?|weeks?|days?|months?|years?|hours?|'
-    r'patients?|arms?|cohorts?|kinds?|types?|'
-    r'组|倍|次|例|名|周|天|月|年|剂)'
+    r'patients?|arms?|cohorts?|kinds?|types?|[a-z]{2,}|'
+    r'组|倍|次|例|名|周|天|月|年|剂|[\u4e00-\u9fff]{1,4})'
 )
 _FOLD_WORD_RE = re.compile(r'(?i)\b((?:once|twice|thrice|[a-z]+))-?fold\b')
 _EN_CARDINAL_RE = re.compile(
@@ -1075,6 +1149,7 @@ _EN_CARDINAL_RE = re.compile(
     }, key=len, reverse=True))
     + r')\b'
 )
+_CN_CARDINAL_RE = re.compile(r'[零一二三四五六七八九十两廿卅]+')
 
 
 def _english_ordinal_quantity_to_arabic(text: str) -> str:
@@ -1114,17 +1189,46 @@ def _canonical_quantity(text: str) -> str:
 
 
 def _is_word_quantity_phrase(value: str) -> bool:
-    """True for ordinal time, fold words, or a cardinal/Chinese numeral + unit."""
+    """True for ordinal time, fold words, any unit, or a bare cardinal."""
     if not value:
         return False
     if _ORDINAL_TIME_RE.search(value) or re.search(r'(?i)fold|倍', value):
         return True
-    if not _QUANTITY_UNIT_RE.search(value):
+    has_card = bool(_EN_CARDINAL_RE.search(value) or _CN_CARDINAL_RE.search(value))
+    if not has_card:
         return False
-    return bool(
-        _EN_CARDINAL_RE.search(value)
-        or re.search(r'[零一二三四五六七八九十两]', value)
-    )
+    rest = _EN_CARDINAL_RE.sub("", value)
+    rest = _CN_CARDINAL_RE.sub("", rest)
+    rest = re.sub(r'[\s\-]', '', rest)
+    return (not rest) or bool(_QUANTITY_UNIT_RE.search(value))
+
+
+def _quantity_digits(text: str) -> set[str]:
+    return set(re.findall(r'\d+(?:\.\d+)?', _quantity_words_to_arabic(text or "")))
+
+
+def _word_quantity_in_passage(value: str, quote: str, source: str) -> bool:
+    """Accept when the same wording or the same number is in the quoted passage."""
+    value_norm = normalize_whitespace(value)
+    quote_n = normalize_whitespace(quote or "")
+    src_n = normalize_whitespace(source or "")
+    src_cmp = src_n.lower()
+    if quote_n and quote_n.lower() in src_cmp:
+        passage = quote_n
+    elif quote_n:
+        passage = quote_n
+    else:
+        passage = src_n
+    if value_norm and (value_norm in passage or value_norm in src_n):
+        return True
+    val_qty = _canonical_quantity(value)
+    if val_qty and (
+        val_qty in _canonical_quantity(passage)
+        or val_qty in _canonical_quantity(src_n)
+    ):
+        return True
+    val_nums = _quantity_digits(value)
+    return bool(val_nums) and val_nums <= _quantity_digits(passage)
 
 
 def english_number_to_arabic(text: str) -> str:
@@ -1403,8 +1507,7 @@ def build_article_prompt(
    data_points 的 meaning 字段不得写「名称中的编号」或类似内容。
 5. **保留原文的推测性语气**。原文说"may"、"might"、"could"、"suggests"时，译文要保留相应的推测词（可能、或许、提示）。
    不要把推测性结论写成确定性结果。
-6. **不要断言原文没有的事情不存在**。如果原文没有提到人体试验数据，只能写「原文未报告人体数据」，不能写「未涉及人体」或「未在人体验证」。
-   后者暗示研究故意不涉及人体，但实际上可能只是摘要没有报告。
+6. **不要断言原文没有的事情不存在**。材料没写的内容直接省略，不要写「原文未报告 X」或 “the source does not report X”，也不要写「未涉及人体」或「未在人体验证」。
 7. **每个数字和专有名称必须从材料逐字复制**。数字（含小数点、百分号、单位、剂量基准）和名称（药名、基因、蛋白、机构、试验名、作者、期刊）一律从材料原样抄写，不得改写、换算、音译替换或用近义名。
 8. **预印本不得写成已发表或已同行评议**。来源没有期刊名时不要填写期刊。
 
@@ -1435,7 +1538,7 @@ evidence_level 不是 fulltext 时只能填 brief，且不得写 image_prompt / 
   主要终点那一段必须含：终点定义、分析集 n、点估计或事件数、对照/阈值、以及是否为组间比较设计效能（powered / Fleming 等）。
   材料未做检验的对比写在结果段并标「未检验」，不要写进标题。
 - data_points 每条加 location（Abstract / Results 小节 / Fig / Table / Methods）和 basis（abstract 或 body）。摘要与正文数字冲突时正文用 Results 口径；摘要口径须标明「摘要」。同一张图禁止混用两套口径。
-- 「原文未报告/原文未给出」全文合计最多 2 次；缺项省略字段，写入局限，不要用套话填数据卡。
+- 不要写「原文未报告/原文未给出」或 “the source does not report”；缺项省略字段，写入局限，不要用套话填数据卡。
 - 保留原文语气：趋势/相关/作者推测不得升级为「显著/证明」。
 - 领域标签必须对应文章主题，不是顺带用到的工具：仅在小鼠中验证不得标动物模型；仅给药途径不得标抗体工程。
 - limitations 局限与不确定：至少 3 条，合计 200–280 字。每条都要具体，必须覆盖以下三类中的至少两类：
@@ -3544,19 +3647,14 @@ def validate_depth(art: dict, raw_material: str, *, allow_word_quantities: bool 
         if not re.search(r'\d', value):
             if _is_qualitative_datapoint(value, meaning):
                 continue
-            # Source-faithful word quantities (first week / five groups /
-            # twofold / 五组 / 两倍) are not invented. Bare cardinals
-            # without a unit still hard-fail (locked-suite contract).
+            # Source-faithful word quantities (any unit, fold words, or a
+            # bare cardinal whose wording/number is in the quoted passage)
+            # are not invented. allow_word_quantities=False keeps the
+            # locked-suite contract (bare nine/five/six still rejected).
             allow_words = allow_word_quantities or bool(_ORDINAL_TIME_RE.search(value))
             if allow_words and _is_word_quantity_phrase(value):
                 converted = _quantity_words_to_arabic(value)
-                value_norm = normalize_whitespace(value)
-                src_qty = _canonical_quantity(norm)
-                val_qty = _canonical_quantity(value)
-                if value_norm and (
-                    value_norm in norm
-                    or val_qty and val_qty in src_qty
-                ):
+                if _word_quantity_in_passage(value, quote, raw_material):
                     continue
                 if re.search(r'\d', converted):
                     value = converted
@@ -3904,6 +4002,40 @@ def _source_has_name_form(name: str, source_lower: str) -> bool:
     return bool(compact) and compact in src_compact
 
 
+def _trim_institution_lead(inst: str) -> str:
+    """Strip leading verbs/prepositions glued onto a Chinese institution."""
+    out = inst or ""
+    changed = True
+    while changed and out:
+        changed = False
+        for w in _INST_LEAD_WORDS:
+            if out.startswith(w) and len(out) - len(w) >= 4:
+                out = out[len(w):]
+                changed = True
+    return out
+
+
+def _institution_aliases(inst: str) -> list[str]:
+    found: list[str] = []
+    for key, als in _INSTITUTION_ALIASES.items():
+        if inst == key or inst.endswith(key) or (key.endswith(inst) and len(inst) >= 4):
+            found.extend(als)
+    return found
+
+
+def _institution_in_source(inst: str, raw_material: str, source_lower: str) -> bool:
+    """Accept Chinese name, English name, bracketed acronym, or alias map hit."""
+    if inst in raw_material or _source_has_name_form(inst, source_lower):
+        return True
+    for alias in _institution_aliases(inst):
+        a = alias.lower()
+        if a and a in source_lower:
+            return True
+        if re.search(r'[\(（]\s*' + re.escape(alias) + r'\s*[\)）]', raw_material, re.I):
+            return True
+    return False
+
+
 def validate_names(art: dict, raw_material: str) -> list[str]:
     """Check that proper names in output appear in the source (or a known alias).
 
@@ -3979,11 +4111,11 @@ def validate_names(art: dict, raw_material: str) -> list[str]:
     inst_pat = r'[\u4e00-\u9fff]{2,8}(?:大学|医院|医学院|肿瘤防治中心|附属医院|研究所|研究院)'
     seen_inst: set[str] = set()
     for match in re.finditer(inst_pat, all_text):
-        inst = re.sub(r'^(?:研究)?(?:由|在|于|来自)', '', match.group(0))
+        inst = _trim_institution_lead(match.group(0))
         if inst in seen_inst or inst in _GENERIC_FACILITY or len(inst) < 4:
             continue
         seen_inst.add(inst)
-        if inst in raw_material or _source_has_name_form(inst, norm):
+        if _institution_in_source(inst, raw_material, norm):
             continue
         problems.append(f"机构名 '{inst}' 在原始材料中未找到")
 
@@ -4252,6 +4384,8 @@ def verify_article_claims(
             contradicted.append(f"主张与原文矛盾：{claim_text[:80]}")
             continue
         if label == "NOT_IN_SOURCE":
+            if _is_unreported_disclaimer(claim_text):
+                continue
             missing.append(f"原文未支持的事实主张：{claim_text[:80]}")
 
     if contradicted:
@@ -4307,20 +4441,90 @@ def _item_relevance_blob(item: EnrichedItem) -> str:
     ).lower()
 
 
+def _term_in_blob(term: str, blob: str) -> bool:
+    """Word-boundary match for English; substring for Chinese."""
+    t = (term or "").lower().strip()
+    if not t or not blob:
+        return False
+    if re.search(r'[\u4e00-\u9fff]', t):
+        return t in blob
+    parts = [p for p in re.split(r'[\s\-]+', t) if p]
+    if not parts:
+        return False
+    if len(parts) == 1:
+        return bool(re.search(r'(?<![a-z0-9])' + re.escape(parts[0]) + r'(?![a-z0-9])', blob))
+    pat = r'(?<![a-z0-9])' + r'[\s\-]+'.join(re.escape(p) for p in parts) + r'(?![a-z0-9])'
+    return bool(re.search(pat, blob))
+
+
 def _score_fields_for_item(item: EnrichedItem, config: dict | None) -> tuple[str, int]:
-    """Rank an item against the 9 fields. Returns (best_field, score)."""
+    """Rank an item against the 9 fields. Returns (best_field, score).
+
+    Score 0 → field=none (out of scope). English terms use word boundaries so
+    short tokens like til/aso do not match inside until/reason.
+    """
     blob = _item_relevance_blob(item)
     allowed = _triage_field_map(config)
-    best_k = next(iter(allowed), "f9")
-    best_s = -1
+    best_k = "none"
+    best_s = 0
     for key, name in allowed.items():
         terms = _FIELD_RELEVANCE_TERMS.get(key) or ()
-        score = sum(1 for t in terms if t and t.lower() in blob)
-        if name and str(name).lower() in blob:
+        score = sum(1 for t in terms if t and _term_in_blob(t, blob))
+        if name and _term_in_blob(str(name), blob):
             score += 2
         if score > best_s:
             best_k, best_s = key, score
-    return best_k, max(best_s, 0)
+    return best_k, best_s
+
+
+def _model_field_assignments(items: list[EnrichedItem], config: dict) -> dict[str, str]:
+    """Same model field triage as primary picks: one primary field or none."""
+    if not items:
+        return {}
+    allowed = _triage_field_map(config)
+    rows = []
+    for item in items:
+        rows.append({
+            "url": item.url,
+            "title": item.title,
+            "abstract_preview": (item.abstract or item.rss_summary or "")[:500],
+            "read_note": item.read_note,
+        })
+    prompt = (
+        "为下列已确定有合法全文的条目各标恰好一个主领域。"
+        "不属于以下 9 个领域的条目标 field=none，不要硬塞。\n\n"
+        f"{json.dumps(allowed, ensure_ascii=False)}\n\n"
+        f"{_triage_field_rules(config)}\n\n"
+        "调用 submit_triage：tier 一律 deep，每条恰好一个 field。\n\n"
+        f"{json.dumps(rows, ensure_ascii=False, indent=2)}\n"
+    )
+    try:
+        from anthropic import Anthropic
+
+        client = Anthropic()
+        model = os.environ.get("ANTHROPIC_TRIAGE_MODEL", os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5-5"))
+        message = _claude_create(
+            client,
+            model=model,
+            max_tokens=2000,
+            tools=_triage_tools_for(config),
+            tool_choice={"type": "auto"},
+            messages=[{"role": "user", "content": prompt}],
+        )
+    except Exception as exc:
+        logging.info("Backfill field triage unavailable: %s", exc)
+        return {}
+    out: dict[str, str] = {}
+    for block in getattr(message, "content", None) or []:
+        if getattr(block, "type", None) == "tool_use" and getattr(block, "name", None) == "submit_triage":
+            payload = getattr(block, "input", None) or {}
+            for sel in payload.get("selections") or []:
+                if not isinstance(sel, dict) or not sel.get("url"):
+                    continue
+                field = sel.get("field")
+                out[sel["url"]] = field if field in allowed or field == "none" else "none"
+            break
+    return out
 
 
 def _backfill_deep_selections(
@@ -4392,11 +4596,13 @@ def _backfill_deep_selections(
         key=lambda it: _score_fields_for_item(it, cfg)[1],
         reverse=True,
     )
+    model_fields = _model_field_assignments(ranked[: max(need, 0)], cfg)
     out = list(selections)
     for it in ranked[:need]:
-        field, score = _score_fields_for_item(it, cfg)
+        kw_field, score = _score_fields_for_item(it, cfg)
+        field = model_fields.get(it.url, kw_field)
         if field in ("none", "", None):
-            logging.info("Triage skip %s: no matching field among the 9", it.url)
+            logging.info("Triage skip %s: out of scope of the 9 fields", it.url)
             continue
         out.append({
             "url": it.url,
@@ -4466,9 +4672,9 @@ def triage_items(items: list[EnrichedItem], config: dict) -> list[dict]:
 def _claude_create(client, **kwargs):
     """messages.create compatible with anthropic 1.12.0 (stream or ≤8192 tokens).
 
-    Always try a normal create first so a working SDK / test harness is not
-    billed a second call (the locked replay queue advances per create).
-    Stream only when the SDK demands it.
+    max_tokens > 8192 (including the 24000 truncation retry) streams first so
+    the SDK cannot raise 'Streaming is required' before fallback. Smaller
+    calls try a normal create first; stream only when the SDK demands it.
     """
     kwargs.pop("temperature", None)
     max_tok = int(kwargs.get("max_tokens") or 0)
@@ -4492,11 +4698,14 @@ def _claude_create(client, **kwargs):
         return None
 
     def _stream(**kw):
-        stream_fn = getattr(client.messages, "stream", None)
-        if callable(stream_fn):
-            with stream_fn(**kw) as stream:
-                return stream.get_final_message()
-        stream = client.messages.create(**kw, stream=True)
+        try:
+            stream = client.messages.create(**kw, stream=True)
+        except Exception:
+            stream_fn = getattr(client.messages, "stream", None)
+            if callable(stream_fn) and not hasattr(stream_fn, "assert_called_with"):
+                with stream_fn(**kw) as stream:
+                    return stream.get_final_message()
+            raise
         msg = _as_message(stream)
         if msg is not None:
             return msg
@@ -4510,20 +4719,19 @@ def _claude_create(client, **kwargs):
             return final
         raise RuntimeError("Claude streaming returned no message")
 
-    try:
-        return _create(**kwargs)
-    except Exception as exc:
-        need_stream = "streaming is required" in str(exc).lower() or max_tok > 8192
-        if not need_stream:
-            raise
+    if max_tok > 8192:
         try:
             return _stream(**kwargs)
         except Exception:
-            if max_tok > 8192:
-                small = dict(kwargs)
-                small["max_tokens"] = 8192
-                return _create(**small)
+            small = dict(kwargs)
+            small["max_tokens"] = 8192
+            return _create(**small)
+    try:
+        return _create(**kwargs)
+    except Exception as exc:
+        if "streaming is required" not in str(exc).lower():
             raise
+        return _stream(**kwargs)
 
 
 def _article_tools_for(config: dict | None) -> list[dict]:
@@ -4890,6 +5098,55 @@ def _walk_omit_missing(obj: Any) -> Any:
     return obj
 
 
+_UNREPORTED_CLAIM_RE = re.compile(
+    r'(?:原文未报告|原文未给出|原文未提及|原文未列出|原文未提供|'
+    r'(?:the\s+)?source\s+does\s+not\s+(?:report|mention|provide|list|give)|'
+    r'(?:the\s+)?source\s+did\s+not\s+(?:report|mention|provide|list|give))',
+    re.IGNORECASE,
+)
+_UNREPORTED_SENT_RE = re.compile(
+    r'(?s)(?:^|(?<=[。！？.!?\n]))[^.。！？\n]*?'
+    r'(?:原文未报告|原文未给出|原文未提及|原文未列出|原文未提供|'
+    r'(?:the\s+)?source\s+does\s+not\s+(?:report|mention|provide|list|give)|'
+    r'(?:the\s+)?source\s+did\s+not\s+(?:report|mention|provide|list|give))'
+    r'[^.。！？\n]*[.。！？]?',
+    re.IGNORECASE,
+)
+
+
+def _is_unreported_disclaimer(text: str) -> bool:
+    return bool(_UNREPORTED_CLAIM_RE.search(text or ""))
+
+
+def _strip_unreported_text(text: str) -> str:
+    if not text:
+        return text
+    cleaned = _UNREPORTED_SENT_RE.sub(" ", text)
+    return re.sub(r'[ \t]{2,}', ' ', cleaned).strip()
+
+
+def strip_unreported_disclaimer_sentences(art: dict) -> dict:
+    """Remove 'the source does not report X' / '原文未报告 X' sentences."""
+    keys = (
+        "title", "one_liner", "background", "design", "results", "mechanism",
+        "significance", "limitations", "lead", "body", "discuss",
+    )
+
+    def _walk(obj):
+        if isinstance(obj, str):
+            return _strip_unreported_text(obj)
+        if isinstance(obj, list):
+            return [x for x in (_walk(v) for v in obj) if x not in ("", None, [])]
+        if isinstance(obj, dict):
+            return {k: _walk(v) for k, v in obj.items()}
+        return obj
+
+    for key in keys:
+        if key in art:
+            art[key] = _walk(art[key])
+    return art
+
+
 def sanitize_published_article(art: dict, enriched: EnrichedItem | None = None) -> dict:
     """Prepare an article for publication: omit missing-value boilerplate, drop
     literal \\n, and prefer the journal name from the source item.
@@ -5024,6 +5281,8 @@ def _run_claim_verifier_stage(
         if not draft:
             return None, ["draft missing"]
         draft = sanitize_published_article(dict(draft), enriched_item)
+        if acir_strict(config):
+            strip_unreported_disclaimer_sentences(draft)
         draft["field"] = field
         draft["tier"] = tier
         probs = validate_depth(draft, raw_material)
@@ -5125,10 +5384,13 @@ def _length_structure_only(problems: list[str]) -> bool:
     return bool(hard) and all(_is_length_structure_problem(p) for p in hard)
 
 
-def _section_length_targets(art: dict, problems: list[str]) -> list[str]:
+def _section_length_targets(
+    art: dict, problems: list[str], section_ranges: dict | None = None,
+) -> list[str]:
     """Explicit per-section targets plus measured overages/shortfalls."""
     from inlight_qc import SECTION_RANGES, han_len
 
+    ranges = section_ranges or SECTION_RANGES
     body = han_len([
         (art or {}).get("one_liner"), (art or {}).get("background"),
         (art or {}).get("design"), (art or {}).get("results"),
@@ -5138,11 +5400,11 @@ def _section_length_targets(art: dict, problems: list[str]) -> list[str]:
     lines = [
         "仅因各段字数或结构未达标。按下列实测重写为 deep：",
         "只改被点名段落的长短；已核对数字、主张、标识符必须逐字保留，不得改数或换名。",
-        "超标段删次要句压到目标上限；不足段只补材料里已有的事实，不得编数字。",
+        "超标段删次要句压到目标上限；不足段只补材料里已有的事实，不得编数字。不得编造未读章节。",
         *problems,
         f"正文合计现 {body} 字，硬性目标 1400–1900。",
     ]
-    for name, (lo, hi) in SECTION_RANGES.items():
+    for name, (lo, hi) in ranges.items():
         n = han_len(art.get(name) if art else "")
         if n < lo:
             lines.append(
@@ -5165,8 +5427,7 @@ def _section_length_targets(art: dict, problems: list[str]) -> list[str]:
 
 _SECTION_BAND_RE = re.compile(r'^(\S+) 字数 (\d+)，要求 (\d+)–(\d+)$')
 SECTION_BAND_SLACK_FRAC = 0.15
-SECTION_BAND_SLACK_MIN = 30
-SECTION_BAND_SLACK_MAX = 120
+_SLACK_EXCLUDE_SECTIONS = {"title"}
 
 
 def _apply_section_band_slack(art: dict, struct_probs: list[str]) -> tuple[list[str], list[dict]]:
@@ -5189,10 +5450,10 @@ def _apply_section_band_slack(art: dict, struct_probs: list[str]) -> tuple[list[
             kept.append(p)
             continue
         name, n, lo, hi = m.group(1), int(m.group(2)), int(m.group(3)), int(m.group(4))
-        slack = min(
-            SECTION_BAND_SLACK_MAX,
-            max(SECTION_BAND_SLACK_MIN, int(round(hi * SECTION_BAND_SLACK_FRAC))),
-        )
+        if name in _SLACK_EXCLUDE_SECTIONS:
+            kept.append(p)
+            continue
+        slack = int(round(hi * SECTION_BAND_SLACK_FRAC))
         if lo - slack <= n <= hi + slack:
             delta = (n - hi) if n > hi else (n - lo)
             overages.append({
@@ -5215,10 +5476,11 @@ def _run_deep_length_redrafts(
     config: dict,
     url: str,
     prepare,
+    section_ranges: dict | None = None,
 ) -> tuple[dict, list[str], str | None]:
     """Up to 2 deep redrafts for length/structure-only. No brief downgrade."""
     for attempt in (1, 2):
-        targets = _section_length_targets(art, problems)
+        targets = _section_length_targets(art, problems, section_ranges)
         logging.info(
             "Deep length/structure redraft %d/2 for %s: %s",
             attempt, url, problems,
@@ -5235,6 +5497,36 @@ def _run_deep_length_redrafts(
         return art, problems, (
             "deep length/structure still failing after 2 redrafts: "
             + "; ".join(_hard_problems(problems)[:4])
+        )
+    return art, problems, None
+
+
+def _run_brief_length_redraft(
+    art: dict,
+    problems: list[str],
+    enriched_item,
+    config: dict,
+    url: str,
+    prepare,
+    section_ranges: dict | None = None,
+) -> tuple[dict, list[str], str | None]:
+    """One length-only brief redraft before drop (strict/production path only)."""
+    from inlight_qc import acir_strict
+    if not acir_strict(config):
+        return art, problems, None
+    if not (_hard_problems(problems) and _length_structure_only(problems)):
+        return art, problems, None
+    targets = _section_length_targets(art, problems, section_ranges)
+    logging.info("Brief length-only redraft for %s: %s", url, problems)
+    retry = draft_single_article(enriched_item, "brief", config, problems=targets)
+    if retry is None:
+        return art, problems, (
+            "brief length redraft failed: " + "; ".join(_hard_problems(problems)[:4])
+        )
+    art, problems = prepare(retry)
+    if _hard_problems(problems):
+        return art, problems, (
+            "brief length still failing: " + "; ".join(_hard_problems(problems)[:4])
         )
     return art, problems, None
 
@@ -5429,7 +5721,7 @@ def _process_single_article(
         acir_strict, item_has_real_fulltext, load_gemini_api_key, secondhand_label,
         validate_acir_structure, verifier_source_text, mechanism_image_prompt,
         comparable_verified_points, render_data_chart_svg, gemini_review_deep,
-        empty_check, assemble_qc_entry, FIG_DISCLAIMER,
+        empty_check, assemble_qc_entry, FIG_DISCLAIMER, section_ranges_for_material,
     )
 
     url = selection["url"]
@@ -5440,11 +5732,18 @@ def _process_single_article(
         if r and r != field
     ]
 
+    captured_overages: list[dict] = []
+
     def drop(reason: str, extra: dict | None = None):
         logging.error("Dropping %s: %s", url, reason)
+        rec = {"url": url, "reason": reason}
+        payload = dict(extra or {})
+        overs = payload.get("section_overages") or captured_overages
+        if overs:
+            rec["section_overages"] = list(overs)
+            payload.setdefault("section_overages", list(overs))
         if stats is not None:
-            stats.setdefault("drops", []).append({"url": url, "reason": reason})
-            payload = extra or {}
+            stats.setdefault("drops", []).append(rec)
             stats.setdefault("qc_report", {}).setdefault("articles", []).append(
                 assemble_qc_entry(url, False, [empty_check("gate", False, reason)], payload)
             )
@@ -5462,6 +5761,7 @@ def _process_single_article(
     t = pipeline_targets(config)
     real_ft = item_has_real_fulltext(enriched_item)
     abstract_len = len(enriched_item.abstract or "")
+    section_ranges = section_ranges_for_material(enriched_item)
 
     if not real_ft:
         if strict and t["max_brief"] == 0:
@@ -5497,6 +5797,8 @@ def _process_single_article(
         if not draft:
             return None, ["draft missing"]
         draft = sanitize_published_article(dict(draft), enriched_item)
+        if strict:
+            strip_unreported_disclaimer_sentences(draft)
         draft["field"] = field
         draft["tier"] = tier
         src = verifier_source_text(enriched_item, raw_material) if real_ft else raw_material
@@ -5508,7 +5810,7 @@ def _process_single_article(
         probs = validate_depth(draft, src, allow_word_quantities=strict)
         probs.extend(validate_names(draft, src))
         if strict and draft.get("tier") == "deep":
-            struct = validate_acir_structure(draft)
+            struct = validate_acir_structure(draft, section_ranges=section_ranges)
             depth_content = [
                 p for p in _hard_problems(probs) if not _is_length_structure_problem(p)
             ]
@@ -5516,6 +5818,8 @@ def _process_single_article(
                 struct, overages = _apply_section_band_slack(draft, struct)
                 if overages:
                     draft.setdefault("qc_section_overages", []).extend(overages)
+                    captured_overages.clear()
+                    captured_overages.extend(draft.get("qc_section_overages") or [])
             probs.extend(struct)
             from inlight_qc import verified_data_points
             if len(verified_data_points(draft, src)) < 6:
@@ -5558,6 +5862,7 @@ def _process_single_article(
     ):
         art, problems, drop_reason = _run_deep_length_redrafts(
             art, problems, enriched_item, config, url, _prepare,
+            section_ranges=section_ranges,
         )
         if drop_reason:
             return drop(drop_reason)
@@ -5583,6 +5888,12 @@ def _process_single_article(
                     return drop("brief fallback draft failed")
                 tier = "brief"
                 art, problems = _prepare(retry_art)
+                art, problems, drop_reason = _run_brief_length_redraft(
+                    art, problems, enriched_item, config, url, _prepare,
+                    section_ranges=section_ranges,
+                )
+                if drop_reason and _hard_problems(problems):
+                    return drop(drop_reason)
             elif first_has_soft_only:
                 logging.warning("Redraft failed but first draft had soft-only problems, keeping first: %s", url)
                 art = first_art
@@ -5615,6 +5926,7 @@ def _process_single_article(
                 soft_problems = [p for p in problems if p not in hard_problems]
 
                 if hard_problems:
+                    ran_length_loop = False
                     if (
                         tier == "deep"
                         and real_ft
@@ -5623,11 +5935,32 @@ def _process_single_article(
                     ):
                         art, problems, drop_reason = _run_deep_length_redrafts(
                             art, problems, enriched_item, config, url, _prepare,
+                            section_ranges=section_ranges,
                         )
                         if drop_reason:
                             return drop(drop_reason)
                         hard_problems = _hard_problems(problems)
                         soft_problems = [p for p in problems if p not in hard_problems]
+                        ran_length_loop = True
+                    if (
+                        ran_length_loop
+                        and hard_problems
+                        and not _length_structure_only(problems)
+                        and tier == "deep"
+                        and real_ft
+                        and strict
+                    ):
+                        logging.info(
+                            "Length redraft introduced content problems; one targeted deep fix: %s",
+                            url,
+                        )
+                        fix = draft_single_article(
+                            enriched_item, "deep", config, problems=problems,
+                        )
+                        if fix:
+                            art, problems = _prepare(fix)
+                            hard_problems = _hard_problems(problems)
+                            soft_problems = [p for p in problems if p not in hard_problems]
                     if not hard_problems:
                         if soft_problems:
                             logging.warning("Accepting %s with soft-only problems: %s", url, soft_problems)
@@ -5639,18 +5972,37 @@ def _process_single_article(
                             return drop("brief redraft failed")
                         tier = "brief"
                         art, problems = _prepare(brief_art)
+                        art, problems, drop_reason = _run_brief_length_redraft(
+                            art, problems, enriched_item, config, url, _prepare,
+                            section_ranges=section_ranges,
+                        )
                         hard_problems = _hard_problems(problems)
                         if hard_problems:
                             logging.error("Dropping %s after brief redraft - hard problems: %s", url, hard_problems)
-                            return drop("brief redraft still hard: " + "; ".join(hard_problems[:4]))
+                            return drop(drop_reason or (
+                                "brief redraft still hard: " + "; ".join(hard_problems[:4])
+                            ))
                         if problems:
                             logging.warning("Accepting %s with soft problems: %s", url, problems)
                     else:
-                        logging.error("Dropping %s after retry - hard problems: %s", url, hard_problems)
-                        return drop("retry still hard: " + "; ".join(hard_problems[:4]))
+                        art, problems, drop_reason = _run_brief_length_redraft(
+                            art, problems, enriched_item, config, url, _prepare,
+                            section_ranges=section_ranges,
+                        )
+                        hard_problems = _hard_problems(problems)
+                        if hard_problems:
+                            logging.error("Dropping %s after retry - hard problems: %s", url, hard_problems)
+                            return drop(drop_reason or (
+                                "retry still hard: " + "; ".join(hard_problems[:4])
+                            ))
                 else:
                     logging.warning("Accepting %s with soft-only problems: %s", url, soft_problems)
 
+    if _hard_problems(problems) and tier == "brief":
+        art, problems, drop_reason = _run_brief_length_redraft(
+            art, problems, enriched_item, config, url, _prepare,
+            section_ranges=section_ranges,
+        )
     if _hard_problems(problems):
         logging.error("Dropping %s with remaining hard problems: %s", url, _hard_problems(problems))
         return drop("hard problems remain: " + "; ".join(_hard_problems(problems)[:4]))
@@ -5797,7 +6149,16 @@ def _process_single_article(
 
     claim_status = LAST_CLAIM_AUDIT.get("status") or "ok"
     claim_ok = claim_status == "ok"
-    struct_probs = validate_acir_structure(art) if (strict and art.get("tier") == "deep") else []
+    struct_probs = (
+        validate_acir_structure(art, section_ranges=section_ranges)
+        if (strict and art.get("tier") == "deep") else []
+    )
+    if struct_probs:
+        struct_probs, end_overs = _apply_section_band_slack(art, struct_probs)
+        if end_overs:
+            art.setdefault("qc_section_overages", []).extend(end_overs)
+            captured_overages.clear()
+            captured_overages.extend(art.get("qc_section_overages") or [])
     number_probs = [p for p in (problems or []) if ("数字" in p and "未找到" in p) or "可核实数字" in p]
     checks = [
         empty_check("admission", real_ft if art.get("tier") == "deep" else True,

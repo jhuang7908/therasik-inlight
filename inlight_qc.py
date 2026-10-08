@@ -33,7 +33,12 @@ MIN_RESULTS_WORDS = 1500
 MIN_RESULTS_HAN = 2000
 FULLTEXT_WINDOW = 20000
 _RESULTS_TITLE = r"results?(?:\s+and\s+discussion)?"
+_METHODS_TITLE = (
+    r"(?:materials?\s+and\s+methods|methods?(?:\s+and\s+materials)?|"
+    r"experimental\s+procedures?|experimental\s+design)"
+)
 _NEXT_MAJOR = r"(?:discussion|references|acknowledg|funding|conclusion|bibliography|methods)"
+_AFTER_METHODS = r"(?:results?|discussion|references|acknowledg|funding|conclusion)"
 LANDING_RE = re.compile(
     r"(?i)subscribe to (?:read|access)|buy this article|"
     r"log ?in to (?:read|access)|purchase (?:pdf|access|this article)|"
@@ -239,6 +244,55 @@ def extract_results_from_html(html: str) -> str:
         if english_word_count(body) >= 80:
             return body
     return ""
+
+
+def extract_methods_from_html(html: str) -> str:
+    """Methods / Materials body from a heading or <sec sec-type=methods>."""
+    if not html:
+        return ""
+    m = re.search(
+        rf'(?is)<sec[^>]*sec-type\s*=\s*["\'](?:methods|materials)["\'][^>]*>(.*?)(?:</sec>|<sec\b)',
+        html,
+    )
+    if m:
+        return html_visible_text(strip_page_chrome(m.group(1)))
+    m = re.search(
+        rf'(?is)<(?:h[1-4]|header)[^>]*>\s*(?:<[^>]+>\s*)*{_METHODS_TITLE}'
+        rf'\s*(?:</[^>]+>\s*)*</(?:h[1-4]|header)>(.*?)'
+        rf'(?=<(?:h[1-4]|header)[^>]*>\s*(?:<[^>]+>\s*)*{_AFTER_METHODS}|\Z)',
+        html,
+    )
+    if m:
+        return html_visible_text(strip_page_chrome(m.group(1)))
+    m = re.search(
+        rf'(?is)<(?:div|section)[^>]*(?:id|class)\s*=\s*["\'][^"\']*\bmethods?\b'
+        rf'[^"\']*["\'][^>]*>(.*?)'
+        rf'(?=<(?:div|section|h[1-4])[^>]*(?:id|class|)\s*(?:=)?[^>]{{0,80}}{_AFTER_METHODS}|\Z)',
+        html,
+    )
+    if m:
+        body = html_visible_text(strip_page_chrome(m.group(1)))
+        if english_word_count(body) >= 40:
+            return body
+    return ""
+
+
+def extract_fig_captions_from_html(html: str, max_chars: int = 6000) -> str:
+    """Figure legends from HTML figcaption / caption blocks."""
+    if not html:
+        return ""
+    caps: list[str] = []
+    seen: set[str] = set()
+    for pat in (
+        r'(?is)<figcaption\b[^>]*>(.*?)</figcaption>',
+        r'(?is)<(?:fig\b[^>]*>\s*)?<caption\b[^>]*>(.*?)</caption>',
+    ):
+        for m in re.finditer(pat, html):
+            text = html_visible_text(m.group(1)).strip()
+            if text and text not in seen:
+                seen.add(text)
+                caps.append(text)
+    return "\n\n".join(caps)[:max_chars]
 
 
 def looks_like_whole_page(text: str) -> bool:
@@ -563,14 +617,51 @@ def secondhand_label(item: Any) -> str:
     return f"二手：仅读摘要，未读原文"
 
 
-def validate_acir_structure(art: dict) -> list[str]:
+def section_ranges_for_material(item: Any = None, sections_read: dict | None = None) -> dict:
+    """Scale design/results bands to the methods/fig material actually read."""
+    ranges = {k: tuple(v) for k, v in SECTION_RANGES.items()}
+    sr = sections_read
+    if sr is None and item is not None:
+        sr = getattr(item, "sections_read", None) or (
+            item.get("sections_read") if isinstance(item, dict) else None
+        )
+    sr = sr or {}
+
+    def _chars(key: str) -> int:
+        block = sr.get(key) or {}
+        try:
+            return int(block.get("chars") or 0)
+        except (TypeError, ValueError):
+            return 0
+
+    methods_n = _chars("methods")
+    figs_n = _chars("fig_captions")
+    results_n = _chars("results")
+
+    def _scale(lo: int, hi: int, have: int, typical: int) -> tuple[int, int]:
+        if have >= typical:
+            return lo, hi
+        if have <= 0:
+            return max(40, lo * 2 // 5), max(80, hi * 2 // 5)
+        frac = max(0.4, min(1.0, have / typical))
+        return max(40, int(lo * frac)), max(int(hi * frac), int(lo * frac) + 30)
+
+    ranges["design"] = _scale(*SECTION_RANGES["design"], methods_n, 2000)
+    material = results_n + figs_n
+    if figs_n == 0 and results_n < 4000:
+        ranges["results"] = _scale(*SECTION_RANGES["results"], material, 8000)
+    return ranges
+
+
+def validate_acir_structure(art: dict, section_ranges: dict | None = None) -> list[str]:
     """Section 1 of the binding spec. Deep articles only."""
     problems: list[str] = []
     if art.get("tier") != "deep":
         return problems
+    ranges = section_ranges or SECTION_RANGES
 
     def check_range(name: str, text: Any) -> None:
-        lo, hi = SECTION_RANGES[name]
+        lo, hi = ranges[name]
         n = han_len(text)
         if n < lo or n > hi:
             problems.append(f"{name} 字数 {n}，要求 {lo}–{hi}")

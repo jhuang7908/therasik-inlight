@@ -468,6 +468,99 @@ class TestQcGateAndGemini(unittest.TestCase):
             for _, probs in drafts
         ))
 
+    def test_length_redraft_content_gets_one_deep_fix(self):
+        item = EnrichedItem(
+            url="https://doi.org/10.1/ft-len-fix",
+            title="T", source="N", date="2026-01-01", pmcid="PMC4",
+        )
+        record_fulltext(item, _results(), source_label="PMC PMC4")
+        art = _deep_art()
+        drafts = []
+        vd_n = {"n": 0}
+
+        def vd(draft, src, **kwargs):
+            vd_n["n"] += 1
+            if vd_n["n"] == 1:
+                return ["标识符 'ZZ9' 在原始材料中未找到", "background 字数 80，要求 180–240"]
+            if vd_n["n"] == 2:
+                return ["background 字数 80，要求 180–240"]
+            if vd_n["n"] == 3:
+                return ["药物名 'inventedmab' 在原始材料中未找到"]
+            return []
+
+        def fake_draft(it, tier, config, problems=None):
+            drafts.append((tier, problems))
+            out = dict(art)
+            out["tier"] = tier
+            return out
+
+        with patch.dict(os.environ, {"GEMINI_API_KEY": "test-gemini"}):
+            with patch("inlight_qc.gemini_review_deep", return_value={
+                "pass": True, "scores": {k: 8 for k in GEMINI_SCORE_KEYS},
+                "reasons": "ok", "factual_mismatch": False,
+            }):
+                with patch("inlight_qc.verified_data_points", return_value=[{}] * 6):
+                    with patch("inlight_articles.validate_depth", side_effect=vd):
+                        with patch("inlight_articles.validate_names", return_value=[]):
+                            with patch("inlight_qc.validate_acir_structure", return_value=[]):
+                                with patch("inlight_articles.draft_single_article", side_effect=fake_draft):
+                                    with patch("inlight_articles.verify_article_claims", return_value={
+                                        "status": "ok", "problems": [], "calls": 1,
+                                        "input_tokens": 1, "output_tokens": 1,
+                                    }):
+                                        out = _process_single_article(
+                                            {"url": item.url, "tier": "deep", "field": "c3"},
+                                            {item.url: item},
+                                            {"min_deep": 3, "max_brief": 2, "acir_qc": True},
+                                        )
+        self.assertIsNotNone(out)
+        self.assertEqual(out["tier"], "deep")
+        self.assertTrue(all(tier == "deep" for tier, _ in drafts))
+        self.assertFalse(any(tier == "brief" for tier, _ in drafts))
+
+    def test_brief_gets_one_length_redraft_before_drop(self):
+        item = EnrichedItem(
+            url="https://doi.org/10.1/brief-len",
+            title="T", source="N", date="2026-01-01",
+            abstract="x" * 400, evidence_level="abstract",
+        )
+        art = _deep_art()
+        art["tier"] = "brief"
+        drafts = []
+        vd_n = {"n": 0}
+
+        def vd(draft, src, **kwargs):
+            vd_n["n"] += 1
+            if vd_n["n"] <= 2:
+                return ["background 字数 80，要求 180–240"]
+            return []
+
+        def fake_draft(it, tier, config, problems=None):
+            drafts.append((tier, problems))
+            out = dict(art)
+            out["tier"] = tier
+            return out
+
+        with patch("inlight_articles.validate_depth", side_effect=vd):
+            with patch("inlight_articles.validate_names", return_value=[]):
+                with patch("inlight_articles.draft_single_article", side_effect=fake_draft):
+                    with patch("inlight_articles.verify_article_claims", return_value={
+                        "status": "ok", "problems": [], "calls": 1,
+                        "input_tokens": 1, "output_tokens": 1,
+                    }):
+                        out = _process_single_article(
+                            {"url": item.url, "tier": "brief", "field": "c3"},
+                            {item.url: item},
+                            {"min_deep": 3, "max_brief": 2, "acir_qc": True},
+                        )
+        self.assertIsNotNone(out)
+        self.assertEqual(out["tier"], "brief")
+        self.assertGreaterEqual(len(drafts), 3)
+        self.assertTrue(any(
+            probs and any("必须扩写" in str(p) or "实测" in str(p) for p in (probs or []))
+            for _, probs in drafts
+        ))
+
     def test_section_band_slack_logged_when_body_in_range(self):
         from inlight_articles import _apply_section_band_slack
         from inlight_qc import han_len
@@ -489,6 +582,53 @@ class TestQcGateAndGemini(unittest.TestCase):
         )
         self.assertEqual(far, ["results 字数 1200，要求 500–700"])
         self.assertFalse(far_overs)
+        title_kept, title_overs = _apply_section_band_slack(
+            art, ["title 字数 15，要求 20–40"],
+        )
+        self.assertEqual(title_kept, ["title 字数 15，要求 20–40"])
+        self.assertFalse(title_overs)
+        no_floor, no_floor_overs = _apply_section_band_slack(
+            art, ["one_liner 字数 28，要求 40–70"],
+        )
+        self.assertEqual(no_floor, ["one_liner 字数 28，要求 40–70"])
+        self.assertFalse(no_floor_overs)
+
+        item = EnrichedItem(
+            url="https://doi.org/10.1/ft-over",
+            title="T", source="N", date="2026-01-01", pmcid="PMC8",
+        )
+        record_fulltext(item, _results(), source_label="PMC PMC8")
+        stats = {"drops": [], "qc_report": {"articles": []}}
+
+        def fake_draft(it, tier, config, problems=None):
+            return dict(_deep_art())
+
+        with patch.dict(os.environ, {"GEMINI_API_KEY": "test-gemini"}):
+            with patch("inlight_qc.gemini_review_deep", return_value={
+                "pass": True, "scores": {k: 8 for k in GEMINI_SCORE_KEYS},
+                "reasons": "ok", "factual_mismatch": False,
+            }):
+                with patch("inlight_qc.verified_data_points", return_value=[{}] * 6):
+                    with patch("inlight_articles.validate_depth", return_value=[]):
+                        with patch("inlight_articles.validate_names", return_value=[]):
+                            with patch(
+                                "inlight_qc.validate_acir_structure",
+                                return_value=["results 字数 760，要求 500–700"],
+                            ):
+                                with patch("inlight_articles.verify_article_claims", return_value={
+                                    "status": "contradicted", "problems": ["主张与原文矛盾"],
+                                    "calls": 1, "input_tokens": 1, "output_tokens": 1,
+                                }):
+                                    with patch("inlight_articles.draft_single_article", side_effect=fake_draft):
+                                        out = _process_single_article(
+                                            {"url": item.url, "tier": "deep", "field": "c3"},
+                                            {item.url: item},
+                                            {"min_deep": 3, "max_brief": 2, "acir_qc": True},
+                                            stats=stats,
+                                        )
+        self.assertIsNone(out)
+        self.assertTrue(stats["drops"])
+        self.assertTrue(any(d.get("section_overages") for d in stats["drops"]), stats["drops"])
 
     def test_out_of_scope_field_is_dropped(self):
         item = EnrichedItem(
@@ -543,6 +683,11 @@ class TestTriageBackfillAndPublishedQc(unittest.TestCase):
                 title="Abstract only", source="N", date="2026-01-01",
                 abstract="x" * 200, evidence_level="abstract",
             ),
+            _ft(
+                "https://doi.org/10.1/until",
+                "Treated until this reason",
+                " Patients were treated until progression for this reason. ",
+            ),
         ]
         records = []
 
@@ -572,6 +717,7 @@ class TestTriageBackfillAndPublishedQc(unittest.TestCase):
         self.assertGreaterEqual(len(deep_urls), 3)
         self.assertEqual(len(deep_urls), 4)
         self.assertNotIn(items[4].url, deep_urls)
+        self.assertNotIn(items[5].url, deep_urls)
         self.assertTrue(any("backfill" in str(s.get("reason") or "") for s in out))
         self.assertIn(items[3].url, deep_urls)
         skip_txt = "\n".join(records)
