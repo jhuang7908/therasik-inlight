@@ -11,7 +11,7 @@ img{max-width:100%}
 </style>
 <title>前沿追踪 - 中文生物医药前沿资讯</title>
 <meta name="description" content="中文生物医药前沿资讯，每周整理九个领域的研究进展与商业化动态。类器官、AI药物设计、肿瘤免疫、细胞治疗、疫苗、自身免疫病、小核酸与LNP、动物模型、抗体工程。">
-<meta name="author" content="前沿追踪 / InLight">
+<meta name="author" content="TheraSik · 启曜生科 / 前沿追踪">
 <meta property="og:title" content="前沿追踪 - 中文生物医药前沿资讯">
 <meta property="og:description" content="每周整理九个领域的研究进展与商业化动态：类器官、AI药物设计、肿瘤免疫、细胞治疗、疫苗、自身免疫病、小核酸与LNP、动物模型、抗体工程。">
 <meta property="og:type" content="website">
@@ -46,8 +46,11 @@ a{color:var(--accent);text-decoration:none}
 a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px}
 
 nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
-.nav-in{padding:8px 12px;display:flex;align-items:center;gap:4px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;max-height:56px}
-.brand{display:flex;align-items:center;gap:10px;margin-right:auto;padding:2px 0}
+.navshell{max-width:100%;overflow:hidden}
+.nav-in{padding:8px 12px;display:flex;align-items:center;gap:4px;flex-wrap:nowrap;max-height:56px}
+.nav-tabs{display:flex;align-items:center;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;flex:1;min-width:0;scrollbar-width:none;-ms-overflow-style:none}
+.nav-tabs::-webkit-scrollbar{display:none}
+.brand{display:flex;align-items:center;gap:10px;flex-shrink:0;padding:2px 0}
 .brand:hover{background:none}
 .bmark{width:40px;height:40px;flex:none}
 .bmark-wrap{position:relative;display:block;width:38px;height:38px;flex:none;border-radius:10px;overflow:hidden}
@@ -55,9 +58,10 @@ nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:color-
 .btext{display:grid;gap:1px;line-height:1.15}
 .brand .bn{font-family:var(--display);font-weight:800;font-size:21px;color:var(--fg)}
 .brand .bs{font-size:10px;letter-spacing:.2em;color:var(--muted);font-weight:700}
-.nav-in a{font-size:13px;padding:8px 12px;min-height:44px;display:flex;align-items:center;border-radius:999px;color:var(--muted);white-space:nowrap}
+.nav-in a{font-size:13px;padding:8px 12px;height:36px;display:inline-flex;align-items:center;justify-content:center;border-radius:999px;color:var(--muted);white-space:nowrap;flex-shrink:0}
 .nav-in a:hover{background:var(--raise);color:var(--fg)}
-.nav-in a.on{background:var(--accent);color:var(--bg)}
+.nav-in a.on{background:var(--accent);color:var(--bg);max-height:36px}
+.navsub{flex-shrink:0!important;background:var(--accent);color:var(--bg)!important;font-weight:700}
 
 .wrap{max-width:1060px;margin:0 auto;padding:22px 16px 52px;display:grid;gap:24px}
 .wrap>*{min-width:0}
@@ -332,21 +336,23 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 
 /* Mobile improvements: 44px tap targets, better readability */
 @media (max-width:720px){
-  .nav-in{gap:2px;padding:6px 8px}
-  .nav-in a{font-size:12px;padding:10px 10px}
-  .brand .bn{font-size:18px}
-  .brand .bs{font-size:9px}
-  .bmark,.bmark-wrap{width:36px;height:36px}
-  .btn{min-height:44px;padding:12px 20px}
-  .chip{min-height:44px;padding:10px 16px}
+  .nav-in{gap:4px;padding:8px 10px}
+  .nav-tabs{gap:2px}
+  .nav-in a{font-size:12px;padding:0 10px;height:36px}
+  .brand .btext{display:none}
+  .bmark,.bmark-wrap{width:32px;height:32px}
+  .navsub{padding:0 14px;height:36px;margin-left:auto}
+  .btn{min-height:44px;padding:0 20px;display:inline-flex;align-items:center;justify-content:center}
+  .chip{min-height:44px;padding:0 16px;display:inline-flex;align-items:center}
   .expbtn{min-height:44px;display:flex;align-items:center}
   .sec p{font-size:15px}
   .feed{grid-template-columns:1fr}
   .panel ol,.panel ul{font-size:15px}
+  /* Hide deals illustrations on mobile to reduce page height */
+  .feed .item .cover{display:none}
 }
 @media (max-width:480px){
-  .nav-in a{padding:8px 8px;font-size:11px}
-  .navsub{padding:8px 10px}
+  .nav-in a{padding:0 8px;font-size:11px}
 }
 </style>
 </head>
@@ -362,11 +368,13 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
     </svg></span>
     <span class="btext"><span class="bn">前沿追踪</span><span class="bs">FRONTIER DIGEST</span></span>
   </a>
-  <a href="#home" data-v="home">首页</a>
-  <a href="#fields" data-v="fields">领域</a>
-  <a href="#deals" data-v="deals">商业化动态</a>
-  <a href="#archive" data-v="archive">存档</a>
-  <a href="#about" data-v="about">关于我们</a>
+  <div class="nav-tabs">
+    <a href="#home" data-v="home">首页</a>
+    <a href="#fields" data-v="fields">领域</a>
+    <a href="#deals" data-v="deals">动态</a>
+    <a href="#archive" data-v="archive">存档</a>
+    <a href="#about" data-v="about">关于</a>
+  </div>
   <a class="navsub" href="#support">订阅</a>
 </div></div></nav>
 
@@ -448,7 +456,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
         <a class="btn ghost" href="#fields">看九个领域</a>
       </div>
       <div class="hb-stats">
-        <span><b>9</b> 个领域</span><span><b id="hb-arts">0</b> 篇解读</span><span><b id="hb-deals">0</b> 条动态</span>
+        <span><b>9</b> 个领域</span><span>深度 <b id="hb-deep">0</b></span><span>速览 <b id="hb-survey">0</b></span><span>动态 <b id="hb-deals">0</b></span>
       </div>
     </div>
   </section>
@@ -477,11 +485,14 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
     <div id="tab-byfield" hidden><div class="fieldlist" id="fieldlist"></div></div>
   </section>
 
+  <!-- Sponsored section: hidden until a sponsor is available -->
+  <!--
   <section class="sponsored">
     <div class="slabel">赞助内容</div>
-    <h3>这里是赞助位</h3>
-    <p>赞助内容与编辑内容分开排版，并标注「赞助」。这个位置可以放赞助方的一段介绍、白皮书或活动信息。目前为占位。</p>
+    <h3>赞助方标题</h3>
+    <p>赞助方介绍。</p>
   </section>
+  -->
 
   <!-- 正文中部的订阅块：对标 BioPharma Dive / STAT 把表单放在内容流里 -->
   <section class="subblock">
@@ -590,7 +601,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
   <section class="panel">
     <h2>每周更新什么</h2>
     <p>九个领域：类器官、AI 药物设计、肿瘤免疫、细胞治疗、疫苗、自身免疫疾病、小核酸与 LNP、动物模型、抗体工程。一篇文章常常同时属于好几个，所以标签是多选的，不硬塞进一个栏目。</p>
-    <p>每篇解读是一张机制图加一千字以内的评述。机制图用 BioRender 的图标库绘制，把论文里散在好几个图里的逻辑拼成一张，不是原文的图。评述分四节写，背景、发现、机制、意义和局限。末尾给作者单位和完整引文，方便你直接去查原文。</p>
+    <p>每篇解读是一张示意图加一千字以内的评述。示意图由 AI 生成（gpt-image-1），依据论文流程绘制，不是期刊原图，也不代表分子比例。评述分四节写，背景、发现、机制、意义和局限。末尾给作者单位和完整引文，方便你直接去查原文。</p>
     <p>交易那边记六类：收购、授权、NewCo、临床进展、投资融资、监管政策。金额按首付和里程碑分开写，有多少写多少，来源都挂链接。中国公司出海的授权这两年最多，这一类会盯得紧一些。</p>
   </section>
 
@@ -599,18 +610,28 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
     <p>不是全覆盖。一周能认真读完的就那么几篇，剩下的只能靠领域页的来源清单自己去翻。</p>
     <p>不给投资建议。商业化动态只记发生了什么和出处，金额和条款都照原文抄，不替你判断值不值。</p>
     <p>会有错。论文说了什么和我怎么理解，会分开写；只看到摘要或者新闻稿、没读到全文的，会在文里写明是二手。发现错了请告我，更正直接标在原文下面，不悄悄改。</p>
-    <p>站是刚开的。规划的二十七篇解读目前写完两篇，其余在排。</p>
   </section>
 
   <section class="panel">
     <h2>AI 辅助说明</h2>
     <p>本站使用 AI 工具辅助写作和编辑。具体包括：</p>
     <ul>
-      <li><b>初稿生成</b>　部分文献摘要和条目说明的初稿由 Claude 生成，人工逐条核对原文后发布。</li>
-      <li><b>机制图</b>　使用 DALL·E / gpt-image-1 生成草图辅助构思，最终版本在 BioRender 中绘制。</li>
+      <li><b>初稿生成</b>　文献摘要和条目说明的初稿由 Claude 根据原文/摘要起草。</li>
+      <li><b>示意图</b>　配图由 gpt-image-1 生成，是示意图，非期刊原图。</li>
       <li><b>代码与自动化</b>　站点代码和更新脚本有 AI 辅助编写的部分。</li>
     </ul>
-    <p>所有发布内容均经人工核对。标注"二手核实"的条目表示未能直接读取原文全文，依据新闻稿或二手来源核实。如发现错误，请来信指出，更正会直接标注在原文下方。</p>
+    <p>所有发布内容均经编辑逐条核对数字、作者与出处后发布。标注"二手核实"的条目表示未能直接读取原文全文，依据新闻稿或二手来源核实。如发现错误，请来信指出，更正会直接标注在原文下方。</p>
+  </section>
+
+  <section class="panel">
+    <h2>更正记录</h2>
+    <table style="width:100%;font-size:14px;border-collapse:collapse;">
+      <tr style="border-bottom:1px solid var(--line);"><th style="text-align:left;padding:8px 0;">日期</th><th style="text-align:left;padding:8px 0;">原文</th><th style="text-align:left;padding:8px 0;">更正</th></tr>
+      <tr style="border-bottom:1px solid var(--line);"><td style="padding:8px 0;">2026-10-08</td><td style="padding:8px 0;">a-trap：「近一半样本标签是错的」</td><td style="padding:8px 0;">改为「按来源拆开后波动很大（<10% 到 >95%）」，更准确反映原文结论</td></tr>
+      <tr style="border-bottom:1px solid var(--line);"><td style="padding:8px 0;">2026-10-08</td><td style="padding:8px 0;">a-trap：作者「Hunter 等」</td><td style="padding:8px 0;">更正为「Messemaker、Kwee 等（Schumacher 组）」</td></tr>
+      <tr style="border-bottom:1px solid var(--line);"><td style="padding:8px 0;">2026-10-08</td><td style="padding:8px 0;">a-invivocar：图注「只进入」</td><td style="padding:8px 0;">更正为「主要进入」，更准确</td></tr>
+      <tr style="border-bottom:1px solid var(--line);"><td style="padding:8px 0;">2026-10-08</td><td style="padding:8px 0;">c7-cell-2：「实体血液肿瘤」</td><td style="padding:8px 0;">更正为「血液肿瘤」（多发性骨髓瘤是血液肿瘤）</td></tr>
+    </table>
   </section>
 
   <section class="panel">
@@ -625,15 +646,35 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
   </section>
 
   <section class="panel">
-    <h2>也接活</h2>
+    <h2>服务</h2>
+    <p>除了这个站，我们也承接内容和建站项目。详见<a href="#services">服务页面</a>。</p>
+  </section>
+</div>
+
+<!-- ============ SERVICES ============ -->
+<div class="wrap view textpage" id="v-services" hidden>
+  <header class="hero">
+    <h1>服务</h1>
+    <p>TheraSik · 启曜生科 提供的内容和建站服务。</p>
+  </header>
+  <section class="panel">
+    <h2>我们做什么</h2>
     <p>这个站是自己做的，从排版到机制图到文案。顺手也接外面的活，主要四类。</p>
     <p><b>做网页。</b>建站或者改版。你现在看到的这几页就是样品：九个栏目、商业化动态的筛选、手机和桌面两套排版、广告位，都是手写的单页，没有后台，扔到任何静态托管上就能跑，没有月费。要带后台和订阅系统的也能做。</p>
-    <p><b>写内容、做公众号。</b>选题、撰稿、机制图、把英文文献和公司公告整理成中文。这正是这个站每周在做的事，只是换成你的名字发。可以按篇结，也可以包月更新。公司新闻稿、融资材料里的科学部分、学术会议的会后整理，都做过类似的。</p>
+    <p><b>写内容、做公众号。</b>选题、撰稿、配图、把英文文献和公司公告整理成中文。这正是这个站每周在做的事，只是换成你的名字发。可以按篇结，也可以包月更新。公司新闻稿、融资材料里的科学部分、学术会议的会后整理，都做过类似的。</p>
     <p><b>写商业计划书和融资材料。</b>生物医药初创的 BP、投资人问答、路演稿，以及尽调清单里要补的那些文档。我写的是技术和市场那部分：管线讲到什么程度、技术路线和竞品怎么摆、临床格局和在研同类药怎么说、适应症的选择理由、机制图和管线图怎么画。数据用你自己的，文献和同类交易我去查并注明出处。财务模型和估值不是我的活，那部分配合你的 CFO 或财务顾问来，我负责让技术故事和数字对得上、口径一致。中英文两版都能写。</p>
-    <p><b>写白皮书。</b>赛道研究、技术路线梳理、市场和竞争格局那一类。一份白皮书通常是：这条路线现在走到哪儿了（谁在做、到了几期、读出来的结论）、几种技术路径的优劣和各自卡在哪、已披露的交易和定价、监管端的口径变化、再给一个判断。文献和交易都标出处，哪一句是公开数据、哪一句是我的推断会分开写。配图自己画，不是网上找的截图。</p>
-    <p>白皮书有两种做法：署你们公司的名对外发，用来讲清自己所在的赛道；或者内部用，给董事会和投资人看。都做过类似的结构。</p>
-    <p>比较合适的是：刚起步、还没有专职科学编辑的 Biotech；想让技术内容说清楚一点的 CRO 和器械公司；需要有人把尽调材料里的机制讲明白的投资机构。不合适的也直说——纯流量型的营销号、要求结论先定好再找证据的，我不做。</p>
-    <p>报价看篇幅和交付周期，先聊清楚需求再给数。写信到 <a href="mailto:contact@therasik.com?subject=%E5%90%88%E4%BD%9C%E5%92%A8%E8%AF%A2">contact@therasik.com</a>，说清要做什么、什么时候要。</p>
+    <p><b>写白皮书。</b>赛道研究、技术路线梳理、市场和竞争格局那一类。一份白皮书通常是：这条路线现在走到哪儿了（谁在做、到了几期、读出来的结论）、几种技术路径的优劣和各自卡在哪、已披露的交易和定价、监管端的口径变化、再给一个判断。文献和交易都标出处，哪一句是公开数据、哪一句是我的推断会分开写。配图原创绘制，不是网上找的截图。</p>
+  </section>
+  <section class="panel">
+    <h2>适合的客户</h2>
+    <p>比较合适的是：刚起步、还没有专职科学编辑的 Biotech；想让技术内容说清楚一点的 CRO 和器械公司；需要有人把尽调材料里的机制讲明白的投资机构。</p>
+    <p>不合适的也直说——纯流量型的营销号、要求结论先定好再找证据的，我不做。</p>
+    <p class="note">利益声明：如所报道公司为本站客户，将在文首标注。本站内容独立于服务项目，客户关系不影响选题和评述。</p>
+  </section>
+  <section class="panel">
+    <h2>联系我们</h2>
+    <p>报价看篇幅和交付周期，先聊清楚需求再给数。</p>
+    <p>写信到 <a href="mailto:contact@therasik.com?subject=%E5%90%88%E4%BD%9C%E5%92%A8%E8%AF%A2">contact@therasik.com</a>，说清要做什么、什么时候要。</p>
   </section>
 </div>
 
@@ -680,6 +721,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
       <div class="sec"><h2>讨论</h2><p>若能在人体复现，体内 CAR-T 会把细胞治疗从定制化制造变成像常规生物药一样的现货给药，大幅降低成本并扩展到自免等更大的患者群体。需要注意：本研究全部为临床前数据，猴和小鼠的 B 细胞清除不等于人体疗效；mRNA 瞬时表达下的最佳剂量与间隔仍需临床确定；重复给药可能带来的抗药抗体和细胞因子反应、以及 CD8 靶向是否影响正常 T 细胞功能，都还没有长期数据。</p></div>
       <div class="sec meet"><h2>作者介绍</h2><p>第一作者 Theresa L. Hunter，Capstan Therapeutics。末位通讯 Haig Aghajanian，Capstan 联合创始人。共同作者 Carl H. June，宾夕法尼亚大学，CAR-T 领域奠基人之一。</p><p>对齐 ACIR 的 Meet the researcher：没有采访稿，不编问答，只写论文里能核对的作者和单位。</p></div>
       <div class="sec"><h2>出处与延伸</h2><p class="src"><b>原文</b>：Hunter TL, Bao Y, Zhang Y, …, June CH, Aghajanian H. In vivo CAR T cell generation to treat cancer and autoimmune disease. <i>Science</i> 2025;388(6749):1311–1317. <a href="https://doi.org/10.1126/science.ads8473">doi:10.1126/science.ads8473</a><br><b>相关动态</b>：这条技术路线对应的企业交易见<a href="#deals">商业化动态</a>页。</p></div>
+      <p class="note" style="margin-top:1em;font-size:13px;">本文初稿由 Claude 起草，配图由 gpt-image-1 生成，编辑核对后发布。TheraSik · 启曜生科 出品。</p>
     </div>
   </div>
 </article>
@@ -723,10 +765,11 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
       </div>
       <div class="sec"><h2>研究背景</h2><p>要做新抗原疫苗或 TCR-T 疗法，先得知道哪条 TCR 能认出哪个抗原肽-MHC 复合物。这件事目前靠湿实验一条一条验证，慢且贵，所以大家都希望用计算预测。问题是训练和检验模型要靠数据，而现有公共数据库（如 VDJdb）里的配对多是从各种实验里汇总来的，标注质量参差，没人系统验证过。</p></div>
       <div class="sec"><h2>核心发现</h2><p>作者先重新注释 VDJdb 里约 6300 条 TCR，挑出覆盖最密的 10 个抗原，得到 3693 条的 VDJdb-10 子集。随后搭建 T-RAP：基于机器人的高通量平台，只凭序列信息就能阵列化组装 TCR，速度快、成本低，且把反应性分析与克隆丰度、T 细胞状态、细胞功能障碍彻底分开。把组装好的 TCR 导入无内源 TCR 的 Jurkat CD8 T 细胞，再与呈递相应抗原的靶细胞共培养，逐条读出是否真的被激活。结果醒目：平均只有 56% 的 TCR 表现出数据库里标注的反应性。拿这批功能验证数据检验预测工具，tcrdist3 按序列相似度预测，不同抗原间波动较大；AlphaFold3 用 TCR-肽界面残基的最小预测对齐误差判断，配对同源 pMHC 的 AUROC 从 0.83 到 0.90，部分情形降到 0.65 左右。</p></div>
-      <div class="sec"><h2>机制解读</h2><p>价值有两层。方法上，T-RAP 把 TCR 的来源从“在病人样本里找到的克隆”变成“写下序列就能造出来”，于是可以主动设计标准化 TCR 库，而不是被动依赖样本里碰巧扩增出来的克隆。数据上，56% 这个数字说明公共数据库的噪声比想象的大——此前所有用 VDJdb 训练或评测的模型，近一半样本标签是错的，这直接解释了为什么各家模型在真实任务里常不如报告的好。AlphaFold3 尤其值得注意：它没有为这个任务做任何专门训练，纯靠结构预测的界面置信度就能区分真假配对，说明结构信息本身携带了足够的特异性线索。</p></div>
+      <div class="sec"><h2>机制解读</h2><p>价值有两层。方法上，T-RAP 把 TCR 的来源从“在病人样本里找到的克隆”变成“写下序列就能造出来”，于是可以主动设计标准化 TCR 库，而不是被动依赖样本里碰巧扩增出来的克隆。数据上，56% 这个数字说明公共数据库的噪声比想象的大——在 Jurkat 报告系统中，按来源拆开后波动很大（<10% 到 >95%），这一发现提示公共数据库的噪声水平因来源而异，这直接解释了为什么各家模型在真实任务里常不如报告的好。AlphaFold3 尤其值得注意：它没有为这个任务做任何专门训练，纯靠结构预测的界面置信度就能区分真假配对，说明结构信息本身携带了足够的特异性线索。</p></div>
       <div class="sec"><h2>讨论</h2><p>短期最实用的用法是筛选：从一批候选 TCR 里挑出最可能真的识别患者个体新抗原的几条，再送湿实验验证，省掉大部分无用功。局限同样清楚：VDJdb-10 只有 10 个抗原且多为常见病毒表位，肿瘤新抗原的多样性远超此；Jurkat 报告系统测的是 TCR 能否被激活，不等于原代 T 细胞在体内的杀伤能力；AUROC 0.65 这一档的场景下，预测还远达不到替代实验的程度。</p></div>
       <div class="sec meet"><h2>作者介绍</h2><p>共同第一作者 Marius Messemaker、Benjamin P. Y. Kwee，荷兰癌症研究所。末位通讯 Ton N. Schumacher，NKI 与莱顿大学医学中心，肿瘤新抗原概念的主要奠基人之一。共同通讯 Wouter Scheper；结构部分有 Anastassis Perrakis。</p><p>ACIR 周报这一期的 Meet the researcher 是对两位共同第一作者的采访。本站没有采访稿，不编问答，只保留论文和周报里能核对的作者与单位。</p></div>
       <div class="sec"><h2>出处与延伸</h2><p class="src"><b>原文</b>：Messemaker M, Kwee BPY, Moravec Ž, …, Scheper W, Schumacher TN. Functional evaluation of TCR-pMHC pairs at scale allows in silico TCR reactivity prediction. <i>Immunity</i> 2026 Oct 1. <a href="https://doi.org/10.1016/j.immuni.2026.09.007">doi:10.1016/j.immuni.2026.09.007</a><br><b>来源</b>：<a href="https://acir.org/weekly-digests/2026/october/t-rap-a-new-tool-for-predicting-tcr-pmhc-reactivity">ACIR 周报，2026 年 10 月</a></p></div>
+      <p class="note" style="margin-top:1em;font-size:13px;">本文初稿由 Claude 起草，配图由 gpt-image-1 生成，编辑核对后发布。TheraSik · 启曜生科 出品。</p>
     </div>
   </div>
 </article>
@@ -762,13 +805,13 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
   <div class="footshell"><div class="foot-in">
     <div class="fbrand">
       <b>前沿追踪</b>
-      <p>九个领域的前沿进展与商业化动态，中文整理。每篇解读注明作者、领域和文献出处。</p>
+      <p>TheraSik · 启曜生科 出品。九个领域的前沿进展与商业化动态，中文整理。</p>
     </div>
     <div class="footnav">
-      <a href="#home">首页</a><a href="#fields">领域</a><a href="#deals">商业化动态</a><a href="#archive">存档</a><a href="#about">关于</a><a href="#support">订阅与赞助</a>
+      <a href="#home">首页</a><a href="#fields">领域</a><a href="#deals">商业化动态</a><a href="#archive">存档</a><a href="#about">关于</a><a href="#services">服务</a><a href="#support">订阅</a>
     </div>
     <p class="footmail">广告、赞助、纠错都写 <a href="mailto:contact@therasik.com">contact@therasik.com</a></p>
-    <p class="footnote">赞助内容会明确标注「由某方支持」，并与编辑内容分开排版。赞助方不参与选题和评述。</p>
+    <p class="footnote">如所报道公司为本站客户，将在文首标注。赞助内容会明确标注「由某方支持」，并与编辑内容分开排版。</p>
   </div></div>
 </footer>
 
@@ -777,7 +820,7 @@ const FNAMES={c1:'类器官',c2:'AI 药物设计',c3:'肿瘤免疫',c7:'细胞�
 const FIELDS=[{k:'c1',n:'类器官',d:'疾病建模、药物筛选、器官芯片'},{k:'c2',n:'AI 药物设计',d:'结构预测、生成式蛋白设计、药效预测'},{k:'c3',n:'肿瘤免疫',d:'检查点、微环境、新抗原'},{k:'c7',n:'细胞治疗',d:'CAR-T、TCR-T、CAR-NK、TIL'},{k:'c8',n:'疫苗',d:'mRNA 新抗原疫苗、佐剂、递送'},{k:'c4',n:'自身免疫疾病',d:'狼疮、类风湿、多发性硬化'},{k:'c9',n:'小核酸与 LNP',d:'siRNA、ASO、脂质纳米颗粒递送'},{k:'c5',n:'动物模型',d:'人源化小鼠、基因编辑、PDX'},{k:'c6',n:'抗体工程',d:'双抗、ADC、纳米抗体、Fc 改造'}];
 const CAT=[
  {id:'c7-cell-2',f:'c7',t:'无需单采与清淋的体内BCMA CAR-T长期随访：骨髓瘤缓解率100%，但髓外病灶复发成主要短板',ds:'2026-10-06',disp:'2026.10',j:'Nature Medicine',url:'https://doi.org/10.1038/s41591-026-04704-z',au:'Heng Mei（梅恒）, 华中科技大学同济医学院附属协和医院（武汉协和医院）/生物靶向治疗教育部重点实验室',tags:['c7','c9','c3'],sum:'武汉协和医院梅恒团队报告了体内BCMA CAR-T产品ESO-T01（纳米抗体导向、免疫屏蔽的慢病毒载体）治疗复发/难治多发性骨髓瘤的I期单臂研究长期随访。4名患者仅接受一次静脉输注，不需要白细胞单采，也不做清淋化疗。最长随访15个月，客观缓解率100%（2例严格意义完全缓解，2例部分缓解），其中1例严格完全缓解维持15个月；中位无进展生存4.0个月。3例出现复发或进展，均伴髓外病变，随访期间死亡。所有患者都出现1–3级双相细胞因子释放综合征和≥3级血液学毒性，未见免疫原性或整合相关毒性。这是体内CAR-T在血液肿瘤中较早的长期数据：它证实了“现货式”体内CAR-T的可行性，也暴露出疗效持久性和髓外病灶控制方面的问题。',note:'Nature Medicine页面未明确标注通讯作者，梅恒按数据索取邮箱（hmei@hust.edu.cn）及末位作者身份认定。同一产品的首篇I期论文（10.1038/s41591-026-04244-6，同济医院李春蕊团队）于2026-03-25上线，不在窗口内，未收录。'},
- {id:'a-trap',f:'c3',t:'用机器人批量组装 TCR，再让 AlphaFold3 预测它能不能认出抗原',ds:'2026-10-01',disp:'2026.10',j:'Immunity',url:'#a-trap',au:'Messemaker、Kwee 等（Schumacher 组）',tags:['c3','c2','c7'],sum:'功能验证后发现，公共数据库里平均只有 56% 的 TCR 真的具有标注的反应性。此前所有用 VDJdb 训练或评测的预测模型，近一半样本标签是错的。本站写了完整解读。',deep:'a-trap'},
+ {id:'a-trap',f:'c3',t:'用机器人批量组装 TCR，再让 AlphaFold3 预测它能不能认出抗原',ds:'2026-10-01',disp:'2026.10',j:'Immunity',url:'#a-trap',au:'Messemaker、Kwee 等（Schumacher 组）',tags:['c3','c2','c7'],sum:'功能验证后发现，公共数据库里平均只有 56% 的 TCR 真的具有标注的反应性。按来源拆开后波动很大（<10% 到 >95%），提示数据库噪声水平因来源而异。本站写了完整解读。',deep:'a-trap'},
  {id:'c4-ai-4',f:'c4',t:'交感神经与Treg缺失“两次打击”共同触发自身免疫性脱发',ds:'2026-09-30',disp:'2026.09',j:'Nature',url:'https://doi.org/10.1038/s41586-026-11098-y',au:'Ting Chen（陈婷，末位作者）, 北京生命科学研究所（NIBS）；清华大学生物医学交叉研究院，中国北京',tags:['c4','c5'],sum:'研究在小鼠中发现，斑秃类自身免疫性脱发需要两次打击。第一击是免疫打击：只有在毛囊生长期（而非休止期）短暂清除Treg，CD8+ T细胞才会攻击原本处于免疫豁免状态的毛囊干细胞，导致脱发。第二击是神经打击：生长期交感神经活性升高使皮肤变得易感，阻断交感神经可预防发病，而应激或光遗传激活交感神经则可使休止期皮肤同样易感。机制上，去甲肾上腺素经干细胞上的ADRB2受体重新激活内源性逆转录病毒，进而启动AIM2依赖的先天免疫信号和致病性CD8+ T细胞应答。敲除Aim2或抑制逆转录酶均可防止发病。该研究将神经、应激与自身免疫联系起来，为斑秃提供了β2受体、AIM2、逆转录酶等新的干预靶点。',note:'页面未明确标注通讯作者，引用元数据作者为Ting Chen。'},
  {id:'c8-vac-5',f:'c8',t:'AI驱动的辅料配方筛选让mRNA-LNP疫苗在37℃存放两月、室温一年仍保持活性',ds:'2026-09-28',disp:'2026.09',j:'Nature Biotechnology',url:'https://doi.org/10.1038/s41587-026-03331-w',au:'Ana Jaklenec 与 Robert Langer（共同资深作者）, 麻省理工学院 Koch 综合癌症研究所（与MIT CSAIL合作）',tags:['c8','c9','c2'],sum:'针对mRNA疫苗依赖冷链的瓶颈，MIT团队先筛查约50种已批准辅料（以荧光素酶mRNA的细胞内表达作为稳定性读出），选出5种最优辅料，再用与CSAIL合作开发的小样本机器学习算法预测配比，每轮只测两种配方、数轮迭代约一个月完成优化，并经真空干燥成型。所得配方在37℃保存两个月、室温保存一年后仍保持活性；小鼠中其新冠mRNA疫苗经长期储存后免疫应答仍与常规脂质纳米颗粒疫苗相当，制成固体微针贴片亦然；同套辅料改比例还能稳定另一种临床级LNP配方。',note:'通过MIT News官方稿核实期刊、标题、日期与作者；Nature Biotechnology原文页面未直接打开，DOI取自该文的Nature链接（s41587-026-03331-w），与搜索结果中的文章URL一致。MIT稿未明确标注通讯作者，此处填两位资深作者。',sec:1},
  {id:'c9-rna-2',f:'c9',t:'把“货物大小”纳入可电离脂质筛选，新脂质 LC-1 让大体积碱基编辑器在肝、脑、肺的体内编辑效率提升最多 4 倍',ds:'2026-09-28',disp:'2026.09',j:'Nature Biotechnology',url:'https://doi.org/10.1038/s41587-026-03298-8',au:'Bowen Li（末位作者；页面未显式标注通讯）, Princess Margaret Cancer Centre, University Health Network / University of Toronto, Toronto, Canada',tags:['c9','c5'],sum:'传统可电离脂质筛选多用短报告 mRNA，忽略了碱基编辑器等大分子 mRNA 的尺寸效应。作者用 5.7 kb 的 ABE–NanoLuc 报告 mRNA 对 384 个脂质组合库进行筛选，得到先导脂质 LC-1。经静脉、鞘内与气管内给药，LC-1 介导的 Cas9 敲除效率在肝达 79%、脑 48%、肺 27%，比基准脂质 LP-01 与 ALC-0315 高出最多 4 倍；在三种给药途径下腺嘌呤碱基编辑报告修正率同样更高，并实现 PCSK9、CFTR R55X 与 Ube3a-ATS 的体内碱基编辑。机制研究显示，随 mRNA 增大，LC-1 仍能维持更强的脂质–RNA 相互作用与有序、可融合的反六方相结构及 pH 响应性膜破坏能力。结论是货物尺寸应作为可电离脂质设计的核心参数，对肝外基因编辑递送具有直接指导意义。',note:'文章页未明确标注通讯作者，Bowen Li 为末位作者且为引用元数据作者；同期有 News &amp; Views 评论（10.1038/s41587-026-03297-9）。'},
@@ -913,12 +956,13 @@ function renderPaper(id){
           <div class="fig paperfig">
             <div class="fig-scroll"><img src="${a.img||('img/papers/'+a.id+'.jpg?v=5')}" alt="" onerror="this.remove()"></div>
             <ol class="figsteps">${steps.map((s,i)=>`<li><b>${i+1}</b>${s}</li>`).join('')}</ol>
-            <p class="cap">机制图按 BioRender 的扁平科学图来画，依据上面的步骤，不是期刊原图，也不代表分子比例。图内不写字。</p>
+            <p class="cap">示意图由 AI 生成，依据论文流程绘制，非期刊原图，不代表分子比例。</p>
           </div>
           ${walk?`<div class="sec"><h2>他们怎么做、看到了什么</h2><p>${walk}</p></div>`:''}
-          <div class="sec"><h2>讨论</h2><p>${close||open}${a.note?` ${a.note}`:''}</p></div>
-          <div class="sec meet"><h2>作者介绍</h2><p>${a.au||'论文页面没有给出可核对的通讯作者。'}</p><p>对齐 ACIR 周报的 Meet the researcher：这里没有采访，只写论文或新闻稿里能核对的作者、身份和单位。页面没标通讯作者时，按末位或资深作者写明，不另编履历。</p></div>
+          <div class="sec"><h2>讨论</h2><p>${close||open}</p></div>
+          <details class="sec meet"><summary>编辑备注</summary><p>${a.au||'论文页面没有给出可核对的通讯作者。'}</p>${a.note?`<p>${a.note}</p>`:''}<p>这里没有采访，只写论文或新闻稿里能核对的作者、身份和单位。页面没标通讯作者时，按末位或资深作者写明，不另编履历。</p></details>
           <div class="sec"><h2>出处</h2><p class="src"><b>原文</b>：${a.j||''}。 <a href="${a.url}" target="_blank" rel="noopener">打开原文</a></p></div>
+          <p class="note" style="margin-top:1em;font-size:13px;">本文初稿由 Claude 起草，配图由 gpt-image-1 生成，编辑核对后发布。TheraSik · 启曜生科 出品。</p>
         </div>
       </div>
     </article>`;
@@ -1058,8 +1102,12 @@ function repaintCatalog(){
   renderTracker();
   renderChips();
   lgHtml=document.getElementById('latestgrid').innerHTML;
-  const ha=document.getElementById('hb-arts'), hb=document.getElementById('hb-deals');
-  if(ha)ha.textContent=CAT.length; if(hb)hb.textContent=DEALS.length;
+  const deepCount=CAT.filter(a=>a.deep).length;
+  const surveyCount=CAT.length-deepCount;
+  const hd=document.getElementById('hb-deep'), hs=document.getElementById('hb-survey'), hb=document.getElementById('hb-deals');
+  if(hd)hd.textContent=deepCount;
+  if(hs)hs.textContent=surveyCount;
+  if(hb)hb.textContent=DEALS.length;
 }
 function renderFeed(){
   const rows=DEALS.filter(x=>filter==='all'||x.kinds.includes(filter));
@@ -1100,16 +1148,40 @@ let rt; addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{
 },150)});
 
 const views=[...document.querySelectorAll('.view')];
+const REDIRECTS={'c9-rna-4':'c7-cell-2','c9-rna-1':'c8-vac-5','c4-ai-3':'c7-cell-1','c6-ab-1':'c2-ai-1','c5-am-4':'c8-vac-2','c6-ab-2':'c2-ai-5'};
+const TITLES={home:'前沿追踪 - 中文生物医药前沿资讯',fields:'领域浏览 - 前沿追踪',deals:'商业化动态 - 前沿追踪',archive:'存档 - 前沿追踪',about:'关于我们 - 前沿追踪',support:'订阅 - 前沿追踪',services:'服务 - 前沿追踪'};
 function route(){
-  const h=(location.hash||'#home').slice(1);
+  let h=(location.hash||'#home').slice(1);
+  // Handle /a/{id} format from static share pages
+  if(h.startsWith('/a/')){
+    const id=h.slice(3);
+    location.hash='#p-'+id;
+    return;
+  }
+  // Handle redirects for removed entries
+  if(h.startsWith('p-')){
+    const id=h.slice(2);
+    if(REDIRECTS[id]){
+      location.hash='#p-'+REDIRECTS[id];
+      return;
+    }
+  }
   let target=document.getElementById('v-'+h)?h:'home';
+  let pageTitle=TITLES[target]||TITLES.home;
   if(h.startsWith('p-')){
     const a=CAT.find(x=>x.id===h.slice(2));
     if(a&&a.deep) target=a.deep;
     else { renderPaper(h.slice(2)); target='paper'; }
+    if(a) pageTitle=a.t+' - 前沿追踪';
   }
+  // Handle deep article views
+  if(target!=='home'&&target!=='fields'&&target!=='deals'&&target!=='archive'&&target!=='about'&&target!=='support'&&target!=='services'&&target!=='paper'){
+    const deepArt=CAT.find(x=>x.deep===h);
+    if(deepArt) pageTitle=deepArt.t+' - 前沿追踪';
+  }
+  document.title=pageTitle;
   views.forEach(v=>{v.hidden = v.id!=='v-'+target});
-  if(target==='deals') renderFeed();   // 隐藏时读不到网格列数，显示后重排末行
+  if(target==='deals') renderFeed();
   if(target==='home') refit();
   if(target==='fields'||target==='archive')
     document.querySelectorAll('#v-'+target+' .grid').forEach(g=>{

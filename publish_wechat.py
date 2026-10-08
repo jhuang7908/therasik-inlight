@@ -155,43 +155,24 @@ def main() -> None:
         articles = json.loads((week / "articles.json").read_text(encoding="utf-8"))
         deals = json.loads((week / "deals.json").read_text(encoding="utf-8")) if (week / "deals.json").exists() else []
         
-        # Build a descriptive title from top article topics
-        topics = []
-        for art in articles[:3]:
-            if art.get("t"):
-                # Extract key topic from title
-                t = art["t"]
-                if "CAR-T" in t:
-                    topics.append("CAR-T")
-                elif "类器官" in t:
-                    topics.append("类器官")
-                elif "mRNA" in t or "LNP" in t:
-                    topics.append("mRNA")
-                elif "抗体" in t or "双抗" in t:
-                    topics.append("抗体")
-                elif "AI" in t or "机器学习" in t:
-                    topics.append("AI")
+        # Count issues (basic numbering based on existing weekly dirs)
+        weekly_root = ROOT / "content" / "weekly"
+        issue_num = len([p for p in weekly_root.glob("*") if p.is_dir()]) if weekly_root.exists() else 1
         
-        # Format date nicely
-        week_parts = week.name.split("-")
-        if len(week_parts) == 3:
-            date_str = f"{week_parts[0]}年{int(week_parts[1])}月{int(week_parts[2])}日"
-        else:
-            date_str = week.name
+        # Use lead article headline for title
+        lead_headline = ""
+        if articles:
+            lead_headline = articles[0].get("t", "")[:25]
         
-        # Build title with topics
-        if topics:
-            unique_topics = list(dict.fromkeys(topics))[:3]  # dedupe, keep order
-            title = f"前沿追踪 | {date_str}：{'、'.join(unique_topics)}等"
-        else:
-            title = f"前沿追踪 | {date_str}周报"
+        title = f"前沿追踪｜第{issue_num}期：{lead_headline}" if lead_headline else f"前沿追踪｜第{issue_num}期"
         
         digest = ""
         if articles:
             digest = (articles[0].get("lead") or articles[0].get("t") or "")[:116] + "…"
         
-        # content_source_url for "阅读原文" link
-        content_url = "https://inlight.therasik.com/#home"
+        # content_source_url for "阅读原文" link - point to this week's page
+        # Using http:// since HTTPS cert is not configured yet
+        content_url = f"http://inlight.therasik.com/#archive"
         
         draft = api_json(
             f"{API}/cgi-bin/draft/add?access_token={access}",

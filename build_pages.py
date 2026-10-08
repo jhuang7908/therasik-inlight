@@ -19,7 +19,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 PAGES_DIR = ROOT / "pages" / "article"
-SITE_URL = "https://inlight.therasik.com"
+# Use http:// until HTTPS is configured
+SITE_URL = "http://inlight.therasik.com"
 
 FIELDS = {
     "c1": "类器官",
@@ -95,13 +96,20 @@ def generate_article_page(article: dict, dry_run: bool = False) -> str | None:
     date_str = article.get("ds", "")
     url = article.get("url", "")
     
-    img_path = f"img/{article_id}.webp"
-    if (ROOT / img_path).exists():
-        og_image = f"{SITE_URL}/{img_path}"
-    else:
-        og_image = f"{SITE_URL}/img/og-image.png"
+    # Check for article-specific image
+    img_candidates = [
+        f"img/{article_id}.webp",
+        f"img/{article_id}.png",
+        f"img/{article_id}.jpg",
+    ]
+    og_image = f"{SITE_URL}/img/og-image.png"
+    for img_path in img_candidates:
+        if (ROOT / img_path).exists():
+            og_image = f"{SITE_URL}/{img_path}"
+            break
     
-    canonical_url = f"{SITE_URL}/#/a/{article_id}"
+    # Canonical is this static page, redirect goes to #p-{id}
+    redirect_url = f"{SITE_URL}/#p-{article_id}"
     page_url = f"{SITE_URL}/pages/article/{article_id}.html"
     
     og_title = html.escape(f"{title} - 前沿追踪")
@@ -135,9 +143,9 @@ def generate_article_page(article: dict, dry_run: bool = False) -> str | None:
 <meta property="article:section" content="{html.escape(field_name)}">
 <meta property="article:tag" content="{html.escape(field_name)}">
 
-<!-- Redirect to main site -->
-<link rel="canonical" href="{html.escape(canonical_url)}">
-<meta http-equiv="refresh" content="0;url={html.escape(canonical_url)}">
+<!-- Canonical is this static page for SEO; redirect to SPA view -->
+<link rel="canonical" href="{html.escape(page_url)}">
+<meta http-equiv="refresh" content="0;url={html.escape(redirect_url)}">
 
 <style>
 body {{
@@ -169,11 +177,11 @@ a {{ color: #0f6b5c; }}
 <p>{html.escape(summary)}...</p>
 <div class="redirect">
 正在跳转至完整文章页面...<br>
-<a href="{html.escape(canonical_url)}">如未自动跳转，请点击此处</a>
+<a href="{html.escape(redirect_url)}">如未自动跳转，请点击此处</a>
 </div>
 </article>
 <script>
-window.location.replace("{canonical_url}");
+window.location.replace("{redirect_url}");
 </script>
 </body>
 </html>
