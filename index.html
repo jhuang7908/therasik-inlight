@@ -167,6 +167,11 @@ article .ahead{display:grid;gap:11px;padding-bottom:18px;border-bottom:1px solid
 .cc span{font-size:11px;letter-spacing:.04em;color:var(--muted);font-weight:700}
 .cc a{font-size:13px;font-weight:700;color:var(--accent);overflow-wrap:anywhere}
 .note{font-size:13px;color:var(--muted);background:var(--raise);border-radius:9px;padding:13px 15px}
+.corrections-list{display:grid;gap:10px}
+.correction-item{display:grid;gap:4px;padding:10px 12px;background:var(--raise);border-radius:8px;font-size:13px;line-height:1.55}
+.corr-date{font-size:11px;color:var(--muted);font-weight:700}
+.corr-before{color:var(--fg)}
+.corr-after{color:var(--accent)}
 svg text{font-family:var(--body)}
 .metarow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;row-gap:4px}
 .metarow .date,.metarow .idate{white-space:nowrap}
@@ -641,21 +646,20 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 
   <section class="panel">
     <h2>更正记录</h2>
-    <table style="width:100%;font-size:14px;border-collapse:collapse;">
-      <tr style="border-bottom:1px solid var(--line);"><th style="text-align:left;padding:8px 0;">日期</th><th style="text-align:left;padding:8px 0;">原文</th><th style="text-align:left;padding:8px 0;">更正</th></tr>
-      <tr style="border-bottom:1px solid var(--line);"><td style="padding:8px 0;">2026-10-08</td><td style="padding:8px 0;">a-trap：「近一半样本标签是错的」</td><td style="padding:8px 0;">改为「按来源拆开后波动很大（<10% 到 >95%）」，更准确反映原文结论</td></tr>
-      <tr style="border-bottom:1px solid var(--line);"><td style="padding:8px 0;">2026-10-08</td><td style="padding:8px 0;">a-trap：作者「Hunter 等」</td><td style="padding:8px 0;">更正为「Messemaker、Kwee 等（Schumacher 组）」</td></tr>
-      <tr style="border-bottom:1px solid var(--line);"><td style="padding:8px 0;">2026-10-08</td><td style="padding:8px 0;">a-invivocar：图注「只进入」</td><td style="padding:8px 0;">更正为「主要进入」，更准确</td></tr>
-      <tr style="border-bottom:1px solid var(--line);"><td style="padding:8px 0;">2026-10-08</td><td style="padding:8px 0;">c7-cell-2：「实体血液肿瘤」</td><td style="padding:8px 0;">更正为「血液肿瘤」（多发性骨髓瘤是血液肿瘤）</td></tr>
-    </table>
+    <div class="corrections-list">
+      <div class="correction-item"><span class="corr-date">2026-10-08</span><span class="corr-before">a-trap：「近一半样本标签是错的」</span><span class="corr-after">→ 改为「按来源拆开后波动很大（&lt;10% 到 &gt;95%）」，更准确反映原文结论</span></div>
+      <div class="correction-item"><span class="corr-date">2026-10-08</span><span class="corr-before">a-trap：作者「Hunter 等」</span><span class="corr-after">→ 更正为「Messemaker、Kwee 等（Schumacher 组）」</span></div>
+      <div class="correction-item"><span class="corr-date">2026-10-08</span><span class="corr-before">a-invivocar：图注「只进入」</span><span class="corr-after">→ 更正为「主要进入」，更准确</span></div>
+      <div class="correction-item"><span class="corr-date">2026-10-08</span><span class="corr-before">c7-cell-2：「实体血液肿瘤」</span><span class="corr-after">→ 更正为「血液肿瘤」（多发性骨髓瘤是血液肿瘤）</span></div>
+    </div>
   </section>
 
   <section class="panel">
-    <h2>广告和赞助</h2>
-    <p>正文两侧各有一组广告位，另有文字链位，正文流里一个赞助区块，每周邮件里也留了一个。想投放就写信来，位置和尺寸见<a href="#support">订阅与赞助</a>页。</p>
-    <p>赞助位都会标「赞助」，排版上跟正文分开，不会混在解读里面。赞助方不参与选题，也不改结论——这条不议。</p>
+    <h2>赞助与联系</h2>
+    <p>目前没有广告位。如果想赞助本站运营（文献获取、服务器等成本），见<a href="#support">订阅与赞助</a>页。</p>
+    <p>赞助方不参与选题，也不改结论——这条不议。</p>
     <div class="contact">
-      <div class="cc"><span>广告与赞助</span><a href="mailto:contact@therasik.com?subject=%E5%B9%BF%E5%91%8A%E4%B8%8E%E8%B5%9E%E5%8A%A9">contact@therasik.com</a></div>
+      <div class="cc"><span>赞助合作</span><a href="mailto:contact@therasik.com?subject=%E8%B5%9E%E5%8A%A9%E5%90%88%E4%BD%9C">contact@therasik.com</a></div>
       <div class="cc"><span>纠错与建议</span><a href="mailto:contact@therasik.com?subject=%E7%BA%A0%E9%94%99%E4%B8%8E%E5%BB%BA%E8%AE%AE">同一邮箱，标题注明来意</a></div>
       <div class="cc"><span>每周邮件</span><a href="#support">订阅入口</a></div>
     </div>
@@ -675,11 +679,11 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
   </header>
   <section class="panel">
     <h2>我们做什么</h2>
-    <p>这个站是自己做的，从排版到机制图到文案。顺手也接外面的活，主要四类。</p>
-    <p><b>做网页。</b>建站或者改版。你现在看到的这几页就是样品：九个栏目、商业化动态的筛选、手机和桌面两套排版、广告位，都是手写的单页，没有后台，扔到任何静态托管上就能跑，没有月费。要带后台和订阅系统的也能做。</p>
+    <p>这个站是自己做的，排版自己写，文案初稿用 AI 起草后人工核对（详见<a href="#about">关于页</a>的 AI 辅助说明）。顺手也接外面的活，主要四类。</p>
+    <p><b>做网页。</b>建站或者改版。你现在看到的这几页就是样品：九个栏目、商业化动态的筛选、手机和桌面两套排版，都是纯静态单页，没有后台，扔到任何静态托管上就能跑，没有月费。要带后台和订阅系统的也能做。</p>
     <p><b>写内容、做公众号。</b>选题、撰稿、配图、把英文文献和公司公告整理成中文。这正是这个站每周在做的事，只是换成你的名字发。可以按篇结，也可以包月更新。公司新闻稿、融资材料里的科学部分、学术会议的会后整理，都做过类似的。</p>
     <p><b>写商业计划书和融资材料。</b>生物医药初创的 BP、投资人问答、路演稿，以及尽调清单里要补的那些文档。我写的是技术和市场那部分：管线讲到什么程度、技术路线和竞品怎么摆、临床格局和在研同类药怎么说、适应症的选择理由、机制图和管线图怎么画。数据用你自己的，文献和同类交易我去查并注明出处。财务模型和估值不是我的活，那部分配合你的 CFO 或财务顾问来，我负责让技术故事和数字对得上、口径一致。中英文两版都能写。</p>
-    <p><b>写白皮书。</b>赛道研究、技术路线梳理、市场和竞争格局那一类。一份白皮书通常是：这条路线现在走到哪儿了（谁在做、到了几期、读出来的结论）、几种技术路径的优劣和各自卡在哪、已披露的交易和定价、监管端的口径变化、再给一个判断。文献和交易都标出处，哪一句是公开数据、哪一句是我的推断会分开写。配图原创绘制，不是网上找的截图。</p>
+    <p><b>写白皮书。</b>赛道研究、技术路线梳理、市场和竞争格局那一类。一份白皮书通常是：这条路线现在走到哪儿了（谁在做、到了几期、读出来的结论）、几种技术路径的优劣和各自卡在哪、已披露的交易和定价、监管端的口径变化、再给一个判断。文献和交易都标出处，哪一句是公开数据、哪一句是我的推断会分开写。机制图由 AI 生成（如本站配图），非期刊原图。</p>
   </section>
   <section class="panel">
     <h2>适合的客户</h2>
@@ -835,7 +839,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 const FNAMES={c1:'类器官',c2:'AI 药物设计',c3:'肿瘤免疫',c7:'细胞治疗',c8:'疫苗',c4:'自身免疫疾病',c9:'小核酸与 LNP',c5:'动物模型',c6:'抗体工程'};
 const FIELDS=[{k:'c1',n:'类器官',d:'疾病建模、药物筛选、器官芯片'},{k:'c2',n:'AI 药物设计',d:'结构预测、生成式蛋白设计、药效预测'},{k:'c3',n:'肿瘤免疫',d:'检查点、微环境、新抗原'},{k:'c7',n:'细胞治疗',d:'CAR-T、TCR-T、CAR-NK、TIL'},{k:'c8',n:'疫苗',d:'mRNA 新抗原疫苗、佐剂、递送'},{k:'c4',n:'自身免疫疾病',d:'狼疮、类风湿、多发性硬化'},{k:'c9',n:'小核酸与 LNP',d:'siRNA、ASO、脂质纳米颗粒递送'},{k:'c5',n:'动物模型',d:'人源化小鼠、基因编辑、PDX'},{k:'c6',n:'抗体工程',d:'双抗、ADC、纳米抗体、Fc 改造'}];
 const CAT=[
- {id:'c7-cell-2',f:'c7',t:'无需单采与清淋的体内BCMA CAR-T长期随访：骨髓瘤缓解率100%，但髓外病灶复发成主要短板',ds:'2026-10-06',disp:'2026.10',j:'Nature Medicine',url:'https://doi.org/10.1038/s41591-026-04704-z',au:'Heng Mei（梅恒）, 华中科技大学同济医学院附属协和医院（武汉协和医院）/生物靶向治疗教育部重点实验室',tags:['c7','c9','c3'],sum:'武汉协和医院梅恒团队报告了体内BCMA CAR-T产品ESO-T01（纳米抗体导向、免疫屏蔽的慢病毒载体）治疗复发/难治多发性骨髓瘤的I期单臂研究长期随访。4名患者仅接受一次静脉输注，不需要白细胞单采，也不做清淋化疗。最长随访15个月，客观缓解率100%（2例严格意义完全缓解，2例部分缓解），其中1例严格完全缓解维持15个月；中位无进展生存4.0个月。3例出现复发或进展，均伴髓外病变，随访期间死亡。所有患者都出现1–3级双相细胞因子释放综合征和≥3级血液学毒性，未见免疫原性或整合相关毒性。这是体内CAR-T在血液肿瘤中较早的长期数据：它证实了“现货式”体内CAR-T的可行性，也暴露出疗效持久性和髓外病灶控制方面的问题。',note:'Nature Medicine页面未明确标注通讯作者，梅恒按数据索取邮箱（hmei@hust.edu.cn）及末位作者身份认定。同一产品的首篇I期论文（10.1038/s41591-026-04244-6，同济医院李春蕊团队）于2026-03-25上线，不在窗口内，未收录。'},
+ {id:'c7-cell-2',f:'c7',t:'无需单采与清淋的体内BCMA CAR-T长期随访（I 期, n=4）：骨髓瘤缓解率100%，但髓外病灶复发成主要短板',ds:'2026-10-06',disp:'2026.10',j:'Nature Medicine',url:'https://doi.org/10.1038/s41591-026-04704-z',au:'Heng Mei（梅恒）, 华中科技大学同济医学院附属协和医院（武汉协和医院）/生物靶向治疗教育部重点实验室',tags:['c7','c3'],sum:'武汉协和医院梅恒团队报告了体内BCMA CAR-T产品ESO-T01（纳米抗体导向、免疫屏蔽的慢病毒载体）治疗复发/难治多发性骨髓瘤的I期单臂研究长期随访。4名患者仅接受一次静脉输注，不需要白细胞单采，也不做清淋化疗。最长随访15个月，客观缓解率100%（2例严格意义完全缓解，2例部分缓解），其中1例严格完全缓解维持15个月；中位无进展生存4.0个月。3例出现复发或进展，均伴髓外病变，随访期间死亡。所有患者都出现1–3级双相细胞因子释放综合征和≥3级血液学毒性，未见免疫原性或整合相关毒性。这是体内CAR-T在血液肿瘤中较早的长期数据：它证实了“现货式”体内CAR-T的可行性，也暴露出疗效持久性和髓外病灶控制方面的问题。',note:'Nature Medicine页面未明确标注通讯作者，梅恒按数据索取邮箱（hmei@hust.edu.cn）及末位作者身份认定。ESO-T01使用慢病毒载体（非LNP），故移除c9标签。同一产品的首篇I期论文（10.1038/s41591-026-04244-6，同济医院李春蕊团队）于2026-03-25上线，不在窗口内，未收录。'},
  {id:'a-trap',f:'c3',t:'用机器人批量组装 TCR，再让 AlphaFold3 预测它能不能认出抗原',ds:'2026-10-01',disp:'2026.10',j:'Immunity',url:'#a-trap',au:'Messemaker、Kwee 等（Schumacher 组）',tags:['c3','c2','c7'],sum:'功能验证后发现，公共数据库里平均只有 56% 的 TCR 真的具有标注的反应性。按来源拆开后波动很大（<10% 到 >95%），提示数据库噪声水平因来源而异。本站写了完整解读。',deep:'a-trap'},
  {id:'c4-ai-4',f:'c4',t:'交感神经与Treg缺失“两次打击”共同触发自身免疫性脱发',ds:'2026-09-30',disp:'2026.09',j:'Nature',url:'https://doi.org/10.1038/s41586-026-11098-y',au:'Ting Chen（陈婷，末位作者）, 北京生命科学研究所（NIBS）；清华大学生物医学交叉研究院，中国北京',tags:['c4','c5'],sum:'研究在小鼠中发现，斑秃类自身免疫性脱发需要两次打击。第一击是免疫打击：只有在毛囊生长期（而非休止期）短暂清除Treg，CD8+ T细胞才会攻击原本处于免疫豁免状态的毛囊干细胞，导致脱发。第二击是神经打击：生长期交感神经活性升高使皮肤变得易感，阻断交感神经可预防发病，而应激或光遗传激活交感神经则可使休止期皮肤同样易感。机制上，去甲肾上腺素经干细胞上的ADRB2受体重新激活内源性逆转录病毒，进而启动AIM2依赖的先天免疫信号和致病性CD8+ T细胞应答。敲除Aim2或抑制逆转录酶均可防止发病。该研究将神经、应激与自身免疫联系起来，为斑秃提供了β2受体、AIM2、逆转录酶等新的干预靶点。',note:'页面未明确标注通讯作者，引用元数据作者为Ting Chen。'},
  {id:'c8-vac-5',f:'c8',t:'AI驱动的辅料配方筛选让mRNA-LNP疫苗在37℃存放两月、室温一年仍保持活性',ds:'2026-09-28',disp:'2026.09',j:'Nature Biotechnology',url:'https://doi.org/10.1038/s41587-026-03331-w',au:'Ana Jaklenec 与 Robert Langer（共同资深作者）, 麻省理工学院 Koch 综合癌症研究所（与MIT CSAIL合作）',tags:['c8','c9','c2'],sum:'针对mRNA疫苗依赖冷链的瓶颈，MIT团队先筛查约50种已批准辅料（以荧光素酶mRNA的细胞内表达作为稳定性读出），选出5种最优辅料，再用与CSAIL合作开发的小样本机器学习算法预测配比，每轮只测两种配方、数轮迭代约一个月完成优化，并经真空干燥成型。所得配方在37℃保存两个月、室温保存一年后仍保持活性；小鼠中其新冠mRNA疫苗经长期储存后免疫应答仍与常规脂质纳米颗粒疫苗相当，制成固体微针贴片亦然；同套辅料改比例还能稳定另一种临床级LNP配方。',note:'通过MIT News官方稿核实期刊、标题、日期与作者；Nature Biotechnology原文页面未直接打开，DOI取自该文的Nature链接（s41587-026-03331-w），与搜索结果中的文章URL一致。MIT稿未明确标注通讯作者，此处填两位资深作者。',sec:1},
@@ -1223,7 +1227,8 @@ function mergeWeekly(data){
 }
 repaintCatalog();
 refit();
-fetch('content/latest.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(data=>{if(data)mergeWeekly(data)}).catch(()=>{});
+let weeklyLoaded=false;
+fetch('content/latest.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(data=>{if(data)mergeWeekly(data)}).catch(()=>{}).finally(()=>{weeklyLoaded=true;route();});
 addEventListener('hashchange',route);
 route();
 </script>

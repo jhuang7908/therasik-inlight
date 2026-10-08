@@ -20,7 +20,7 @@ Windows 上如果 `python` 不在 PATH 里，用 `py -3` 代替 `python`。
 | --- | --- |
 | `ANTHROPIC_API_KEY` | `run_weekly.py` 筛选和写中文 |
 | `OPENAI_API_KEY` | `run_weekly.py` 配图和公众号封面 |
-| `ANTHROPIC_MODEL` | 可选，默认 `claude-sonnet-4-5`（脚本启动时会检查模型可用性） |
+| `ANTHROPIC_MODEL` | 可选，默认 `claude-sonnet-4-20250514`（脚本启动时会检查模型可用性） |
 | `OPENAI_IMAGE_MODEL` | 可选，默认 `gpt-image-1` |
 | `WECHAT_APPID` | 只有 `publish_wechat.py` 需要 |
 | `WECHAT_APPSECRET` | 只有 `publish_wechat.py` 需要 |
