@@ -2602,7 +2602,9 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
         value_core = extract_number_core(value)
         if value_core:
             quote_for_check = normalize_unit_spacing(
-                chinese_numeral_to_arabic(english_number_to_arabic(quote))
+                chinese_numeral_to_arabic(english_number_to_arabic(
+                    quote.replace("·", ".").replace("•", ".")
+                ))
             )
             if not number_in_text_as_word_boundary(value_core, quote_for_check):
                 problems.append(f"data_point value 不在 quote 中：{value}")

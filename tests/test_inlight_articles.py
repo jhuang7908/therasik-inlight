@@ -1736,7 +1736,7 @@ _SKYLIGHT = (
     "2 of 12 participants at cycle 3. The IC50 was 18·9 nM against FGFR2."
 )
 
-_PAD = "该研究为围绝经期血管舒缩症状提供了口服NK3受体拮抗剂的对照证据。" * 10
+_PAD = "该研究为围绝经期血管舒缩症状提供了口服受体拮抗剂的对照证据，结果与既有观察一致。" * 12
 
 
 def _skilight_brief(**overrides):
@@ -1756,7 +1756,7 @@ def _skilight_brief(**overrides):
         ],
         "mechanism": "",
         "limitations": ["单篇摘要，外推需谨慎"],
-        "significance": "若后续研究重复，口服NK3拮抗剂或可用于血管舒缩症状。",
+        "significance": "若后续研究重复，口服受体拮抗剂或可用于血管舒缩症状。",
         "datacard": {
             "study_type": "随机对照",
             "n": "527名",
