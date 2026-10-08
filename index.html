@@ -385,7 +385,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
   .jname{font-size:10px;display:none}
   .kind{font-size:10px;padding:0 5px}
   .metarow{gap:4px}
-  .expbtn{font-size:11px;min-height:32px;min-width:32px;flex-shrink:0;padding:4px 2px}
+  .metarow .expbtn{font-size:11px;min-height:32px;min-width:32px;flex-shrink:0;padding:4px 2px}
   /* Deals card fixes */
   .item .money{font-size:12px}
   .item .msline{font-size:11px}
@@ -1134,6 +1134,7 @@ document.addEventListener('click',e=>{
   const grid=item.closest('.feed');
   if(!grid) return;
   const isOpen=item.classList.contains('expanded');
+  const cardTop=item.getBoundingClientRect().top;
   closeDetailsPanel(isOpen);
   if(isOpen) return;
   const dealData=getDealByKey(b.dataset.key);
@@ -1146,6 +1147,7 @@ document.addEventListener('click',e=>{
   b.setAttribute('aria-controls',panelId);
   b.textContent='收起 ↑';
   activePanel=insertDetailsPanel(item,grid,dealData,panelId);
+  window.scrollBy(0,item.getBoundingClientRect().top-cardTop);
 });
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'&&activePanel) closeDetailsPanel(true);
@@ -1254,8 +1256,8 @@ function mergeWeekly(data){
     if(!Array.isArray(a.tags)||!a.tags.length) a.tags=a.f?[a.f]:[];
     if(!a.disp&&a.ds) a.disp=a.ds.slice(0,7).replace('-','.');
   });
-  const seen=new Set(DEALS.map(d=>dealKey(d)));
-  const nd=(data.deals||[]).filter(d=>d&&d.url&&d.t&&Array.isArray(d.kinds)&&d.kinds.length&&!seen.has(dealKey(d)));
+  const seenUrl=new Set(DEALS.map(d=>d.url)), seenKey=new Set();
+  const nd=(data.deals||[]).filter(d=>d&&d.url&&d.t&&Array.isArray(d.kinds)&&d.kinds.length&&!seenUrl.has(d.url)&&!seenKey.has(dealKey(d))&&seenKey.add(dealKey(d)));
   if(!fresh.length&&!nd.length) return;
   if(fresh.length) CAT.unshift(...fresh);
   if(nd.length) DEALS.unshift(...nd);
