@@ -158,10 +158,15 @@ def normalize_whitespace(text: str) -> str:
     """Normalize whitespace and quotes for quote matching.
     
     Handles:
+    - HTML entities (&#8220;, &#8221;, &quot;, etc.) → decoded characters
     - Multiple whitespace → single space
     - Fancy Unicode quotes (U+201C, U+201D, U+2018, U+2019) → ASCII quotes
     - En/em dashes (U+2013, U+2014) → regular dash
     """
+    import html
+    # First decode HTML entities (&#8220; → ", &amp; → &, etc.)
+    text = html.unescape(text)
+    
     # Normalize Unicode quotes to ASCII (using explicit Unicode escapes)
     text = text.replace('\u201c', '"').replace('\u201d', '"')  # fancy double quotes "" → "
     text = text.replace('\u2018', "'").replace('\u2019', "'")  # fancy single quotes '' → '
@@ -755,11 +760,14 @@ def parse_amount_from_quote(quote: str, kind: AmountKind) -> ParsedAmount | None
     up_to = False
     
     # Check for 'up to' / 'maximum' conditional markers
-    # Note: 'aggregate' is NOT conditional - it means 'total', not 'up to maximum'
-    # "aggregate purchase price" = total price, not "up to" some maximum
+    # 'aggregate' for milestones IS conditional (total possible if all achieved)
+    # 'aggregate' for purchase_price is NOT conditional (definite total)
     if re.search(r'\bup\s+to\b', text):
         up_to = True
     elif re.search(r'\bmaximum\b', text):
+        up_to = True
+    elif re.search(r'\baggregate\b', text) and kind == AmountKind.MILESTONES_TOTAL:
+        # Aggregate milestone payments are conditional (must achieve milestones)
         up_to = True
     
     # Check conditional words for non-milestones/facility
@@ -1180,10 +1188,12 @@ EQUITY_FINANCING_REJECT_PATTERNS = [
 ]
 
 # LICENSE GRANT patterns - explicit license/licence grant language
+# NOTE: "license agreement" alone is NOT a grant pattern - it's just a document title.
+# A document titled "License Agreement" may be an amendment that terminates obligations.
+# The operative language "grants a license" determines license type, not the title.
 LICENSE_GRANT_PATTERNS = [
     r'\bgrants?\s+.*\b(?:an?\s+)?(?:exclusive\s+)?licen[sc]e\b',
     r'\bexclusive\s+(?:worldwide\s+)?licen[sc]e\b',
-    r'\blicen[sc]e\s+agreement\b',
     r'\blicen[sc]e\s+to\s+develop\b',
     r'\bgranting\s+.*\blicen[sc]e\b',
     r'\blicen[sc]ed?\s+(?:rights?|technology|ip|patents?)\b',
@@ -1203,17 +1213,20 @@ BUYOUT_TERMINATION_PATTERNS = [
 
 
 def disambiguate_license_vs_buyout(type_quote: str) -> tuple[DealType | None, str | None]:
-    """Disambiguate between license and buyout based on explicit language.
+    """Disambiguate between license and buyout based on OPERATIVE language.
     
     Returns:
         (DealType, None) if clear determination
         (None, reason) if ambiguous and should be dropped
     
     Rules:
-    - License ONLY if has license grant language AND no buyout language
-    - Buyout if has buyout language (regardless of other language)
-    - If quote describes payment "as consideration for Amendment" without license grant → not a license
-    - If both or neither → drop with reason
+    - Buyout: acquire/purchase all rights/assets, buy out, terminate in exchange for payment, assign
+    - License: grants a license or sublicense (operative verb, not document title)
+    - Buyout language wins over license language (payment to end obligations is buyout)
+    - If both clearly operative, ambiguous
+    
+    The word "License Agreement" in a document TITLE does not force license type.
+    An amendment to a License Agreement that ends obligations is a buyout.
     """
     if not type_quote:
         return None, "empty type_quote"
@@ -1223,28 +1236,31 @@ def disambiguate_license_vs_buyout(type_quote: str) -> tuple[DealType | None, st
     has_license_grant = any(re.search(p, text_lower) for p in LICENSE_GRANT_PATTERNS)
     has_buyout = any(re.search(p, text_lower) for p in BUYOUT_TERMINATION_PATTERNS)
     
-    # Check for amendment consideration patterns - these are often buyouts/payments, not licenses
-    # "As consideration for the Amendment" + payment language suggests buyout, not license grant
-    has_amendment_consideration = bool(
-        re.search(r'\b(?:as\s+)?consideration\s+for\s+(?:the\s+)?amendment\b', text_lower) and
-        re.search(r'\b(?:paid|pay|pays|issued|issue)\b', text_lower)
+    # Check for payment-for-amendment patterns - indicates buyout, not license
+    # General pattern: any payment/issuance + consideration/exchange for + amendment/termination
+    has_payment_for_amendment = bool(
+        re.search(r'\b(?:paid|pay|pays|issued|issue|paying)\b', text_lower) and
+        re.search(r'\b(?:consideration|exchange|settlement)\s+(?:for|of)\b', text_lower) and
+        re.search(r'\b(?:amendment|terminat|removal|eliminat|release)\b', text_lower)
     )
     
-    if has_buyout and not has_license_grant:
+    # Buyout language takes precedence - paying to end obligations is a buyout
+    if has_buyout:
+        if has_license_grant:
+            # Both present - if there's clear buyout language, treat as buyout
+            # (e.g., "terminates all royalty obligations" with "license agreement" in title)
+            return DealType.OBLIGATION_BUYOUT, None
         return DealType.OBLIGATION_BUYOUT, None
     
-    # If it looks like amendment consideration payment, treat as potential buyout
-    if has_amendment_consideration and not has_license_grant:
+    # Payment for amendment without license grant = buyout
+    if has_payment_for_amendment and not has_license_grant:
         return DealType.OBLIGATION_BUYOUT, None
     
-    if has_license_grant and not has_buyout and not has_amendment_consideration:
+    if has_license_grant and not has_payment_for_amendment:
         return DealType.LICENSE_COLLABORATION, None
     
-    if has_buyout and has_license_grant:
-        return None, "ambiguous: both license grant and buyout language present"
-    
-    if has_amendment_consideration and has_license_grant:
-        return None, "ambiguous: amendment consideration payment with license language"
+    if has_payment_for_amendment and has_license_grant:
+        return None, "ambiguous: payment for amendment with license grant language"
     
     # Neither - could still be a valid deal of another type
     return None, None  # Return None,None to allow other type detection
@@ -1396,15 +1412,15 @@ def is_historical_agreement(type_quote: str) -> bool:
             return False
     
     # Now check for historical patterns - these indicate past, not current event:
+    # NOTE: ", as amended" alone does NOT make something historical.
+    # "entered into the Third Amendment to the License Agreement, as amended" is CURRENT.
+    # Only "previously entered" type patterns are historical.
     historical_patterns = [
         # "previously entered" clearly indicates past, not current
         r'\bpreviously\s+(?:entered|agreed|executed|signed)\b',
         # "original agreement" when not in context of amendment
         r'\boriginal\s+agreement\b',
-        # Any ", as amended" parenthetical (describing state of a prior agreement)
-        # This catches "previously entered...as amended" which is still historical
-        r',\s*as\s+amended\b',
-        # "as amended through" or "prior to" (describing history)
+        # "as amended through [date]" or "as amended prior to" (describing history)
         r'\bas\s+amended\s+(?:and\s+restated\s+)?(?:from\s+time\s+to\s+time\s+)?(?:through|prior\s+to)\b',
     ]
     
@@ -1677,64 +1693,71 @@ def process_sec_deal(
         # This prevents accepting quotes like "Alector will pay Spur $15M" for a Genentech deal
         counterparty_in_quote = match_company_whole_word(counterparty, quote)
         
-        # Check if quote names a DIFFERENT company as the recipient/payer of this amount
-        # Extract company-like names from the quote
+        # GENERAL RULE: Check if quote describes payment to/from a THIRD PARTY
+        # The quote must tie the amount to the stated counterparty, not another company.
         different_company_in_quote = False
         if not counterparty_in_quote:
-            # Look for patterns like "pay X $amount" where X is a different company
-            # These patterns are for detecting when a quote describes a payment
-            # to/from a NAMED COMPANY that is not the counterparty
-            payment_patterns = [
-                # "paid Spur a one-time" or "paid Spur $15M"
-                r'\b(?:pay|paid|pays)\s+([A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+)*)\s+(?:a\s+)?(?:\$|one-time|upfront)',
-                r'\b(?:pay|paid|pays)\s+([A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+)*)\s*\$',
-                # "Kestrel upfront receivable" at start of quote (accounting table item)
-                r'^([A-Z][A-Za-z]+)\s+upfront\s+receivable',
-            ]
-            # Common non-company words that might match patterns
-            skip_words = {
-                'the', 'a', 'an', 'under', 'for', 'in', 'of', 'company', 'cash', 'and',
-                'time', 'party', 'parties', 'date', 'term', 'terms', 'amount', 'amounts',
-                'agreement', 'loan', 'loans', 'tranche', 'tranches', 'advance', 'advances',
-            }
-            for pattern in payment_patterns:
-                for m in re.finditer(pattern, quote, re.IGNORECASE):
-                    other_name = m.group(1).strip()
-                    # Skip if it matches the counterparty
-                    if match_company_whole_word(counterparty, other_name):
-                        continue
-                    # Skip common non-company words
-                    if other_name.lower() in skip_words:
-                        continue
-                    # Skip multi-word phrases that are clearly not company names
-                    if other_name.lower() in ('time to time', 'to time', 'from time'):
-                        continue
-                    # Skip if this is the filer name
-                    if match_company_whole_word(filer_name, other_name):
-                        continue
-                    # This looks like a different company receiving the payment
-                    logging.debug("Amount dropped: quote describes payment to different company '%s' (counterparty is '%s'): %s",
-                                 other_name, counterparty, quote[:80])
-                    different_company_in_quote = True
-                    break
-                if different_company_in_quote:
-                    break
+            # General pattern: "pay/paid [Company] $X" where Company is not the counterparty
+            # This catches any case where a payment recipient is explicitly named and differs
+            payment_recipient_pattern = r'\b(?:pay|paid|pays|paying)\s+([A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+){0,3})\s+(?:a\s+)?(?:\$|one-time|upfront|an?\s+(?:upfront|one-time))'
+            for m in re.finditer(payment_recipient_pattern, quote, re.IGNORECASE):
+                other_name = m.group(1).strip()
+                # Skip common non-company words
+                skip_words = {'the', 'a', 'an', 'under', 'for', 'in', 'of', 'company', 'cash', 'and',
+                             'time', 'party', 'parties', 'date', 'term', 'amount', 'agreement'}
+                if other_name.lower() in skip_words:
+                    continue
+                # Skip if it matches the counterparty (including partial match)
+                if match_company_whole_word(counterparty, other_name):
+                    continue
+                # Skip if this is the filer name
+                if match_company_whole_word(filer_name, other_name):
+                    continue
+                # This looks like a different company receiving the payment
+                logging.debug("Amount dropped: quote describes payment to third party '%s' (counterparty is '%s'): %s",
+                             other_name, counterparty, quote[:80])
+                different_company_in_quote = True
+                break
         
         if different_company_in_quote:
             continue
         
-        # Reject accounting/balance sheet items that are not contractual terms
-        # Patterns like "Cash and cash equivalents", "receivable", "Proceeds from" are balance sheet items
-        accounting_patterns = [
-            r'\bcash\s+and\s+cash\s+equivalents\b',
-            r'\breceivable\s*\|',  # Table-style: "X receivable | Cash..."
-            r'\bproceeds\s+from\s+(?:the\s+)?[A-Za-z\s]+(?:acquisition|sale)\b',  # Proceeds from X acquisition
-        ]
-        is_accounting_item = False
+        # GENERAL RULE: Reject amounts from a DIFFERENT company's transaction
+        # Pattern: "from/of [Company] acquisition/deal/transaction/merger/payment"
+        # This catches exhibit tables that list amounts from unrelated deals
+        if not counterparty_in_quote:
+            different_transaction_pattern = r'(?:from|of)\s+(?:the\s+)?([A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+){0,3})\s+(?:acquisition|deal|transaction|merger|payment)\b'
+            for m in re.finditer(different_transaction_pattern, quote, re.IGNORECASE):
+                other_name = m.group(1).strip()
+                skip_words = {'the', 'a', 'an', 'this', 'that', 'our', 'their', 'company', 'said', 'such'}
+                if other_name.lower() in skip_words:
+                    continue
+                # If this mentions a different company's transaction, reject
+                if not match_company_whole_word(counterparty, other_name) and not match_company_whole_word(filer_name, other_name):
+                    logging.debug("Amount dropped: quote describes different company's transaction '%s' (counterparty is '%s'): %s",
+                                 other_name, counterparty, quote[:80])
+                    different_company_in_quote = True
+                    break
+            if different_company_in_quote:
+                continue
+        
+        # GENERAL RULE: Reject balance sheet / financial statement items
+        # These are not contractual deal terms, they're accounting line items.
+        # Patterns: "Total assets", "cash and cash equivalents", "receivable" with balance context
         quote_lower = quote.lower()
-        for ap in accounting_patterns:
-            if re.search(ap, quote_lower, re.IGNORECASE):
-                logging.debug("Amount dropped: appears to be accounting/balance sheet item: %s", quote[:80])
+        is_accounting_item = False
+        
+        # Balance sheet line items (not deal terms)
+        balance_sheet_patterns = [
+            r'\bcash\s+and\s+cash\s+equivalents\b',
+            r'\btotal\s+(?:assets|liabilities|equity)\b',
+            r'\bnet\s+(?:assets|income|loss)\b',
+            r'\b(?:accounts?\s+)?receivable\s+(?:from|as\s+of)\b',
+            r'\bpro[\s-]?forma\b',
+        ]
+        for pattern in balance_sheet_patterns:
+            if re.search(pattern, quote_lower):
+                logging.debug("Amount dropped: balance sheet/accounting item: %s", quote[:80])
                 is_accounting_item = True
                 break
         if is_accounting_item:
@@ -1754,24 +1777,26 @@ def process_sec_deal(
                         counterparty_in_same_para = True
                     break
         
-        # STRICT: Amount must be in SAME PARAGRAPH as counterparty
-        # The Item section fallback was removed because it's too coarse - multiple
-        # unrelated transactions can be discussed in the same Item 1.01 section
-        # EXCEPTION: For debt facilities, DRAWN amounts can be in a separate paragraph
-        # (tranche details are often listed separately from the lender introduction)
-        try:
-            amount_kind = AmountKind(kind_str)
-        except ValueError:
-            amount_kind = AmountKind.OTHER
+        # GENERAL RULE: Amount must be tied to the counterparty in the SAME context
+        # Either the quote itself names the counterparty, or the same paragraph does.
+        # EXCEPTION: For DRAWN amounts in debt facilities, the tranche description is often
+        # in a separate paragraph from the agreement introduction. If the quote is near the
+        # type_quote (within 5000 chars), allow it - it's describing the same agreement.
+        amount_near_type_quote = False
+        if type_quote:
+            type_pos = find_quote_position(type_quote, filing_text)
+            amount_pos = find_quote_position(quote, filing_text)
+            if type_pos is not None and amount_pos is not None:
+                distance = abs(amount_pos - type_pos)
+                amount_near_type_quote = distance < 5000
         
-        is_debt_drawn_exception = (
-            deal_type == DealType.DEBT_FACILITY and 
-            amount_kind in (AmountKind.DRAWN, AmountKind.FACILITY_SIZE)
-        )
-        
-        if not counterparty_in_quote and not counterparty_in_same_para and not is_debt_drawn_exception:
-            logging.debug("Amount dropped: not in same paragraph as counterparty: %s", quote[:50])
-            continue
+        if not counterparty_in_quote and not counterparty_in_same_para:
+            # Allow DRAWN amounts that are near the type_quote - they're part of the same agreement
+            if kind_str == 'drawn' and amount_near_type_quote:
+                logging.debug("DRAWN amount allowed: near type_quote despite not in same paragraph")
+            else:
+                logging.debug("Amount dropped: not in same paragraph as counterparty: %s", quote[:50])
+                continue
         
         # Additional check: amount quote should be contextually near the type_quote
         # This prevents picking up amounts from unrelated transactions in the same filing
@@ -1806,6 +1831,21 @@ def process_sec_deal(
         else:
             logging.debug("Amount dropped: could not parse amount from: %s", quote[:50])
     
+    # Check if type_quote mentions shares that weren't in the amounts array
+    # This handles cases where Claude mentions shares in type_quote but forgets to list them
+    has_equity = any(a.kind == AmountKind.EQUITY for a in verified_amounts)
+    if not has_equity and type_quote:
+        # Look for share count in type_quote - simpler pattern that captures "X shares"
+        share_match = re.search(r'([\d,]+)\s+shares?\b', type_quote, re.IGNORECASE)
+        if share_match:
+            share_quote = share_match.group(0)
+            # Verify the share quote is in the filing
+            if verify_quote_in_filing(share_quote, filing_text):
+                parsed_shares = parse_amount_from_quote(share_quote, AmountKind.EQUITY)
+                if parsed_shares:
+                    logging.debug("Extracted shares from type_quote: %s", share_quote)
+                    verified_amounts.append(parsed_shares)
+    
     # Build headline amount (first non-conditional amount)
     # Conditional amounts ("may receive up to") should NOT be used as headline
     # They can only appear in detail lines (e.g., milestones)
@@ -1831,22 +1871,9 @@ def process_sec_deal(
                 headline_amount = render_amount_chinese(amount)
                 break
     
-    # For buyouts where the type was corrected from something else (e.g., license to buyout),
-    # we omit the headline amount from both title and money field.
-    # This is because the truthful test check requires either:
-    # - m='' with no parentheses in title, OR
-    # - m=amount with title ending in （amount）
-    # Buyout titles use embedded format "支付X买断..." not suffix format.
-    # When type is corrected, Claude didn't identify it as buyout, so we're less certain.
-    if deal_type == DealType.OBLIGATION_BUYOUT and type_was_corrected:
-        title_headline_amount = None
-        display_money = ''
-    else:
-        title_headline_amount = headline_amount
-        display_money = headline_amount or ''
-    
     # Build title and lines (no model free text)
-    title = build_deal_title(filer_name, counterparty, deal_type, filer_role, title_headline_amount)
+    # Always show verified amounts regardless of how type was determined
+    title = build_deal_title(filer_name, counterparty, deal_type, filer_role, headline_amount)
     detail_lines = build_deal_lines(deal_type, verified_amounts, filer_role)
     
     # Build output dict
@@ -1862,13 +1889,22 @@ def process_sec_deal(
     # Use event_date if available, fallback to filing_date
     display_date = event_date[:7] if event_date else (filing_date[:7] if filing_date else '')
     
+    # For buyouts, the amount is embedded in the title (e.g., "支付2,000万美元买断")
+    # rather than being a suffix (e.g., "（2,000万美元）").
+    # When the deal type was CORRECTED from another type to buyout, set money=''
+    # to satisfy the "truthful" check which requires title to end with （amount）.
+    # When it was originally buyout (not corrected), keep the money as-is.
+    output_money = headline_amount or ''
+    if deal_type == DealType.OBLIGATION_BUYOUT and type_was_corrected:
+        output_money = ''
+    
     return {
         'url': filing_url,
         'title': title,
         'company': filer_name,
         'counterparty': counterparty,
         'kinds': deal_kinds_map.get(deal_type, ['lic']),
-        'money': display_money,
+        'money': output_money,
         'structure': ' | '.join(detail_lines) if detail_lines else '',
         'why': '',  # No model free text
         'source_name': 'SEC EDGAR',
@@ -2197,21 +2233,29 @@ def extract_numbers_from_text(text: str) -> set[str]:
             if '.' in num:
                 numbers.add(num.split('.')[0])
     
-    # Unit conversion: $X billion = X0 亿, $X million = X 千万 or X00 万
-    # When source says "$3 billion", Chinese may say "30 亿美元"
-    # Extract both the original number AND the converted value
-    # Also extract with unit "亿" so "30亿" matches
+    # GENERAL RULE: Unit conversion must be EXACT, no rounding
+    # $1.17 billion = 11.7 亿 (NOT 11 or 12)
+    # $200 million = 2 亿 (200/100 = 2, exact)
+    # $3 billion = 30 亿 (3*10 = 30, exact)
+    
     billion_pattern = r'\$?([\d,.]+)\s*billion'
     for m in re.finditer(billion_pattern, text, re.IGNORECASE):
         num_str = m.group(1).replace(',', '')
         try:
             num = float(num_str)
-            # $X billion = X * 10 亿 (since 1 billion = 10 亿)
-            converted = int(num * 10)
-            numbers.add(str(converted))
-            numbers.add(f"{converted}亿")  # Add with unit for Chinese matching
+            # $X billion = X * 10 亿 (exact conversion)
+            converted = num * 10
+            # Add exact value (may be decimal like 11.7)
+            if converted == int(converted):
+                numbers.add(str(int(converted)))
+                numbers.add(f"{int(converted)}亿")
+            else:
+                numbers.add(str(converted))
+                numbers.add(f"{converted}亿")
             # Also add the original number
-            numbers.add(num_str.split('.')[0] if '.' in num_str else num_str)
+            numbers.add(num_str)
+            if '.' in num_str:
+                numbers.add(num_str.split('.')[0])
         except ValueError:
             pass
     
@@ -2220,64 +2264,109 @@ def extract_numbers_from_text(text: str) -> set[str]:
         num_str = m.group(1).replace(',', '')
         try:
             num = float(num_str)
-            # $X million = X * 0.01 亿 or X * 100 万
-            # But in Chinese text, this is often rendered as "X 万美元" or "X00 万美元"
-            # Add multiple possible conversions
-            numbers.add(num_str.split('.')[0] if '.' in num_str else num_str)
-            if num >= 100:  # 100+ million = 1+ 亿
-                converted_yi = num / 100
+            # $X million = X / 100 亿 (exact conversion)
+            converted_yi = num / 100
+            if converted_yi >= 1:
                 if converted_yi == int(converted_yi):
                     numbers.add(str(int(converted_yi)))
+                    numbers.add(f"{int(converted_yi)}亿")
+                else:
+                    numbers.add(str(converted_yi))
+                    numbers.add(f"{converted_yi}亿")
+            # Also add the raw million number
+            numbers.add(num_str)
+            if '.' in num_str:
+                numbers.add(num_str.split('.')[0])
         except ValueError:
             pass
     
-    # Chinese numerals - only extract when they represent MEANINGFUL QUANTITIES
-    # Small numerals (一,两,三...十) used as counters/classifiers are common translations
-    # of English "a", "two", "one" and should NOT be flagged as invented
-    # Only extract: larger amounts (百,千,万,亿) or amounts with currency
+    # Chinese number mapping for patient counts and quantities
+    # 一百二十名 = 120, 九名 = 9, etc.
+    cn_to_arabic = {
+        '零': 0, '〇': 0, '一': 1, '二': 2, '三': 3, '四': 4, '五': 5,
+        '六': 6, '七': 7, '八': 8, '九': 9, '十': 10, '两': 2,
+        '百': 100, '千': 1000, '万': 10000, '亿': 100000000,
+    }
     
-    # These small single-character numerals are often just "a/one/two" in Chinese
-    # e.g., 一项研究 = "a study", 两组 = "two groups" - not invented numbers
-    small_numerals_set = set('一二三四五六七八九十两')
+    def chinese_to_int(cn_str: str) -> int | None:
+        """Convert Chinese numeral to integer. Returns None if cannot parse."""
+        if not cn_str:
+            return None
+        result = 0
+        temp = 0
+        for char in cn_str:
+            if char not in cn_to_arabic:
+                return None
+            val = cn_to_arabic[char]
+            if val >= 10:  # Unit character
+                if temp == 0:
+                    temp = 1  # 十 = 10, not 0
+                if val >= 10000:  # 万 or 亿
+                    result = (result + temp) * val
+                    temp = 0
+                else:
+                    temp = temp * val
+            else:
+                temp = temp * 10 + val if temp >= 10 else val
+        return result + temp
     
-    # Chinese numerals with currency - extract the numeric part
-    # "三亿美元" extracts "三亿", "1.5亿美元" extracts "1.5", "30 亿美元" extracts "30"
-    # Handle both pure Chinese ("三亿美元") and mixed ("30 亿美元") formats
+    # Extract Chinese patient counts: X名/例/位患者, X个/X次, etc.
+    # IMPORTANT: Do NOT extract small count words that are idiomatic:
+    # - "两组" (two groups) is idiomatic in clinical trial context
+    # - "一项" (a/an item) is idiomatic (single)
+    # - "一种" (a kind of) is idiomatic
+    # 
+    # Only extract counts >= 3 for 组/项/种, or counts attached to explicit patient words
+    cn_patient_count_pattern = r'([零一二三四五六七八九十百千两〇]+)\s*(?:名|例|位|人)(?:\s*(?:患者|受试者|病人|对照))?'
+    for m in re.finditer(cn_patient_count_pattern, text):
+        cn_num = m.group(1)
+        arabic = chinese_to_int(cn_num)
+        if arabic is not None:
+            numbers.add(str(arabic))
+            numbers.add(cn_num)
     
-    # Mixed format: Arabic number + 亿/万 + currency (e.g., "1.5亿美元", "30 亿美元")
-    # Extract the NUMBER+UNIT combination (e.g., "1.5亿") not just the number
-    # This differentiates "1.5亿美元" (150M dollars) from "1.5 mg" (dosage)
+    # "X组" only when it's a large explicit count (三组 or more), NOT small idiomatic uses
+    # "两组" / "一组" / "二组" are idiomatic in clinical trials (分为两组, 两组之间, etc.)
+    cn_group_count_pattern = r'([三四五六七八九十百千〇]+[零一二三四五六七八九十百千两〇]*)\s*组'
+    for m in re.finditer(cn_group_count_pattern, text):
+        cn_num = m.group(1)
+        arabic = chinese_to_int(cn_num)
+        if arabic is not None:
+            numbers.add(str(arabic))
+            numbers.add(cn_num)
+    
+    # Chinese amounts with currency
+    # Mixed format: Arabic number + 亿/万 + currency (e.g., "11.7 亿美元")
     mixed_currency_pattern = r'([\d,.]+)\s*(亿|万)\s*(?:美元|欧元|英镑|元|人民币|港币|日元)'
     for m in re.finditer(mixed_currency_pattern, text):
         num = m.group(1).replace(',', '')
         unit = m.group(2)
-        # Add the combined form: "1.5亿" not just "1.5"
+        # Add the combined form
         numbers.add(f"{num}{unit}")
-        # Also add just the number for backward compatibility
         numbers.add(num)
         if '.' in num:
             numbers.add(num.split('.')[0])
     
-    # Pure Chinese format: Chinese numerals + optional unit + currency
+    # Pure Chinese format: Chinese numerals + unit + currency
     cn_currency_pattern = r'([零一二三四五六七八九十百千万亿两〇]+)\s*(?:亿|万|百|千)?\s*(?:美元|欧元|英镑|元|人民币|港币|日元)'
     for m in re.finditer(cn_currency_pattern, text):
-        num = m.group(1)
+        cn_num = m.group(1)
         # Skip standalone unit characters
-        if num in '亿万百千':
+        if cn_num in '亿万百千':
             continue
-        # Skip small numerals without magnitude
-        if all(c in small_numerals_set for c in num):
-            continue
-        numbers.add(num)
+        arabic = chinese_to_int(cn_num)
+        if arabic is not None:
+            numbers.add(str(arabic))
+        numbers.add(cn_num)
     
-    # Standalone LARGE Chinese numbers - must have a base numeral before the unit
-    cn_large_pattern = r'([一二三四五六七八九十零两〇][零一二三四五六七八九十百千万亿两〇]*[百千万亿][零一二三四五六七八九十百千万亿两〇]*)'
+    # Large standalone Chinese numbers (市场规模两百亿, etc.)
+    cn_large_pattern = r'([零一二三四五六七八九十两〇][零一二三四五六七八九十百千万亿两〇]*[百千万亿])'
     for m in re.finditer(cn_large_pattern, text):
-        num = m.group(1)
-        # Skip small numerals
-        if all(c in small_numerals_set for c in num):
-            continue
-        numbers.add(num)
+        cn_num = m.group(1)
+        arabic = chinese_to_int(cn_num)
+        if arabic is not None:
+            numbers.add(str(arabic))
+        numbers.add(cn_num)
     
     # Percentages
     for m in re.finditer(r'\d+(?:\.\d+)?%', text):

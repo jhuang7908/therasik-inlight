@@ -1103,7 +1103,7 @@ def _fetch_sec_filing_text(cik: str, accession: str, sec_ua: str, primary_doc_na
             return full_text
         
         # Relevant Item numbers for deals
-        relevant_items = {'1.01', '2.01', '3.02', '8.01', '9.01'}
+        relevant_items = {'1.01', '1.02', '2.01', '2.03', '3.02', '7.01', '8.01', '9.01'}
         
         selected_parts = []
         i = 0
