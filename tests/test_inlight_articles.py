@@ -1672,6 +1672,54 @@ class TestHoldoutGeneralRules(unittest.TestCase):
         ok, _ = number_meaning_matches_source("25%", died, src)
         self.assertFalse(ok)
 
+    def test_validate_depth_cd6_listed_rates_use_original_draft(self):
+        """Production validate_depth must not reclassify 26%/15% as DCR.
+
+        extract_numbers_with_context CJK-splits the match form, so the
+        meaning check has to read the original draft, not the ±20 window.
+        """
+        from inlight_articles import validate_depth
+
+        src = (
+            "Itolizumab is an anti-CD6 monoclonal antibody. "
+            "disease control was achieved in 25% in group A and 20% in group B, "
+            "and the 1-year survival rate was 26% in group A and 15% in group B."
+        )
+        art = {
+            "tier": "deep",
+            "title": "itolizumab：疾病控制率20%–25%",
+            "one_liner": "疾病控制率A组25%、B组20%，1年生存率26%与15%。",
+            "background": "CD6靶向。",
+            "design": "概念验证。",
+            "results": [
+                "疾病控制（次要终点）：A组疾病控制率为25%，B组为20%。",
+                "生存（次要终点）：1年生存率A组为26%，B组为15%。",
+            ],
+            "mechanism": "",
+            "significance": "目前25%与20%的疾病控制比例及26%与15%的1年生存率缺乏对照。",
+            "limitations": [
+                "疾病控制率25%与20%、1年生存率26%与15%的分母不明。",
+                "无对照。",
+                "主要终点是安全性。",
+            ],
+        }
+        problems = validate_depth(art, src)
+        meaning = [p for p in problems if "含义不匹配" in p]
+        self.assertEqual(meaning, [], meaning)
+        invented = [p for p in problems if "未找到" in p]
+        self.assertEqual(invented, [], invented)
+
+        swapped = dict(art)
+        swapped["results"] = ["1年生存率A组为25%，B组为20%。", "疾病控制率26%与15%。"]
+        swapped["one_liner"] = "1年生存率A组25%、B组20%。"
+        swapped["significance"] = ""
+        swapped["limitations"] = ["无对照。", "样本小。", "随访短。"]
+        swapped_probs = validate_depth(swapped, src)
+        self.assertTrue(
+            any("含义不匹配" in p for p in swapped_probs),
+            swapped_probs,
+        )
+
     def test_nearby_group_word_does_not_drop_a_rate(self):
         """'两组' in the same window is not a grouping claim for 25%."""
         from inlight_articles import number_exists_in_source, normalize_source_text

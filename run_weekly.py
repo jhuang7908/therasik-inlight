@@ -620,7 +620,7 @@ def claude_draft(items: list[dict], config: dict) -> dict:
                         "type": "object",
                         "properties": {
                             "url": {"type": "string", "description": "Original URL from input, copied exactly"},
-                            "field": {"type": "string", "enum": [*FIELDS.keys(), "none"], "description": "Primary field based on the research subject, or none if out of scope"},
+                            "field": {"type": "string", "enum": list(FIELDS.keys()), "description": "Primary field based on the research subject"},
                             "title": {"type": "string", "description": "Chinese title"},
                             "journal": {"type": "string", "description": "Journal name only (Nature, Cell, etc.)"},
                             "authors": {"type": "string", "description": "Author names from source. Required. Must be actual person names, NOT journal or source names."},
@@ -677,8 +677,14 @@ def claude_draft(items: list[dict], config: dict) -> dict:
 
 ## 领域分类规则
 
-领域 field 只能是：{json.dumps(FIELDS, ensure_ascii=False)}，或 none。
-{FIELD_PROMPT_RULES}
+领域 field 只能是：{json.dumps(FIELDS, ensure_ascii=False)}
+
+分类必须基于研究的主要对象，而非使用的工具或技术：
+- c5 动物模型：仅当论文的主题是动物模型本身（如新品系建立、模型验证）。如果只是"在小鼠中验证"某疗法，应归到疗法对应的领域。
+- c1 类器官：仅当论文的主题是类器官本身（培养方法、新类型）。用类器官筛选药物归 c2；用类器官研究肿瘤免疫归 c3。
+- c3 肿瘤免疫：包括免疫检查点、肿瘤微环境、CAR-T 等针对肿瘤的免疫疗法。
+- c7 细胞治疗：通用细胞治疗（包括非肿瘤适应症的 CAR-T）。
+- 代谢工程、合成生物学、逆转录转座子研究不属于 c5 动物模型。
 
 ## 行业动态分类规则
 
@@ -759,7 +765,7 @@ steps 必须是 3-5 个简短步骤（每个≤25字），描述论文的核心�
             logging.warning("丢弃不在来源里的文章：%s", url)
             continue
         field = raw.get("field")
-        if field not in FIELDS and field != "none":
+        if field not in FIELDS:
             logging.warning("丢弃领域无效的文章：%s", url)
             continue
         
@@ -839,10 +845,7 @@ steps 必须是 3-5 个简短步骤（每个≤25字），描述论文的核心�
         })
     cap_a = int(config.get("max_academic") or 6)
     cap_d = int(config.get("max_industry") or 4)
-    articles = articles[:cap_a]
-    if FIELD_MODULE_AVAILABLE:
-        articles = classify_draft_articles(articles, by_url, client=client, model=model)
-    return {"articles": articles, "deals": deals[:cap_d]}
+    return {"articles": articles[:cap_a], "deals": deals[:cap_d]}
 
 
 def compose_image_prompt(prompt: str) -> str:

@@ -3130,8 +3130,12 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
         ):
             problems.append(f"数字 '{num}' 在原始材料中未找到")
         else:
-            # Number exists - also check if meaning matches
-            meaning_ok, meaning_reason = number_meaning_matches_source(num, context, raw_material)
+            # Meaning uses the original draft, not the match-normalized
+            # ±20 window. CJK-splitting turns "1年生存率26%" into
+            # "1 年生存率 26%", which would otherwise inherit DCR.
+            meaning_ok, meaning_reason = number_meaning_matches_source(
+                num, all_text, raw_material
+            )
             if not meaning_ok:
                 problems.append(meaning_reason)
     
@@ -3160,8 +3164,9 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
         ):
             problems.append(f"中文数字 '{cn_num}' ({arabic}) 在原始材料中未找到")
         else:
-            # Chinese number exists - also check meaning
-            meaning_ok, meaning_reason = number_meaning_matches_source(cn_num, context, raw_material)
+            meaning_ok, meaning_reason = number_meaning_matches_source(
+                cn_num, all_text, raw_material
+            )
             if not meaning_ok:
                 problems.append(meaning_reason)
     
