@@ -44,10 +44,35 @@ IMAGE_PREFIX = (
     "thin gray outlines, soft teal, coral, gold and blue-gray palette. "
     "Minimalist, clean, diagrammatic. Show biological molecules, cells, or mechanisms. "
     "No 3D effects, no glow, no gradients, no photorealism, no shadows. "
-    "No text, no letters, no numbers, no labels, no watermark, no annotations. "
     "Simple shapes only. The subject fills the frame. "
 )
+IMAGE_SUFFIX = (
+    " No text, no letters, no words, no labels, no captions, no numbers, "
+    "no watermarks, no annotations anywhere in the image; purely visual illustration."
+)
 UA = "FrontierDigestWeekly/1.0 (+https://inlight.therasik.com)"
+
+
+def sanitize_image_prompt(prompt: str) -> str:
+    """Remove label-related phrases from the model's image prompt."""
+    patterns = [
+        r'\bwith labels?\b',
+        r'\blabou?r?e?l?e?d\b',
+        r'\bannotated?\b',
+        r'\bwith annotations?\b',
+        r'\bwith captions?\b',
+        r'\bcaptioned\b',
+        r'\bwith text\b',
+        r'\bshowing (?:the )?names?\b',
+        r'\bnamed\b',
+        r'"[^"]*"',  # Remove quoted text that might be label requests
+    ]
+    result = prompt
+    for pattern in patterns:
+        result = re.sub(pattern, '', result, flags=re.IGNORECASE)
+    # Clean up extra spaces
+    result = re.sub(r'\s+', ' ', result).strip()
+    return result
 
 
 def setup_log() -> Path:
@@ -141,6 +166,105 @@ BROWSER_UA = (
 )
 
 
+def _fetch_rss_with_retry(feed: str, source_name: str, use_browser_ua: bool, max_attempts: int = 3) -> feedparser.FeedParserDict | None:
+    """Fetch RSS feed with retry logic for transient errors."""
+    import time
+    import requests
+    
+    delays = [2, 5, 10]  # Exponential backoff
+    last_error = None
+    
+    for attempt in range(max_attempts):
+        try:
+            if use_browser_ua:
+                resp = requests.get(feed, headers={"User-Agent": BROWSER_UA}, timeout=30)
+                resp.raise_for_status()
+                parsed = feedparser.parse(resp.content)
+            else:
+                parsed = feedparser.parse(feed, agent=UA)
+            
+            # Check for parse errors (bozo) but allow if we got entries
+            if getattr(parsed, "bozo", False) and not parsed.entries:
+                bozo_exc = getattr(parsed, "bozo_exception", None)
+                # Retry on XML parse errors like "no element found"
+                if bozo_exc and "no element found" in str(bozo_exc).lower():
+                    raise ValueError(f"XML parse error: {bozo_exc}")
+                logging.warning("%s 的 feed 解析失败：%s", source_name, bozo_exc)
+                return None
+            
+            return parsed
+            
+        except Exception as e:
+            last_error = e
+            if attempt < max_attempts - 1:
+                delay = delays[min(attempt, len(delays) - 1)]
+                logging.info("%s 抓取失败，%d秒后重试（第%d次）：%s", source_name, delay, attempt + 1, e)
+                time.sleep(delay)
+    
+    logging.warning("%s 的 feed 重试后仍失败：%s", source_name, last_error)
+    return None
+
+
+def fetch_biorxiv_api(start: datetime, limit: int, categories: list[str] | None = None) -> list[dict]:
+    """Fallback: fetch from bioRxiv details API when RSS fails."""
+    import requests
+    import time
+    
+    end_date = datetime.now(timezone.utc).date()
+    start_date = start.date()
+    
+    api_url = f"https://api.biorxiv.org/details/biorxiv/{start_date.isoformat()}/{end_date.isoformat()}"
+    logging.info("bioRxiv API fallback: %s", api_url)
+    
+    try:
+        resp = requests.get(api_url, headers={"User-Agent": UA}, timeout=60)
+        resp.raise_for_status()
+        data = resp.json()
+    except Exception as e:
+        logging.warning("bioRxiv API 请求失败：%s", e)
+        return []
+    
+    collection = data.get("collection") or []
+    if not collection:
+        logging.info("bioRxiv API 返回 0 条")
+        return []
+    
+    # Filter by category if specified
+    if categories:
+        categories_lower = [c.lower() for c in categories]
+        collection = [p for p in collection if (p.get("category") or "").lower() in categories_lower]
+    
+    rows = []
+    for paper in collection[:limit]:
+        doi = paper.get("doi") or ""
+        title = paper.get("title") or ""
+        if not doi or not title:
+            continue
+        
+        # Parse date
+        date_str = paper.get("date") or ""
+        try:
+            pub_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+        except ValueError:
+            pub_date = end_date
+        
+        authors = paper.get("authors") or ""
+        abstract = (paper.get("abstract") or "")[:700]
+        category = paper.get("category") or "bioRxiv"
+        
+        rows.append({
+            "source": f"bioRxiv {category}",
+            "kind": "academic",
+            "title": title,
+            "url": f"https://doi.org/{doi}",
+            "date": pub_date.isoformat(),
+            "summary": abstract if abstract else f"{authors[:200]}",
+        })
+    
+    logging.info("bioRxiv API fallback 得到 %d 条", len(rows))
+    return rows
+
+
 def fetch_rss(source: dict, start: datetime, limit: int) -> list[dict]:
     feed = source.get("feed")
     if not feed:
@@ -148,22 +272,21 @@ def fetch_rss(source: dict, start: datetime, limit: int) -> list[dict]:
         return []
     logging.info("抓取 RSS %s", source["name"])
     
-    # Some sources need browser User-Agent to return RSS instead of HTML
-    if source.get("needs_browser_ua"):
-        try:
-            import requests
-            resp = requests.get(feed, headers={"User-Agent": BROWSER_UA}, timeout=30)
-            resp.raise_for_status()
-            parsed = feedparser.parse(resp.content)
-        except Exception as e:
-            logging.warning("%s 的 feed 打不开（browser UA）：%s", source["name"], e)
-            return []
-    else:
-        parsed = feedparser.parse(feed, agent=UA)
+    source_name = source.get("name", "unknown")
+    use_browser_ua = source.get("needs_browser_ua", False)
     
-    if getattr(parsed, "bozo", False) and not parsed.entries:
-        logging.warning("%s 的 feed 打不开：%s", source["name"], getattr(parsed, "bozo_exception", ""))
+    # Fetch with retry
+    parsed = _fetch_rss_with_retry(feed, source_name, use_browser_ua)
+    
+    # bioRxiv fallback to API
+    if parsed is None and "biorxiv" in source_name.lower():
+        category = source.get("biorxiv_category") or "immunology"
+        logging.info("%s RSS 失败，尝试 API fallback（分类：%s）", source_name, category)
+        return fetch_biorxiv_api(start, limit, categories=[category])
+    
+    if parsed is None:
         return []
+    
     rows = []
     for entry in parsed.entries:
         when = _parse_struct(entry)
@@ -314,10 +437,9 @@ def load_existing_urls() -> set[str]:
 
 
 def fetch_all(config: dict) -> list[dict]:
-    days = int(config.get("window_days") or 7)
+    default_days = int(config.get("window_days") or 7)
     limit = int(config.get("max_per_source") or 6)
     end = datetime.now(timezone.utc)
-    start = end - timedelta(days=days)
     rows: list[dict] = []
     seen = set()
     existing = load_existing_urls()
@@ -332,6 +454,10 @@ def fetch_all(config: dict) -> list[dict]:
             source_stats.append({"name": source_name, "status": "manual", "count": 0})
             continue
         
+        # Per-source window override (e.g. Cell needs wider window)
+        source_days = int(source.get("window_days") or default_days)
+        start = end - timedelta(days=source_days)
+        
         try:
             if source.get("type") == "pubmed":
                 batch = fetch_pubmed(source, start.date(), end.date(), limit)
@@ -343,6 +469,7 @@ def fetch_all(config: dict) -> list[dict]:
             continue
         
         count = 0
+        skipped_no_abstract = 0
         for row in batch:
             url = row["url"]
             normalized = normalize_doi(url)
@@ -351,11 +478,20 @@ def fetch_all(config: dict) -> list[dict]:
             if url in existing or normalized in existing:
                 logging.debug("跳过已有内容：%s (规范化: %s)", url, normalized)
                 continue
+            # Skip academic items with no abstract (can't write good drafts)
+            if row.get("kind") == "academic":
+                summary = (row.get("summary") or "").strip()
+                # Skip if summary is just author names or very short
+                if len(summary) < 50 or summary.count(",") > 3 and len(summary) < 100:
+                    skipped_no_abstract += 1
+                    continue
             seen.add(url)
             seen.add(normalized)
             rows.append(row)
             count += 1
         
+        if skipped_no_abstract:
+            logging.info("  %s: 跳过 %d 条无摘要条目", source_name, skipped_no_abstract)
         source_stats.append({"name": source_name, "status": "ok", "count": count})
     
     # Log per-source summary
@@ -406,7 +542,7 @@ def claude_draft(items: list[dict], config: dict) -> dict:
                             "study_type": {"type": "string", "description": "Study type: 临床试验/动物实验/体外实验/计算分析/综述"},
                             "n": {"type": "string", "description": "Sample size if mentioned"},
                             "evidence_level": {"type": "string", "enum": ["fulltext", "abstract", "press", "secondary"], "description": "Source quality"},
-                            "image_prompt": {"type": "string", "description": "English prompt for mechanism diagram, no text/labels"},
+                            "image_prompt": {"type": "string", "description": "English visual description for diagram. Describe shapes, colors, spatial arrangement ONLY. Do NOT ask for labels, annotations, text, letters, numbers, captions, or named parts. The image generator cannot render text."},
                         },
                         "required": ["url", "field", "title", "authors", "lead", "steps"],
                     },
@@ -615,10 +751,13 @@ def draw_image(prompt: str, dest: Path) -> None:
     from openai import OpenAI
 
     model = os.environ.get("OPENAI_IMAGE_MODEL", "gpt-image-1")
+    # Sanitize model prompt to remove label requests, then add prefix and suffix
+    clean_prompt = sanitize_image_prompt(prompt)
+    full_prompt = IMAGE_PREFIX + clean_prompt[:1000] + IMAGE_SUFFIX
     logging.info("画图 %s -> %s", model, dest.name)
     result = OpenAI().images.generate(
         model=model,
-        prompt=IMAGE_PREFIX + prompt[:1200],
+        prompt=full_prompt,
         size="1536x1024",
         n=1,
     )

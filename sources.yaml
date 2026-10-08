@@ -46,6 +46,7 @@ sources:
     type: rss
     url: https://www.cell.com
     feed: https://www.cell.com/cell/current.rss
+    window_days: 10  # Cell issue dates often fall outside 7-day window
 
   - name: bioRxiv 免疫学
     kind: academic
@@ -53,6 +54,7 @@ sources:
     url: https://www.biorxiv.org/collection/immunology
     feed: https://connect.biorxiv.org/biorxiv_xml.php?subject=immunology
     needs_browser_ua: true
+    biorxiv_category: immunology  # For API fallback when RSS fails
 
   - name: PubMed
     kind: academic
