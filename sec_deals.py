@@ -19,6 +19,7 @@ import logging
 import os
 import re
 from dataclasses import dataclass, field
+from datetime import date, timedelta
 from enum import Enum
 from typing import Any
 
@@ -924,8 +925,8 @@ ROLE_PATTERNS: list[tuple[str, str, str | None]] = [
     (r'(?:Loan|Credit)\s+(?:and\s+Security\s+)?Agreement.*?with\s+([\w\s&,\.\"\(\)]+)',
      'filer_is_borrower', 'lender'),
     
-    # License patterns - "the Company granted X a license"
-    (r'(the\s+Company|[\w\s&,\.]+?)\s+grant(?:s|ed)\s+([\w\s&,\.\"\(\)]+?)\s+(?:an?\s+)?(?:exclusive[,\s]+)?(?:worldwide\s+)?licen[sc]e',
+    # License patterns - "the Company granted X a license" / "granting X rights"
+    (r'(the\s+Company|[\w\s&,\.]+?)\s+(?:is\s+)?grant(?:s|ed|ing)\s+([\w\s&,\.\"\(\)]+?)\s+(?:an?\s+)?(?:exclusive[,\s]+)?(?:worldwide\s+)?(?:licen[sc]e|rights)',
      'licensor', 'licensee'),
     (r'licen[sc]e\s+(?:and\s+)?(?:collaboration\s+)?agreement\s+(?:by\s+and\s+)?between\s+([\w\s&,\.]+?)\s+and\s+([\w\s&,\.]+)',
      'license_party', 'license_party'),
@@ -1731,6 +1732,10 @@ EQUITY_FINANCING_REJECT_PATTERNS = [
 # The operative language "grants a license" determines license type, not the title.
 LICENSE_GRANT_PATTERNS = [
     r'\bgrants?\s+.*\b(?:an?\s+)?(?:exclusive\s+)?licen[sc]e\b',
+    r'\bgranted\s+.*\b(?:an?\s+)?exclusive\s+(?:worldwide\s+)?licen[sc]e\b',
+    r'\bgrants?\s+.*\brights\b',
+    r'\bgranted\s+.*\brights\b',
+    r'\bgranting\s+.*\brights\b',
     r'\bexclusive\s+(?:worldwide\s+)?licen[sc]e\b',
     r'\blicen[sc]e\s+to\s+develop\b',
     r'\bgranting\s+.*\blicen[sc]e\b',
@@ -1917,12 +1922,52 @@ def infer_deal_type_from_quote(type_quote: str) -> DealType | None:
     return None
 
 
-def is_historical_agreement(type_quote: str) -> bool:
+_MONTH_NAME_TO_NUM = {
+    'january': 1, 'february': 2, 'march': 3, 'april': 4, 'may': 5, 'june': 6,
+    'july': 7, 'august': 8, 'september': 9, 'october': 10, 'november': 11,
+    'december': 12,
+}
+
+_OLD_EVENT_CUTOFF = timedelta(days=365)
+
+
+def _parse_loose_date(value: str | None) -> date | None:
+    """Parse YYYY-MM-DD, YYYY-MM, or YYYY."""
+    if not value:
+        return None
+    m = re.match(r'(\d{4})(?:-(\d{1,2})(?:-(\d{1,2}))?)?', value.strip())
+    if not m:
+        return None
+    try:
+        return date(int(m.group(1)), int(m.group(2) or 1), int(m.group(3) or 1))
+    except ValueError:
+        return None
+
+
+def _dated_clause_date(text: str) -> date | None:
+    """Extract 'dated [as of] Month D, YYYY' from a quote."""
+    if not text:
+        return None
+    m = re.search(
+        r'\bdated(?:\s+as\s+of)?\s+'
+        r'(january|february|march|april|may|june|july|august|september|october|november|december)'
+        r'\s+(\d{1,2}),\s+(\d{4})\b',
+        text, re.IGNORECASE,
+    )
+    if not m:
+        return None
+    try:
+        return date(int(m.group(3)), _MONTH_NAME_TO_NUM[m.group(1).lower()], int(m.group(2)))
+    except (ValueError, KeyError):
+        return None
+
+
+def is_historical_agreement(type_quote: str, reference_date: str | None = None) -> bool:
     """True when the quote describes a prior agreement, not a newly entered one.
 
-    Any amendment is out of scope (even one that adds a product or territory).
-    Historical markers include 'previously disclosed/entered', 'dated YEAR, as
-    amended', and past-perfect grant language ('had granted').
+    Dated-year cutoffs are relative to the filing/event date (not hard-coded
+    2020-2025). An agreement dated more than a year before the reference is
+    historical. Markers also include 'previously entered', 'had granted'.
     """
     if not type_quote:
         return False
@@ -1933,11 +1978,17 @@ def is_historical_agreement(type_quote: str) -> bool:
         r'\bpreviously\s+(?:entered|agreed|executed|signed|disclosed|announced)\b',
         r'\boriginal\s+agreement\b',
         r'\bas\s+amended\s+(?:and\s+restated\s+)?(?:from\s+time\s+to\s+time\s+)?(?:through|prior\s+to)\b',
-        r'\bdated(?:\s+as\s+of)?\s+(?:january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{1,2},\s+(?:19\d\d|20[01]\d|202[0-5])\b',
         r'\bhad\s+granted\b',
         r'\bhad\s+entered\b',
     ]
-    return any(re.search(p, text_lower) for p in historical_patterns)
+    if any(re.search(p, text_lower) for p in historical_patterns):
+        return True
+
+    dated = _dated_clause_date(type_quote)
+    if dated is None:
+        return False
+    ref = _parse_loose_date(reference_date) or date.today()
+    return dated < ref - _OLD_EVENT_CUTOFF
 
 
 def is_amendment_language(text: str) -> bool:
@@ -2096,7 +2147,12 @@ def resolve_merger_vehicle(name: str, filing_text: str, type_quote: str = "") ->
     return None
 
 
-def out_of_scope_deal_reason(type_quote: str, filing_text: str) -> str | None:
+def out_of_scope_deal_reason(
+    type_quote: str,
+    filing_text: str,
+    filing_date: str = '',
+    event_date: str = '',
+) -> str | None:
     """Return a drop reason if the quote's filing context is out of scope.
 
     Scope is only (a) a newly entered license/collaboration and (b) a
@@ -2108,10 +2164,11 @@ def out_of_scope_deal_reason(type_quote: str, filing_text: str) -> str | None:
         return 'empty type_quote'
     passage = _containing_passage(type_quote, filing_text) or type_quote
     combined = f"{type_quote} {passage}"
+    reference_date = event_date or filing_date
 
     if is_amendment_language(type_quote) or is_amendment_language(passage):
         return 'amendment'
-    if is_historical_agreement(type_quote) or is_historical_agreement(passage):
+    if is_historical_agreement(type_quote, reference_date) or is_historical_agreement(passage, reference_date):
         return 'historical agreement'
     if is_termination_or_assignment_language(type_quote) or is_termination_or_assignment_language(passage):
         return 'termination/assignment'
@@ -2273,6 +2330,10 @@ def has_license_grant_language(type_quote: str) -> bool:
         r'\bgrants?\s+.{0,80}?\blicen[sc]e\b',
         r'\bgranted\s+.{0,80}?\blicen[sc]e\b',
         r'\bgranting\s+.{0,80}?\blicen[sc]e\b',
+        r'\bgrants?\s+.{0,80}?\brights\b',
+        r'\bgranted\s+.{0,80}?\brights\b',
+        r'\bgranting\s+.{0,80}?\brights\b',
+        r'\bgranted\s+.{0,80}?\ban\s+exclusive\s+(?:worldwide\s+)?licen[sc]e\b',
         r'\bexclusive(?:ly)?(?:\s+\w+){0,4}\s+licen[sc]e\b',
         r'\bnon-exclusive(?:ly)?(?:\s+\w+){0,4}\s+licen[sc]e\b',
         r'\bcollaboration\s+(?:and\s+license\s+)?agreement\b',
@@ -2454,7 +2515,9 @@ def process_sec_deal(
     # Verification 1b: historical / amendment / termination / assignment / divestiture
     # Look at the quote AND the filing sentence it came from — the model may
     # excerpt only the grant/acquire clause of an out-of-scope event.
-    scope_reason = out_of_scope_deal_reason(type_quote, filing_text)
+    scope_reason = out_of_scope_deal_reason(
+        type_quote, filing_text, filing_date=filing_date, event_date=event_date,
+    )
     if scope_reason:
         logging.info("Deal out_of_scope: %s (%s)", scope_reason, type_quote[:80])
         return None

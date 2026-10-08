@@ -58,33 +58,6 @@ IMAGE_SUFFIX = (
 UA = "FrontierDigestWeekly/1.0 (+https://inlight.therasik.com)"
 SITE_BASE_URL = "https://inlight.therasik.com"  # Fix B9: Base URL for WeChat absolute image URLs
 
-# Company alias table for whole-word matching
-COMPANY_ALIASES = {
-    'astrazeneca': ['astrazeneca', 'az'],
-    'gsk': ['glaxosmithkline', 'gsk'],
-    'jnj': ['johnson & johnson', 'johnson and johnson', 'j&j', 'jnj', 'janssen'],
-    'bms': ['bristol-myers squibb', 'bristol myers squibb', 'bms'],
-    'abbvie': ['abbvie'],
-    'pfizer': ['pfizer'],
-    'merck': ['merck', 'msd'],
-    'novartis': ['novartis'],
-    'roche': ['roche', 'genentech'],
-    'genentech': ['genentech', 'roche'],
-    'sanofi': ['sanofi', 'regeneron'],  # often in partnership
-    'lilly': ['eli lilly', 'lilly'],
-    'amgen': ['amgen'],
-    'gilead': ['gilead'],
-    'biogen': ['biogen'],
-    'regeneron': ['regeneron'],
-    'vertex': ['vertex'],
-    'moderna': ['moderna'],
-    'biontech': ['biontech'],
-    'takeda': ['takeda'],
-    'astellas': ['astellas'],
-    'daiichi sankyo': ['daiichi sankyo', 'daiichi-sankyo'],
-    'boehringer': ['boehringer ingelheim', 'boehringer'],
-}
-
 # Deal type allowed list (R6)
 DEAL_TYPES_ALLOWED = {
     'acquisition': 'acq',

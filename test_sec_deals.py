@@ -1623,6 +1623,58 @@ class TestMergerVehicleCounterparty:
         assert deal is None
 
 
+class TestCleanupRelativeCutoffAndGrants:
+    """Aliases removed; dated cutoffs are relative; grants...rights is a license."""
+
+    def test_run_weekly_has_no_company_aliases(self):
+        import run_weekly
+        assert not hasattr(run_weekly, "COMPANY_ALIASES")
+
+    def test_dated_year_is_relative_to_filing_date(self):
+        quote = "the License Agreement dated May 4, 2019"
+        assert sec_deals.is_historical_agreement(quote, "2026-10-05") is True
+        # Same month/year as the filing is a current event, not old.
+        recent = "the License Agreement dated October 1, 2026"
+        assert sec_deals.is_historical_agreement(recent, "2026-10-05") is False
+        # A 2026 date is old relative to a 2028 filing — no hard-coded 2020-2025 window.
+        assert sec_deals.is_historical_agreement(
+            "the License Agreement dated March 1, 2026", "2028-04-01"
+        ) is True
+
+    def test_grants_rights_is_license_wording(self):
+        assert sec_deals.has_license_grant_language(
+            "Alector is granting Genentech exclusive worldwide rights to develop and commercialize"
+        ) is True
+        assert sec_deals.has_license_grant_language(
+            "the Company granted Genentech an exclusive license"
+        ) is True
+
+    def test_process_accepts_granting_rights_license(self):
+        filing = (
+            "Alector, Inc. (the \"Company\") entered into a License Agreement with "
+            "Genentech, Inc. Pursuant to the Agreement, Alector is granting Genentech "
+            "exclusive worldwide rights to develop and commercialize antibody products. "
+            "Alector will receive a $100 million upfront payment from Genentech."
+        )
+        deal = sec_deals.process_sec_deal(
+            filing_text=filing,
+            filer_name="Alector, Inc.",
+            filing_url="https://test",
+            filing_date="2026-10-05",
+            event_date="2026-10-01",
+            claude_response={
+                "deal_type": "license_collaboration",
+                "counterparty_name": "Genentech",
+                "type_quote": "Alector is granting Genentech exclusive worldwide rights to develop and commercialize antibody products",
+                "counterparty_quote": "entered into a License Agreement with Genentech, Inc.",
+                "amounts": [{"kind": "upfront", "quote": "Alector will receive a $100 million upfront payment from Genentech"}],
+            },
+        )
+        assert deal is not None
+        assert deal["deal_type"] == "license_collaboration"
+        assert "Genentech" in deal["counterparty"]
+
+
 # =============================================================================
 # RUN TESTS
 # =============================================================================
