@@ -1278,6 +1278,13 @@ CONTRADICTORY_METRIC_PAIRS = [
      {"adverse", "不良", "ae", "toxicity", "毒性"}),
 ]
 
+# Unit patterns that indicate count vs rate/percentage
+# 例, 名, 人, patients -> count
+# %, rate, 率 -> percentage
+# Also match fractional expressions like N/M (e.g., 19/36) as counts
+COUNT_UNIT_PATTERNS = re.compile(r'例|名|人|位|patients|subjects|participants|cases|\d+\s*/\s*\d+', re.IGNORECASE)
+RATE_UNIT_PATTERNS = re.compile(r'%|％|率|rate|percent', re.IGNORECASE)
+
 
 def extract_metric_keywords(context: str) -> set[str]:
     """Extract specific metric keywords from context (not categories).
@@ -1337,15 +1344,45 @@ def number_meaning_matches_source(num_str: str, output_context: str, source_text
     immediate_context = output_context[immediate_start:num_match.end()].lower()
     
     output_keywords = extract_metric_keywords(immediate_context)
-    if not output_keywords:
-        return True, ""  # No recognizable metric immediately attached
     
-    # Find all occurrences of this number in source and their metric keywords
+    # Find all occurrences of this number in source 
     source_norm = source_text.lower()
     
     # Find number in source with moderate context (30 chars before/after)
-    # Needs to be wider than output window to capture the full phrase
     pattern = rf'(?<![a-zA-Z0-9]){re.escape(num_core)}(?![a-zA-Z0-9])'
+    
+    # First, check for unit type mismatch: 例 (count) vs % (percentage)
+    # This is checked BEFORE keyword check since units are more reliable
+    # Only look at the unit IMMEDIATELY attached to this number (within 3 chars after)
+    output_immediate_end = min(len(output_context), num_match.end() + 3)
+    output_immediate_unit = output_context[num_match.start():output_immediate_end].lower()
+    
+    output_is_count = bool(COUNT_UNIT_PATTERNS.search(output_immediate_unit))
+    output_is_rate = bool(RATE_UNIT_PATTERNS.search(output_immediate_unit))
+    
+    # Check unit types if we can determine the output type
+    if output_is_count or output_is_rate:
+        source_has_count = False
+        source_has_rate = False
+        for match in re.finditer(pattern, source_norm):
+            start = max(0, match.start() - 15)
+            end = min(len(source_norm), match.end() + 15)
+            source_context = source_norm[start:end]
+            if COUNT_UNIT_PATTERNS.search(source_context):
+                source_has_count = True
+            if RATE_UNIT_PATTERNS.search(source_context):
+                source_has_rate = True
+        
+        # Flag mismatch: output says count, but source only has rate (or vice versa)
+        if output_is_count and source_has_rate and not source_has_count:
+            return False, f"数字 '{num_str}' 单位不匹配：输出为人数（例/名），原文为百分比（%）"
+        if output_is_rate and source_has_count and not source_has_rate:
+            return False, f"数字 '{num_str}' 单位不匹配：输出为百分比（%），原文为人数（例/名）"
+    
+    # Now check for metric keyword contradictions
+    if not output_keywords:
+        return True, ""  # No recognizable metric immediately attached
+    
     source_keywords = set()
     for match in re.finditer(pattern, source_norm):
         start = max(0, match.start() - 30)

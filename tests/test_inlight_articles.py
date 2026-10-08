@@ -1089,6 +1089,42 @@ class TestDataPointValidation(unittest.TestCase):
 class TestNumberMeaningMismatch(unittest.TestCase):
     """Test that numbers are flagged when used with contradictory metrics."""
     
+    def test_count_vs_percent_flagged(self):
+        """'36例' (36 patients) flagged when source only has '36%'."""
+        from inlight_articles import number_meaning_matches_source
+        
+        # Output says "36例" (36 patients), source says "36%" (percentage)
+        ok, reason = number_meaning_matches_source(
+            "36", 
+            "共纳入36例患者",  # Output claims 36 patients
+            "response rate was 36%"  # Source says 36%
+        )
+        self.assertFalse(ok, f"Should flag count/percent mismatch: {reason}")
+        self.assertIn("单位不匹配", reason)
+    
+    def test_percent_vs_count_flagged(self):
+        """'52%' flagged when source only has '52例'."""
+        from inlight_articles import number_meaning_matches_source
+        
+        ok, reason = number_meaning_matches_source(
+            "52%",
+            "缓解率52%",  # Output claims 52%
+            "52 patients enrolled"  # Source says 52 patients
+        )
+        self.assertFalse(ok, f"Should flag percent/count mismatch: {reason}")
+        self.assertIn("单位不匹配", reason)
+    
+    def test_matching_units_pass(self):
+        """'36%' should pass when source has '36%'."""
+        from inlight_articles import number_meaning_matches_source
+        
+        ok, reason = number_meaning_matches_source(
+            "36%",
+            "缓解率36%",
+            "response rate was 36%"
+        )
+        self.assertTrue(ok, f"Should pass when units match: {reason}")
+    
     def test_ae_rate_as_cr_rate_flagged(self):
         """Using an AE rate (28%) as CR rate should be flagged."""
         from inlight_articles import validate_depth
