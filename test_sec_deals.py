@@ -9,6 +9,7 @@ import json
 import logging
 import sys
 import os
+import re
 from pathlib import Path
 from unittest.mock import MagicMock, patch, Mock
 import pytest
@@ -25,6 +26,19 @@ FIXTURES_DIR = Path(__file__).parent / "test_fixtures"
 def load_fixture(name: str) -> str:
     """Load a filing text fixture."""
     return (FIXTURES_DIR / name).read_text()
+
+
+def as_item101(body: str, event: str = "October 1, 2026") -> str:
+    """Wrap a synthetic paragraph as an 8-K Item 1.01 with a cover event date."""
+    if re.search(r'(?i)\b(?:Item\s+1\.01|FORM\s+(?:8-K|6-K|10-[QK]))\b', body):
+        return body
+    return (
+        "FORM 8-K\n"
+        f"Date of Report (Date of earliest event reported): {event}\n"
+        "Item 1.01 Entry into a Material Definitive Agreement.\n"
+        f"{body}\n"
+        "Item 9.01 Financial Statements and Exhibits.\n"
+    )
 
 
 def load_json_fixture(name: str) -> dict:
@@ -1605,7 +1619,7 @@ class TestMergerVehicleCounterparty:
             "for $18.50 per share."
         )
         deal = sec_deals.process_sec_deal(
-            filing_text=filing,
+            filing_text=as_item101(filing),
             filer_name="Kestrel Rx, Inc.",
             filing_url="https://test",
             filing_date="2026-10-05",
@@ -1743,7 +1757,7 @@ class TestCleanupRelativeCutoffAndGrants:
             "Alector will receive a $100 million upfront payment from Genentech."
         )
         deal = sec_deals.process_sec_deal(
-            filing_text=filing,
+            filing_text=as_item101(filing),
             filer_name="Alector, Inc.",
             filing_url="https://test",
             filing_date="2026-10-05",
@@ -1827,7 +1841,7 @@ class TestUpfrontPayerAndTiming:
             "$25 million on the third anniversary."
         )
         deal = sec_deals.process_sec_deal(
-            filing_text=filing,
+            filing_text=as_item101(filing),
             filer_name="Alector, Inc.",
             filing_url="https://test",
             filing_date="2026-10-05",
@@ -2151,7 +2165,7 @@ class TestDefinedTermsDecideParties:
             "the target."
         )
         deal = sec_deals.process_sec_deal(
-            filing_text=filing,
+            filing_text=as_item101(filing),
             filer_name="Kestrel Rx, Inc.",
             filing_url="https://test",
             filing_date="2026-10-05",
@@ -2193,7 +2207,7 @@ class TestDefinedTermsDecideParties:
         assert any("helios" in n.lower() for n in terms.get("merger sub", []))
         assert not sec_deals._defined_roles_conflict(terms, "Kestrel Rx, Inc.")
         deal = sec_deals.process_sec_deal(
-            filing_text=filing,
+            filing_text=as_item101(filing),
             filer_name="Kestrel Rx, Inc.",
             filing_url="https://test",
             filing_date="2026-10-05",
@@ -2222,7 +2236,7 @@ class TestDefinedTermsDecideParties:
         assert any("osprey" in n.lower() for n in terms.get("company", []))
         assert any("thistle" in n.lower() for n in terms.get("target", []))
         deal = sec_deals.process_sec_deal(
-            filing_text=filing,
+            filing_text=as_item101(filing),
             filer_name="Osprey Pharma Inc.",
             filing_url="https://test",
             filing_date="2026-10-05",
@@ -2284,7 +2298,7 @@ class TestDefinedTermsDecideParties:
             "for $12.00 per share."
         )
         deal = sec_deals.process_sec_deal(
-            filing_text=filing,
+            filing_text=as_item101(filing),
             filer_name="Kestrel Rx, Inc.",
             filing_url="https://test",
             filing_date="2026-10-05",
@@ -2414,10 +2428,10 @@ class TestDefinedTermsDecideParties:
         ar_quote = "Pursuant to the A&R License, the Company granted Pine exclusive rights"
         assert sec_deals.out_of_scope_deal_reason(
             "the Company granted Harbor Bio AG an exclusive license",
-            filing, filing_date="2026-10-05",
+            as_item101(filing), filing_date="2026-10-05",
         ) is None
         deal = sec_deals.process_sec_deal(
-            filing_text=filing,
+            filing_text=as_item101(filing),
             filer_name="Kestrel Rx, Inc.",
             filing_url="https://test",
             filing_date="2026-10-05",
@@ -2434,7 +2448,7 @@ class TestDefinedTermsDecideParties:
         assert "harbor" in deal["counterparty"].lower()
         assert "pine" not in deal["counterparty"].lower()
         dropped = sec_deals.process_sec_deal(
-            filing_text=filing + " " + ar_quote,
+            filing_text=as_item101(filing + " " + ar_quote),
             filer_name="Kestrel Rx, Inc.",
             filing_url="https://test",
             filing_date="2026-10-05",
@@ -2463,7 +2477,7 @@ class TestDefinedTermsDecideParties:
             filing,
         ) is False
         deal = sec_deals.process_sec_deal(
-            filing_text=filing,
+            filing_text=as_item101(filing),
             filer_name="Kestrel Rx, Inc.",
             filing_url="https://test",
             filing_date="2026-10-05",
@@ -2742,10 +2756,10 @@ class TestDefinedTermsDecideParties:
         quote = "the Company granted Harbor Bio AG an exclusive license"
         assert sec_deals.is_historical_agreement(quote, "2026-10-05", filing) is False
         assert sec_deals.out_of_scope_deal_reason(
-            quote, filing, filing_date="2026-10-05",
+            quote, as_item101(filing), filing_date="2026-10-05",
         ) is None
         deal = sec_deals.process_sec_deal(
-            filing_text=filing,
+            filing_text=as_item101(filing),
             filer_name="Kestrel Rx, Inc.",
             filing_url="https://test",
             filing_date="2026-10-05",
@@ -2777,10 +2791,10 @@ class TestInstrumentHistoryAndPartyHygiene:
         quote = "the Company granted Quill Bio Ltd an exclusive licence"
         assert sec_deals.is_historical_agreement(quote, "2026-10-05", filing) is True
         assert sec_deals.out_of_scope_deal_reason(
-            quote, filing, filing_date="2026-10-05",
+            quote, as_item101(filing), filing_date="2026-10-05",
         ) == "historical agreement"
         deal = sec_deals.process_sec_deal(
-            filing_text=filing,
+            filing_text=as_item101(filing),
             filer_name="Lumen Therapeutics, Inc.",
             filing_url="https://test",
             filing_date="2026-10-05",
@@ -2806,10 +2820,10 @@ class TestInstrumentHistoryAndPartyHygiene:
         quote = "the Company granted Quill Bio Ltd an exclusive licence"
         assert sec_deals.is_historical_agreement(quote, "2026-10-05", filing) is False
         assert sec_deals.out_of_scope_deal_reason(
-            quote, filing, filing_date="2026-10-05",
+            quote, as_item101(filing), filing_date="2026-10-05",
         ) is None
         deal = sec_deals.process_sec_deal(
-            filing_text=filing,
+            filing_text=as_item101(filing),
             filer_name="Lumen Therapeutics, Inc.",
             filing_url="https://test",
             filing_date="2026-10-05",
@@ -2934,7 +2948,7 @@ class TestInstrumentHistoryAndPartyHygiene:
             "licence. Quill will pay a $9 million upfront payment."
         )
         assert sec_deals.out_of_scope_deal_reason(
-            quote, current, filing_date="2026-10-05",
+            quote, as_item101(current), filing_date="2026-10-05",
         ) is None
 
     def test_governance_units_never_leave_a_name_fragment(self):
@@ -3008,7 +3022,7 @@ class TestInstrumentHistoryAndPartyHygiene:
             "Lumen Therapeutics, Inc. (the \"Company\") for $250 million."
         )
         deal = sec_deals.process_sec_deal(
-            filing_text=filing,
+            filing_text=as_item101(filing),
             filer_name="Lumen Therapeutics, Inc.",
             filing_url="https://test",
             filing_date="2026-10-05",
@@ -3023,7 +3037,7 @@ class TestInstrumentHistoryAndPartyHygiene:
         )
         assert deal is None
         ok = sec_deals.process_sec_deal(
-            filing_text=filing,
+            filing_text=as_item101(filing),
             filer_name="Lumen Therapeutics, Inc.",
             filing_url="https://test",
             filing_date="2026-10-05",
@@ -3071,7 +3085,7 @@ class TestEquityNeverADealPayment:
             "for aggregate proceeds of $40 million."
         )
         deal = sec_deals.process_sec_deal(
-            filing_text=filing,
+            filing_text=as_item101(filing),
             filer_name="Nimbus Labs, Inc.",
             filing_url="https://test",
             filing_date="2026-10-05",
@@ -3118,7 +3132,7 @@ class TestMilestonesMeanMilestonesOnly:
             "and up to $200 million in total consideration including the upfront."
         )
         deal = sec_deals.process_sec_deal(
-            filing_text=filing,
+            filing_text=as_item101(filing),
             filer_name="Nimbus Labs, Inc.",
             filing_url="https://test",
             filing_date="2026-10-05",
@@ -3168,7 +3182,7 @@ class TestHeadlineOnlyUpfrontOrPurchasePrice:
             "and milestone payments totaling $180 million."
         )
         deal = sec_deals.process_sec_deal(
-            filing_text=filing,
+            filing_text=as_item101(filing),
             filer_name="Nimbus Labs, Inc.",
             filing_url="https://test",
             filing_date="2026-10-05",
@@ -3390,6 +3404,135 @@ class TestStructuralItemGate:
         assert sec_deals._resolve_declared_party(
             "Board of Trustees of Example State University", uni,
         ) == "Board of Trustees of Example State University"
+
+
+class TestReview867b:
+    """One invented-name check per 867b015 review item."""
+
+    def test_item1_amend_extend_mdy_does_not_make_old_pact_new(self):
+        filing = as_item101(
+            "Solace Medicines, Inc. entered into a License Agreement with "
+            "Cobalt Binding Ltd in 2018, as amended on October 1, 2026. "
+            "The Company granted Cobalt Binding Ltd an exclusive licence."
+        )
+        quote = "the Company granted Cobalt Binding Ltd an exclusive licence"
+        assert sec_deals._collect_item101_new_agreements(
+            sec_deals._structural_item101(filing) or filing, "2026-10-01",
+        ) == []
+        assert sec_deals.has_affirmative_new_agreement(
+            sec_deals.DealType.LICENSE_COLLABORATION, filing, "Cobalt Binding Ltd",
+            reference_date="2026-10-01", type_quote=quote,
+        ) is False
+
+    def test_item2_continuation_and_second_term_are_not_new(self):
+        filing = as_item101(
+            "On October 1, 2026, Solace Medicines, Inc. entered into a "
+            "Continuation License Agreement with Cobalt Binding Ltd that "
+            "extends the term of the 2019 Research Pact. The Company granted "
+            "Cobalt Binding Ltd an exclusive licence."
+        )
+        assert sec_deals.has_affirmative_new_agreement(
+            sec_deals.DealType.LICENSE_COLLABORATION, filing, "Cobalt Binding Ltd",
+            reference_date="2026-10-01",
+            type_quote="the Company granted Cobalt Binding Ltd an exclusive licence",
+        ) is False
+
+    def test_item3_capacity_role_resolves_to_legal_name(self):
+        text = (
+            'Harbor Bio AG, as administrative agent (in such capacity, '
+            'the "Agent"), and Cobalt Binding Ltd, acting through its '
+            'Special Committee'
+        )
+        assert sec_deals._legal_name_for_capacity_role("Agent", text)
+        assert "harbor" in sec_deals._legal_name_for_capacity_role("Agent", text).lower()
+        resolved = sec_deals._resolve_declared_party("Agent", text)
+        assert resolved is not None
+        assert "harbor" in resolved.lower()
+        assert "agent" not in resolved.lower()
+
+    def test_item4_corporate_board_of_trustees_strips_to_parent(self):
+        text = 'the Board of Trustees of Cobalt Health Holdings, Inc. ("Parent")'
+        names = sec_deals.parse_defined_terms(text).get("parent", [])
+        blob = " ".join(names).lower()
+        assert "cobalt health" in blob
+        assert "board" not in blob
+        resolved = sec_deals._resolve_declared_party(
+            "Board of Trustees of Cobalt Health Holdings, Inc.", text,
+        )
+        assert resolved is not None
+        assert "cobalt health" in resolved.lower()
+        assert not resolved.lower().startswith("board")
+        assert sec_deals._is_institutional_legal_name(
+            "Board of Trustees of Cobalt Health Holdings, Inc."
+        ) is False
+
+    def test_item5_exhibit_to_10q_inside_8k_is_not_periodic(self):
+        filing = (
+            "FORM 8-K\nDate of Report (Date of earliest event reported): October 1, 2026\n"
+            "Item 1.01 Entry into a Material Definitive Agreement.\n"
+            "On October 1, 2026, Solace Medicines, Inc. entered into a License "
+            "Agreement with Cobalt Binding Ltd and granted Cobalt Binding Ltd "
+            "an exclusive licence. The agreement will be filed as an exhibit to "
+            "the Company's next Form 10-Q.\n"
+            "Item 9.01 Financial Statements and Exhibits.\n"
+        )
+        assert sec_deals._cover_is_periodic(filing) is False
+        assert sec_deals._structural_item101(filing, "granted Cobalt Binding Ltd an exclusive licence")
+        assert sec_deals.out_of_scope_deal_reason(
+            "granted Cobalt Binding Ltd an exclusive licence", filing,
+            filing_date="2026-10-05", event_date="2026-10-01",
+        ) is None
+
+    def test_item6_would_pay_is_not_a_conditional_deal(self):
+        sent = (
+            "On October 1, 2026, Solace Medicines, Inc. entered into a License "
+            "Agreement with Cobalt Binding Ltd, under which Cobalt Binding Ltd "
+            "would pay a $12 million upfront payment."
+        )
+        assert sec_deals._CONDITIONAL_DEAL_RE.search(sent) is None
+        assert sec_deals._CONDITIONAL_DEAL_RE.search(
+            "the parties would enter into a definitive agreement"
+        )
+        ags = sec_deals._collect_item101_new_agreements(as_item101(sent), "2026-10-01")
+        assert ags and ags[0].title.lower() == "license agreement"
+
+    def test_item7_form_6k_accepts_dated_entered_into(self):
+        filing = (
+            "FORM 6-K\nDate of Report (Date of earliest event reported): October 1, 2026\n"
+            "On October 1, 2026, Solace Medicines, Inc. entered into a License "
+            "Agreement with Cobalt Binding Ltd. Pursuant to the License Agreement, "
+            "the Company granted Cobalt Binding Ltd an exclusive licence. Cobalt "
+            "will pay a $11 million upfront payment."
+        )
+        assert sec_deals._structural_item101(filing)
+        deal = sec_deals.process_sec_deal(
+            filing_text=filing, filer_name="Solace Medicines, Inc.",
+            filing_url="https://test", filing_date="2026-10-05", event_date="2026-10-01",
+            claude_response={
+                "deal_type": "license_collaboration",
+                "counterparty_name": "Cobalt Binding Ltd",
+                "type_quote": "the Company granted Cobalt Binding Ltd an exclusive licence",
+                "counterparty_quote": "License Agreement with Cobalt Binding Ltd",
+                "amounts": [{"kind": "upfront", "quote": "a $11 million upfront payment"}],
+            },
+        )
+        assert deal is not None
+        assert sec_deals._structural_item101(
+            "Solace Medicines entered into a License Agreement with Cobalt Binding Ltd "
+            "in 2018, as amended on October 1, 2026."
+        ) is None
+
+    def test_item8_publish_fixture_uses_item_101_cover(self):
+        raw = (
+            "On October 1, 2026, Solace Medicines, Inc. entered into a License "
+            "Agreement with Cobalt Binding Ltd. The Company granted Cobalt "
+            "Binding Ltd an exclusive licence."
+        )
+        wrapped = as_item101(raw)
+        assert "Item 1.01" in wrapped
+        assert "FORM 8-K" in wrapped
+        assert sec_deals._structural_item101(raw) is None
+        assert sec_deals._structural_item101(wrapped)
 
 
 # =============================================================================

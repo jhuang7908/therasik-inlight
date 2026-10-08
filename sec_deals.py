@@ -2823,14 +2823,17 @@ _INSTITUTION_NAME_RE = re.compile(
     r'hospital|academy|school|museum|library)\b',
     re.IGNORECASE,
 )
+_INSTITUTION_TAIL = (
+    r'(?:university|college|institute|institution|foundation|'
+    r'hospital|academy|school|museum|library)'
+)
 _INSTITUTIONAL_LEGAL_NAME_RE = re.compile(
     r'(?ix)^\s*(?:the\s+)?'
     r'(?:'
-    r'president\s+and\s+fellows\s+of\s+\S'
-    r'|board\s+of\s+(?:trustees|regents)\s+of\s+'
-    r'|regents\s+of\s+(?:the\s+)?\S'
-    r'|trustees\s+of\s+(?:the\s+)?.{0,80}'
-    r'(?:university|college|institute|institution|foundation|hospital|academy|school)'
+    r'president\s+and\s+fellows\s+of\s+(?:the\s+)?.{0,80}' + _INSTITUTION_TAIL +
+    r'|board\s+of\s+(?:trustees|regents)\s+of\s+(?:the\s+)?.{0,80}' + _INSTITUTION_TAIL +
+    r'|regents\s+of\s+(?:the\s+)?.{0,80}' + _INSTITUTION_TAIL +
+    r'|trustees\s+of\s+(?:the\s+)?.{0,80}' + _INSTITUTION_TAIL +
     r')',
 )
 _GOVERNANCE_UNIT = (
@@ -3072,14 +3075,42 @@ def _is_unpublishable_party_name(name: str) -> bool:
     return False
 
 
-def _board_institution_span(name: str) -> str | None:
+def _board_of_entity(name: str) -> tuple[str, str] | None:
+    """('Board of Trustees of X', 'X') when the name is a board-of span."""
     if not name:
         return None
     m = re.search(
-        r'(?i)\bboard\s+of\s+(?:trustees|regents)\s+of\s+(?:the\s+)?.+',
-        name.strip(),
+        r'(?i)\b(board\s+of\s+(?:trustees|regents|fellows)\s+of\s+(?:the\s+)?(.+))$',
+        name.strip().rstrip(','),
     )
-    return re.sub(r'\s+', ' ', m.group(0)).strip().rstrip(',') if m else None
+    if not m:
+        return None
+    span = re.sub(r'\s+', ' ', m.group(1)).strip().rstrip(',')
+    entity = re.sub(r'\s+', ' ', m.group(2)).strip().rstrip(',')
+    return span, entity
+
+
+def _board_institution_span(name: str) -> str | None:
+    """Whole board span only when the entity after 'of' is an institution."""
+    parsed = _board_of_entity(name)
+    if not parsed:
+        return None
+    span, entity = parsed
+    if _INSTITUTION_NAME_RE.search(entity):
+        return span
+    return None
+
+
+def _corporate_name_under_board(name: str) -> str | None:
+    """Strip a corporate approval-body board to the parent legal name."""
+    parsed = _board_of_entity(name)
+    if not parsed:
+        return None
+    _span, entity = parsed
+    if _INSTITUTION_NAME_RE.search(entity):
+        return None
+    entity = re.sub(r',\s*a(?:n)?\s+[\w\s.\-]+$', '', entity, flags=re.IGNORECASE).strip()
+    return entity or None
 
 
 def _fallback_clean_party_name(name: str) -> str | None:
@@ -3095,6 +3126,9 @@ def _fallback_clean_party_name(name: str) -> str | None:
     board = _board_institution_span(name)
     if board:
         return board
+    corporate = _corporate_name_under_board(name)
+    if corporate:
+        name = corporate
     if _is_institutional_legal_name(name):
         return name if _looks_like_company_name(name) else None
     while True:
@@ -3284,14 +3318,83 @@ def _declared_party_names(filing_text: str) -> list[str]:
     return out
 
 
+_CAPACITY_ROLE_WORDS = frozenset({
+    'agent', 'administrative agent', 'collateral agent', 'trustee',
+    'representative', 'representative director', 'special committee',
+    'depositary', 'calculation agent', 'paying agent',
+})
+
+
+def _is_capacity_role_term(name: str) -> bool:
+    if not name:
+        return False
+    raw = re.sub(r'^the\s+', '', name.strip().lower())
+    return raw in _CAPACITY_ROLE_WORDS or raw in _BARE_ROLE_WORDS
+
+
+def _legal_name_for_capacity_role(claimed: str, filing_text: str) -> str | None:
+    """Resolve 'Agent' / 'Trustee' / 'Special Committee' to the legal name.
+
+    Matches: '<Legal Name>, as <role> (…, the “RoleTerm”)',
+    '(in such capacity, the “RoleTerm”)', 'together with its Representative
+    Director', 'acting through its Special Committee'.
+    """
+    if not claimed or not filing_text:
+        return None
+    key = re.sub(r'^the\s+', '', claimed.strip().lower())
+    q = r'["\u201c\u201d\u2018\u2019]'
+    legal_tok = r'(?P<legal>[A-Z][A-Za-z0-9&.,\' -]{2,80}?)'
+    patterns = (
+        rf'{legal_tok},\s+as\s+(?:the\s+)?'
+        rf'(?P<role>administrative\s+agent|collateral\s+agent|trustee|agent|'
+        rf'representative(?:\s+director)?)\b'
+        rf'.{{0,160}}?(?:in\s+such\s+capacity,\s*)?(?:the\s+)?'
+        rf'{q}(?P<term>[^"\u201c\u201d\u2018\u2019]+){q}',
+        rf'{legal_tok}\s+\(\s*in\s+such\s+capacity,\s*(?:the\s+)?'
+        rf'{q}(?P<term>[^"\u201c\u201d\u2018\u2019]+){q}',
+        rf'{legal_tok},\s+together\s+with\s+its\s+representative\s+director',
+        rf'{legal_tok},\s+acting\s+through\s+its\s+special\s+committee',
+        rf'{legal_tok},\s+as\s+(?P<role>trustee|collateral\s+agent|'
+        rf'administrative\s+agent)\b',
+    )
+    want_roles = {
+        key, 'representative director', 'special committee',
+        'trustee', 'collateral agent', 'administrative agent', 'agent',
+    }
+    for pat in patterns:
+        for m in re.finditer(pat, filing_text, re.IGNORECASE):
+            legal = re.sub(r'\s+', ' ', m.group('legal')).strip().rstrip(',')
+            legal = re.sub(r',\s*a(?:n)?\s+[\w\s.\-]+$', '', legal, flags=re.IGNORECASE).strip()
+            if not legal or not _looks_like_company_name(legal):
+                continue
+            term = (m.groupdict().get('term') or '').strip().lower()
+            role = (m.groupdict().get('role') or '').strip().lower()
+            if not (
+                key == term
+                or key == role
+                or _is_capacity_role_term(claimed)
+                or key in want_roles
+            ):
+                continue
+            if _name_appears_verbatim(legal, filing_text):
+                return legal
+    return None
+
+
 def _resolve_declared_party(claimed: str, filing_text: str) -> str | None:
     """Publish the declared full party name. A substring match is not enough."""
     if not claimed or not filing_text:
         return None
     claimed_n = re.sub(r'\s+', ' ', claimed).strip()
+    role_legal = _legal_name_for_capacity_role(claimed_n, filing_text)
+    if role_legal:
+        return role_legal
     board = _board_institution_span(claimed_n)
     if board and _name_appears_verbatim(board, filing_text):
         return board
+    corporate = _corporate_name_under_board(claimed_n)
+    if corporate and _name_appears_verbatim(corporate, filing_text):
+        return corporate
     declared = _declared_party_names(filing_text)
     for d in declared:
         if d.lower() == claimed_n.lower():
@@ -3305,6 +3408,14 @@ def _resolve_declared_party(claimed: str, filing_text: str) -> str | None:
             board = _board_institution_span(n)
             if board:
                 return board
+            corporate = _corporate_name_under_board(n)
+            if corporate and _name_appears_verbatim(corporate, filing_text):
+                return corporate
+            capacity = _legal_name_for_capacity_role(n, filing_text) or _legal_name_for_capacity_role(claimed_n, filing_text)
+            if capacity:
+                return capacity
+        if _is_bare_role_word(claimed_n) or _is_capacity_role_term(claimed_n):
+            return None
         if not _is_bare_role_word(claimed_n):
             return claimed_n
     if _name_appears_verbatim(claimed_n, filing_text):
@@ -3713,10 +3824,33 @@ _TITLE_STOP_RE = re.compile(
 _FORBIDDEN_TITLE_RE = re.compile(
     r'(?i)\b(?:amendments?|amended\s+and\s+restated|letter\s+agreement\s+amending|'
     r'waivers?|joinders?|extensions?|renewals?|term\s+sheets?|'
-    r'letter\s+of\s+intent|memorandum\s+of\s+understanding|non-binding)\b'
+    r'letter\s+of\s+intent|memorandum\s+of\s+understanding|non-binding|'
+    r'continuation|second\s+term|further\s+term)\b'
+)
+_CONTINUATION_CLAUSE_RE = re.compile(
+    r'(?i)\b(?:continues|extends?\s+the\s+term(?:\s+of)?|renews?|'
+    r'second\s+term|further\s+term|continuation)\b'
 )
 _CONDITIONAL_DEAL_RE = re.compile(
-    r'(?i)\bsubject\s+to\b.{0,80}\bdefinitive\s+agreement\b|\bwould\b'
+    r'(?i)(?:'
+    r'\bsubject\s+to\b.{0,80}\bdefinitive\s+agreement\b|'
+    r'\bwould\s+enter\s+into\s+(?:a\s+)?definitive\b|'
+    r'\btransaction\s+would\b|'
+    r'\bsubject\s+to\b.{0,80}\bwould\b'
+    r')'
+)
+_AMEND_EXTEND_ON_RE = re.compile(
+    r'(?i)\b(?:as\s+)?(?:amended|extended|restated|renewed)'
+    r'(?:\s+and\s+restated)?'
+    r'(?:\s+as\s+of|\s+on)?\s+'
+    rf'{_MONTH_ALT}\s+\d{{1,2}},\s+\d{{4}}\b'
+)
+_ORIGIN_YEAR_RE = re.compile(
+    r'(?i)(?:'
+    r'\bin\s+(?:19|20)\d{2}\b|'
+    r'\bas\s+previously\b|'
+    r'\b(?:19|20)\d{2}\s+(?:licen[sc]e|collaboration|agreement)\b'
+    r')'
 )
 _EXACT_MDY_RE = re.compile(
     rf'(?i){_MONTH_ALT}\s+(\d{{1,2}}),\s+(\d{{4}})\b'
@@ -3761,19 +3895,45 @@ _ACQUIRE_POSITIVE_RE = re.compile(
     r'commenced\s+(?:a\s+)?tender\s+offer'
 )
 _PERIODIC_FORM_RE = re.compile(r'(?i)\bFORM\s+10-[QK]\b')
+_FORM_8K_6K_RE = re.compile(r'(?i)\bFORM\s+(?:8-K|6-K)\b')
+_COVER_SCAN = 3000
 _OUT_OF_SCOPE_ITEMS = frozenset({
     '1.02', '2.01', '2.03', '7.01', '8.01',
 })
 
 
+def _cover_is_periodic(filing_text: str) -> bool:
+    """True only when the cover is a 10-Q/10-K, not an 8-K/6-K that mentions one."""
+    cover = (filing_text or '')[:_COVER_SCAN]
+    if _FORM_8K_6K_RE.search(cover):
+        return False
+    return bool(_PERIODIC_FORM_RE.search(cover))
+
+
+def _cover_form(filing_text: str) -> str | None:
+    cover = (filing_text or '')[:_COVER_SCAN]
+    m = re.search(r'(?i)\bFORM\s+(8-K|6-K|10-[QK])\b', cover)
+    return m.group(1).upper() if m else None
+
+
 def _title_is_new_license_or_collab(title: str) -> bool:
-    if not title or _FORBIDDEN_TITLE_RE.search(title) or is_wrapper_or_existing_rights_language(title):
+    if (
+        not title
+        or _FORBIDDEN_TITLE_RE.search(title)
+        or _CONTINUATION_CLAUSE_RE.search(title)
+        or is_wrapper_or_existing_rights_language(title)
+    ):
         return False
     return bool(re.search(r'\b(?:licen[sc](?:e|ing)|collaboration)\b', title, re.IGNORECASE))
 
 
 def _title_is_merger_instrument(title: str) -> bool:
-    if not title or _FORBIDDEN_TITLE_RE.search(title) or is_wrapper_or_existing_rights_language(title):
+    if (
+        not title
+        or _FORBIDDEN_TITLE_RE.search(title)
+        or _CONTINUATION_CLAUSE_RE.search(title)
+        or is_wrapper_or_existing_rights_language(title)
+    ):
         return False
     return bool(re.search(
         r'(?:agreement\s+and\s+plan\s+of\s+merger|'
@@ -3786,7 +3946,12 @@ def _title_is_merger_instrument(title: str) -> bool:
 def _title_is_acquisition_instrument(title: str) -> bool:
     if _title_is_merger_instrument(title):
         return True
-    if not title or _FORBIDDEN_TITLE_RE.search(title) or is_wrapper_or_existing_rights_language(title):
+    if (
+        not title
+        or _FORBIDDEN_TITLE_RE.search(title)
+        or _CONTINUATION_CLAUSE_RE.search(title)
+        or is_wrapper_or_existing_rights_language(title)
+    ):
         return False
     return bool(re.search(
         r'\b(?:(?:stock|asset)\s+)?purchase\s+agreement\b|\bmerger\s+agreement\b',
@@ -3826,7 +3991,31 @@ def _exact_mdy_date(text: str) -> date | None:
 
 def _date_on_entered_into_sentence(title: str, sentence: str) -> date | None:
     """Exact MDY on this entered-into sentence only — never another instrument's date."""
-    return _exact_mdy_date(sentence)
+    return _instrument_own_mdy(sentence)
+
+
+def _sentence_is_amend_dated_historic(sentence: str) -> bool:
+    """Origin year / as-previously plus a later amend/extend MDY is not a new deal."""
+    if not sentence:
+        return False
+    return bool(_ORIGIN_YEAR_RE.search(sentence) and _AMEND_EXTEND_ON_RE.search(sentence))
+
+
+def _instrument_own_mdy(sentence: str) -> date | None:
+    """Date of the entered-into instrument, never a later amend/extend MDY."""
+    if not sentence:
+        return None
+    if _sentence_is_amend_dated_historic(sentence):
+        return None
+    head = sentence
+    cut = re.search(
+        r'(?i)\b(?:as\s+)?(?:amended|extended|restated|renewed)'
+        r'(?:\s+and\s+restated)?(?:\s+as\s+of|\s+on)?\b',
+        sentence,
+    )
+    if cut:
+        head = sentence[:cut.start()]
+    return _exact_mdy_date(head)
 
 
 def _item_number(label: str | None) -> str | None:
@@ -3848,29 +4037,34 @@ def _split_item_bodies(filing_text: str) -> dict[str, str]:
 
 
 def _structural_item101(filing_text: str, type_quote: str = '') -> str | None:
-    """Item 1.01 body, or None when the filing is structurally out of scope."""
+    """Item 1.01 body, or 6-K equivalent; None when structurally out of scope."""
     if not filing_text:
         return None
-    if _PERIODIC_FORM_RE.search(filing_text[:8000]):
+    if _cover_is_periodic(filing_text):
         return None
     items = _split_item_bodies(filing_text)
+    form = _cover_form(filing_text)
     if items:
-        if '1.01' not in items:
-            return None
-        if type_quote:
-            pos = find_quote_position(type_quote, filing_text)
-            if pos is None:
-                pos = filing_text.lower().find(normalize_whitespace(type_quote).lower())
-            if pos >= 0:
-                item = _item_number(_find_item_section(filing_text, pos))
-                if item and item in _OUT_OF_SCOPE_ITEMS:
-                    return None
-                if item and item != '1.01':
-                    return None
-        return items['1.01']
-    if re.search(r'(?i)\bFORM\s+(?:8-K|6-K)\b', filing_text) and '1.01' not in items:
+        if '1.01' in items:
+            if type_quote:
+                pos = find_quote_position(type_quote, filing_text)
+                if pos is None:
+                    pos = filing_text.lower().find(normalize_whitespace(type_quote).lower())
+                if pos >= 0:
+                    item = _item_number(_find_item_section(filing_text, pos))
+                    if item and item in _OUT_OF_SCOPE_ITEMS:
+                        return None
+                    if item and item != '1.01':
+                        return None
+            return items['1.01']
+        if form == '6-K':
+            return filing_text
         return None
-    return filing_text
+    if form == '6-K':
+        return filing_text
+    if form == '8-K':
+        return None
+    return None
 
 
 def _capture_entered_title(after_verb: str) -> str:
@@ -3915,15 +4109,20 @@ def _collect_item101_new_agreements(
     for m in _ENTERED_VERB_RE.finditer(body):
         sentence = _sentence_at(body, m.start())
         title = _capture_entered_title(body[m.end(): m.end() + 200])
-        if not title or _FORBIDDEN_TITLE_RE.search(title):
+        if not title or _FORBIDDEN_TITLE_RE.search(title) or _CONTINUATION_CLAUSE_RE.search(title):
+            continue
+        after_title = body[m.end(): m.end() + 280]
+        if _CONTINUATION_CLAUSE_RE.search(sentence) or _CONTINUATION_CLAUSE_RE.search(after_title):
             continue
         if _CONDITIONAL_DEAL_RE.search(sentence):
             continue
-        dated = _exact_mdy_date(sentence)
+        if _sentence_is_amend_dated_historic(sentence):
+            continue
+        dated = _instrument_own_mdy(sentence)
         if dated is None:
             prefix = body[max(0, m.start() - 180):m.start()]
             tails = _split_sentences(prefix)
-            dated = _exact_mdy_date(tails[-1] if tails else prefix)
+            dated = _instrument_own_mdy(tails[-1] if tails else prefix)
         if dated is None or not _date_in_or_near_period(dated, reference_date):
             continue
         found.append(_NewAgreement(
@@ -4141,7 +4340,7 @@ def out_of_scope_deal_reason(
     """Structural Item 1.01 gate first; wording rules only inside that body."""
     if not type_quote:
         return 'empty type_quote'
-    if _PERIODIC_FORM_RE.search((filing_text or '')[:8000]):
+    if _cover_is_periodic(filing_text or ''):
         return 'periodic report'
     if event_date:
         ev = _parse_loose_date(event_date)
