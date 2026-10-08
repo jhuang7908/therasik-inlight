@@ -1539,6 +1539,67 @@ class TestLegacyPromptTruncation:
         truncated = run_weekly._truncate_items_for_legacy(items)
         assert len(truncated[0]["summary"]) == 700
 
+    def test_write_output_isolates_a_bad_article(self, tmp_path, monkeypatch):
+        """One article that throws during site render must not kill the run (m15)."""
+        import run_weekly
+
+        dest = tmp_path / "week"
+        dest.mkdir()
+        (dest / "wechat").mkdir()
+        monkeypatch.setattr(run_weekly, "ROOT", tmp_path)
+        monkeypatch.setattr(run_weekly, "draw_image", lambda *a, **k: None)
+
+        real_site = run_weekly.site_article
+
+        def flaky_site(item, image_rel):
+            if item.get("title") == "BAD":
+                raise TypeError("'int' object has no attribute 'replace'")
+            return real_site(item, image_rel)
+
+        monkeypatch.setattr(run_weekly, "site_article", flaky_site)
+
+        draft = {
+            "articles": [
+                {
+                    "title": "BAD",
+                    "field": "c3",
+                    "date": "2026-10-01",
+                    "url": "https://example.com/bad",
+                    "lead": "bad",
+                    "body": "bad",
+                    "discuss": "bad",
+                    "journal": "Nature",
+                    "authors": "",
+                    "image_prompt": "x",
+                    "datacard": {"n": 683},
+                    "results": ["x"],
+                },
+                {
+                    "title": "GOOD",
+                    "field": "c3",
+                    "date": "2026-10-01",
+                    "url": "https://example.com/good",
+                    "lead": "good lead",
+                    "body": "good body",
+                    "discuss": "good discuss",
+                    "journal": "Nature",
+                    "authors": "",
+                    "image_prompt": "x",
+                    "one_liner": "对照文章",
+                    "datacard": {"n": "20例"},
+                    "results": ["缓解率58%"],
+                    "tier": "brief",
+                },
+            ],
+            "deals": [],
+        }
+        run_weekly.write_output(draft, dest, "2026-10-01")
+        articles = json.loads((dest / "articles.json").read_text())
+        assert len(articles) == 1
+        assert articles[0]["t"] == "GOOD"
+        html = (dest / "wechat" / "article.html").read_text()
+        assert "GOOD" in html or "对照文章" in html
+
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

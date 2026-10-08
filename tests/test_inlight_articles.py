@@ -1513,6 +1513,165 @@ class TestDedupAndBetterDraft(unittest.TestCase):
         self.assertNotIn("12只", published)
         self.assertIn("四周", published)
 
+    def test_retry_draft_score_keeps_verified_intervals(self):
+        """When hard-problem counts tie, the draft with more source-verified numbers wins.
+
+        This is the retry-selection rule (fault-injection m10): a redraft that
+        deletes correct CIs must not beat the first draft.
+        """
+        from inlight_articles import _draft_quality_score
+
+        src = (
+            "Hazard ratios were 4.13 (95% CI 2.92-5.85) and 2.01 (95% CI 1.44-2.80) "
+            "across 7000 patients followed for 3 years."
+        )
+        with_ci = {
+            "results": ["HR 4.13（95% CI 2.92-5.85），HR 2.01（95% CI 1.44-2.80），随访3年。"],
+            "one_liner": "7000例患者随访3年。",
+            "datacard": {"n": "7000", "statistics": "HR 4.13 (2.92-5.85)"},
+        }
+        stripped = {
+            "results": ["HR 4.13，随访3年。"],
+            "one_liner": "详见正文HR。",
+            "datacard": {"n": "7000", "statistics": "详见正文HR"},
+        }
+        first = _draft_quality_score([], ["soft"], with_ci, src)
+        retry = _draft_quality_score([], ["soft"], stripped, src)
+        self.assertLess(first, retry, f"draft with CIs should score better: {first} vs {retry}")
+
+    def test_preprint_journal_never_taken_from_model(self):
+        """bioRxiv items must not publish a model-invented journal (m16)."""
+        from inlight_articles import EnrichedItem, sanitize_published_article
+
+        item = EnrichedItem(
+            url="https://www.biorxiv.org/content/10.64898/2026.10.01.755262v1",
+            title="NAD paper",
+            source="bioRxiv",
+            date="2026-10-01",
+            evidence_level="preprint",
+            journal="",
+            authors="",
+        )
+        art = sanitize_published_article(
+            {
+                "title": "NAD",
+                "journal": "Nature Immunology",
+                "authors": "Smith J, Chen L 等",
+            },
+            item,
+        )
+        self.assertNotEqual(art.get("journal"), "Nature Immunology")
+        self.assertIn("bioRxiv", art.get("journal", ""))
+        self.assertEqual(art.get("authors"), "")
+
+    def test_wechat_render_isolates_int_datacard(self):
+        """An int datacard value must not crash HTML render (m15)."""
+        from inlight_articles import wechat_html_full
+
+        bad = {
+            "title": "bad",
+            "tier": "brief",
+            "one_liner": "尿液cfRNA",
+            "datacard": {"n": 683, "study_type": "诊断"},
+            "results": ["敏感性90%"],
+            "limitations": [],
+            "authors": "",
+            "journal": "Nature Medicine",
+        }
+        good = {
+            "title": "good",
+            "tier": "brief",
+            "one_liner": "对照文章",
+            "datacard": {"n": "20例"},
+            "results": ["缓解率58%"],
+            "limitations": ["单臂"],
+            "authors": "",
+            "journal": "Nature Medicine",
+        }
+        html = wechat_html_full([bad, good], [], "2026-10-01")
+        self.assertIn("good", html)
+        self.assertIn("683", html)
+        self.assertIn("对照文章", html)
+
+
+class TestHoldoutGeneralRules(unittest.TestCase):
+    """General number / name / unit rules from the hidden-set review."""
+
+    def test_both_range_ends_are_present(self):
+        from inlight_articles import number_exists_in_source, normalize_source_text
+
+        src = "The HR was 1.30-3.35 and the rate ranged 1.7%-40.5% over 6-23 months."
+        norm = normalize_source_text(src)
+        raw = normalize_source_text(src, convert_english_words=False)
+        for num, ctx in (("1.30", "HR 1.30"), ("3.35", "HR 3.35"),
+                         ("1.7%", "1.7%"), ("40.5%", "40.5%"),
+                         ("6", "6-23 months"), ("23", "23 months")):
+            self.assertTrue(
+                number_exists_in_source(num, norm, set(), ctx, source_raw=raw),
+                f"{num} should be found in {src}",
+            )
+
+    def test_nearby_percent_does_not_reclassify_a_count(self):
+        from inlight_articles import number_meaning_matches_source
+
+        ok, reason = number_meaning_matches_source(
+            "803",
+            "共803名受试者接种",
+            "803 NutriVax recipients were enrolled; AE rate was 12%.",
+        )
+        self.assertTrue(ok, reason)
+
+    def test_metric_classes_are_exclusive(self):
+        from inlight_articles import number_meaning_matches_source
+
+        ok, _ = number_meaning_matches_source(
+            "93.5%", "确认ORR为93.5%", "The DCR was 93.5% and the ORR was 71.0%."
+        )
+        self.assertFalse(ok)
+        ok, _ = number_meaning_matches_source(
+            "12.0", "中位OS为12.0个月", "Median PFS was 12.0 months; OS was not mature."
+        )
+        self.assertFalse(ok)
+
+    def test_time_and_noun_must_match(self):
+        from inlight_articles import number_exists_in_source, normalize_source_text
+
+        weeks = "dosing every 3 weeks in 683 urine samples"
+        norm = normalize_source_text(weeks)
+        raw = normalize_source_text(weeks, convert_english_words=False)
+        self.assertFalse(number_exists_in_source(
+            "3个月", norm, set(), "每3个月一次", source_raw=raw
+        ))
+        self.assertFalse(number_exists_in_source(
+            "683例", norm, set(), "683例患者", source_raw=raw
+        ))
+
+    def test_direction_flip_is_caught(self):
+        from inlight_articles import check_comparison_direction
+
+        problems = check_comparison_direction(
+            "联合组DCR更低。",
+            "Disease control was higher in the combination arm (93.5% vs 71.0%).",
+        )
+        self.assertTrue(problems)
+
+    def test_chinese_drug_requires_source_inn(self):
+        from inlight_articles import validate_names
+
+        art = {
+            "title": "格菲妥单抗联合方案",
+            "one_liner": "",
+            "background": "",
+            "design": "",
+            "results": ["格菲妥单抗治疗后缓解。"],
+            "mechanism": "",
+            "significance": "",
+            "authors": "",
+            "limitations": [],
+        }
+        problems = validate_names(art, "mosunetuzumab plus polatuzumab in DLBCL")
+        self.assertTrue(any("格菲妥单抗" in p for p in problems))
+
 
 if __name__ == "__main__":
     unittest.main()
