@@ -11,6 +11,7 @@ This module implements the article-depth overhaul:
 
 from __future__ import annotations
 
+import ast
 import json
 import logging
 import os
@@ -66,6 +67,7 @@ class EnrichedItem:
     pmid: str = ""
     pmcid: str = ""
     journal: str = ""  # Journal name from EPMC or source
+    authors: str = ""  # Author string from EPMC / PubMed / bioRxiv metadata only
     abstract: str = ""
     fulltext_results: str = ""
     fig_captions: str = ""
@@ -581,22 +583,45 @@ def extract_numbers_from_text(text: str) -> set[str]:
     return numbers
 
 
-# English number words to Arabic
+# English number words to Arabic, including hyphenated compounds (forty-one).
+ENGLISH_ONES = {
+    'zero': 0, 'once': 1, 'one': 1, 'twice': 2, 'two': 2,
+    'three': 3, 'four': 4, 'five': 5, 'six': 6, 'seven': 7,
+    'eight': 8, 'nine': 9,
+}
+ENGLISH_TEENS = {
+    'ten': 10, 'eleven': 11, 'twelve': 12, 'thirteen': 13, 'fourteen': 14,
+    'fifteen': 15, 'sixteen': 16, 'seventeen': 17, 'eighteen': 18, 'nineteen': 19,
+}
+ENGLISH_TENS = {
+    'twenty': 20, 'thirty': 30, 'forty': 40, 'fifty': 50,
+    'sixty': 60, 'seventy': 70, 'eighty': 80, 'ninety': 90,
+}
 ENGLISH_NUMBER_WORDS = {
-    'zero': '0', 'once': '1', 'one': '1', 'twice': '2', 'two': '2',
-    'three': '3', 'four': '4', 'five': '5', 'six': '6', 'seven': '7',
-    'eight': '8', 'nine': '9', 'ten': '10', 'eleven': '11', 'twelve': '12',
-    'thirteen': '13', 'fourteen': '14', 'fifteen': '15', 'sixteen': '16',
-    'seventeen': '17', 'eighteen': '18', 'nineteen': '19', 'twenty': '20',
+    **{k: str(v) for k, v in ENGLISH_ONES.items()},
+    **{k: str(v) for k, v in ENGLISH_TEENS.items()},
+    **{k: str(v) for k, v in ENGLISH_TENS.items()},
 }
 
 
 def english_number_to_arabic(text: str) -> str:
     """Convert English number words to Arabic numerals.
-    
-    Examples: "nine doses" -> "9 doses", "five patients" -> "5 patients"
+
+    Handles "nine doses", "Forty-one patients", "twenty one".
     """
     result = text.lower()
+    # Hyphenated or spaced compounds first: forty-one, twenty one
+    compound_ones = {k: v for k, v in ENGLISH_ONES.items() if k not in ("once", "twice", "zero")}
+    ones_alt = "|".join(sorted(compound_ones, key=len, reverse=True))
+    tens_alt = "|".join(sorted(ENGLISH_TENS, key=len, reverse=True))
+    def _compound(m: re.Match) -> str:
+        return str(ENGLISH_TENS[m.group(1)] + compound_ones[m.group(2)])
+    result = re.sub(
+        rf'\b({tens_alt})[\s-]+({ones_alt})\b',
+        _compound,
+        result,
+        flags=re.IGNORECASE,
+    )
     for word, digit in sorted(ENGLISH_NUMBER_WORDS.items(), key=lambda x: -len(x[0])):
         result = re.sub(r'\b' + word + r'\b', digit, result, flags=re.IGNORECASE)
     return result
@@ -1061,17 +1086,31 @@ def number_in_text_as_word_boundary(number: str, text: str) -> bool:
     # BUT: Allow units immediately after (mg, kg, nM, etc.)
     # These are valid data patterns: 100mg, 5nM, 12%
     
-    # Known unit prefixes that make a number valid even without space
-    unit_pattern = r'(?:mg|kg|mL|µg|nM|pM|µM|mM|μg|μL|ng|pg|mmol|mol|g|L|%|％|倍|年|个月|天|周|小时|例|名)'
-    
-    # Pattern: number must be preceded by non-identifier chars,
-    # and followed by either non-identifier chars OR a known unit
-    pattern = (
-        r'(?<![a-zA-Z0-9])(?<![-.])'  # Not preceded by alnum, hyphen, or dot
-        + re.escape(number_clean) +
-        r'(?:' + unit_pattern + r'|(?![a-zA-Z0-9])(?![-.]?\d))'  # Followed by unit OR non-identifier
+    # A hyphen is allowed on BOTH ends of a numeric range
+    # ("1.30-3.35", "1.7%-40.5%", "6-23 months"). "TAK-981" stays rejected
+    # because the digits are preceded by a letter-hyphen identifier.
+    unit_re = re.compile(
+        r'(?:mg|kg|mL|µg|nM|pM|µM|mM|μg|μL|ng|pg|mmol|mol|g|L|%|％|倍|年|个月|天|周|小时|例|名)',
+        re.IGNORECASE,
     )
-    return bool(re.search(pattern, text_clean))
+    for match in re.finditer(re.escape(number_clean), text_clean):
+        start, end = match.start(), match.end()
+        prev = text_clean[start - 1] if start else ""
+        prev2 = text_clean[start - 2] if start >= 2 else ""
+        if prev == "-" and prev2.isalpha():
+            continue
+        if prev and (prev.isalnum() or prev == "."):
+            continue
+        after = text_clean[end:]
+        if unit_re.match(after) or re.match(r'-\s*\d', after):
+            return True
+        nxt = after[:1]
+        if nxt == "." and after[1:2].isdigit():
+            continue
+        if nxt.isalnum():
+            continue
+        return True
+    return False
 
 
 def normalize_source_text(text: str, *, convert_english_words: bool = True) -> str:
@@ -1140,8 +1179,9 @@ def extract_identifiers_from_source(source: str) -> set[str]:
     for match in re.finditer(r'\b[A-Z][A-Za-z0-9Δ]*\d[A-Za-z0-9Δ/-]*(?:/[A-Za-z0-9Δ/-]+)?\b', source):
         identifiers.add(match.group(0))
     
-    # Bacterial strains: Nissle 1917, E. coli Nissle 1917
-    for match in re.finditer(r'\bNissle\s*\d+\b', source, re.IGNORECASE):
+    # Strain / line designations: a capitalized genus or strain name + number
+    # (Nissle 1917, BALB 3, etc.) — not a one-strain special case.
+    for match in re.finditer(r'\b[A-Z][a-z]{2,}\s+\d+\b', source):
         identifiers.add(match.group(0))
     
     # Drug compounds with numbers: TAK-981, TAK981
@@ -1166,7 +1206,7 @@ _IDENTIFIER_TOKEN_RE = re.compile(
     # Gene/protein/strain/compound tokens: letters + digits (Dsg2, CD14, p38, MK-25)
     r'(?<![A-Za-z0-9])[A-Za-z][A-Za-z]{0,10}-?\d+[A-Za-z0-9./-]*'
     r'|(?:NCT|RPCEC|ISRCTN|EudraCT|ACTRN|ChiCTR)\d+'
-    r'|Nissle\s+\d+'
+    r'|[A-Z][a-z]{2,}\s+\d+'
     r')'
 )
 
@@ -1246,21 +1286,47 @@ def source_has_equivalent_number(num_core: str, context: str, source_norm: str) 
     return False
 
 
-# Unit classes attached to a number. A time or dose quantity is a different
-# dimension from a clinical count or rate: "1-year" does not evidence "1例",
-# and "six doses" does not evidence "6例" / "6%".
+# Unit classes attached to a number. Time subclasses must match exactly
+# (week ≠ month). A time or dose quantity is a different dimension from a
+# clinical count or rate.
 UNIT_COUNT = "count"
 UNIT_RATE = "rate"
 UNIT_TIME = "time"
+UNIT_TIME_DAY = "time_day"
+UNIT_TIME_WEEK = "time_week"
+UNIT_TIME_MONTH = "time_month"
+UNIT_TIME_YEAR = "time_year"
 UNIT_DOSE = "dose"
+_TIME_UNITS = {UNIT_TIME, UNIT_TIME_DAY, UNIT_TIME_WEEK, UNIT_TIME_MONTH, UNIT_TIME_YEAR}
 _CLINICAL_UNITS = {UNIT_COUNT, UNIT_RATE, None}
+
+# The noun being counted. samples ≠ patients ≠ mice; groups ≠ any of those.
+NOUN_PATIENT = "patient"
+NOUN_SAMPLE = "sample"
+NOUN_ANIMAL = "animal"
+NOUN_GROUP = "group"
+
+
+def _text_after_number(text: str, num_end: int) -> str:
+    """Token stream after a number, skipping a numeric range partner.
+
+    In "6-23 months" / "1.7%-40.5%" the unit belongs to both ends.
+    """
+    after = text[num_end:num_end + 28]
+    return re.sub(r'^[\s]*-\s*\d+(?:\.\d+)?[%％]?', '', after, count=1)
 
 
 def classify_unit_after(text: str, num_end: int) -> str | None:
     """Unit class of the token immediately following a number."""
-    after = text[num_end:num_end + 18]
-    if re.match(r'(?i)[\s\-]*(years?|months?|weeks?|days?|hours?|yrs?|hrs?|年|个?月|周|天|日|小时)', after):
-        return UNIT_TIME
+    after = _text_after_number(text, num_end)
+    if re.match(r'(?i)[\s\-]*(years?|yrs?|年)', after):
+        return UNIT_TIME_YEAR
+    if re.match(r'(?i)[\s\-]*(months?|mo\b|个?月)', after):
+        return UNIT_TIME_MONTH
+    if re.match(r'(?i)[\s\-]*(weeks?|wk|周)', after):
+        return UNIT_TIME_WEEK
+    if re.match(r'(?i)[\s\-]*(days?|hours?|hrs?|天|日|小时)', after):
+        return UNIT_TIME_DAY
     if re.match(r'(?i)[\s\-]*(doses?|dosing|mg\b|μg\b|ug\b|µg\b|剂)', after):
         return UNIT_DOSE
     if re.match(r'(?i)\s*(例|名|位|patients?|subjects?|participants?|cases?)', after):
@@ -1269,6 +1335,20 @@ def classify_unit_after(text: str, num_end: int) -> str | None:
         return UNIT_RATE
     if after.startswith("次"):
         return UNIT_DOSE
+    return None
+
+
+def classify_noun_after(text: str, num_end: int) -> str | None:
+    """What is being counted immediately after this number."""
+    after = _text_after_number(text, num_end).lower()
+    if re.match(r'[\s]*(?:urine\s+)?samples?|标本|样本|份', after):
+        return NOUN_SAMPLE
+    if re.match(r'[\s]*(?:mice|mouse|animals?|rats?|只)', after):
+        return NOUN_ANIMAL
+    if re.match(r'[\s]*(?:组|臂|项|groups?|arms?|cohorts?)', after):
+        return NOUN_GROUP
+    if re.match(r'[\s]*(例|名|位|patients?|subjects?|participants?|cases?|患者|病人)', after):
+        return NOUN_PATIENT
     return None
 
 
@@ -1301,11 +1381,17 @@ def _occurrence_unit_classes(num_core: str, source: str) -> list[str | None]:
     """
     if not num_core or not source:
         return []
-    pattern = rf'(?<![a-zA-Z0-9.\-]){re.escape(num_core)}(?![0-9.])'
     id_spans = identifier_spans(source)
     classes = []
-    for m in re.finditer(pattern, source):
+    for m in re.finditer(re.escape(num_core), source):
         if span_covers(m.start(), m.end(), id_spans):
+            continue
+        prev = source[m.start() - 1] if m.start() else ""
+        if prev.isalnum() or prev == ".":
+            continue
+        nxt = source[m.end():m.end() + 1]
+        nxt2 = source[m.end() + 1:m.end() + 2] if m.end() + 1 < len(source) else ""
+        if nxt.isdigit() or (nxt == "." and nxt2.isdigit()):
             continue
         classes.append(classify_unit_after(source, m.end()))
     return classes
@@ -1329,11 +1415,152 @@ def _number_presence(num_core: str, source: str, out_class: str | None) -> str:
         if any(c in _CLINICAL_UNITS for c in classes):
             return "ok"
         return "wrong_dimension"
-    if out_class in (UNIT_TIME, UNIT_DOSE):
-        if any(c in (out_class, None) for c in classes):
+    if out_class in _TIME_UNITS:
+        if any(c == out_class for c in classes):
+            return "ok"
+        # Bare numbers with no unit do not evidence a dated duration.
+        if any(c in _TIME_UNITS for c in classes):
+            return "wrong_dimension"
+        if any(c is None for c in classes):
+            return "ok"
+        return "no"
+    if out_class == UNIT_DOSE:
+        if any(c in (UNIT_DOSE, None) for c in classes):
             return "ok"
         return "no"
     return "ok"
+
+
+_MONTH_NAMES = {
+    "january": 1, "february": 2, "march": 3, "april": 4, "may": 5, "june": 6,
+    "july": 7, "august": 8, "september": 9, "october": 10, "november": 11, "december": 12,
+    "jan": 1, "feb": 2, "mar": 3, "apr": 4, "jun": 6, "jul": 7, "aug": 8,
+    "sep": 9, "oct": 10, "nov": 11, "dec": 12,
+}
+
+
+def _source_has_date(num_core: str, context: str, source: str) -> bool:
+    """Accept calendar numbers copied from a source date.
+
+    "07 October 2026" evidences 2026年10月7日 / 10月 / 7日.
+    """
+    if not num_core or not source:
+        return False
+    ctx = context.lower()
+    if not re.search(r'年|月|日|日期|published', ctx):
+        return False
+    src = source.lower()
+    # "07 October 2026" must evidence both 7日 and 10月 / 2026年.
+    if num_core.isdigit():
+        n = int(num_core)
+        present = bool(re.search(rf'(?<![a-zA-Z0-9.])0?{n}(?![a-zA-Z0-9.])', src))
+    else:
+        present = bool(re.search(
+            rf'(?<![a-zA-Z0-9.]){re.escape(num_core)}(?![a-zA-Z0-9.])', src
+        ))
+    if not present:
+        return False
+    if re.fullmatch(r'(?:19|20)\d{2}', num_core):
+        return True
+    if re.fullmatch(r'0?[1-9]|1[0-2]', num_core):
+        month = int(num_core)
+        names = [n for n, i in _MONTH_NAMES.items() if i == month]
+        return any(n in src for n in names) or bool(re.search(
+            rf'(?:^|[^\d])0?{month}(?:[/-]\d|\s+(?:{_month_alt()}))', src
+        ))
+    if re.fullmatch(r'0?[1-9]|[12]\d|3[01]', num_core):
+        return True
+    return False
+
+
+def _month_alt() -> str:
+    return "|".join(sorted(_MONTH_NAMES, key=len, reverse=True))
+
+
+def _source_has_grade_or_schedule(num_core: str, context: str, source: str) -> bool:
+    """grade N → N级; every N days → 每N天一次."""
+    if not num_core or not source:
+        return False
+    ctx = context.lower()
+    src = source.lower()
+    if re.search(r'级|grade', ctx) and re.search(
+        rf'(?:grade|g)\s*[≥>=]?\s*{re.escape(num_core)}\b|{re.escape(num_core)}\s*级',
+        src,
+    ):
+        return True
+    n = re.escape(num_core)
+    if re.search(r'每.{0,6}个?月.{0,4}次', ctx):
+        return bool(re.search(rf'(?:every|q)\s*{n}\s*months?|{n}\s*months?\s*(?:apart|cycle)?', src))
+    if re.search(r'每.{0,6}周.{0,4}次', ctx):
+        return bool(re.search(rf'(?:every|q)\s*{n}\s*weeks?|{n}\s*weeks?\s*(?:apart|cycle)?', src))
+    if re.search(r'每.{0,6}(天|日).{0,4}次', ctx):
+        return bool(re.search(rf'(?:every|q)\s*{n}\s*(?:days?|d\b)|{n}\s*days?\s*(?:apart|cycle)?', src))
+    if re.search(r'一次', ctx) and re.search(
+        rf'(?:every|q)\s*{n}\s*(?:days?|weeks?|months?|d\b)|'
+        rf'{n}\s*(?:days?|weeks?|months?)\s*(?:apart|cycle)?',
+        src,
+    ):
+        return True
+    return False
+
+
+def _source_has_once_or_one(num_core: str, context: str, source: str) -> bool:
+    """一次 / 一例 are the same claim as 'once' / 'a/one patient'."""
+    if num_core != "1" or not context or not source:
+        return False
+    ctx = context.lower()
+    src = source.lower()
+    if re.search(r'一次', ctx) and re.search(
+        r'\bonce\b|\bevery\s+\d+|\bone\s+time|\ba\s+time', src
+    ):
+        return True
+    if re.search(r'一[例名位]|1[例名位]', ctx) and re.search(
+        r'\b(?:a|one|1)\s+(?:patient|case|subject|participant)', src
+    ):
+        return True
+    return False
+
+
+def _source_has_grouping(num_core: str, source: str) -> bool:
+    """N组 / N项 / N臂 must be backed by N groups/arms/cohorts in the source."""
+    if not num_core or not source:
+        return False
+    src = source.lower()
+    return bool(re.search(
+        rf'(?<![a-zA-Z0-9.]){re.escape(num_core)}\s*'
+        rf'(?:groups?|arms?|cohorts?|组|臂|项|队列)|'
+        rf'(?:randomized|randomised|randomly|divided|assigned)'
+        rf'.{{0,40}}(?<![a-zA-Z0-9.]){re.escape(num_core)}',
+        src,
+        re.IGNORECASE,
+    ))
+
+
+def _noun_mismatch(num_core: str, context: str, source: str) -> bool:
+    """True when the output counts a different thing than the source."""
+    if not num_core or not context or not source:
+        return False
+    out_noun = None
+    id_spans = identifier_spans(context)
+    for m in re.finditer(re.escape(num_core), context):
+        if span_covers(m.start(), m.end(), id_spans):
+            continue
+        out_noun = classify_noun_after(context, m.end())
+        if out_noun:
+            break
+    if not out_noun:
+        return False
+    src_nouns = []
+    for m in re.finditer(re.escape(num_core), source):
+        prev = source[m.start() - 1] if m.start() else ""
+        if prev.isalnum() or prev == ".":
+            continue
+        noun = classify_noun_after(source, m.end())
+        if noun:
+            src_nouns.append(noun)
+    if not src_nouns:
+        return False
+    return out_noun not in src_nouns
 
 
 def number_exists_in_source(num_str: str, source_norm: str, source_identifiers: set[str], 
@@ -1373,16 +1600,31 @@ def number_exists_in_source(num_str: str, source_norm: str, source_identifiers: 
     # Digits that are themselves an identifier token are skipped earlier
     # by extract_numbers_with_context.
 
-    # Honest unit conversions (21 days ↔ 3 weeks, 1 year ↔ 12 months)
+    # Honest unit conversions (21 days ↔ 3 weeks, 1 year ↔ 12 months).
+    # Weeks are never months.
     if source_has_equivalent_number(num_core, context_window or "", source_norm):
         return True
 
     raw = source_raw if source_raw is not None else source_norm
-    out_class = classify_unit_in_context(context_window or "", num_core)
+    ctx = context_window or ""
+    out_class = classify_unit_in_context(ctx, num_core)
+
+    if _source_has_date(num_core, ctx, raw) or _source_has_date(num_core, ctx, source_norm):
+        return True
+    if _source_has_grade_or_schedule(num_core, ctx, raw) or _source_has_grade_or_schedule(num_core, ctx, source_norm):
+        return True
+    if _source_has_once_or_one(num_core, ctx, raw) or _source_has_once_or_one(num_core, ctx, source_norm):
+        return True
+    if re.search(r'组|臂|项', ctx) and not (
+        _source_has_grouping(num_core, raw) or _source_has_grouping(num_core, source_norm)
+    ):
+        return False
 
     raw_status = _number_presence(num_core, raw, out_class)
     if raw_status == "ok":
-        return True
+        if not _noun_mismatch(num_core, ctx, raw) and not _noun_mismatch(num_core, ctx, source_norm):
+            return True
+        return False
     # "1" in "1-year" is a real Arabic digit, but a time label is not a
     # patient-count / rate and must not evidence "1例" / "1%".
     if raw_status == "wrong_dimension":
@@ -1392,7 +1634,7 @@ def number_exists_in_source(num_str: str, source_norm: str, source_identifiers: 
     # Compatible units (6剂 ← six doses) are accepted; 6例 / 6% are not.
     if raw is not source_norm:
         conv_status = _number_presence(num_core, source_norm, out_class)
-        if conv_status == "ok":
+        if conv_status == "ok" and not _noun_mismatch(num_core, ctx, source_norm):
             return True
     
     # Try Chinese numeral conversion
@@ -1410,9 +1652,10 @@ def number_exists_in_source(num_str: str, source_norm: str, source_identifiers: 
 # Standard terminology that should be exempt from invented-number checks
 # These phrases contain numbers that are part of terminology, not data claims
 EXEMPT_NUMBER_PATTERNS = [
-    # Grading: ≥3级, grade 3+, 三级及以上
-    r'[≥>=]?\s*3\s*级',
-    r'grade\s*[≥>=]?\s*[3-5]',
+    # Grading: N级 / grade N (any grade, not only 3)
+    r'[≥>=]?\s*\d+\s*级',
+    r'grade\s*[≥>=]?\s*\d+',
+    r'[一二三四五六七八九十]\s*级',
     r'[三四五]级及以上',
     r'[三四五]级以上',
     # Clinical phases: I/II/III/IV期, phase 1/2/3
@@ -1430,6 +1673,8 @@ EXEMPT_NUMBER_PATTERNS = [
     r'once\s+a\s+(week|day|month)',
     r'twice\s+(weekly|daily|a\s+week)',
     r'每\s*(周|天|日|月)\s*[一二三四五六七八九十\d]+\s*次',
+    r'每\s*\d+\s*(天|日|周|月)\s*一次',
+    r'every\s+\d+\s+(?:days?|weeks?|months?)',
     # Roman / class labels (MHC II类, class II) — not invented numbers
     r'(?:mhc|hla|class|级|类)\s*[ivxⅠ-Ⅻ]+',
     r'[ivxⅠ-Ⅻ]+\s*(?:类|期|class)',
@@ -1487,215 +1732,247 @@ def normalize_unit_spacing(text: str) -> str:
     return text
 
 
-# Contradictory metric pairs - if output uses one and source uses the other, it's a mismatch
-# These are pairs where using the same number would be semantically wrong
-CONTRADICTORY_METRIC_PAIRS = [
-    # Response rate vs adverse events - completely different metrics
-    ({"response", "缓解", "orr", "crr", "cr", "pr", "客观缓解", "完全缓解", "部分缓解", "有效",
-      "疾病控制", "dcr", "控制率", "disease control", "disease-control"},
-     {"adverse", "不良", "ae", "toxicity", "毒性", "side effect", "副作用", "trae", "teae"}),
-    # Response / disease-control vs mortality
-    ({"response", "缓解", "orr", "有效", "疾病控制", "dcr", "控制率", "完全缓解", "客观缓解",
-      "disease control", "disease-control"},
-     {"死亡", "mortality", "death", "致死", "died"}),
-    # Overall survival vs progression-free survival
-    ({"pfs", "无进展", "progression-free", "progression free"},
-     {"os", "总生存", "overall survival", "一年生存", "1-year", "1 year", "1年"}),
-    # Survival vs adverse events
-    ({"survival", "生存", "os", "pfs", "存活"},
-     {"adverse", "不良", "ae", "toxicity", "毒性"}),
+# Exclusive metric classes. The label attached to an output number must be
+# the same class as the label attached to that number in the source.
+# Sharing a window of several names is not enough (ORR 93.5% ≠ DCR 93.5%).
+_SHORT_METRIC_TOKENS = {
+    "os", "cr", "pr", "ae", "dcr", "orr", "pfs", "dfs", "efs", "crr", "dor",
+    "crs",
+}
+METRIC_CLASS_KEYWORDS: list[tuple[str, str]] = [
+    ("orr", "objective response"),
+    ("orr", "客观缓解"),
+    ("orr", "orr"),
+    ("dcr", "disease control"),
+    ("dcr", "disease-control"),
+    ("dcr", "疾病控制"),
+    ("dcr", "控制率"),
+    ("dcr", "dcr"),
+    ("cr", "complete response"),
+    ("cr", "完全缓解"),
+    ("cr", "crr"),
+    ("cr", "cr"),
+    ("pr", "partial response"),
+    ("pr", "部分缓解"),
+    ("pr", "pr"),
+    ("pfs", "progression-free"),
+    ("pfs", "progression free"),
+    ("pfs", "无进展"),
+    ("pfs", "pfs"),
+    ("os", "overall survival"),
+    ("os", "总生存"),
+    ("os", "os"),
+    ("dor", "duration of response"),
+    ("dor", "缓解持续"),
+    ("dor", "持续缓解"),
+    ("dor", "dor"),
+    ("sensitivity", "sensitivity"),
+    ("sensitivity", "敏感性"),
+    ("sensitivity", "灵敏度"),
+    ("specificity", "specificity"),
+    ("specificity", "特异性"),
+    ("ae", "adverse"),
+    ("ae", "不良"),
+    ("ae", "toxicity"),
+    ("ae", "毒性"),
+    ("ae", "side effect"),
+    ("ae", "副作用"),
+    ("ae", "trae"),
+    ("ae", "teae"),
+    ("ae", "ae"),
+    ("crs", "cytokine release"),
+    ("crs", "细胞因子释放"),
+    ("crs", "crs"),
+    ("death", "mortality"),
+    ("death", "death"),
+    ("death", "died"),
+    ("death", "死亡"),
+    ("death", "致死"),
 ]
+METRIC_KEYWORDS = [kw for _, kw in METRIC_CLASS_KEYWORDS]
+_SHORT_METRIC_KEYWORDS = _SHORT_METRIC_TOKENS
 
-# Unit patterns that indicate count vs rate/percentage.
-# Do not use bare 人: it matches 人原代细胞 / 人群 and is not a patient-count unit.
+# Kept for existing tests that look for 单位不匹配 in the reason string.
 COUNT_UNIT_PATTERNS = re.compile(r'例|名|位|patients|subjects|participants|cases|\d+\s*/\s*\d+', re.IGNORECASE)
-RATE_UNIT_PATTERNS = re.compile(r'%|％|率|rate|percent', re.IGNORECASE)
+RATE_UNIT_PATTERNS = re.compile(r'%|％|percent', re.IGNORECASE)
 
-# Short English metric tokens that would otherwise match inside longer words
-# ("os" in "survival", "cr" in "secretory").
-_SHORT_METRIC_KEYWORDS = {"os", "cr", "pr", "ae", "or", "hr", "dcr", "orr", "pfs", "dfs", "efs", "crr"}
-METRIC_KEYWORDS = [
-    "response", "缓解", "orr", "crr", "cr", "pr", "客观缓解", "完全缓解", "部分缓解",
-    "有效", "efficacy", "疾病控制", "dcr", "控制率", "disease control", "disease-control",
-    "survival", "生存", "os", "pfs", "dfs", "efs", "存活",
-    "无进展", "progression-free", "progression free", "总生存", "overall survival",
-    "一年生存", "1-year", "1 year", "1年",
-    "死亡", "mortality", "death", "致死", "died",
-    "adverse", "不良", "ae", "toxicity", "毒性", "safety", "side effect", "副作用",
-    "trae", "teae",
-]
+_DIR_HIGHER = re.compile(
+    r'更高|较高|优于|延长|增加|升高|上升|greater|higher|increased|prolonged|improved|superior',
+    re.IGNORECASE,
+)
+_DIR_LOWER = re.compile(
+    r'更低|较低|劣于|缩短|降低|下降|减少|fewer|lower|decreased|reduced|shortened|inferior|worse',
+    re.IGNORECASE,
+)
 
 
 def extract_metric_keywords(context: str) -> set[str]:
-    """Extract specific metric keywords from context (not categories).
-    
-    Returns a set of found keywords, lowercase.
-    """
+    """Extract specific metric keywords from context (not categories)."""
     context_lower = context.lower()
     keywords = set()
-    
     for kw in METRIC_KEYWORDS:
         if kw in _SHORT_METRIC_KEYWORDS:
             if re.search(r'(?<![a-z])' + re.escape(kw) + r'(?![a-z])', context_lower):
                 keywords.add(kw)
         elif kw in context_lower:
             keywords.add(kw)
-    
     return keywords
 
 
-def closest_metric_keywords(text: str, num_start: int) -> set[str]:
-    """Keywords attached to this number, preferring the closest phrase.
+def _metric_class_for_keyword(kw: str) -> str | None:
+    for cls, token in METRIC_CLASS_KEYWORDS:
+        if token == kw:
+            return cls
+    return None
 
-    "A组1年无进展生存率为26%" attaches 无进展/生存, not a distant safety clause.
-    "25%的患者死亡" still picks up 死亡 after the number.
-    """
+
+def closest_metric_class(text: str, num_start: int) -> str | None:
+    """Single metric class attached to this number (nearest, then longest)."""
     if not text or num_start < 0:
-        return set()
-    before = text[max(0, num_start - 24):num_start]
-    after = text[num_start:min(len(text), num_start + 12)]
-    lower = before.lower()
-    found: list[tuple[int, str]] = []
-    for kw in METRIC_KEYWORDS:
-        start = 0
-        needle = kw
-        while True:
-            if kw in _SHORT_METRIC_KEYWORDS:
-                m = re.search(r'(?<![a-z])' + re.escape(kw) + r'(?![a-z])', lower[start:])
-                if not m:
-                    break
-                idx = start + m.start()
-                found.append((idx + len(kw), kw))
-                start = idx + 1
-            else:
-                idx = lower.find(needle, start)
+        return None
+    window_start = max(0, num_start - 40)
+    window_end = min(len(text), num_start + 24)
+    window = text[window_start:window_end]
+    lower = window.lower()
+    found: list[tuple[int, int, str]] = []
+    for cls, kw in METRIC_CLASS_KEYWORDS:
+        if kw in _SHORT_METRIC_KEYWORDS:
+            for m in re.finditer(r'(?<![a-z])' + re.escape(kw) + r'(?![a-z])', lower):
+                abs_pos = window_start + m.start()
+                dist = min(abs(abs_pos - num_start), abs(window_start + m.end() - num_start))
+                found.append((dist, -len(kw), cls))
+        else:
+            start = 0
+            while True:
+                idx = lower.find(kw, start)
                 if idx < 0:
                     break
-                found.append((idx + len(kw), kw))
+                abs_pos = window_start + idx
+                dist = min(abs(abs_pos - num_start), abs(abs_pos + len(kw) - num_start))
+                found.append((dist, -len(kw), cls))
                 start = idx + 1
-    if found:
-        found.sort(key=lambda x: -x[0])
-        nearest_end = found[0][0]
-        return {kw for end, kw in found if nearest_end - end <= 4}
-    return extract_metric_keywords(before[-12:] + after)
+    if not found:
+        return None
+    found.sort()
+    return found[0][2]
+
+
+def closest_metric_keywords(text: str, num_start: int) -> set[str]:
+    """Keywords attached to this number, preferring the closest phrase."""
+    cls = closest_metric_class(text, num_start)
+    if not cls:
+        return set()
+    return {kw for c, kw in METRIC_CLASS_KEYWORDS if c == cls}
+
+
+def _source_number_spans(num_core: str, source: str) -> list[re.Match]:
+    id_spans = identifier_spans(source)
+    spans = []
+    for m in re.finditer(re.escape(num_core), source):
+        if span_covers(m.start(), m.end(), id_spans):
+            continue
+        prev = source[m.start() - 1] if m.start() else ""
+        if prev.isalnum() or prev == ".":
+            continue
+        nxt = source[m.end():m.end() + 1]
+        nxt2 = source[m.end() + 1:m.end() + 2] if m.end() + 1 < len(source) else ""
+        if nxt.isdigit() or (nxt == "." and nxt2.isdigit()):
+            continue
+        spans.append(m)
+    return spans
 
 
 def number_meaning_matches_source(num_str: str, output_context: str, source_text: str) -> tuple[bool, str]:
-    """Check if a number is used with a matching metric in source.
-    
-    Only flags CONTRADICTORY metric usage when a number is DIRECTLY attributed
-    to a contradicting metric (e.g., "死亡率28%" when source says "28% adverse events").
-    
-    Uses a narrow context window (8 chars before number) to avoid false positives
-    from distant text.
-    
-    Args:
-        num_str: The number string (e.g., "28%")
-        output_context: Context window around number in output  
-        source_text: Full source text
-        
-    Returns:
-        (matches, reason) tuple. matches=True if meaning is consistent or unclear.
+    """Check that the unit and metric attached to a number match the source.
+
+    Count vs percent is read from the token on the number itself, not from a
+    nearby '%'. Metric class is the closest label on each side.
     """
     num_core = extract_number_core(num_str)
     if not num_core:
         return True, ""
-    
-    # Look at a local window around EVERY occurrence (before AND after).
-    # "28%的患者死亡" puts the metric after the number; "无进展生存率26%" is
-    # longer than 8 characters.
-    output_keywords = set()
+
     id_spans = identifier_spans(output_context)
     claimed_match = None
     for num_match in re.finditer(re.escape(num_core), output_context):
         if span_covers(num_match.start(), num_match.end(), id_spans):
             continue
-        if claimed_match is None:
-            claimed_match = num_match
-        immediate_start = max(0, num_match.start() - 16)
-        immediate_end = min(len(output_context), num_match.end() + 10)
-        output_keywords.update(extract_metric_keywords(
-            output_context[immediate_start:immediate_end]
-        ))
-    # Keep a representative non-identifier match for the unit-type check
-    num_match = claimed_match
-    if not num_match:
+        claimed_match = num_match
+        break
+    if not claimed_match:
         return True, ""
-    
-    # Find all occurrences of this number in source 
-    source_norm = source_text.lower()
-    
-    # Find number in source with enough left-context for multi-word metric
-    # names ("disease control was achieved in 25%").
-    pattern = rf'(?<![a-zA-Z0-9]){re.escape(num_core)}(?![a-zA-Z0-9])'
-    
-    # First, check for unit type mismatch: 例 (count) vs % (percentage)
-    # This is checked BEFORE keyword check since units are more reliable
-    # Only look at the unit IMMEDIATELY attached to this number (within 3 chars after)
-    output_immediate_end = min(len(output_context), num_match.end() + 3)
-    output_immediate_unit = output_context[num_match.start():output_immediate_end].lower()
-    
-    output_is_count = bool(COUNT_UNIT_PATTERNS.search(output_immediate_unit))
-    output_is_rate = bool(RATE_UNIT_PATTERNS.search(output_immediate_unit))
-    
-    # Check unit types if we can determine the output type
-    source_id_spans = identifier_spans(source_norm)
-    if output_is_count or output_is_rate:
-        source_has_count = False
-        source_has_rate = False
-        for match in re.finditer(pattern, source_norm):
-            if span_covers(match.start(), match.end(), source_id_spans):
-                continue
-            start = max(0, match.start() - 15)
-            end = min(len(source_norm), match.end() + 15)
-            source_context = source_norm[start:end]
-            if COUNT_UNIT_PATTERNS.search(source_context):
-                source_has_count = True
-            if RATE_UNIT_PATTERNS.search(source_context):
-                source_has_rate = True
-        
-        # Flag mismatch: output says count, but source only has rate (or vice versa)
-        if output_is_count and source_has_rate and not source_has_count:
-            return False, f"数字 '{num_str}' 含义不匹配：单位不匹配，输出为人数（例/名），原文为百分比（%）"
-        if output_is_rate and source_has_count and not source_has_rate:
-            return False, f"数字 '{num_str}' 含义不匹配：单位不匹配，输出为百分比（%），原文为人数（例/名）"
-    
-    source_keywords = set()
-    for match in re.finditer(pattern, source_norm):
-        if span_covers(match.start(), match.end(), source_id_spans):
-            continue
-        start = max(0, match.start() - 50)
-        end = min(len(source_norm), match.end() + 20)
-        source_context = source_norm[start:end]
-        source_keywords.update(extract_metric_keywords(source_context))
-    
-    if not source_keywords:
-        return True, ""  # Number not found with metrics in source
 
-    # Check EACH claimed occurrence on its own. A title that mentions both
-    # safety and a 25% DCR must not poison the DCR number. Only a
-    # one-sided local window that contradicts the source is a mismatch.
-    for num_match in re.finditer(re.escape(num_core), output_context):
-        if span_covers(num_match.start(), num_match.end(), id_spans):
-            continue
-        local_kw = closest_metric_keywords(output_context, num_match.start())
-        if not local_kw:
-            continue
-        for set1, set2 in CONTRADICTORY_METRIC_PAIRS:
-            loc1, loc2 = bool(local_kw & set1), bool(local_kw & set2)
-            src1, src2 = bool(source_keywords & set1), bool(source_keywords & set2)
-            if loc1 and not loc2 and src2 and not src1:
-                return False, (
-                    f"数字 '{num_str}' 含义不匹配："
-                    f"输出用于{local_kw & set1}类指标，原文用于{source_keywords & set2}类指标"
-                )
-            if loc2 and not loc1 and src1 and not src2:
-                return False, (
-                    f"数字 '{num_str}' 含义不匹配："
-                    f"输出用于{local_kw & set2}类指标，原文用于{source_keywords & set1}类指标"
-                )
-    
+    out_unit = classify_unit_after(output_context, claimed_match.end())
+    source_norm = source_text.lower()
+    src_matches = _source_number_spans(num_core, source_norm)
+    if out_unit in (UNIT_COUNT, UNIT_RATE) and src_matches:
+        src_units = [classify_unit_after(source_norm, m.end()) for m in src_matches]
+        src_units = [u for u in src_units if u is not None]
+        if src_units:
+            if out_unit == UNIT_COUNT and UNIT_RATE in src_units and UNIT_COUNT not in src_units:
+                return False, f"数字 '{num_str}' 含义不匹配：单位不匹配，输出为人数（例/名），原文为百分比（%）"
+            if out_unit == UNIT_RATE and UNIT_COUNT in src_units and UNIT_RATE not in src_units:
+                return False, f"数字 '{num_str}' 含义不匹配：单位不匹配，输出为百分比（%），原文为人数（例/名）"
+
+    out_class = closest_metric_class(output_context, claimed_match.start())
+    if out_class and src_matches:
+        src_classes = {
+            closest_metric_class(source_norm, m.start())
+            for m in src_matches
+        }
+        src_classes.discard(None)
+        if src_classes and out_class not in src_classes:
+            return False, (
+                f"数字 '{num_str}' 含义不匹配："
+                f"输出用于{out_class}类指标，原文用于{'/'.join(sorted(src_classes))}类指标"
+            )
+
     return True, ""
+
+
+def check_comparison_direction(output_text: str, source_text: str) -> list[str]:
+    """Flag 更高/更低 (and English equivalents) that contradict the source."""
+    if not output_text or not source_text:
+        return []
+    problems = []
+    src = source_text
+    for sent in re.split(r'[。！？；;\n]', output_text):
+        if not sent.strip():
+            continue
+        hi = bool(_DIR_HIGHER.search(sent))
+        lo = bool(_DIR_LOWER.search(sent))
+        if hi == lo:
+            continue
+        cores = []
+        for num, _ctx in extract_numbers_with_context(sent):
+            core = extract_number_core(num)
+            if core:
+                cores.append(core)
+        windows = []
+        for core in cores:
+            for m in _source_number_spans(core, src.lower()):
+                windows.append(src[max(0, m.start() - 48):m.end() + 48])
+        if not windows:
+            # Metric-only claim: "DCR更低" with no number in the sentence.
+            for _cls, kw in METRIC_CLASS_KEYWORDS:
+                if kw in _SHORT_METRIC_KEYWORDS:
+                    if not re.search(r'(?<![a-z])' + re.escape(kw) + r'(?![a-z])', sent.lower()):
+                        continue
+                elif kw not in sent.lower():
+                    continue
+                for m in re.finditer(re.escape(kw), src.lower()):
+                    windows.append(src[max(0, m.start() - 48):m.end() + 48])
+        if not windows:
+            continue
+        src_hi = any(_DIR_HIGHER.search(w) for w in windows)
+        src_lo = any(_DIR_LOWER.search(w) for w in windows)
+        if hi and src_lo and not src_hi:
+            problems.append(f"比较方向不匹配：输出写更高/延长，原文为更低/缩短（{sent.strip()[:40]}）")
+            break
+        if lo and src_hi and not src_lo:
+            problems.append(f"比较方向不匹配：输出写更低/缩短，原文为更高/延长（{sent.strip()[:40]}）")
+            break
+    return problems
 
 
 def extract_numbers_with_context(text: str) -> list[tuple[str, str]]:
@@ -1730,8 +2007,11 @@ def extract_chinese_numbers_with_context(text: str) -> list[tuple[str, str]]:
     """
     results = []
     
-    # Chinese numerals with units (these ARE data)
-    cn_data_pattern = r'[零一二三四五六七八九十百千万亿两]+(?:多)?(?:年|倍|%|％|个月|天|周|小时|例|名|位|人|剂|次|万|亿)'
+    # Chinese numerals with units, plus classifier nouns (三组, 两项, 两臂)
+    cn_data_pattern = (
+        r'[零一二三四五六七八九十百千万亿两]+(?:多)?'
+        r'(?:年|倍|%|％|个月|天|周|小时|例|名|位|人|剂|次|万|亿|组|项|臂|份|条|个)'
+    )
     for match in re.finditer(cn_data_pattern, text):
         cn_num = match.group(0)
         start = max(0, match.start() - 20)
@@ -1949,7 +2229,16 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
         if is_exempt_number_context(context, arabic_core):
             continue
         
-        if not number_in_text_as_word_boundary(arabic_core, source_norm_units):
+        if re.search(r'组|臂|项', cn_num) and not (
+            _source_has_grouping(arabic_core, source_norm_units)
+            or _source_has_grouping(arabic_core, source_raw_units)
+        ):
+            problems.append(f"中文数字 '{cn_num}' ({arabic}) 在原始材料中未找到")
+            continue
+        if not number_exists_in_source(
+            arabic, source_norm_units, source_identifiers, context,
+            source_raw=source_raw_units,
+        ):
             problems.append(f"中文数字 '{cn_num}' ({arabic}) 在原始材料中未找到")
         else:
             # Chinese number exists - also check meaning
@@ -2045,6 +2334,8 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
             problems.append("结果字段中的数字无法在原文中核实")
         elif not results_claims:
             problems.append("结果字段应包含至少一个可核实的数字（来自原文）")
+
+    problems.extend(check_comparison_direction(all_text, raw_material))
     
     return problems
 
@@ -2552,6 +2843,7 @@ def _hard_problems(problems: list[str]) -> list[str]:
         "必须包含数字", "必须使用阿拉伯", "过于模糊",
         "不是数值数据", "注册了标识符",
         "作者", "术语翻译", "过短", "过长", "结果字段",
+        "比较方向", "机构", "基因", "药物", "蛋白质",
     )
     return [p for p in problems if any(m in p for m in markers)]
 
