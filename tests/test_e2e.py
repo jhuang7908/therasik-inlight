@@ -192,6 +192,7 @@ sources:
         # Verify tool_choice was auto
         call_args = mock_client.messages.create.call_args
         assert call_args.kwargs["tool_choice"]["type"] == "auto"
+        assert "temperature" not in call_args.kwargs
     
     @patch('anthropic.Anthropic')
     @patch('inlight_articles._http_get')
@@ -219,7 +220,31 @@ sources:
         # Verify tool_choice was auto
         call_args = mock_client.messages.create.call_args
         assert call_args.kwargs["tool_choice"]["type"] == "auto"
-    
+        assert "temperature" not in call_args.kwargs
+
+    @patch('anthropic.Anthropic')
+    @patch('inlight_articles._http_get')
+    def test_verifier_sdk_signature_omits_temperature(self, mock_http, mock_anthropic_class, mock_env):
+        """Existing SDK-signature check: claim audit must not pass temperature."""
+        from inlight_articles import verify_article_claims
+
+        mock_http.return_value = None
+        mock_client = MagicMock()
+        mock_anthropic_class.return_value = mock_client
+        mock_client.messages.create.return_value = MockMessage(
+            content=[MockBlock(type="tool_use", name="submit_claim_audit", input={"claims": []})],
+            stop_reason="end_turn",
+        )
+        verify_article_claims(
+            {"title": "t", "results": ["64%"], "one_liner": "x"},
+            "fezolinetant 45 mg reduced VMS by 64%",
+        )
+        kwargs = mock_client.messages.create.call_args.kwargs
+        assert "temperature" not in kwargs
+        names = [t.get("name") for t in kwargs["tools"]]
+        assert "submit_claim_audit" in names
+        assert "test_tool" in names
+
     @patch('anthropic.Anthropic')
     @patch('inlight_articles._http_get')
     def test_max_tokens_truncation_handled(self, mock_http, mock_anthropic_class, mock_env):

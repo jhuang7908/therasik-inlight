@@ -1724,5 +1724,406 @@ class TestHoldoutGeneralRules(unittest.TestCase):
         self.assertTrue(any("格菲妥单抗" in p for p in problems))
 
 
+# NEW material (not used in prior review rounds): SKYLIGHT 1 / fezolinetant,
+# FGFR mid-dot IC50s, RSV nirsevimab MELODY-style assay, tislelizumab INN.
+_SKYLIGHT = (
+    "SKYLIGHT 1 randomised 527 women with menopause-associated vasomotor "
+    "symptoms to fezolinetant 45 mg, fezolinetant 30 mg, or placebo once daily. "
+    "At week 12 the mean reduction in VMS frequency was 64% with 45 mg versus "
+    "45% with placebo (p<0.001). Treatment-emergent adverse events occurred in "
+    "135 of 173 women on 45 mg. Sensitivity and specificity of the VMS diary "
+    "were 91.2% and 88.4% respectively. Dose-limiting toxicity was seen in "
+    "2 of 12 participants at cycle 3. The IC50 was 18·9 nM against FGFR2."
+)
+
+_PAD = "该研究为围绝经期血管舒缩症状提供了口服NK3受体拮抗剂的对照证据。" * 10
+
+
+def _skilight_brief(**overrides):
+    art = {
+        "tier": "brief",
+        "title": "fezolinetant 45 mg使VMS频率下降64%",
+        "one_liner": "SKYLIGHT 1纳入527名女性，fezolinetant 45 mg使VMS频率下降64%。",
+        "journal": "",
+        "authors": "",
+        "background": _PAD,
+        "design": "随机对照，527名女性接受fezolinetant 45 mg、30 mg或安慰剂，每日一次。",
+        "results": [
+            "第12周45 mg组VMS频率平均下降64%，安慰剂为45%。"
+            "45 mg组173名女性中135名出现治疗期不良事件。"
+            "日记敏感性与特异性分别为91.2%与88.4%。"
+            "第3周期12名参与者中2名出现剂量限制毒性。FGFR2的IC50为18.9 nM。"
+        ],
+        "mechanism": "",
+        "limitations": ["单篇摘要，外推需谨慎"],
+        "significance": "若后续研究重复，口服NK3拮抗剂或可用于血管舒缩症状。",
+        "datacard": {
+            "study_type": "随机对照",
+            "n": "527名",
+            "control": "安慰剂",
+            "intervention": "fezolinetant 45 mg",
+            "followup": "12周",
+            "primary_endpoint": "VMS频率",
+            "primary_endpoint_result": "下降64%",
+            "statistics": "p<0.001",
+            "safety": "135/173",
+        },
+        "data_points": [
+            {"value": "527", "meaning": "人数", "source_quote": "SKYLIGHT 1 randomised 527 women with menopause-associated"},
+            {"value": "64%", "meaning": "VMS下降", "source_quote": "mean reduction in VMS frequency was 64% with 45 mg"},
+            {"value": "45%", "meaning": "安慰剂", "source_quote": "64% with 45 mg versus 45% with placebo"},
+            {"value": "18.9", "meaning": "IC50 nM", "source_quote": "The IC50 was 18·9 nM against FGFR2"},
+        ],
+        "url": "https://doi.org/10.1016/S0140-6736(23)00000-1",
+    }
+    art.update(overrides)
+    return art
+
+
+class TestNewMaterialDeterministic(unittest.TestCase):
+    """False-alarm cuts and journal rules, built from new source text."""
+
+    def test_middle_dot_decimal_matches_source(self):
+        from inlight_articles import number_exists_in_source, normalize_source_text
+
+        src = "The IC50 was 18·9 nM against FGFR2 and 7·4 nM against FGFR1."
+        norm = normalize_source_text(src)
+        raw = normalize_source_text(src, convert_english_words=False)
+        self.assertTrue(number_exists_in_source(
+            "18.9", norm, set(), "IC50为18.9 nM", source_raw=raw,
+        ))
+
+    def test_respectively_pairs_sensitivity_specificity(self):
+        from inlight_articles import closest_metric_class, number_meaning_matches_source
+
+        src = "Sensitivity and specificity of the VMS diary were 91.2% and 88.4% respectively."
+        src_l = src.lower()
+        self.assertEqual(closest_metric_class(src_l, src_l.find("91.2")), "sensitivity")
+        self.assertEqual(closest_metric_class(src_l, src_l.find("88.4")), "specificity")
+        ok, reason = number_meaning_matches_source(
+            "91.2%", "敏感性91.2%，特异性88.4%", src,
+        )
+        self.assertTrue(ok, reason)
+
+    def test_sens_spec_same_sentence_not_exclusive_false_alarm(self):
+        from inlight_articles import number_meaning_matches_source
+
+        src = "The VMS diary had 91.2% sensitivity and 88.4% specificity in the same readout."
+        ok, reason = number_meaning_matches_source(
+            "91.2%", "日记敏感性和特异性分别为91.2%和88.4%", src,
+        )
+        self.assertTrue(ok, reason)
+
+    def test_cycle_number_is_exempt(self):
+        from inlight_articles import is_exempt_number_context, validate_depth
+
+        self.assertTrue(is_exempt_number_context("剂量限制毒性见于cycle 3", "3"))
+        self.assertTrue(is_exempt_number_context("第3周期出现DLT", "3"))
+        problems = validate_depth(_skilight_brief(), _SKYLIGHT)
+        cycle_hits = [p for p in problems if "3" in p and "周期" in p]
+        self.assertFalse(cycle_hits, problems)
+
+    def test_generic_facility_and_grouping_words_ignored(self):
+        from inlight_articles import validate_names
+
+        art = {
+            "title": "单中心随机对照",
+            "one_liner": "研究在医学中心完成，两组均给药。",
+            "background": "",
+            "design": "单中心、两组对照。",
+            "results": [],
+            "mechanism": "",
+            "significance": "",
+            "authors": "",
+            "limitations": [],
+        }
+        problems = validate_names(art, _SKYLIGHT)
+        self.assertFalse(any("机构" in p for p in problems), problems)
+
+    def test_qualitative_datapoint_allowed(self):
+        from inlight_articles import validate_depth
+
+        art = _skilight_brief()
+        art["data_points"] = art["data_points"] + [
+            {"value": "wild-type", "meaning": "FGFR2 genotype", "source_quote": "short"},
+        ]
+        problems = validate_depth(art, _SKYLIGHT)
+        self.assertFalse(any("必须包含数字" in p and "wild-type" in p for p in problems), problems)
+
+    def test_invented_range_requires_source_interval(self):
+        from inlight_articles import _invented_numeric_range
+
+        hits = _invented_numeric_range("随访6-23个月", "Follow-up was 12 weeks; VMS fell 64%.")
+        self.assertTrue(hits)
+        ok = _invented_numeric_range("随访6-23个月", "Patients were followed 6-23 months.")
+        self.assertFalse(ok)
+
+    def test_chinese_numeral_classifier_on_groups(self):
+        from inlight_articles import classify_unit_in_context, number_exists_in_source, normalize_source_text
+        from inlight_articles import UNIT_COUNT, NOUN_GROUP, classify_noun_after, chinese_numeral_to_arabic
+
+        ctx = chinese_numeral_to_arabic("随机分为三组")
+        self.assertEqual(classify_noun_after(ctx, ctx.find("3") + 1), NOUN_GROUP)
+        src = "Women were randomised to three groups (45 mg, 30 mg, placebo)."
+        norm = normalize_source_text(src)
+        raw = normalize_source_text(src, convert_english_words=False)
+        self.assertTrue(number_exists_in_source(
+            "3", norm, set(), "随机分为三组", source_raw=raw,
+        ))
+
+    def test_cn_drug_uses_token_boundary_and_inn(self):
+        from inlight_articles import validate_names
+
+        # Neighbouring characters must not be swallowed: 予替雷利珠单抗后
+        art = {
+            "title": "予替雷利珠单抗后缓解",
+            "one_liner": "",
+            "background": "",
+            "design": "",
+            "results": ["予替雷利珠单抗治疗后出现缓解。"],
+            "mechanism": "",
+            "significance": "",
+            "authors": "",
+            "limitations": [],
+        }
+        # Source INN tislelizumab justifies 替雷利珠单抗 via syllable table
+        ok = validate_names(art, "tislelizumab 200 mg every 3 weeks in NSCLC")
+        self.assertFalse(any("替雷利珠单抗" in p for p in ok), ok)
+        # A different INN must not justify a neighbouring-character grab
+        bad = validate_names(
+            {"title": "给予雷利珠单抗", "one_liner": "", "background": "",
+             "design": "", "results": ["给予雷利珠单抗。"], "mechanism": "",
+             "significance": "", "authors": "", "limitations": []},
+            "tislelizumab 200 mg",
+        )
+        self.assertTrue(any("雷利珠单抗" in p for p in bad), bad)
+
+    def test_drop_model_journal_when_source_has_none(self):
+        from inlight_articles import EnrichedItem, sanitize_published_article
+
+        item = EnrichedItem(
+            url="https://doi.org/10.1016/example",
+            title="SKYLIGHT",
+            source="PubMed",
+            date="2023-01-01",
+            evidence_level="abstract",
+            journal="",
+        )
+        art = sanitize_published_article({"journal": "Nature Metabolism", "title": "x"}, item)
+        self.assertNotEqual(art.get("journal"), "Nature Metabolism")
+        self.assertEqual(art.get("journal"), "PubMed")
+
+    def test_preprint_body_cannot_claim_peer_review(self):
+        from inlight_articles import validate_depth
+
+        art = _skilight_brief(
+            url="https://www.biorxiv.org/content/10.1101/2026.03.01.123456v1",
+            evidence_level="preprint",
+            results=["该研究已发表于Nature Metabolism并经过同行评议，VMS下降64%。"],
+        )
+        problems = validate_depth(art, _SKYLIGHT)
+        self.assertTrue(any("预印本" in p or "同行评议" in p for p in problems), problems)
+
+    def test_skilight_correct_draft_passes_deterministic(self):
+        problems = validate_depth(_skilight_brief(), _SKYLIGHT)
+        hard = [p for p in problems if "未找到" in p or "含义不匹配" in p or "数字范围" in p]
+        self.assertFalse(hard, problems)
+
+
+class TestClaimVerifier(unittest.TestCase):
+    """Mocked submit_claim_audit labels, including a span-not-in-source case."""
+
+    def _msg(self, claims, usage=(1200, 400)):
+        block = MagicMock()
+        block.type = "tool_use"
+        block.name = "submit_claim_audit"
+        block.input = {"claims": claims}
+        msg = MagicMock()
+        msg.content = [block]
+        msg.usage = MagicMock(input_tokens=usage[0], output_tokens=usage[1])
+        return msg
+
+    def test_supported_label_with_real_span_is_ok(self):
+        from inlight_articles import verify_article_claims
+
+        span = "mean reduction in VMS frequency was 64% with 45 mg"
+        with patch("anthropic.Anthropic") as cls:
+            cls.return_value.messages.create.return_value = self._msg([
+                {"claim": "45 mg使VMS下降64%", "kind": "number", "label": "SUPPORTED",
+                 "source_span": span, "factual": True},
+            ])
+            out = verify_article_claims(_skilight_brief(), _SKYLIGHT)
+        self.assertEqual(out["status"], "ok")
+        self.assertEqual(out["calls"], 1)
+        self.assertEqual(out["input_tokens"], 1200)
+        self.assertEqual(out["output_tokens"], 400)
+
+    def test_contradicted_with_real_span_drops(self):
+        from inlight_articles import verify_article_claims
+
+        span = "mean reduction in VMS frequency was 64% with 45 mg versus 45% with placebo"
+        with patch("anthropic.Anthropic") as cls:
+            cls.return_value.messages.create.return_value = self._msg([
+                {"claim": "安慰剂优于45 mg", "kind": "comparison", "label": "CONTRADICTED",
+                 "source_span": span, "factual": True},
+            ])
+            out = verify_article_claims(_skilight_brief(), _SKYLIGHT)
+        self.assertEqual(out["status"], "contradicted")
+        self.assertTrue(out["problems"])
+
+    def test_not_in_source_factual_is_flagged(self):
+        from inlight_articles import verify_article_claims
+
+        with patch("anthropic.Anthropic") as cls:
+            cls.return_value.messages.create.return_value = self._msg([
+                {"claim": "中位OS延长至28个月", "kind": "number", "label": "NOT_IN_SOURCE",
+                 "source_span": "", "factual": True},
+            ])
+            out = verify_article_claims(_skilight_brief(), _SKYLIGHT)
+        self.assertEqual(out["status"], "not_in_source")
+        self.assertTrue(any("原文未支持" in p for p in out["problems"]))
+
+    def test_span_not_in_source_is_never_trusted(self):
+        from inlight_articles import verify_article_claims, span_exists_in_source
+
+        fake = "The objective response rate was 99% in the fezolinetant arm"
+        self.assertFalse(span_exists_in_source(fake, _SKYLIGHT))
+        with patch("anthropic.Anthropic") as cls:
+            cls.return_value.messages.create.return_value = self._msg([
+                {"claim": "缓解率99%", "kind": "number", "label": "CONTRADICTED",
+                 "source_span": fake, "factual": True},
+                {"claim": "已在Cell发表", "kind": "journal", "label": "SUPPORTED",
+                 "source_span": "Published in Cell after peer review", "factual": True},
+            ])
+            out = verify_article_claims(_skilight_brief(), _SKYLIGHT)
+        self.assertEqual(out["status"], "ok", out)
+
+    def test_background_sentence_without_fact_is_allowed(self):
+        from inlight_articles import verify_article_claims
+
+        with patch("anthropic.Anthropic") as cls:
+            cls.return_value.messages.create.return_value = self._msg([
+                {"claim": "围绝经期潮热影响生活质量", "kind": "background",
+                 "label": "NOT_IN_SOURCE", "source_span": "", "factual": False},
+            ])
+            out = verify_article_claims(_skilight_brief(), _SKYLIGHT)
+        self.assertEqual(out["status"], "ok")
+
+    def test_verifier_omits_temperature_arg(self):
+        from inlight_articles import verify_article_claims
+
+        with patch("anthropic.Anthropic") as cls:
+            cls.return_value.messages.create.return_value = self._msg([])
+            verify_article_claims(_skilight_brief(), _SKYLIGHT)
+            kwargs = cls.return_value.messages.create.call_args.kwargs
+        self.assertNotIn("temperature", kwargs)
+        names = [t["name"] for t in kwargs["tools"]]
+        self.assertIn("submit_claim_audit", names)
+        self.assertIn("test_tool", names)
+
+    def test_contradicted_stage_drops_article(self):
+        from inlight_articles import EnrichedItem, _process_single_article
+
+        first = _skilight_brief()
+        item = EnrichedItem(
+            url=first["url"],
+            title="SKYLIGHT 1",
+            source="The Lancet",
+            date="2023-01-01",
+            abstract=_SKYLIGHT,
+            rss_summary=_SKYLIGHT,
+            journal="The Lancet",
+        )
+        span = "mean reduction in VMS frequency was 64% with 45 mg versus 45% with placebo"
+
+        def fake_draft(*a, **k):
+            return dict(first)
+
+        with patch("inlight_articles.draft_single_article", side_effect=fake_draft):
+            with patch("inlight_articles.verify_article_claims", return_value={
+                "status": "contradicted",
+                "problems": ["主张与原文矛盾：安慰剂更优"],
+                "claims": [{"source_span": span, "label": "CONTRADICTED"}],
+                "calls": 1, "input_tokens": 900, "output_tokens": 300,
+            }):
+                art = _process_single_article(
+                    {"url": first["url"], "tier": "brief", "field": "c4"},
+                    {first["url"]: item},
+                    {},
+                )
+        self.assertIsNone(art)
+
+    def test_not_in_source_redrafts_once_then_ok(self):
+        from inlight_articles import EnrichedItem, _process_single_article
+
+        first = _skilight_brief()
+        item = EnrichedItem(
+            url=first["url"],
+            title="SKYLIGHT 1",
+            source="The Lancet",
+            date="2023-01-01",
+            abstract=_SKYLIGHT,
+            rss_summary=_SKYLIGHT,
+            journal="The Lancet",
+        )
+        audits = [
+            {"status": "not_in_source", "problems": ["原文未支持的事实主张：OS 28个月"],
+             "claims": [], "calls": 1, "input_tokens": 800, "output_tokens": 200},
+            {"status": "ok", "problems": [], "claims": [],
+             "calls": 1, "input_tokens": 800, "output_tokens": 180},
+        ]
+
+        def fake_draft(*a, **k):
+            return dict(first)
+
+        with patch("inlight_articles.draft_single_article", side_effect=fake_draft):
+            with patch("inlight_articles.verify_article_claims", side_effect=audits):
+                art = _process_single_article(
+                    {"url": first["url"], "tier": "brief", "field": "c4"},
+                    {first["url"]: item},
+                    {},
+                )
+        self.assertIsNotNone(art)
+        self.assertIn("64%", " ".join(art.get("results") or []))
+
+    def test_enrich_keeps_longest_publisher_abstract(self):
+        from inlight_articles import enrich_item
+
+        short = json.dumps({
+            "resultList": {"result": [{
+                "abstractText": "Short EPMC teaser.",
+                "pmid": "999",
+                "isOpenAccess": "N",
+            }]},
+        }).encode()
+        long_abs = "Fezolinetant 45 mg reduced VMS frequency by 64% among 527 women. " * 20
+        html = (
+            '<html><head><meta name="citation_abstract" content="'
+            + long_abs
+            + '"></head></html>'
+        ).encode()
+
+        def http(url, timeout=30):
+            if "europepmc" in url:
+                return short
+            if "crossref" in url:
+                return None
+            if "eutils" in url:
+                return None
+            return html
+
+        with patch("inlight_articles._http_get", side_effect=http):
+            item = enrich_item({
+                "url": "https://doi.org/10.1016/S0140-6736(23)00000-1",
+                "title": "SKYLIGHT 1",
+                "source": "Lancet",
+                "date": "2023-01-01",
+                "kind": "academic",
+                "summary": "RSS teaser",
+            })
+        self.assertGreater(len(item.abstract), 200)
+        self.assertIn("527", item.abstract)
+
+
 if __name__ == "__main__":
     unittest.main()
