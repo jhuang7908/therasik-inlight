@@ -769,11 +769,63 @@ def _extract_pdf_text(pdf_bytes: bytes, max_chars: int = 4000) -> str:
 def _normalize_amount_with_currency(text: str) -> list[tuple[int, str]]:
     """Extract monetary amounts with their currency.
     
-    Fix #3: Supports USD, RMB, HKD, EUR, GBP, AUD, CAD, SGD.
+    Supports USD, RMB, HKD, EUR, GBP, AUD, CAD, SGD.
     Also extracts percentages for equity verification.
     Returns list of (amount_in_base_units, currency) tuples.
+    
+    Fix #8: US$, USD, $ all map to USD; S$ maps to SGD.
+    Fix #3: Handle Chinese numerals (一亿, 十亿, 两亿, etc.)
     """
     amounts = []
+    
+    # Chinese numeral mapping
+    cn_nums = {'一': 1, '二': 2, '两': 2, '三': 3, '四': 4, '五': 5, 
+               '六': 6, '七': 7, '八': 8, '九': 9, '十': 10}
+    
+    def parse_cn_number(s: str) -> float | None:
+        """Parse Chinese numeral like 一亿, 十亿, 两亿, 一点五亿."""
+        s = s.strip()
+        if not s:
+            return None
+        # Check for Arabic numeral
+        if re.match(r'^[\d.]+$', s):
+            try:
+                return float(s)
+            except ValueError:
+                return None
+        # Single digit: 一, 二, 三, etc.
+        if s in cn_nums:
+            return float(cn_nums[s])
+        # 十X: 十二, 十五 -> 12, 15
+        if s.startswith('十'):
+            if len(s) == 1:
+                return 10.0
+            rest = s[1:]
+            if rest in cn_nums:
+                return 10.0 + cn_nums[rest]
+        # X十: 二十, 三十 -> 20, 30
+        if len(s) == 2 and s[0] in cn_nums and s[1] == '十':
+            return float(cn_nums[s[0]] * 10)
+        # X十Y: 二十五 -> 25
+        if len(s) == 3 and s[0] in cn_nums and s[1] == '十' and s[2] in cn_nums:
+            return float(cn_nums[s[0]] * 10 + cn_nums[s[2]])
+        # X点Y: 一点五 -> 1.5
+        if '点' in s:
+            parts = s.split('点')
+            if len(parts) == 2:
+                whole_str, frac_str = parts
+                whole = 0.0
+                if whole_str in cn_nums:
+                    whole = float(cn_nums[whole_str])
+                elif whole_str.isdigit():
+                    whole = float(whole_str)
+                frac = 0.0
+                if frac_str in cn_nums:
+                    frac = cn_nums[frac_str] / 10.0
+                elif frac_str.isdigit():
+                    frac = float(f"0.{frac_str}")
+                return whole + frac
+        return None
     
     # EUR patterns - €X.XX million/billion
     # Use round() before int() to handle floating point precision
@@ -791,11 +843,13 @@ def _normalize_amount_with_currency(text: str) -> list[tuple[int, str]]:
         except ValueError:
             pass
     
-    # Chinese EUR: X亿欧元
-    for m in re.finditer(r'([\d.]+)\s*亿\s*欧元', text):
+    # Chinese EUR: X亿欧元 (Arabic or Chinese numeral)
+    for m in re.finditer(r'([\d.]+|[一二三四五六七八九十两点]+)\s*亿\s*欧元', text):
         try:
-            val = float(m.group(1)) * 100_000_000 * 100
-            amounts.append((round(val), 'EUR'))
+            num = parse_cn_number(m.group(1))
+            if num is not None:
+                val = num * 100_000_000 * 100
+                amounts.append((round(val), 'EUR'))
         except ValueError:
             pass
     
@@ -838,10 +892,12 @@ def _normalize_amount_with_currency(text: str) -> list[tuple[int, str]]:
             pass
     
     # Chinese HKD: X亿港元 / X亿港币
-    for m in re.finditer(r'([\d.]+)\s*亿\s*港[元币]', text):
+    for m in re.finditer(r'([\d.]+|[一二三四五六七八九十两点]+)\s*亿\s*港[元币]', text):
         try:
-            val = float(m.group(1)) * 100_000_000 * 100
-            amounts.append((round(val), 'HKD'))
+            num = parse_cn_number(m.group(1))
+            if num is not None:
+                val = num * 100_000_000 * 100
+                amounts.append((round(val), 'HKD'))
         except ValueError:
             pass
     
@@ -875,37 +931,53 @@ def _normalize_amount_with_currency(text: str) -> list[tuple[int, str]]:
         except ValueError:
             pass
     
-    # SGD patterns - S$X.XX million/billion
-    for m in re.finditer(r'S\$\s*([\d,]+(?:\.\d+)?)\s*(?:billion|B\b)', text, re.IGNORECASE):
+    # SGD patterns - S$X.XX million/billion (NOT US$)
+    for m in re.finditer(r'(?<!U)S\$\s*([\d,]+(?:\.\d+)?)\s*(?:billion|B\b)', text, re.IGNORECASE):
         try:
             val = float(m.group(1).replace(',', '')) * 1_000_000_000 * 100
             amounts.append((round(val), 'SGD'))
         except ValueError:
             pass
     
-    for m in re.finditer(r'S\$\s*([\d,]+(?:\.\d+)?)\s*(?:million|M\b)', text, re.IGNORECASE):
+    for m in re.finditer(r'(?<!U)S\$\s*([\d,]+(?:\.\d+)?)\s*(?:million|M\b)', text, re.IGNORECASE):
         try:
             val = float(m.group(1).replace(',', '')) * 1_000_000 * 100
             amounts.append((round(val), 'SGD'))
         except ValueError:
             pass
     
-    # USD patterns - use negative lookbehind to exclude HK$, A$, C$, S$
-    for m in re.finditer(r'(?<![HKACS])\$\s*([\d,]+(?:\.\d+)?)\s*(?:billion|B\b)', text, re.IGNORECASE):
+    # USD patterns - US$, USD, $ (exclude HK$, A$, C$, S$)
+    # Fix #8: US$ is USD, not SGD
+    for m in re.finditer(r'(?:US\$|USD)\s*([\d,]+(?:\.\d+)?)\s*(?:billion|B\b)', text, re.IGNORECASE):
         try:
             val = float(m.group(1).replace(',', '')) * 1_000_000_000 * 100
             amounts.append((round(val), 'USD'))
         except ValueError:
             pass
     
-    for m in re.finditer(r'(?<![HKACS])\$\s*([\d,]+(?:\.\d+)?)\s*(?:million|M\b)', text, re.IGNORECASE):
+    for m in re.finditer(r'(?:US\$|USD)\s*([\d,]+(?:\.\d+)?)\s*(?:million|M\b)', text, re.IGNORECASE):
         try:
             val = float(m.group(1).replace(',', '')) * 1_000_000 * 100
             amounts.append((round(val), 'USD'))
         except ValueError:
             pass
     
-    for m in re.finditer(r'(?<![HKACS])\$\s*([\d,]{7,})', text):
+    # Bare $ patterns - use negative lookbehind to exclude HK$, A$, C$, S$, US$
+    for m in re.finditer(r'(?<![HKACSU])\$\s*([\d,]+(?:\.\d+)?)\s*(?:billion|B\b)', text, re.IGNORECASE):
+        try:
+            val = float(m.group(1).replace(',', '')) * 1_000_000_000 * 100
+            amounts.append((round(val), 'USD'))
+        except ValueError:
+            pass
+    
+    for m in re.finditer(r'(?<![HKACSU])\$\s*([\d,]+(?:\.\d+)?)\s*(?:million|M\b)', text, re.IGNORECASE):
+        try:
+            val = float(m.group(1).replace(',', '')) * 1_000_000 * 100
+            amounts.append((round(val), 'USD'))
+        except ValueError:
+            pass
+    
+    for m in re.finditer(r'(?<![HKACSU])\$\s*([\d,]{7,})', text):
         try:
             val = int(m.group(1).replace(',', '')) * 100
             if val >= 10_000_000:
@@ -913,11 +985,13 @@ def _normalize_amount_with_currency(text: str) -> list[tuple[int, str]]:
         except ValueError:
             pass
     
-    # Chinese USD: X亿美元 / X.X亿美元
-    for m in re.finditer(r'([\d.]+)\s*亿\s*美元', text):
+    # Chinese USD: X亿美元 / X.X亿美元 (Arabic or Chinese numeral)
+    for m in re.finditer(r'([\d.]+|[一二三四五六七八九十两点]+)\s*亿\s*美元', text):
         try:
-            val = float(m.group(1)) * 100_000_000 * 100
-            amounts.append((round(val), 'USD'))
+            num = parse_cn_number(m.group(1))
+            if num is not None:
+                val = num * 100_000_000 * 100
+                amounts.append((round(val), 'USD'))
         except ValueError:
             pass
     
@@ -942,10 +1016,12 @@ def _normalize_amount_with_currency(text: str) -> list[tuple[int, str]]:
             pass
     
     # Chinese RMB: X亿元 / X亿人民币 (NOT 美元)
-    for m in re.finditer(r'([\d.]+)\s*亿\s*(?:元|人民币)(?!美)', text):
+    for m in re.finditer(r'([\d.]+|[一二三四五六七八九十两点]+)\s*亿\s*(?:元|人民币)(?!美)', text):
         try:
-            val = float(m.group(1)) * 100_000_000 * 100
-            amounts.append((round(val), 'RMB'))
+            num = parse_cn_number(m.group(1))
+            if num is not None:
+                val = num * 100_000_000 * 100
+                amounts.append((round(val), 'RMB'))
         except ValueError:
             pass
     
@@ -1041,6 +1117,17 @@ def _test_verify_amount():
         ("未披露", "any text over 20 chars here", True),
         ("1亿美元", "", False),
         ("", "any text over 20 chars here", True),
+        
+        # Fix #8: US$ is USD, not SGD
+        ("1亿美元", "US$100 million consideration paid", True),
+        ("1亿美元", "USD 100 million consideration paid", True),
+        # S$ without U is SGD
+        ("1亿美元", "S$100 million payment made here", False),  # USD claim vs SGD source
+        
+        # Fix #3: Chinese numerals
+        ("一亿美元", "The deal was $100 million cash", True),
+        ("十亿美元", "The deal was $1 billion total", True),
+        ("两亿美元", "The deal was $200 million cash", True),
     ]
     
     passed = 0
@@ -1052,6 +1139,248 @@ def _test_verify_amount():
             print(f"FAIL: '{claim}' vs '{source[:50]}...' -> {result} (expected {expected})")
     
     print(f"_test_verify_amount: {passed}/{len(tests)} tests passed")
+    return passed == len(tests)
+
+
+def _is_nonprofit_or_consortium(text: str) -> bool:
+    """Detect nonprofit, government, or consortium initiatives.
+    
+    Fix #1: These should never be published as deals.
+    """
+    text_lower = text.lower()
+    
+    # Nonprofit/government indicators
+    nonprofit_signals = [
+        'nonprofit', 'non-profit', 'not-for-profit', '501(c)',
+        'foundation', 'institute', 'consortium', 'initiative',
+        'government', 'federal', 'nih', 'doe', 'nsf', 'darpa',
+        'national institutes', 'department of energy',
+        'public-private partnership', 'multi-party commitment',
+        'combined commitment', 'pledged', 'grant', 'funding commitment',
+    ]
+    
+    for signal in nonprofit_signals:
+        if signal in text_lower:
+            # Check if this seems like primary focus, not incidental
+            # E.g., "NIH grant" vs "acquired NIH-funded company"
+            if signal in ['nonprofit', 'non-profit', 'foundation', 'consortium', 'initiative']:
+                return True
+            # For government agencies, check if they're the source of funds
+            if signal in ['nih', 'doe', 'nsf', 'darpa', 'national institutes', 'department of energy']:
+                if any(kw in text_lower for kw in ['commitment', 'pledged', 'grant', 'funding from', 'funded by']):
+                    return True
+    
+    # Multi-party summed commitments
+    if re.search(r'combined\s+(?:commitment|total|funding)', text_lower):
+        return True
+    if re.search(r'(?:multiple|several)\s+(?:parties|organizations|funders)', text_lower):
+        return True
+    
+    return False
+
+
+def _verify_company_in_source(company_name: str, source_text: str) -> bool:
+    """Verify company name appears in source text.
+    
+    Fix #2: Every company name must appear in source (case-insensitive, alias-aware).
+    """
+    if not company_name or not source_text:
+        return False
+    
+    source_lower = source_text.lower()
+    company_lower = company_name.lower().strip()
+    
+    # Direct match
+    if company_lower in source_lower:
+        return True
+    
+    # Normalized match (remove suffixes)
+    normalized = _normalize_company_name(company_name)
+    if len(normalized) >= 3 and normalized in source_lower:
+        return True
+    
+    # Common aliases/abbreviations
+    aliases = {
+        'pfizer': ['pfizer inc', 'pfizer, inc'],
+        'novartis': ['novartis ag', 'novartis pharma'],
+        'roche': ['roche holding', 'f. hoffmann-la roche'],
+        'genentech': ['genentech inc', 'genentech, inc'],
+        'abbvie': ['abbvie inc', 'abbvie, inc'],
+        'merck': ['merck & co', 'merck sharp', 'msd'],
+        'j&j': ['johnson & johnson', 'johnson and johnson', 'janssen', 'jnj'],
+        'johnson & johnson': ['j&j', 'jnj', 'janssen'],
+        'lilly': ['eli lilly', 'lilly and company'],
+        'bms': ['bristol-myers squibb', 'bristol myers squibb'],
+        'astrazeneca': ['astrazeneca plc', 'az'],
+        'gsk': ['glaxosmithkline', 'glaxo smith kline'],
+        'sanofi': ['sanofi-aventis', 'sanofi aventis'],
+        'biogen': ['biogen inc', 'biogen idec'],
+        'gilead': ['gilead sciences'],
+        'amgen': ['amgen inc'],
+        'regeneron': ['regeneron pharmaceuticals'],
+        'vertex': ['vertex pharmaceuticals'],
+        'moderna': ['moderna inc', 'moderna therapeutics'],
+        'biontech': ['biontech se'],
+    }
+    
+    # Check if company name matches any known alias patterns
+    for canonical, alias_list in aliases.items():
+        if canonical in company_lower or any(a in company_lower for a in alias_list):
+            # Check if any variant appears in source
+            if canonical in source_lower:
+                return True
+            for alias in alias_list:
+                if alias in source_lower:
+                    return True
+    
+    return False
+
+
+def _has_deal_keywords(text: str, deal_type: str) -> bool:
+    """Check if source text has deal keywords consistent with claimed type.
+    
+    Fix #6: Require source-text deal keywords, else drop.
+    """
+    text_lower = text.lower()
+    
+    type_keywords = {
+        'lic': [
+            'license', 'licensing', 'collaboration', 'partnership', 'agreement',
+            'exclusive rights', 'royalt', 'milestone', 'upfront',
+            '授权', '许可', '合作', '里程碑',
+        ],
+        'acq': [
+            'acquisition', 'acquire', 'acquired', 'merger', 'merge', 'merged',
+            'tender offer', 'buyout', 'purchase',
+            '收购', '并购', '合并',
+        ],
+        'inv': [
+            'financing', 'investment', 'investor', 'funding', 'series',
+            'round', 'offering', 'placement', 'ipo', 'public offering',
+            '融资', '投资', '配售', '上市',
+        ],
+    }
+    
+    keywords = type_keywords.get(deal_type, [])
+    for kw in keywords:
+        if kw in text_lower:
+            return True
+    
+    return False
+
+
+def _test_nonprofit_detection():
+    """Test nonprofit/consortium detection."""
+    tests = [
+        # Should reject - Fix #1: Biohub case from live test
+        ("Chan Zuckerberg Biohub project with NIH commitment", True),
+        ("Multi-party combined commitment of $1.8B", True),
+        ("Nonprofit foundation grant program", True),
+        ("DOE funding commitment to consortium", True),
+        # Fix #1: The actual Biohub case - $1.8B combined from multiple parties
+        ("Biohub announces $1.8B initiative with $500M own funds, $500M DOE, NIH data, $300M Google", True),
+        ("Meta, Google pledge combined $300M to nonprofit consortium", True),
+        # Should accept (normal deals)
+        ("Pfizer acquires biotech for $500 million", False),
+        ("Company announces Series B financing", False),
+        ("License agreement with milestone payments", False),
+        ("Alector receives $100 million upfront payment", False),
+    ]
+    
+    passed = 0
+    for text, expected in tests:
+        result = _is_nonprofit_or_consortium(text)
+        if result == expected:
+            passed += 1
+        else:
+            print(f"FAIL: '{text[:50]}...' -> {result} (expected {expected})")
+    
+    print(f"_test_nonprofit_detection: {passed}/{len(tests)} tests passed")
+    return passed == len(tests)
+
+
+def _test_company_verification():
+    """Test company name verification in source."""
+    tests = [
+        # Should pass - exact match
+        ("Pfizer", "Pfizer Inc. announces acquisition", True),
+        ("Alector", "Alector signs license agreement", True),
+        # Should pass - case insensitive
+        ("NOVARTIS", "Novartis AG reported today", True),
+        # Should pass - alias
+        ("J&J", "Johnson & Johnson announced", True),
+        # Should fail - not in source
+        ("Pfizer", "Merck announces new drug approval", False),
+        ("Novartis", "Company XYZ signs deal with ABC", False),
+        # Should fail - invented
+        ("InventedPharma", "Real company announces deal", False),
+    ]
+    
+    passed = 0
+    for company, source, expected in tests:
+        result = _verify_company_in_source(company, source)
+        if result == expected:
+            passed += 1
+        else:
+            print(f"FAIL: company '{company}' in '{source[:40]}...' -> {result} (expected {expected})")
+    
+    print(f"_test_company_verification: {passed}/{len(tests)} tests passed")
+    return passed == len(tests)
+
+
+def _test_deal_keywords():
+    """Test deal keyword detection."""
+    tests = [
+        # Should pass
+        ("The license agreement includes milestones", "lic", True),
+        ("Company acquired for $500M", "acq", True),
+        ("Series B financing round", "inv", True),
+        # Should fail - wrong type
+        ("License agreement with upfront", "acq", False),
+        ("Acquisition completed", "lic", False),
+        # Should fail - no deal keywords
+        ("Company announces new hiring", "inv", False),
+        ("Research results published", "lic", False),
+    ]
+    
+    passed = 0
+    for text, deal_type, expected in tests:
+        result = _has_deal_keywords(text, deal_type)
+        if result == expected:
+            passed += 1
+        else:
+            print(f"FAIL: '{text[:40]}...' type={deal_type} -> {result} (expected {expected})")
+    
+    print(f"_test_deal_keywords: {passed}/{len(tests)} tests passed")
+    return passed == len(tests)
+
+
+def _test_name_normalization():
+    """Test company name normalization - Fix #11."""
+    tests = [
+        # Should strip end suffixes
+        ("Pfizer Inc.", "pfizer"),
+        ("Novartis AG", "novartis"),
+        ("Roche Holding Ltd", "roche holding"),
+        # Fix #11: Should NOT strip ' ag'/' co'/' se' from middle of names
+        ("Diageo plc", "diageo"),
+        ("Boehringer Ingelheim", "boehringer ingelheim"),
+        ("Sanofi-Aventis SA", "sanofiaventis"),
+        # Chinese suffixes - order matters: 股份有限公司 before 有限公司 before 集团
+        ("上海医药集团股份有限公司", "上海医药"),
+        ("恒瑞医药", "恒瑞医药"),
+        ("百济神州有限公司", "百济神州"),
+    ]
+    
+    passed = 0
+    for name, expected in tests:
+        result = _normalize_company_name(name)
+        if result == expected:
+            passed += 1
+        else:
+            print(f"FAIL: '{name}' -> '{result}' (expected '{expected}')")
+    
+    print(f"_test_name_normalization: {passed}/{len(tests)} tests passed")
     return passed == len(tests)
 
 
@@ -1158,106 +1487,210 @@ def _is_biopharma_company(company_name: str, sic_codes: list = None, industry: s
 
 
 def _normalize_company_name(name: str) -> str:
-    """Normalize company name for deduplication."""
-    name = name.lower().strip()
-    for suffix in [", inc.", ", inc", " inc.", " inc", ", ltd.", ", ltd", " ltd.", " ltd",
-                   " limited", " corporation", " corp.", " corp", " co.", " co",
-                   " plc", " ag", " se", " sa", " nv", " bv",
-                   "有限公司", "股份有限公司", "集团", "控股"]:
-        name = name.replace(suffix, "")
-    name = re.sub(r'[^\w\s]', '', name)
-    name = re.sub(r'\s+', ' ', name).strip()
-    return name
+    """Normalize company name for deduplication.
+    
+    Fix #11: Only strip legal suffixes at the END with word boundaries.
+    Don't strip ' ag'/' co'/' se' from the middle of names.
+    """
+    name = name.strip()
+    
+    # Remove trailing legal suffixes with word boundaries
+    # Order matters - longer suffixes first to avoid partial matches
+    # Chinese suffixes must come first (most specific)
+    suffix_patterns = [
+        r'股份有限公司$',
+        r'有限公司$',
+        r'集团$',
+        r'控股$',
+        r',?\s+incorporated$',
+        r',?\s+inc\.?$',
+        r',?\s+limited$',
+        r',?\s+ltd\.?$',
+        r',?\s+corporation$',
+        r',?\s+corp\.?$',
+        r',?\s+company$',
+        r',?\s+co\.?$',
+        r'\s+plc$',
+        r'\s+ag$',
+        r'\s+se$',
+        r'\s+sa$',
+        r'\s+nv$',
+        r'\s+bv$',
+        r'\s+gmbh$',
+    ]
+    
+    name_lower = name.lower()
+    for pattern in suffix_patterns:
+        name_lower = re.sub(pattern, '', name_lower, flags=re.IGNORECASE)
+    
+    name_lower = re.sub(r'[^\w\s]', '', name_lower)
+    name_lower = re.sub(r'\s+', ' ', name_lower).strip()
+    return name_lower
 
 
-def _fetch_sec_filing_text(cik: str, accession: str, sec_ua: str, primary_doc_name: str = None, max_chars: int = 4000) -> str:
+def _fetch_sec_filing_text(cik: str, accession: str, sec_ua: str, primary_doc_name: str = None, max_chars: int = 20000) -> str:
     """Fetch and extract text from SEC filing primary document and EX-99.1 press release.
     
-    Fix #4: Use primary_doc_name from search result if provided, or parse -index.htm.
-    The index.json 'type' field is actually an icon name, not document type.
+    Fix #5: 
+    - Use accession WITH dashes in URL path
+    - Fetch BOTH primary doc AND EX-99.1 (not just one or the other)
+    - Raise char cap to 20k to capture $100 million which may appear later
+    - Extract windows around deal keywords for efficient text handling
     """
     import time
     import requests
     
     headers = {"User-Agent": sec_ua, "Accept": "text/html"}
     
+    # Fix #5(b): The accession number in the URL path needs dashes
+    # e.g., /Archives/edgar/data/1773087/000095017024116384 uses clean accession
+    # but the -index.htm file uses the accession with dashes
     accession_clean = accession.replace("-", "")
+    accession_dashed = accession if "-" in accession else f"{accession[:10]}-{accession[10:12]}-{accession[12:]}"
+    
     base_url = f"https://www.sec.gov/Archives/edgar/data/{cik}/{accession_clean}"
     
     text_parts = []
     
-    # If we have the primary doc name from the search result, use it directly
-    if primary_doc_name:
+    # Helper to extract deal-relevant windows from text
+    def extract_deal_windows(full_text: str, window_size: int = 2000) -> str:
+        """Extract windows around deal keywords to find relevant amounts."""
+        keywords = [
+            'million', 'billion', '$', 'upfront', 'milestone', 'license', 'collaboration',
+            'acquisition', 'merger', 'agreement', 'payment', 'consideration', 'royalt',
+            'equity', 'stake', 'financing', 'offering', 'placement'
+        ]
+        windows = []
+        text_lower = full_text.lower()
+        positions = set()
+        
+        for kw in keywords:
+            idx = 0
+            while True:
+                pos = text_lower.find(kw, idx)
+                if pos == -1:
+                    break
+                positions.add(pos)
+                idx = pos + 1
+        
+        if not positions:
+            return full_text[:max_chars]
+        
+        sorted_pos = sorted(positions)
+        merged_ranges = []
+        for pos in sorted_pos:
+            start = max(0, pos - window_size // 2)
+            end = min(len(full_text), pos + window_size // 2)
+            if merged_ranges and start <= merged_ranges[-1][1]:
+                merged_ranges[-1] = (merged_ranges[-1][0], max(merged_ranges[-1][1], end))
+            else:
+                merged_ranges.append((start, end))
+        
+        for start, end in merged_ranges:
+            windows.append(full_text[start:end])
+        
+        return "\n...\n".join(windows)[:max_chars]
+    
+    # Fetch the -index.htm to find document names and types
+    # Fix #5(b): Use proper URL with dashed accession for -index.htm
+    try:
+        time.sleep(0.12)
+        index_htm_url = f"{base_url}/{accession_dashed}-index.htm"
+        resp = requests.get(index_htm_url, headers=headers, timeout=30)
+        
+        if resp.status_code != 200:
+            # Try alternative format
+            index_htm_url = f"{base_url}/{accession_clean}-index.htm"
+            time.sleep(0.12)
+            resp = requests.get(index_htm_url, headers=headers, timeout=30)
+        
+        if resp.status_code == 200:
+            content = resp.text
+            
+            # Find 8-K or 6-K primary document
+            # Pattern: <td>8-K</td> ... <a href="filename.htm"> or <a href="/ix?doc=...">
+            primary_match = re.search(
+                r'<td[^>]*>\s*(8-K|6-K)\s*</td>.*?<a[^>]*href="([^"]+)"',
+                content, re.DOTALL | re.IGNORECASE
+            )
+            if primary_match:
+                doc_ref = primary_match.group(2)
+                time.sleep(0.12)
+                
+                # Handle iXBRL viewer URLs like /ix?doc=/Archives/...
+                if doc_ref.startswith('/ix?doc='):
+                    # Extract the actual document path
+                    actual_path = doc_ref.split('doc=')[-1]
+                    doc_url = f"https://www.sec.gov{actual_path}"
+                elif doc_ref.startswith('/'):
+                    doc_url = f"https://www.sec.gov{doc_ref}"
+                elif doc_ref.startswith('http'):
+                    doc_url = doc_ref
+                else:
+                    doc_url = f"{base_url}/{doc_ref}"
+                
+                doc_resp = requests.get(doc_url, headers=headers, timeout=60)
+                if doc_resp.status_code == 200:
+                    text = _strip_html(doc_resp.text)
+                    if len(text) > 100:
+                        text_parts.append(extract_deal_windows(text))
+            
+            # Fix #5(d): ALSO fetch EX-99.1 press release (not "instead of")
+            ex_matches = re.finditer(
+                r'<td[^>]*>\s*(EX-99\.?\d*|99\.\d+)\s*</td>.*?<a[^>]*href="([^"]+)"',
+                content, re.DOTALL | re.IGNORECASE
+            )
+            for ex_match in ex_matches:
+                ex_ref = ex_match.group(2)
+                time.sleep(0.12)
+                
+                # Handle various URL formats
+                if ex_ref.startswith('/ix?doc='):
+                    actual_path = ex_ref.split('doc=')[-1]
+                    ex_url = f"https://www.sec.gov{actual_path}"
+                elif ex_ref.startswith('/'):
+                    ex_url = f"https://www.sec.gov{ex_ref}"
+                elif ex_ref.startswith('http'):
+                    ex_url = ex_ref
+                else:
+                    ex_url = f"{base_url}/{ex_ref}"
+                
+                ex_resp = requests.get(ex_url, headers=headers, timeout=60)
+                if ex_resp.status_code == 200:
+                    text = _strip_html(ex_resp.text)
+                    if len(text) > 100:
+                        text_parts.append(extract_deal_windows(text))
+                        break  # Just get the first EX-99
+    except Exception as e:
+        logging.debug("SEC index.htm parsing failed: %s", e)
+    
+    # If primary_doc_name provided from search, also try it
+    if primary_doc_name and not text_parts:
         try:
             time.sleep(0.12)
             doc_url = f"{base_url}/{primary_doc_name}"
-            doc_resp = requests.get(doc_url, headers=headers, timeout=30)
+            doc_resp = requests.get(doc_url, headers=headers, timeout=60)
             if doc_resp.status_code == 200:
                 text = _strip_html(doc_resp.text)
                 if len(text) > 100:
-                    text_parts.append(text[:max_chars // 2])
+                    text_parts.append(extract_deal_windows(text))
         except Exception as e:
             logging.debug("SEC primary doc fetch failed: %s", e)
     
-    # Fetch the -index.htm to find document names and types
-    if not text_parts:
-        try:
-            time.sleep(0.12)
-            # The -index.htm page has a table with Type column showing "8-K", "EX-99.1", etc.
-            index_htm_url = f"{base_url}/{accession.replace('-', '')}-index.htm"
-            resp = requests.get(index_htm_url, headers=headers, timeout=30)
-            
-            if resp.status_code == 200:
-                # Parse the HTML table to find documents by Type
-                # Pattern: <td>8-K</td> or <td>EX-99.1</td> followed by <a href="filename.htm">
-                content = resp.text
-                
-                # Find 8-K or 6-K document
-                primary_match = re.search(
-                    r'<td[^>]*>\s*(8-K|6-K)\s*</td>.*?<a[^>]*href="([^"]+\.htm)"',
-                    content, re.DOTALL | re.IGNORECASE
-                )
-                if primary_match:
-                    doc_name = primary_match.group(2)
-                    time.sleep(0.12)
-                    doc_url = f"{base_url}/{doc_name}"
-                    doc_resp = requests.get(doc_url, headers=headers, timeout=30)
-                    if doc_resp.status_code == 200:
-                        text = _strip_html(doc_resp.text)
-                        if len(text) > 100:
-                            text_parts.append(text[:max_chars // 2])
-                
-                # Find EX-99.1 press release
-                ex_match = re.search(
-                    r'<td[^>]*>\s*(EX-99\.?\d?|99\.\d+)\s*</td>.*?<a[^>]*href="([^"]+\.(?:htm|txt))"',
-                    content, re.DOTALL | re.IGNORECASE
-                )
-                if ex_match:
-                    ex_name = ex_match.group(2)
-                    time.sleep(0.12)
-                    ex_url = f"{base_url}/{ex_name}"
-                    ex_resp = requests.get(ex_url, headers=headers, timeout=30)
-                    if ex_resp.status_code == 200:
-                        text = _strip_html(ex_resp.text)
-                        if len(text) > 100:
-                            text_parts.append(text[:max_chars // 2])
-        except Exception as e:
-            logging.debug("SEC index.htm parsing failed: %s", e)
-    
     # Fallback: try common document names directly
     if not text_parts:
-        try:
-            for doc_name in ["8-k.htm", "6-k.htm", "ex99-1.htm", "ex991.htm"]:
+        for doc_name in ["8-k.htm", "6-k.htm", "ex99-1.htm", "ex991.htm", "ex99.htm"]:
+            try:
                 time.sleep(0.12)
                 doc_url = f"{base_url}/{doc_name}"
                 resp = requests.get(doc_url, headers=headers, timeout=30)
                 if resp.status_code == 200:
                     text = _strip_html(resp.text)
                     if len(text) > 100:
-                        text_parts.append(text[:max_chars])
+                        text_parts.append(extract_deal_windows(text))
                         break
-        except Exception as e:
-            logging.debug("SEC fallback fetch failed: %s", e)
+            except Exception as e:
+                logging.debug("SEC fallback fetch failed: %s", e)
     
     combined = "\n\n".join(text_parts)
     return combined[:max_chars]
@@ -1669,15 +2102,7 @@ def fetch_all(config: dict) -> list[dict]:
     start_for_filings = end - timedelta(days=default_days)
     filing_rows, filing_stats = fetch_filing_sources(start_for_filings, filing_limit)
     
-    # Fix #7: Dedup by company+type using structured company field
-    filing_keys = set()
-    for row in filing_rows:
-        company = _normalize_company_name(row.get("company", ""))
-        title_lower = row.get("title", "").lower() + " " + row.get("summary", "").lower()
-        deal_type = _classify_deal_type(title_lower) or "inv"
-        filing_keys.add((company, deal_type))
-        row["_dedup_key"] = (company, deal_type)
-    
+    # Fix #12: Remove unused dedup block - actual dedup happens in claude_draft
     filing_count = 0
     for row in filing_rows:
         url = row["url"]
@@ -1686,9 +2111,6 @@ def fetch_all(config: dict) -> list[dict]:
         seen.add(url)
         rows.append(row)
         filing_count += 1
-    
-    if filing_keys:
-        logging.info("Filing dedup keys: %d unique (company, deal_type) pairs", len(filing_keys))
     
     for source_name, (count, status) in filing_stats.items():
         source_stats.append({"name": source_name, "status": status, "count": count})
@@ -2116,6 +2538,11 @@ field 必须是：{json.dumps(FIELDS, ensure_ascii=False)}
         is_filing = raw.get("is_filing") or src.get("filing_source")
         source_text = src.get("filing_text", "") if is_filing else src.get("summary", "")
         
+        # Fix #1: Reject nonprofit/government/consortium initiatives
+        if _is_nonprofit_or_consortium(source_text):
+            logging.warning("丢弃非营利/政府/联盟项目：%s", url)
+            continue
+        
         # Fix #6: Validate model's deal type against source text
         kinds = [k for k in (raw.get("kinds") or []) if k in {"lic", "acq", "inv"}]
         source_classified = _classify_deal_type(source_text)
@@ -2132,6 +2559,11 @@ field 必须是：{json.dumps(FIELDS, ensure_ascii=False)}
             logging.warning("交易类型与来源不符，使用来源分类：%s (%s -> %s)", url, kinds[0], source_classified)
             kinds = [source_classified]
         
+        # Fix #6: Require deal keywords consistent with claimed type
+        if not _has_deal_keywords(source_text, kinds[0]):
+            logging.warning("来源缺少交易关键词，丢弃：%s (type=%s)", url, kinds[0])
+            continue
+        
         # Get company from structured field or extract from title
         company = (raw.get("company") or "").strip()
         counterparty = (raw.get("counterparty") or "").strip()
@@ -2147,6 +2579,16 @@ field 必须是：{json.dumps(FIELDS, ensure_ascii=False)}
                 else:
                     company = title[:30]
         
+        # Fix #2: Verify company name appears in source text
+        if not _verify_company_in_source(company, source_text):
+            logging.warning("公司名未在来源中找到，丢弃：%s (company=%s)", url, company)
+            continue
+        
+        # Fix #2: Verify counterparty if provided
+        if counterparty and not _verify_company_in_source(counterparty, source_text):
+            logging.warning("交易对手未在来源中找到，丢弃字段：%s (counterparty=%s)", url, counterparty)
+            counterparty = ""
+        
         # Normalize money format
         money = (raw.get("money") or "未披露").strip()
         money = re.sub(r'^\$(\d+(?:\.\d+)?)\s*亿', r'\1 亿美元', money)
@@ -2158,13 +2600,21 @@ field 必须是：{json.dumps(FIELDS, ensure_ascii=False)}
                 logging.warning("金额未在来源中找到，改为未披露：%s -> %s", url, money)
                 money = "未披露"
         
-        # Fix #2: Verify upfront, milestones, equity for BOTH filing and news
+        # Fix #4: Verify upfront, milestones, equity for BOTH filing and news
         upfront = (raw.get("upfront") or "").strip()
+        # Fix #10: Remove doubled wording like '首付：1亿美元首付'
+        if upfront:
+            upfront = re.sub(r'首付[：:]\s*', '', upfront)
+            upfront = re.sub(r'\s*首付$', '', upfront)
         if upfront and not _verify_amount_in_text(upfront, source_text):
             logging.warning("首付金额未验证，丢弃：%s -> %s", url, upfront)
             upfront = ""
         
         milestones = (raw.get("milestones") or "").strip()
+        # Fix #10: Remove doubled wording
+        if milestones:
+            milestones = re.sub(r'里程碑[：:]\s*', '', milestones)
+            milestones = re.sub(r'\s*里程碑$', '', milestones)
         if milestones and not _verify_amount_in_text(milestones, source_text):
             logging.warning("里程碑金额未验证，丢弃：%s -> %s", url, milestones)
             milestones = ""
@@ -2190,7 +2640,15 @@ field 必须是：{json.dumps(FIELDS, ensure_ascii=False)}
         # Fix #1: Build title from verified fields only
         title = _build_deal_title(company, counterparty, kinds[0], money)
         
-        amount_source = "filing" if is_filing else "news"
+        # Fix #7: Determine amount_source - news if ANY amount field comes from news
+        if is_filing:
+            amount_source = "filing"
+        else:
+            # For news, check if we have any verified amounts
+            if money != "未披露" or upfront or milestones or equity:
+                amount_source = "news"
+            else:
+                amount_source = "unknown"
         
         deal_entry = {
             "url": url,
@@ -2220,7 +2678,7 @@ field 必须是：{json.dumps(FIELDS, ensure_ascii=False)}
         else:
             news_deals.append(deal_entry)
     
-    # Fix #7: Dedup using structured company field
+    # Dedup using structured company field (Fix #12: This is the actual dedup, remove unused block)
     filing_dedup_keys = set()
     for deal in filing_deals:
         company = _normalize_company_name(deal.get("company", ""))
@@ -2257,59 +2715,68 @@ field 必须是：{json.dumps(FIELDS, ensure_ascii=False)}
     return {"articles": articles[:cap_a], "deals": deals}
 
 
-def _check_image_for_text(image_bytes: bytes) -> bool:
+def _check_image_for_text(image_bytes: bytes, max_retries: int = 2) -> bool | None:
     """Check if image contains text using vision model.
     
-    Fix #9: Returns True if text is detected, False otherwise.
+    Fix #9: Fail closed - return None on error (caller should regenerate/omit).
+    Returns True if text detected, False if no text, None on error.
     """
     from openai import OpenAI
+    import time
     
     client = OpenAI()
     
     # Convert to base64
     b64_image = base64.b64encode(image_bytes).decode('utf-8')
     
-    try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": "Does this image contain ANY text, letters, words, labels, numbers, or annotations? Answer only 'YES' or 'NO'."
-                        },
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/png;base64,{b64_image}"
+    for attempt in range(max_retries + 1):
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Does this image contain ANY text, letters, words, labels, numbers, or annotations? Answer only 'YES' or 'NO'."
+                            },
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/png;base64,{b64_image}"
+                                }
                             }
-                        }
-                    ]
-                }
-            ],
-            max_tokens=10
-        )
-        
-        answer = response.choices[0].message.content.strip().upper()
-        has_text = "YES" in answer
-        
-        if has_text:
-            logging.warning("图片包含文字，需要重新生成")
-        
-        return has_text
-        
-    except Exception as e:
-        logging.warning("图片文字检查失败: %s", e)
-        return False  # If check fails, assume no text
+                        ]
+                    }
+                ],
+                max_tokens=10
+            )
+            
+            answer = response.choices[0].message.content.strip().upper()
+            has_text = "YES" in answer
+            
+            if has_text:
+                logging.warning("图片包含文字，需要重新生成")
+            
+            return has_text
+            
+        except Exception as e:
+            logging.warning("图片文字检查失败 (attempt %d/%d): %s", attempt + 1, max_retries + 1, e)
+            if attempt < max_retries:
+                time.sleep(1)
+    
+    # Fix #9: Fail closed - return None so caller knows check failed
+    logging.warning("图片文字检查重试后仍失败，返回 None（将重新生成或跳过）")
+    return None
 
 
 def draw_image(prompt: str, dest: Path, max_retries: int = 2) -> bool:
     """Generate image with text-free verification.
     
     Fix #9: Post-generation check for text, regenerate if needed.
-    Returns True if successful, False if all attempts had text.
+    Fail closed: if check errors, retry then regenerate or omit.
+    Returns True if successful, False if all attempts failed.
     """
     from openai import OpenAI
 
@@ -2338,17 +2805,23 @@ def draw_image(prompt: str, dest: Path, max_retries: int = 2) -> bool:
             raw = result.data[0].b64_json
             image_bytes = base64.b64decode(raw)
             
-            # Check for text
-            if not _check_image_for_text(image_bytes):
+            # Check for text - returns True (has text), False (no text), or None (error)
+            check_result = _check_image_for_text(image_bytes)
+            
+            if check_result is False:
                 # No text detected, save and return success
                 dest.write_bytes(image_bytes)
                 return True
             
-            # Text detected, try again or give up
+            # Fix #9: check_result is True (text found) or None (check failed)
+            # Either way, we should regenerate or give up
+            if check_result is None:
+                logging.warning("图片 %s 文字检查失败，视为有文字处理", dest.name)
+            
             if attempt < max_retries:
-                logging.warning("图片 %s 含文字，重试...", dest.name)
+                logging.warning("图片 %s 含文字或检查失败，重试...", dest.name)
             else:
-                logging.warning("图片 %s 重试后仍含文字，跳过", dest.name)
+                logging.warning("图片 %s 重试后仍有问题，跳过", dest.name)
                 return False
                 
         except Exception as e:
@@ -2664,6 +3137,10 @@ def main() -> None:
         all_passed &= _test_classify_deal_type()
         all_passed &= _test_strip_unverified_numbers()
         all_passed &= _test_deal_number_stripping()
+        all_passed &= _test_nonprofit_detection()
+        all_passed &= _test_company_verification()
+        all_passed &= _test_deal_keywords()
+        all_passed &= _test_name_normalization()
         all_passed &= _test_sec_filing_fetch()
         print(f"\n{'All tests passed!' if all_passed else 'Some tests failed.'}")
         raise SystemExit(0 if all_passed else 1)
