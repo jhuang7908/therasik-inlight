@@ -328,8 +328,12 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 .idate{font-size:11px;letter-spacing:.03em;color:var(--muted);font-weight:700;font-variant-numeric:tabular-nums}
 .kind{font-size:10.5px;padding:0 7px;border-radius:999px;border:1px solid var(--kc);color:var(--kc)}
 
-.money{font-size:13px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums}
+.money{font-size:13px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .money small{font-weight:400;color:var(--muted);font-size:11.5px}
+.amount-source{font-size:10px;font-weight:500;padding:1px 5px;border-radius:3px}
+.amount-source.news{background:#fff3cd;color:#856404}
+.amount-source.filing{background:#d4edda;color:#155724}
+.deal-details{font-size:11.5px;color:var(--muted);margin:4px 0 0 0;line-height:1.4}
 .item p{font-size:12.5px;color:var(--muted);max-width:none;line-height:1.55}
 .item .foot{display:flex;gap:12px;flex-wrap:wrap;font-size:12px}
 .empty{font-size:14px;color:var(--muted);background:var(--raise);border-radius:10px;padding:18px}
@@ -1065,11 +1069,24 @@ function renderChips(){
 function dealCard(x,i){
   const k0=x.kinds[0], kc=KINDS[k0][1];
   const [y,mo]=x.d.split('-');
+  // Fix #8: Show amount source label (据报道 for news, 披露文件 for filings)
+  let amountLabel='';
+  if(x.m&&x.m!=='未披露'){
+    if(x.amount_source==='news') amountLabel='<span class="amount-source news">据报道</span>';
+    else if(x.is_filing) amountLabel='<span class="amount-source filing">披露文件</span>';
+  }
+  // Build upfront/milestones/equity line
+  let detailParts=[];
+  if(x.upfront) detailParts.push('首付：'+x.upfront);
+  if(x.milestones) detailParts.push('里程碑：'+x.milestones);
+  if(x.equity) detailParts.push('股权：'+x.equity);
+  const detailLine=detailParts.length?`<p class="deal-details">${detailParts.join(' · ')}</p>`:'';
   return `<div class="item" style="--kc:${kc}">
     ${cover(KIND_MOTIF[k0],KIND_CVAR[k0],`img/kinds/${k0}.jpg?v=4`)}
     <div class="cbody">
       <h3>${x.t}</h3>
-      <div class="money">${x.m}</div>
+      <div class="money">${x.m}${amountLabel}</div>
+      ${detailLine}
       <div class="metarow"><span class="idate">${y}.${String(+mo).padStart(2,'0')}</span>
         ${x.kinds.map(k=>`<span class="kind" style="--kc:${KINDS[k][1]}">${KINDS[k][0]}</span>`).join('')}
         <button class="expbtn" type="button" aria-expanded="false" data-exp="${i}">详情 ↓</button></div>

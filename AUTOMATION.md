@@ -22,6 +22,7 @@ Windows 上如果 `python` 不在 PATH 里，用 `py -3` 代替 `python`。
 | `OPENAI_API_KEY` | `run_weekly.py` 配图和公众号封面 |
 | `ANTHROPIC_MODEL` | 可选，默认 `claude-sonnet-5-5`（脚本启动时会检查模型可用性） |
 | `OPENAI_IMAGE_MODEL` | 可选，默认 `gpt-image-1` |
+| `SEC_USER_AGENT` | 可选，SEC EDGAR 来源需要。格式：`公司名 contact@example.com`。未设置则跳过 SEC 来源 |
 | `WECHAT_APPID` | 只有 `publish_wechat.py` 需要 |
 | `WECHAT_APPSECRET` | 只有 `publish_wechat.py` 需要 |
 
@@ -55,6 +56,25 @@ python publish_wechat.py --week 2026-10-07
 ## 新闻源
 
 名单在 `sources.yaml`。每条有名称、学术或行业、`rss` 或 `pubmed`、首页和 feed。改来源只改这个文件。
+
+## 交易披露来源（官方公告）
+
+除了新闻源，脚本还会自动抓取三个官方披露平台的生物医药相关交易公告：
+
+| 来源 | 覆盖范围 | 环境变量 |
+| --- | --- | --- |
+| SEC EDGAR | 美股 8-K/6-K（SIC 2834/2835/2836/8731） | 需要 `SEC_USER_AGENT` |
+| HKEX 披露易 | 港股医药公司授权、并购、配售公告 | 无 |
+| 巨潮资讯 | A股医药生物公司重大合同、授权、收购 | 无（境外可能被限流） |
+
+**交易分类**：
+- `lic`（授权合作）：许可/授权/合作协议
+- `acq`（并购）：收购/并购/重大资产交易
+- `inv`（融资/IPO）：配售/认购/IPO/S-1/F-1
+
+**金额来源标注**：每条交易会标注金额来自 `filing`（官方披露）、`news`（新闻报道）还是 `unknown`。官方披露的 `money`、`upfront`、`milestones`、`equity` 字段只填文件里明确写出的数字；没有则写"未披露"。
+
+**失败处理**：每个来源独立抓取，一个失败不影响其他来源。巨潮资讯从境外访问可能超时，会重试 3 次后跳过。
 
 ## 输出文件
 
