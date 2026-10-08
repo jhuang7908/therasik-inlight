@@ -80,6 +80,24 @@ _PREPRINT_PUBLISHED_RE = re.compile(
     r'published in|peer[-\s]?reviewed|accepted in',
     re.IGNORECASE,
 )
+_PREPRINT_NEGATION_RE = re.compile(
+    r'尚未|未经|未经过|没有经过|并非|不是|未获|未接受|'
+    r'not\s+(?:yet\s+)?(?:peer|published)|non[- ]peer',
+    re.IGNORECASE,
+)
+
+
+def _preprint_claims_publication(text: str) -> bool:
+    """True only for affirmative journal/peer-review claims, not '尚未经同行评审'."""
+    if not text or not _PREPRINT_PUBLISHED_RE.search(text):
+        return False
+    for sent in re.split(r'[。！？；;\n]', text):
+        if not _PREPRINT_PUBLISHED_RE.search(sent):
+            continue
+        if _PREPRINT_NEGATION_RE.search(sent):
+            continue
+        return True
+    return False
 
 AUTHOR_PLACEHOLDER_RE = re.compile(
     r"原文未提供|原文未列出|原文未报告作者|未提供作者|未列出作者|作者信息"
@@ -2406,8 +2424,8 @@ def _is_qualitative_datapoint(value: str, meaning: str) -> bool:
     blob = f"{value} {meaning}"
     return bool(re.search(
         r'(?i)[ivxⅠ-Ⅻ]+期|phase\s*[ivx]|wild[- ]type|knock[- ]?out|'
-        r'melanoma|carcinoma|tissue|tumor type|genotype|biomarker|'
-        r'阳性|阴性|野生型|突变型|组织|瘤种|内型|分型',
+        r'genotype|biomarker|'
+        r'阳性|阴性|野生型|突变型|组织分型|瘤种|内型|分型',
         blob,
     ))
 
@@ -2490,7 +2508,7 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
     if (
         art.get("evidence_level") == "preprint"
         or PREPRINT_SOURCE_RE.search(str(art.get("url") or "") + " " + str(art.get("source") or ""))
-    ) and _PREPRINT_PUBLISHED_RE.search(all_text):
+    ) and _preprint_claims_publication(all_text):
         problems.append("预印本正文不得声称已在期刊发表或已经同行评议")
 
     # Identifier tokens in the output (NCT…, IL-6, CD19, …) must occur in
