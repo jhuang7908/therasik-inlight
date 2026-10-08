@@ -134,10 +134,11 @@ class TestRealFilings:
         assert "11.7 亿美元" in deal["structure"] or "最高" in deal["structure"], \
             f"Structure should show milestones, got {deal['structure']}"
     
-    def test_rocket_hercules_credit_facility(self):
-        """Test Rocket-Hercules credit facility extraction.
+    def test_rocket_hercules_credit_facility_out_of_scope(self):
+        """Test Rocket-Hercules credit facility is OUT OF SCOPE.
         
-        Expected: Credit facility 最高 1.5 亿美元, 已提取 3,500 万美元
+        Debt facilities are no longer published per precision-first design.
+        Expected: None (deal rejected as out_of_scope)
         """
         filing_text = load_fixture("rocket_hercules.txt")
         
@@ -150,21 +151,16 @@ class TestRealFilings:
             claude_response=ROCKET_HERCULES_RESPONSE
         )
         
-        assert deal is not None, "Rocket-Hercules deal should be extracted"
-        assert deal["deal_type"] == "debt_facility"
-        assert "Hercules" in deal["counterparty"]
-        assert deal["filer_role"] == "borrower"
+        # Debt facility is out of scope - should be rejected
+        assert deal is None, "Rocket-Hercules debt_facility should be out of scope"
+    
+    def test_rocket_hercules_credit_facility_OBSOLETE(self):
+        """OBSOLETE: Old test for when debt_facility was in scope.
         
-        # Check amounts
-        amounts = deal.get("verified_amounts", [])
-        
-        # Should have facility_size ($150M up to)
-        facility_amounts = [a for a in amounts if a["kind"] == "facility_size"]
-        assert len(facility_amounts) == 1
-        assert facility_amounts[0]["value_millions"] == 150
-        assert facility_amounts[0]["up_to"] is True
-        
-        # Should have drawn amount ($35M)
+        Keeping for reference. Expected: Credit facility 最高 1.5 亿美元, 已提取 3,500 万美元
+        Now skipped because debt_facility is out of scope.
+        """
+        pytest.skip("Debt facility is now out of scope per precision-first design")
         drawn_amounts = [a for a in amounts if a["kind"] == "drawn"]
         assert len(drawn_amounts) == 1
         assert drawn_amounts[0]["value_millions"] == 35
@@ -947,8 +943,11 @@ class TestEndToEndMain:
         assert "里程碑" in structure, \
             f"Should have milestones, got structure: {structure}"
     
-    def test_rocket_hercules_renders_correct_lines(self):
-        """Test Rocket-Hercules debt facility renders correct exact lines."""
+    def test_rocket_hercules_out_of_scope(self):
+        """Test Rocket-Hercules debt facility is OUT OF SCOPE.
+        
+        Debt facilities are no longer published per precision-first design.
+        """
         filing_text = load_fixture("rocket_hercules.txt")
         
         deal = sec_deals.process_sec_deal(
@@ -960,19 +959,8 @@ class TestEndToEndMain:
             claude_response=ROCKET_HERCULES_RESPONSE
         )
         
-        assert deal is not None, "Rocket-Hercules deal should be extracted"
-        
-        # Check exact title
-        assert "Rocket" in deal["title"] or "ROCKET" in deal["title"]
-        assert "Hercules" in deal["title"]
-        assert "贷款" in deal["title"]
-        
-        # Check amounts in structure field - should have facility size and drawn
-        structure = deal.get("structure", "")
-        assert "贷款额度" in structure or "1.5 亿" in structure or "15,000" in structure, \
-            f"Should have facility size, got structure: {structure}"
-        assert "已提取" in structure or "3,500" in structure, \
-            f"Should have drawn amount, got structure: {structure}"
+        # Debt facility is out of scope - should be rejected
+        assert deal is None, "Rocket-Hercules debt_facility should be out of scope"
     
     def test_immunome_bms_explicitly_dropped_with_reason(self, caplog):
         """Test Immunome-BMS is dropped and logs explicit reason."""
