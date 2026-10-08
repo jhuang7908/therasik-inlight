@@ -1910,6 +1910,107 @@ class TestDefinedTermsDecideParties:
         )
         assert role is None
 
+    def test_jurisdiction_clause_is_not_the_parent(self):
+        cases = [
+            (
+                "Lumen Therapeutics B.V., a private limited liability company "
+                "organized under the laws of the Netherlands (\"Parent\")",
+                "parent",
+                "lumen",
+            ),
+            (
+                "Lumen Therapeutics B.V., a private limited liability company "
+                "organized under Dutch Law (\"Parent\")",
+                "parent",
+                "lumen",
+            ),
+            (
+                "Harbor Bio AG, a corporation organized under the laws of "
+                "Switzerland (\"Purchaser\")",
+                "purchaser",
+                "harbor",
+            ),
+            (
+                "Nimbus Labs K.K., a kabushiki kaisha organized under Japanese "
+                "Law (the \"Company\")",
+                "company",
+                "nimbus",
+            ),
+            (
+                "Thistle Rx Ltd, a private limited company incorporated under "
+                "the laws of England and Wales (\"Parent\")",
+                "parent",
+                "thistle",
+            ),
+            (
+                "Willow Pharma SA, a société anonyme organized under Belgian "
+                "law (\"Purchaser\")",
+                "purchaser",
+                "willow",
+            ),
+            (
+                "Helios BidCo LLC (a Delaware limited liability company) "
+                "(\"Purchaser\")",
+                "purchaser",
+                "helios",
+            ),
+            (
+                "Lumen Therapeutics B.V. (besloten vennootschap met beperkte "
+                "aansprakelijkheid) (\"Parent\")",
+                "parent",
+                "lumen",
+            ),
+        ]
+        forbidden = (
+            "netherlands", "dutch", "switzerland", "swiss", "japan",
+            "england", "wales", "belgian", "belgium", "delaware", "law",
+        )
+        for text, term, must_have in cases:
+            names = sec_deals.parse_defined_terms(text).get(term, [])
+            assert names, f"expected a company for {term} in {text[:60]!r}"
+            blob = " ".join(names).lower()
+            assert must_have in blob, names
+            for word in forbidden:
+                assert word not in blob, f"{word!r} leaked from {text[:60]!r}: {names}"
+
+    def test_never_remap_company_or_parent_to_jurisdiction(self):
+        text = (
+            "the target is a private limited liability company organized "
+            "under Dutch Law (the \"Company\") and the buyer is organized "
+            "under the laws of the Netherlands (\"Parent\")."
+        )
+        terms = sec_deals.parse_defined_terms(text)
+        assert "company" not in terms or all(
+            sec_deals.is_plausible_party_name(n) for n in terms.get("company", [])
+        )
+        assert "parent" not in terms or all(
+            sec_deals.is_plausible_party_name(n) for n in terms.get("parent", [])
+        )
+        assert sec_deals._the_company_is_filer(terms, "Osprey Pharma Inc.") is True
+
+    def test_process_drops_jurisdiction_as_acquirer(self):
+        filing = (
+            "Lumen Therapeutics B.V., a private limited liability company "
+            "organized under the laws of the Netherlands (\"Parent\"), agreed "
+            "that Parent will acquire Kestrel Rx, Inc. for $400 million. "
+            "Kestrel Rx, Inc. is the target."
+        )
+        deal = sec_deals.process_sec_deal(
+            filing_text=filing,
+            filer_name="Kestrel Rx, Inc.",
+            filing_url="https://test",
+            filing_date="2026-10-05",
+            event_date="2026-10-01",
+            claude_response={
+                "deal_type": "acquisition",
+                "counterparty_name": "Netherlands",
+                "type_quote": "Parent will acquire Kestrel Rx, Inc. for $400 million",
+                "counterparty_quote": "organized under the laws of the Netherlands",
+                "amounts": [{"kind": "purchase_price", "quote": "for $400 million"}],
+            },
+        )
+        assert deal is None
+
 
 class TestEquityNeverADealPayment:
     def test_private_placement_not_upfront(self):
