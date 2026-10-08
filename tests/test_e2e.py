@@ -359,8 +359,30 @@ sources:
         
         result = draft_single_article(item, "brief", {})
         
-        # Should return None on error, not raise
+        # Should return None on error, not raise. API errors are not an OpenAI switch.
         assert result is None
+
+        refused = MockMessage(content=[], stop_reason="refusal")
+        mock_client.messages.create.side_effect = None
+        mock_client.messages.create.return_value = refused
+        oai_fn = MagicMock()
+        oai_fn.name = "submit_article"
+        oai_fn.arguments = json.dumps({**MOCK_ARTICLE_DATA, "tier": "brief"})
+        oai_tc = MagicMock()
+        oai_tc.function = oai_fn
+        oai_msg = MagicMock()
+        oai_msg.tool_calls = [oai_tc]
+        oai_choice = MagicMock()
+        oai_choice.message = oai_msg
+        oai_resp = MagicMock()
+        oai_resp.choices = [oai_choice]
+        with patch.dict(os.environ, {"OPENAI_API_KEY": "test-openai", "OPENAI_MODEL": "gpt-4o"}):
+            with patch("openai.OpenAI") as oai_cls:
+                oai_cls.return_value.chat.completions.create.return_value = oai_resp
+                switched = draft_single_article(item, "brief", {})
+        assert switched is not None
+        assert switched.get("drafter_model") == "gpt-4o"
+        assert mock_client.messages.create.call_count >= 2
     
     @patch('anthropic.Anthropic')
     @patch('inlight_articles._http_get')

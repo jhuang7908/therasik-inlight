@@ -286,6 +286,9 @@ def extract_fig_captions_from_html(html: str, max_chars: int = 6000) -> str:
 
     def _add(text: str) -> None:
         text = re.sub(r"\s+", " ", html_visible_text(text or "")).strip()
+        text = re.sub(r"(?i)\bFull size image\b", " ", text)
+        text = re.sub(r"查看大图|下载高清图|全尺寸图片", " ", text)
+        text = re.sub(r"\s+", " ", text).strip()
         if text and text not in seen and not re.fullmatch(r"(?i)fig(?:ure)?\.?\s*\d+", text):
             seen.add(text)
             caps.append(text)

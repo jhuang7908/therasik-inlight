@@ -635,6 +635,29 @@ class TestQcGateAndGemini(unittest.TestCase):
         )
         self.assertEqual(no_floor, ["one_liner 字数 28，要求 40–70"])
         self.assertFalse(no_floor_overs)
+        import logging
+        slack_records = []
+
+        class _H(logging.Handler):
+            def emit(self, record):
+                slack_records.append(record.getMessage())
+
+        h = _H()
+        log = logging.getLogger()
+        prev = log.level
+        log.setLevel(logging.INFO)
+        log.addHandler(h)
+        try:
+            _apply_section_band_slack(art, ["results 字数 1200，要求 500–700"])
+            _apply_section_band_slack(art, ["title 字数 15，要求 20–40"])
+            short_art = dict(art)
+            short_art["results"] = "测"
+            _apply_section_band_slack(short_art, ["results 字数 1，要求 500–700"])
+        finally:
+            log.removeHandler(h)
+            log.setLevel(prev)
+        blob = "\n".join(slack_records)
+        self.assertIn("withheld", blob)
 
         item = EnrichedItem(
             url="https://doi.org/10.1/ft-over",
@@ -687,6 +710,29 @@ class TestQcGateAndGemini(unittest.TestCase):
         )
         self.assertIsNone(out)
         self.assertTrue(any("out-of-scope" in d["reason"] for d in stats["drops"]))
+        import logging
+        oos = []
+
+        class _H(logging.Handler):
+            def emit(self, record):
+                oos.append(record.getMessage())
+
+        h = _H()
+        log = logging.getLogger()
+        prev = log.level
+        log.setLevel(logging.INFO)
+        log.addHandler(h)
+        try:
+            _process_single_article(
+                {"url": item.url, "tier": "brief", "field": "none"},
+                {item.url: item},
+                {"min_deep": 3, "max_brief": 2},
+                stats={"drops": [], "qc_report": {"articles": []}},
+            )
+        finally:
+            log.removeHandler(h)
+            log.setLevel(prev)
+        self.assertTrue(any("out of scope" in m.lower() for m in oos), oos)
 
     def test_production_fields_match_pr8(self):
         from inlight_fields import FIELDS, FIELD_PROMPT_RULES

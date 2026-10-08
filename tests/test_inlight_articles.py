@@ -560,14 +560,19 @@ class TestXMLExtraction(unittest.TestCase):
         <html><body>
         <h2>Methods</h2>
         <h3>Animal care and housing</h3>
-        <p>Animals were housed under IACUC-approved veterinary husbandry conditions with standard chow.</p>
+        <p>Animals were housed under IACUC-approved veterinary husbandry conditions with standard chow and daily veterinary checks described at length.</p>
+        <h3>Study design</h3>
+        <p>This was an open-label study. Mice were randomized 1:1.</p>
+        <h3>Participants</h3>
+        <p>Eligible patients had measurable disease and ECOG 0–1.</p>
         <h3>Statistical analysis</h3>
-        <p>Mice were randomized 1:1. Primary endpoint was ORR among 36 patients.</p>
+        <p>Primary endpoint was ORR among 36 patients. Two-sided alpha 0.05.</p>
         <h2>Results</h2>
         <figure>
           <figcaption>
             <p class="c-article-section__figure-caption">Fig. 1: Overview.</p>
             <p class="c-article-section__figure-desc">Mice were randomized 1:1. ORR was 36% in the treated arm.</p>
+            Full size image
           </figcaption>
         </figure>
         </body></html>
@@ -575,6 +580,7 @@ class TestXMLExtraction(unittest.TestCase):
         methods = extract_design_methods_from_html(html)
         self.assertIn("randomized", methods)
         self.assertIn("ORR", methods)
+        self.assertIn("36 patients", methods)
         self.assertTrue(
             methods.find("randomized") < methods.find("housed")
             or "housed" not in methods,
@@ -583,6 +589,7 @@ class TestXMLExtraction(unittest.TestCase):
         figs = extract_fig_captions_from_html(html)
         self.assertIn("36%", figs)
         self.assertIn("Overview", figs)
+        self.assertNotIn("Full size image", figs)
 
 
 class TestEnrichItemMocked(unittest.TestCase):
@@ -2580,13 +2587,21 @@ class TestMatcherToleratesFaithfulDrafts(unittest.TestCase):
         self.assertTrue(any("雷利珠单抗" in p for p in bad), bad)
 
     def test_institution_lead_trim_and_english_alias(self):
-        from inlight_articles import validate_names, _trim_institution_lead
+        from inlight_articles import (
+            validate_names, _trim_institution_lead, _is_generic_institution,
+            _soften_lone_institution_hit,
+        )
 
         self.assertEqual(_trim_institution_lead("南开大学和西湖生物医学研究所"), "西湖生物医学研究所")
         self.assertEqual(_trim_institution_lead("合作与西湖生物医学研究所"), "西湖生物医学研究所")
         self.assertEqual(_trim_institution_lead("合作及西湖生物医学研究所"), "西湖生物医学研究所")
         self.assertEqual(_trim_institution_lead("入组、西湖生物医学研究所"), "西湖生物医学研究所")
         self.assertEqual(_trim_institution_lead("小鼠实验经斯坦福大学"), "斯坦福大学")
+        self.assertTrue(_is_generic_institution("其他实验室"))
+        self.assertTrue(_is_generic_institution("多家医院"))
+        self.assertTrue(_is_generic_institution("该大学"))
+        self.assertEqual(_trim_institution_lead("其他实验室"), "其他实验室")
+        self.assertNotEqual(_trim_institution_lead("其他实验室"), "他实验室")
 
         art = {
             "title": "使用中山大学肿瘤防治中心队列",
@@ -2607,11 +2622,58 @@ class TestMatcherToleratesFaithfulDrafts(unittest.TestCase):
         )
         ok = validate_names(art, raw)
         self.assertFalse(any("机构名" in p for p in ok), ok)
+        generic = validate_names(
+            {**art, "design": "其他实验室与多家医院及该大学未入组。", "title": "其他实验室"},
+            raw,
+        )
+        self.assertFalse(any("机构名" in p for p in generic), generic)
+        ethics_art = {
+            "title": "西湖大学动物实验",
+            "one_liner": "伦理获批。",
+            "background": "",
+            "design": "方案经西湖大学动物管理与使用委员会批准。",
+            "results": ["缓解率64%。"],
+            "mechanism": "",
+            "significance": "",
+            "authors": "",
+            "limitations": [],
+        }
+        ethics_raw = "Approved by the Westlake IACUC. Objective response rate was 64%."
+        ethics_probs = validate_names(ethics_art, ethics_raw)
+        self.assertFalse(any("机构名" in p for p in ethics_probs), ethics_probs)
+        self.assertTrue(
+            any("伦理" in n or "IACUC" in n for n in (ethics_art.get("qc_notes") or [])),
+            ethics_art.get("qc_notes"),
+        )
+        wbri_only = {
+            "title": "西湖生物医学研究所队列",
+            "one_liner": "WBRI入组完成。",
+            "background": "",
+            "design": "西湖生物医学研究所完成入组。",
+            "results": ["缓解率64%。"],
+            "mechanism": "",
+            "significance": "",
+            "authors": "",
+            "limitations": [],
+        }
+        wbri_raw = "Patients were enrolled in the WBRI cohort. Objective response rate was 64%."
+        wbri_ok = validate_names(wbri_only, wbri_raw)
+        self.assertFalse(any("机构名" in p for p in wbri_ok), wbri_ok)
         invented = validate_names(
             {**art, "design": "由虚构医科大学（WBRI）入组。", "title": "虚构医科大学队列"},
             raw,
         )
         self.assertTrue(any("机构名" in p and "虚构医科大学" in p for p in invented), invented)
+        softened = _soften_lone_institution_hit(
+            [
+                "机构名 '他实验室' 在原始材料中未找到",
+                "deep 正文 1200 汉字，要求 1400–1900",
+                "background 字数 100，要求 180–240",
+            ],
+            {},
+        )
+        self.assertFalse(any("机构名" in p for p in softened), softened)
+        self.assertTrue(any("1200" in p for p in softened), softened)
 
     def test_drop_model_journal_when_source_has_none(self):
         from inlight_articles import EnrichedItem, sanitize_published_article
@@ -2843,8 +2905,35 @@ class TestClaimVerifier(unittest.TestCase):
         calls.clear()
         streamed = _claude_create(client, model="x", max_tokens=24000, messages=[])
         self.assertIs(streamed, final)
-        self.assertTrue(calls)
+        self.assertEqual(len(calls), 1)
         self.assertTrue(all(c.get("stream") for c in calls), calls)
+
+        class _CM:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *a):
+                return False
+
+            def get_final_message(self):
+                return final
+
+        calls.clear()
+
+        class _CMMessages:
+            def create(self, **kwargs):
+                calls.append(dict(kwargs))
+                if kwargs.get("stream"):
+                    return _CM()
+                raise RuntimeError("Streaming is required")
+
+            def stream(self, **kwargs):
+                raise AssertionError("must not fall back to a second streaming call")
+
+        cm_client = type("C", (), {})()
+        cm_client.messages = _CMMessages()
+        self.assertIs(_claude_create(cm_client, model="x", max_tokens=24000, messages=[]), final)
+        self.assertEqual(len(calls), 1)
 
     def test_shared_fulltext_window(self):
         from inlight_qc import FULLTEXT_WINDOW, gemini_review_deep, GEMINI_SCORE_KEYS
@@ -3530,6 +3619,71 @@ class TestReviewYieldAndPrecision(unittest.TestCase):
                     ok_pmc = try_legal_oa_fulltext(pmc_item)
             self.assertTrue(ok_pmc)
             self.assertTrue(any("PMC OA" in m for m in records), records)
+
+            pdf_item = EnrichedItem(
+                url="https://www.nature.com/articles/s41586-026-00003-3",
+                title="T", source="N", date="2026-01-01",
+                doi="10.1038/s41586-026-00003-3",
+            )
+            html_page = (
+                "<html><body><h2>Results</h2><p>"
+                + ("outcome " * 1600)
+                + "objective response rate was 64% among 527 women."
+                + "</p></body></html>"
+            )
+            records.clear()
+
+            def _pdf_then_html(url, timeout=30):
+                if str(url).lower().endswith(".pdf"):
+                    return b"%PDF-1.4 fake"
+                if str(url).rstrip("/") == "https://www.nature.com/articles/s41586-026-00003-3":
+                    return html_page.encode()
+                return None
+
+            with patch("inlight_articles.epmc_core_search", return_value={}):
+                with patch("inlight_articles.unpaywall_oa_location", return_value={
+                    "url": "https://www.nature.com/articles/s41586-026-00003-3.pdf",
+                    "version": "publishedVersion",
+                    "host": "nature.com",
+                }):
+                    with patch("inlight_articles._http_get", side_effect=_pdf_then_html):
+                        ok_pdf = try_legal_oa_fulltext(pdf_item)
+            self.assertTrue(ok_pdf, records)
+            self.assertEqual(pdf_item.evidence_level, "fulltext")
+
+            blocked = EnrichedItem(
+                url="https://doi.org/10.1038/s41586-026-00005-5",
+                title="T", source="N", date="2026-01-01",
+                doi="10.1038/s41586-026-00005-5",
+            )
+            records.clear()
+            with patch("inlight_articles.epmc_core_search", return_value={}):
+                with patch("inlight_articles.unpaywall_oa_location", return_value={
+                    "url": "https://cdn.example.com/closed.pdf",
+                    "version": "publishedVersion",
+                    "host": "cdn.example.com",
+                }):
+                    with patch("inlight_articles.openalex_work", return_value={
+                        "oa_url": "https://www.nature.com/articles/s41586-026-00005-5",
+                    }):
+                        with patch("inlight_articles._http_get", side_effect=lambda u, timeout=30: (
+                            html_page.encode() if "s41586-026-00005-5" in str(u) and not str(u).endswith(".pdf") else None
+                        )):
+                            ok_next = try_legal_oa_fulltext(blocked)
+            self.assertTrue(ok_next, records)
+            self.assertTrue(any("next source" in m or "OpenAlex" in m for m in records), records)
+
+            nodoi = EnrichedItem(
+                url="https://www.nature.com/articles/s41586-026-00004-4",
+                title="T", source="N", date="2026-01-01",
+            )
+            meta = (
+                '<html><head><meta name="citation_doi" content="10.1038/s41586-026-00004-4">'
+                "</head></html>"
+            ).encode()
+            with patch("inlight_articles._http_get", return_value=meta):
+                from inlight_articles import recover_missing_doi
+                self.assertEqual(recover_missing_doi(nodoi), "10.1038/s41586-026-00004-4")
         finally:
             log.removeHandler(h)
             log.setLevel(prev)
@@ -3606,7 +3760,18 @@ class TestReviewYieldAndPrecision(unittest.TestCase):
         self.assertIn("450", short_blob)
         self.assertIn("900", short_blob)
         self.assertIn("必须扩写", short_blob)
+        self.assertIn("background", short_blob)
+        self.assertIn("60", short_blob)
+        self.assertIn("100", short_blob)
         self.assertNotIn("1400–1900", short_blob)
+        from inlight_articles import build_article_prompt, BRIEF_HAN_MIN, BRIEF_HAN_MAX
+        prompt = build_article_prompt(
+            EnrichedItem(url="https://doi.org/10.1/b", title="T", source="N", date="2026-01-01"),
+            "brief",
+        )
+        self.assertIn(f"{BRIEF_HAN_MIN}–{BRIEF_HAN_MAX}", prompt)
+        self.assertIn("目标约 600", prompt)
+        self.assertNotIn("450–650", prompt)
         long = {
             "one_liner": "测" * 80, "background": "测" * 240, "design": "测" * 220,
             "results": ["测" * 200], "mechanism": "测" * 200,

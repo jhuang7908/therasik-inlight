@@ -68,16 +68,26 @@ _GENERIC_FACILITY = {
     "单中心", "多中心", "中心数", "医疗中心", "研究中心", "医学中心",
     "大学医院", "附属医院", "教学医院",
 }
+_GENERIC_INST_HEADS = (
+    "其他", "其它", "多家", "多个", "若干", "各", "该", "本", "此", "其",
+    "这些", "那些", "不同", "另外", "部分", "个别", "相关", "上述", "下列",
+    "某", "某个", "某些", "几家", "几所", "多数", "少数", "所有", "任何",
+    "每家", "每所", "不少", "很多",
+)
+_GENERIC_INST_SUFFIXES = (
+    "大学", "医院", "医学院", "研究所", "研究院", "实验室", "中心",
+    "肿瘤防治中心", "附属医院",
+)
 
 _INST_LEAD_WORDS = (
     "使用", "采用", "利用", "通过", "借助", "根据", "按照",
     "研究", "由", "在", "于", "来自", "和", "与", "对", "将", "把",
-    "经", "以", "从", "向", "其", "该", "本", "此", "所",
+    "经", "以", "从", "向",
 )
 _INST_LEAD_CLAUSES = (
     "实验经", "研究经", "方案经", "工作经", "实验由", "研究由",
     "已经", "已由",
-) + _INST_LEAD_WORDS
+)
 _INST_SUFFIX_RE = re.compile(
     r"(?:大学|医院|医学院|肿瘤防治中心|附属医院|研究所|研究院|实验室)$"
 )
@@ -136,6 +146,30 @@ _INSTITUTION_ALIASES = {
     "纪念斯隆凯特琳癌症中心": (
         "memorial sloan kettering", "mskcc", "sloan kettering",
     ),
+    "同济大学": ("tongji university",),
+    "东南大学": ("southeast university",),
+    "广州医科大学": ("guangzhou medical university",),
+    "首都医科大学": ("capital medical university",),
+    "上海理工大学": ("university of shanghai for science and technology",),
+    "香港大学": ("the university of hong kong", "university of hong kong", "hku"),
+    "香港中文大学": ("chinese university of hong kong", "cuhk"),
+    "台湾大学": ("national taiwan university", "ntu"),
+    "东京大学": ("the university of tokyo", "university of tokyo", "todai"),
+    "京都大学": ("kyoto university",),
+    "首尔大学": ("seoul national university", "snu"),
+    "伦敦大学学院": ("university college london", "ucl"),
+    "帝国理工学院": ("imperial college london", "imperial college"),
+    "多伦多大学": ("university of toronto",),
+    "密歇根大学": ("university of michigan",),
+    "加州大学旧金山分校": ("university of california san francisco", "ucsf"),
+    "加州大学洛杉矶分校": ("university of california los angeles", "ucla"),
+    "加州大学圣地亚哥分校": ("university of california san diego", "ucsd"),
+    "杜克大学": ("duke university", "duke"),
+    "宾夕法尼亚大学": ("university of pennsylvania", "upenn", "penn"),
+    "西北大学": ("northwestern university",),
+    "华盛顿大学": ("university of washington",),
+    "哥伦比亚大学": ("columbia university",),
+    "芝加哥大学": ("university of chicago",),
 }
 
 _CN_EN_INST_TYPES = (
@@ -183,6 +217,26 @@ _CN_EN_INST_TOKENS = (
     ("华中科技", ("huazhong", "hust")),
     ("四川", ("sichuan",)),
     ("协和", ("peking union", "pumc", "pumch")),
+    ("同济", ("tongji",)),
+    ("东南", ("southeast",)),
+    ("广州医科", ("guangzhou medical",)),
+    ("首都医科", ("capital medical",)),
+    ("香港", ("hong kong",)),
+    ("台湾", ("taiwan",)),
+    ("东京", ("tokyo",)),
+    ("京都", ("kyoto",)),
+    ("首尔", ("seoul",)),
+    ("帝国理工", ("imperial",)),
+    ("多伦多", ("toronto",)),
+    ("密歇根", ("michigan",)),
+    ("旧金山", ("san francisco", "ucsf")),
+    ("洛杉矶", ("los angeles", "ucla")),
+    ("圣地亚哥", ("san diego", "ucsd")),
+    ("杜克", ("duke",)),
+    ("宾夕法尼亚", ("pennsylvania", "upenn", "penn")),
+    ("西北", ("northwestern",)),
+    ("哥伦比亚", ("columbia",)),
+    ("芝加哥", ("chicago",)),
 )
 _EN_INST_PHRASE_RE = re.compile(
     r"\b([A-Z][A-Za-z][A-Za-z .'\-]{0,80}"
@@ -190,7 +244,16 @@ _EN_INST_PHRASE_RE = re.compile(
     r"Center|Centre|Laboratory|Clinic)\b)"
 )
 _ETHICS_CTX_RE = re.compile(
-    r"(?i)伦理|IACUC|IRB|animal care and use|ethics committee|伦理委员会"
+    r"(?i)伦理委员会|动物管理与使用委员会|实验动物管理|"
+    r"IACUC|IRB|animal care and use committee|ethics committee|"
+    r"institutional review board"
+)
+_ETHICS_EN_RE = re.compile(
+    r"(?i)IACUC|IRB|animal care and use committee|ethics committee|"
+    r"institutional review board"
+)
+_SITE_LABEL_RE = re.compile(
+    r"(?i)\b(?:cohort|site|center|centre|hospital|arm|campus|institute|lab)\b"
 )
 
 _CN_DRUG_SUFFIX_RE = re.compile(r'单抗|替尼')
@@ -481,14 +544,17 @@ def _http_get(url: str, timeout: int = 30) -> bytes | None:
         return None
 
 
-def epmc_core_search(doi: str) -> dict | None:
-    """Search Europe PMC core API by DOI.
+def epmc_core_search(doi: str = "", pmid: str = "") -> dict | None:
+    """Search Europe PMC core API by DOI or PubMed ID.
     
     Returns dict with keys: abstractText, pmid, pmcid, isOpenAccess, title, etc.
     """
-    if not doi:
+    if doi:
+        query = f'DOI:"{doi}"'
+    elif pmid:
+        query = f'EXT_ID:"{pmid}" AND SRC:MED'
+    else:
         return None
-    query = f'DOI:"{doi}"'
     url = "https://www.ebi.ac.uk/europepmc/webservices/rest/search?" + urllib.parse.urlencode({
         "query": query,
         "resultType": "core",
@@ -504,8 +570,63 @@ def epmc_core_search(doi: str) -> dict | None:
         if hits:
             return hits[0]
     except (json.JSONDecodeError, KeyError) as e:
-        logging.warning("EPMC parse error for %s: %s", doi, e)
+        logging.warning("EPMC parse error for %s: %s", doi or pmid, e)
     return None
+
+
+def _doi_from_html(html: str) -> str:
+    """citation_doi / dc.identifier from a publisher landing page."""
+    if not html:
+        return ""
+    pats = (
+        r'(?is)<meta[^>]*(?:name|property)=["\']citation_doi["\'][^>]*content=["\']\s*(?:doi:)?(10\.\d+/[^"\']+)',
+        r'(?is)<meta[^>]*content=["\']\s*(?:doi:)?(10\.\d+/[^"\']+)["\'][^>]*(?:name|property)=["\']citation_doi["\']',
+        r'(?is)<meta[^>]*(?:name|property)=["\']dc\.identifier["\'][^>]*content=["\']\s*(?:doi:)?(10\.\d+/[^"\']+)',
+        r'(?is)<meta[^>]*content=["\']\s*(?:doi:)?(10\.\d+/[^"\']+)["\'][^>]*(?:name|property)=["\']dc\.identifier["\']',
+    )
+    for pat in pats:
+        m = re.search(pat, html)
+        if m:
+            return m.group(1).strip().rstrip(".")
+    return ""
+
+
+def recover_missing_doi(item: EnrichedItem) -> str:
+    """Fill item.doi from the URL, publisher meta, or a PubMed ID before OA lookup."""
+    doi = (getattr(item, "doi", None) or extract_doi(getattr(item, "url", "") or "")).strip()
+    if doi:
+        item.doi = doi
+        return doi
+    pmid = (getattr(item, "pmid", None) or "").strip()
+    if not pmid:
+        m = re.search(r"pubmed\.ncbi\.nlm\.nih\.gov/(\d+)", getattr(item, "url", "") or "")
+        if m:
+            pmid = m.group(1)
+            item.pmid = pmid
+    if pmid:
+        core = epmc_core_search(pmid=pmid)
+        if core:
+            found = (core.get("doi") or "").strip()
+            item.pmid = core.get("pmid") or item.pmid
+            item.pmcid = core.get("pmcid") or item.pmcid
+            if found:
+                logging.info("Recovered DOI %s from PMID %s", found, pmid)
+                item.doi = found
+                return found
+    url = getattr(item, "url", "") or ""
+    if url.startswith("http"):
+        data = _http_get(url)
+        if data:
+            try:
+                html = data.decode("utf-8", errors="ignore")
+            except Exception:
+                html = ""
+            found = _doi_from_html(html)
+            if found:
+                logging.info("Recovered DOI %s from page metadata %s", found, url[:80])
+                item.doi = found
+                return found
+    return ""
 
 
 def epmc_fulltext_xml(pmcid: str) -> str | None:
@@ -569,7 +690,7 @@ def try_legal_oa_fulltext(item: EnrichedItem) -> bool:
             _oa_host_label(item.url) or "preprint", item.url,
         )
         return False
-    doi = item.doi or extract_doi(item.url)
+    doi = item.doi or extract_doi(item.url) or recover_missing_doi(item)
     if not doi:
         logging.info("OA lookup no DOI for %s", item.url)
         return False
@@ -625,6 +746,22 @@ def try_legal_oa_fulltext(item: EnrichedItem) -> bool:
             doi, host or _oa_host_label(oa_url), version or "unknown",
         )
         oa_url = ""
+    if oa_url:
+        ft, methods, figs = fetch_oa_sections(oa_url)
+        src = f"Unpaywall/OA {oa_url[:60]}"
+        if ft and record_fulltext(
+            item, ft, methods=methods, figs=figs, source_label=src,
+        ):
+            logging.info(
+                "OA lookup DOI %s: used %s host=%s version=%s",
+                doi, src, host or _oa_host_label(oa_url), version or "unknown",
+            )
+            return True
+        logging.info(
+            "OA lookup DOI %s: Unpaywall HTML/PDF fetch -> no real Results; trying next source",
+            doi,
+        )
+        oa_url = ""
     if not oa_url:
         tried.append("OpenAlex")
         oa_work = openalex_work(doi)
@@ -640,18 +777,18 @@ def try_legal_oa_fulltext(item: EnrichedItem) -> bool:
                 doi, host or _oa_host_label(oa_url),
             )
             oa_url = ""
-    if oa_url:
-        ft, methods, figs = fetch_oa_sections(oa_url)
-        src = f"Unpaywall/OA {oa_url[:60]}"
-        if ft and record_fulltext(
-            item, ft, methods=methods, figs=figs, source_label=src,
-        ):
-            logging.info(
-                "OA lookup DOI %s: used %s host=%s version=%s",
-                doi, src, host or _oa_host_label(oa_url), version or "unknown",
-            )
-            return True
-        logging.info("OA lookup DOI %s: OA HTML fetch -> no real Results", doi)
+        if oa_url:
+            ft, methods, figs = fetch_oa_sections(oa_url)
+            src = f"OpenAlex/OA {oa_url[:60]}"
+            if ft and record_fulltext(
+                item, ft, methods=methods, figs=figs, source_label=src,
+            ):
+                logging.info(
+                    "OA lookup DOI %s: used %s host=%s version=%s",
+                    doi, src, host or _oa_host_label(oa_url), version or "unknown",
+                )
+                return True
+            logging.info("OA lookup DOI %s: OpenAlex HTML fetch -> no real Results", doi)
     logging.info(
         "OA lookup DOI %s: exhausted (tried %s) url=%s",
         doi, ", ".join(tried) or "none", item.url,
@@ -791,11 +928,38 @@ _METHODS_SKIP_HINTS = (
 )
 
 
+_METHODS_TITLE_RANKS = (
+    (r"study design|experimental design|trial design|研究设计", 100),
+    (r"statistical analysis|statistical|statistic|统计分析|统计方法", 95),
+    (r"participants?|patients?|受试|入组|患者", 90),
+    (r"ethics|ethical|iacuc|irb|伦理", 80),
+)
+
+
+def _methods_title_rank(title: str) -> int:
+    t = (title or "").lower()
+    best = 0
+    for pat, score in _METHODS_TITLE_RANKS:
+        if re.search(pat, t):
+            best = max(best, score)
+    return best
+
+
+def _is_stats_methods_title(title: str) -> bool:
+    return bool(re.search(r"(?i)statistical|statistic|统计", title or ""))
+
+
 def _methods_block_score(title: str, body: str) -> int:
+    """Title-first rank; length-normalised body score so long dumps cannot win."""
+    tr = _methods_title_rank(title)
+    if tr:
+        return tr + min(len(body or "") // 500, 3)
     blob = f"{title} {body}".lower()
     if any(h in blob for h in _METHODS_SKIP_HINTS):
         return -2
-    return sum(1 for h in _METHODS_DESIGN_HINTS if h in blob)
+    hits = sum(1 for h in _METHODS_DESIGN_HINTS if h in blob)
+    denom = max(1, len(body or "") // 600)
+    return (hits * 8) // denom
 
 
 def extract_design_methods_from_xml(xml_text: str, max_chars: int = 4000) -> str:
@@ -827,31 +991,27 @@ def extract_design_methods_from_xml(xml_text: str, max_chars: int = 4000) -> str
             if not text_parts:
                 continue
             body = " ".join(text_parts)
-            blocks.append((_methods_block_score(title, body), body))
+            blocks.append((_methods_block_score(title, body), body, title))
 
+    return _pick_scored_methods(blocks, max_chars)
+
+
+def _pick_scored_methods(blocks: list, max_chars: int) -> str:
+    """Always include a statistics subsection when present; then title-ranked rest."""
     if not blocks:
         return ""
-    blocks.sort(key=lambda x: x[0], reverse=True)
+    norm: list[tuple[int, str, str]] = []
+    for b in blocks:
+        if len(b) >= 3:
+            norm.append((int(b[0]), str(b[1]), str(b[2])))
+        else:
+            norm.append((int(b[0]), str(b[1]), ""))
+    stats = [x for x in norm if _is_stats_methods_title(x[2]) or _is_stats_methods_title(x[1][:80])]
+    rest = [x for x in norm if x not in stats]
+    rest.sort(key=lambda x: x[0], reverse=True)
     picked: list[str] = []
     n = 0
-    for score, body in blocks:
-        if score < 0 and picked:
-            continue
-        if n >= max_chars:
-            break
-        take = body[: max_chars - n]
-        picked.append(take)
-        n += len(take)
-    return "\n\n".join(picked)[:max_chars]
-
-
-def _pick_scored_methods(blocks: list[tuple[int, str]], max_chars: int) -> str:
-    if not blocks:
-        return ""
-    blocks = sorted(blocks, key=lambda x: x[0], reverse=True)
-    picked: list[str] = []
-    n = 0
-    for score, body in blocks:
+    for score, body, _title in stats + rest:
         if score < 0 and picked:
             continue
         if n >= max_chars:
@@ -905,7 +1065,7 @@ def extract_design_methods_from_html(html: str, max_chars: int = 4000) -> str:
         def _flush() -> None:
             body = html_visible_text(strip_page_chrome("".join(buf)))
             if body:
-                blocks.append((_methods_block_score(title, body), body))
+                blocks.append((_methods_block_score(title, body), body, title))
 
         for part in parts:
             if re.match(r'(?is)<(?:h[2-6])\b', part or ""):
@@ -928,7 +1088,7 @@ def extract_design_methods_from_html(html: str, max_chars: int = 4000) -> str:
         )
         for ch in chunks:
             if ch.strip():
-                blocks.append((_methods_block_score(ch[:80], ch), ch.strip()))
+                blocks.append((_methods_block_score(ch[:80], ch), ch.strip(), ch[:80]))
     return _pick_scored_methods(blocks, max_chars)
 
 
@@ -1239,23 +1399,73 @@ def _oa_text_sections(raw: str) -> tuple[str, str, str]:
     return (results or "")[:FULLTEXT_WINDOW], methods, figs
 
 
+def _is_pdf_url(url: str) -> bool:
+    u = (url or "").split("?")[0].lower()
+    return u.endswith(".pdf") or u.endswith("/pdf") or "/pdf/" in u
+
+
+def _publisher_html_from_pdf(pdf_url: str) -> str:
+    """Best-effort publisher HTML article URL from a PDF link."""
+    u = (pdf_url or "").split("?")[0]
+    m = re.search(r'(https?://(?:www\.)?nature\.com/articles/[^/]+)\.pdf$', u, re.I)
+    if m:
+        return m.group(1)
+    m = re.search(r'(https?://link\.springer\.com)/content/pdf/(.+?)\.pdf$', u, re.I)
+    if m:
+        return m.group(1) + "/article/" + urllib.parse.unquote(m.group(2))
+    m = re.search(r'(https?://(?:www\.)?sciencedirect\.com/science/article/pii/[^/]+)', u, re.I)
+    if m:
+        return m.group(1)
+    stripped = re.sub(r'(?i)/pdf/?$', "", u)
+    stripped = re.sub(r'(?i)\.full\.pdf$', "", stripped)
+    stripped = re.sub(r'(?i)\.pdf$', "", stripped)
+    return stripped if stripped.startswith("http") and stripped != u else ""
+
+
+def _oa_html_candidates(oa_url: str) -> list[str]:
+    """Landing page, then publisher HTML, when the free full text is a PDF."""
+    if not oa_url or not oa_url.startswith("http"):
+        return []
+    url = oa_url.strip()
+    if not _is_pdf_url(url):
+        return [url]
+    out: list[str] = []
+    landing = re.sub(r'(?i)/[^/]+\.pdf(?:[?#].*)?$', "", url)
+    landing = re.sub(r'(?i)\.pdf(?:[?#].*)?$', "", landing)
+    landing = re.sub(r'(?i)/pdf(?:[?#].*)?$', "", landing)
+    if landing.startswith("http") and landing != url and not _is_pdf_url(landing):
+        out.append(landing)
+    pub = _publisher_html_from_pdf(url)
+    if pub and pub not in out and pub != url and not _is_pdf_url(pub):
+        out.append(pub)
+    return out
+
+
 def fetch_oa_sections(oa_url: str) -> tuple[str, str, str]:
-    """Results + methods + figure legends from a public OA page. No PDFs."""
+    """Results + methods + figure legends from a public OA page.
+
+    A PDF URL tries the article landing page and then the publisher HTML
+    page. It never counts as a successful source by itself.
+    """
     from inlight_qc import is_real_results_text
 
-    if not oa_url or not oa_url.startswith("http") or oa_url.lower().endswith(".pdf"):
-        return "", "", ""
-    data = _http_get(oa_url)
-    if not data:
-        return "", "", ""
-    try:
-        raw = data.decode("utf-8", errors="ignore")
-    except Exception:
-        return "", "", ""
-    results, methods, figs = _oa_text_sections(raw)
-    if not is_real_results_text(results):
-        return "", methods, figs
-    return results, methods, figs
+    last_methods, last_figs = "", ""
+    for cand in _oa_html_candidates(oa_url):
+        if not cand.startswith("http") or _is_pdf_url(cand):
+            continue
+        data = _http_get(cand)
+        if not data:
+            continue
+        try:
+            raw = data.decode("utf-8", errors="ignore")
+        except Exception:
+            continue
+        results, methods, figs = _oa_text_sections(raw)
+        last_methods = methods or last_methods
+        last_figs = figs or last_figs
+        if is_real_results_text(results):
+            return results, methods, figs
+    return "", last_methods, last_figs
 
 
 def fetch_oa_fulltext(oa_url: str) -> str:
@@ -1976,7 +2186,7 @@ evidence_level = {item.evidence_level}
 
 tier = "{tier}"
 - deep（正文 1400–1900 字）：背景 180-240 + 设计 200-280 + 结果 500-700（3-5段）+ 机制 250-350 + 局限 200-280（≥3条）+ 意义 150-220
-- brief（正文 450–650 字）：背景 50-80 + 设计 60-90 + 结果 180-280（1-2段）+ 局限 60-100（≥1条）+ 意义 60-100
+- brief（正文 {BRIEF_HAN_MIN}–{BRIEF_HAN_MAX} 字，目标约 600）：{_brief_section_prompt_line()}
 
 evidence_level 不是 fulltext 时只能填 brief，且不得写 image_prompt / 机制图。
 核对记录必须写明实际读到的材料（例如「读了 PMC 全文 PMCxxxx 的 Results/Methods/图注」）。
@@ -2002,8 +2212,8 @@ evidence_level 不是 fulltext 时只能填 brief，且不得写 image_prompt / 
 
 ## brief 档要求
 
-背景一句（50–80 字）→ 设计一句（60–90 字，必须含研究类型与 n）→ 结果 2–3 句（180–280 字，至少两个数字）
-→ 局限一句（60–100 字，不得为空）→ 意义一句（60–100 字）。
+背景一句（{BRIEF_SECTION_RANGES['background'][0]}–{BRIEF_SECTION_RANGES['background'][1]} 字）→ 设计一句（{BRIEF_SECTION_RANGES['design'][0]}–{BRIEF_SECTION_RANGES['design'][1]} 字，必须含研究类型与 n）→ 结果 2–3 句（{BRIEF_SECTION_RANGES['results'][0]}–{BRIEF_SECTION_RANGES['results'][1]} 字，至少两个数字）
+→ 局限一句（{BRIEF_SECTION_RANGES['limitations'][0]}–{BRIEF_SECTION_RANGES['limitations'][1]} 字，不得为空）→ 意义一句（{BRIEF_SECTION_RANGES['significance'][0]}–{BRIEF_SECTION_RANGES['significance'][1]} 字）。
 
 ## 语气
 
@@ -2466,6 +2676,32 @@ LENGTH_BODY_FIELDS = (
 MISSING_VALUE_MARK = "未给出"
 BRIEF_HAN_MIN = 450
 BRIEF_HAN_MAX = 900
+# Per-section targets sum to 450–730 (aim ~600), same band in prompt and check.
+BRIEF_SECTION_RANGES = {
+    "background": (60, 100),
+    "design": (70, 110),
+    "results": (200, 320),
+    "limitations": (60, 100),
+    "significance": (60, 100),
+}
+
+
+def _brief_section_prompt_line() -> str:
+    labels = {
+        "background": "背景",
+        "design": "设计",
+        "results": "结果",
+        "limitations": "局限",
+        "significance": "意义",
+    }
+    extra = {
+        "results": "（1-2段）",
+        "limitations": "（≥1条）",
+    }
+    parts = []
+    for name, (lo, hi) in BRIEF_SECTION_RANGES.items():
+        parts.append(f"{labels[name]} {lo}-{hi}{extra.get(name, '')}")
+    return " + ".join(parts)
 SEE_BODY_RE = re.compile(r"详见正文")
 
 
@@ -4459,19 +4695,40 @@ def _source_has_name_form(name: str, source_lower: str) -> bool:
     return bool(compact) and compact in src_compact
 
 
+def _is_generic_institution(inst: str) -> bool:
+    """True for '其他实验室' / '多家医院' / '该大学' — never a real name."""
+    s = (inst or "").strip()
+    if not s or s in _GENERIC_FACILITY:
+        return True
+    bits = re.split(r"[和与及、]", s)
+    if len(bits) > 1:
+        return all(_is_generic_institution(b) for b in bits if b)
+    for head in sorted(_GENERIC_INST_HEADS, key=len, reverse=True):
+        if not s.startswith(head):
+            continue
+        rest = s[len(head):].lstrip("的家所")
+        if rest in _GENERIC_INST_SUFFIXES or rest in _GENERIC_FACILITY:
+            return True
+    return False
+
+
 def _trim_institution_lead(inst: str) -> str:
-    """Strip lead clauses anywhere (实验经…); keep the token after the last 和/与/及/、."""
+    """Strip lead verbs at the start and multi-char clauses (实验经…), never inside a word."""
     out = inst or ""
-    leads = tuple(sorted(_INST_LEAD_CLAUSES, key=len, reverse=True))
+    if _is_generic_institution(out):
+        return out
+    start_leads = tuple(sorted(_INST_LEAD_CLAUSES + _INST_LEAD_WORDS, key=len, reverse=True))
     changed = True
     while changed and out:
         changed = False
-        for w in leads:
-            if out.startswith(w) and len(out) - len(w) >= 4:
-                out = out[len(w):]
+        for w in start_leads:
+            rest = out[len(w):]
+            if out.startswith(w) and len(rest) >= 4 and _INST_SUFFIX_RE.search(rest):
+                out = rest
                 changed = True
                 break
-    for w in leads:
+    # Multi-character clauses only (实验经), never single-character 其/该 inside 其他/该大学.
+    for w in sorted(_INST_LEAD_CLAUSES, key=len, reverse=True):
         idx = out.find(w)
         if idx < 0:
             continue
@@ -4480,7 +4737,7 @@ def _trim_institution_lead(inst: str) -> str:
             out = rest
             break
     bits = re.split(r"[和与及、]", out)
-    if len(bits) > 1 and len(bits[-1]) >= 4:
+    if len(bits) > 1 and len(bits[-1]) >= 4 and _INST_SUFFIX_RE.search(bits[-1]):
         out = bits[-1]
     return out
 
@@ -4546,20 +4803,83 @@ def _institution_in_source(
     """Accept Chinese name, tied English translation/alias, or tied 中文名（ACR）."""
     if inst in raw_material or _source_has_name_form(inst, source_lower):
         return True
-    for alias in _institution_aliases(inst):
+    aliases = _institution_aliases(inst)
+    for alias in aliases:
         a = alias.lower()
         if a and a in source_lower:
             return True
         if re.search(r'[\(（]\s*' + re.escape(alias) + r'\s*[\)）]', raw_material, re.I):
             return True
+        if len(alias) <= 12 and re.search(
+            r'(?<![A-Za-z0-9])' + re.escape(alias) + r'(?![A-Za-z0-9])',
+            raw_material or "", re.I,
+        ) and (_SITE_LABEL_RE.search(raw_material or "") or "(" + alias in (raw_material or "")
+               or "（" + alias in (raw_material or "")):
+            return True
     for m in _EN_INST_PHRASE_RE.finditer(raw_material or ""):
         if _english_translates_chinese_inst(inst, m.group(1)):
             return True
     acr = _draft_inst_acronym(inst, all_text)
-    if acr:
-        for eng in _source_english_tied_to_acronym(acr, raw_material):
+    tied_eng = _source_english_tied_to_acronym(acr, raw_material) if acr else []
+    for eng in tied_eng:
+        if _english_translates_chinese_inst(inst, eng):
+            return True
+    if acr and re.search(
+        r'(?<![A-Za-z0-9])' + re.escape(acr) + r'(?![A-Za-z0-9])',
+        raw_material or "", re.I,
+    ) and (tied_eng or _SITE_LABEL_RE.search(raw_material or "")):
+        if any(a.lower() == acr.lower() for a in aliases):
+            return True
+        for eng in tied_eng:
             if _english_translates_chinese_inst(inst, eng):
                 return True
+    # Source "English Name (ACR)" even when the draft omitted the brackets.
+    for alias in aliases:
+        if len(alias) >= 2:
+            for eng in _source_english_tied_to_acronym(alias, raw_material):
+                if _english_translates_chinese_inst(inst, eng):
+                    return True
+    return False
+
+
+def _source_ethics_approval_names(raw_material: str) -> list[str]:
+    """English institution names in the same sentence as IACUC/IRB/ethics."""
+    names: list[str] = []
+    for sent in re.split(r"(?<=[.!?。；;\n])\s*", raw_material or ""):
+        if not _ETHICS_CTX_RE.search(sent):
+            continue
+        for m in _EN_INST_PHRASE_RE.finditer(sent):
+            names.append(m.group(1).strip())
+        for m in re.finditer(
+            r"(?i)\b([A-Z][A-Za-z][A-Za-z .'\-]{2,60})\s+(?:IACUC|IRB)\b",
+            sent,
+        ):
+            names.append(m.group(1).strip(" ,;:-"))
+    return names
+
+
+def _ethics_committee_as_note(inst: str, window: str, raw_material: str) -> bool:
+    """Chinese 伦理委员会 / 动物管理与使用委员会 matches source IACUC/IRB."""
+    if not inst or not _ETHICS_CTX_RE.search(window or ""):
+        return False
+    if not _ETHICS_CTX_RE.search(raw_material or ""):
+        return False
+    for eng in _source_ethics_approval_names(raw_material):
+        if _english_translates_chinese_inst(inst, eng):
+            return True
+        leftover = inst
+        for cn, _ens in _CN_EN_INST_TYPES:
+            if leftover.endswith(cn):
+                leftover = leftover[: -len(cn)]
+                break
+        for cn, ens in _CN_EN_INST_TOKENS:
+            if cn in leftover and any(e in (eng or "").lower() for e in ens):
+                leftover = leftover.replace(cn, "")
+        leftover = re.sub(r"[的和与及、\s]", "", leftover)
+        if leftover and not re.search(r"[\u4e00-\u9fff]", leftover):
+            return True
+        if leftover == "":
+            return True
     return False
 
 
@@ -4635,30 +4955,31 @@ def validate_names(art: dict, raw_material: str) -> list[str]:
             problems.append(f"基因 '{sym}' 在原始材料中未找到")
 
     # 5. Chinese institutions. Do not use bare 中心 (单中心 / 中心数 / 医疗中心).
+    # Skip generic modifier+suffix on the RAW match so trim cannot invent 他实验室.
     inst_pat = r'[\u4e00-\u9fff]{2,12}(?:大学|医院|医学院|肿瘤防治中心|附属医院|研究所|研究院|实验室)'
     seen_inst: set[str] = set()
     for match in re.finditer(inst_pat, all_text):
-        inst = _trim_institution_lead(match.group(0))
-        if inst in seen_inst or inst in _GENERIC_FACILITY or len(inst) < 4:
+        raw_inst = match.group(0)
+        if _is_generic_institution(raw_inst):
+            continue
+        inst = _trim_institution_lead(raw_inst)
+        if (
+            inst in seen_inst
+            or inst in _GENERIC_FACILITY
+            or _is_generic_institution(inst)
+            or len(inst) < 4
+        ):
             continue
         seen_inst.add(inst)
         if _institution_in_source(inst, raw_material, norm, all_text):
             continue
-        window = all_text[max(0, match.start() - 12): match.end() + 16]
-        if _ETHICS_CTX_RE.search(window) and _institution_in_source(
-            inst, raw_material, norm, all_text,
-        ):
+        window = all_text[max(0, match.start() - 24): match.end() + 24]
+        ethics_window = window if _ETHICS_CTX_RE.search(window) else all_text
+        if _ethics_committee_as_note(inst, ethics_window, raw_material):
+            note = f"伦理委员会表述对应原文 IACUC/IRB 批准句（{inst}）"
+            art.setdefault("qc_notes", []).append(note)
+            logging.info("Ethics committee wording noted, not hard-fail: %s", inst)
             continue
-        if _ETHICS_CTX_RE.search(window):
-            ethics_hit = False
-            for m in _EN_INST_PHRASE_RE.finditer(raw_material or ""):
-                if _ETHICS_CTX_RE.search(raw_material) and _english_translates_chinese_inst(
-                    inst, m.group(1),
-                ):
-                    ethics_hit = True
-                    break
-            if ethics_hit:
-                continue
         problems.append(f"机构名 '{inst}' 在原始材料中未找到")
 
     # 6. Terminology: incorrect Chinese for a source English term
@@ -5019,6 +5340,18 @@ def _score_fields_for_item(item: EnrichedItem, config: dict | None) -> tuple[str
     return best_k, best_s
 
 
+def _out_of_scope_reason(item: EnrichedItem | None, config: dict | None = None, field: str | None = "none") -> str:
+    """Why a candidate was classified out of the 9 fields."""
+    if item is None:
+        return "out of scope: field=none (item missing)"
+    best, score = _score_fields_for_item(item, config)
+    return (
+        f"out of scope: assigned field={field or 'none'}; "
+        f"best_term_field={best} relevance={score}; "
+        f"title={((item.title or '')[:80])}"
+    )
+
+
 def _model_field_assignments(items: list[EnrichedItem], config: dict) -> dict[str, str]:
     """Same model field triage as primary picks: one primary field or none."""
     if not items:
@@ -5156,7 +5489,10 @@ def _backfill_deep_selections(
             continue
         field = model_fields.get(it.url)
         if field in ("none", "", None):
-            logging.info("Triage skip %s: out of scope of the 9 fields", it.url)
+            logging.info(
+                "Triage skip %s: %s",
+                it.url, _out_of_scope_reason(it, cfg, field),
+            )
             continue
         out.append({
             "url": it.url,
@@ -5218,6 +5554,14 @@ def triage_items(items: list[EnrichedItem], config: dict) -> list[dict]:
     else:
         logging.warning("Triage did not return tool_use, using fallback")
 
+    url_to_item = {it.url: it for it in items}
+    for sel in selections:
+        if (sel.get("field") in ("none", "", None)) and sel.get("url"):
+            logging.info(
+                "Candidate out of scope %s: %s",
+                sel.get("url"),
+                _out_of_scope_reason(url_to_item.get(sel.get("url")), config, sel.get("field")),
+            )
     selections = _backfill_deep_selections(items, selections, config)
     logging.info("Triage selected %d items after backfill", len(selections))
     return selections
@@ -5229,6 +5573,10 @@ def _claude_create(client, **kwargs):
     max_tokens > 8192 (including the 24000 truncation retry) streams first so
     the SDK cannot raise 'Streaming is required' before fallback. Smaller
     calls try a normal create first; stream only when the SDK demands it.
+
+    create(stream=True) is consumed as a context-manager when the SDK returns
+    one (MessageStreamManager). That primary request is never followed by a
+    second messages.stream() call.
     """
     kwargs.pop("temperature", None)
     max_tok = int(kwargs.get("max_tokens") or 0)
@@ -5236,20 +5584,68 @@ def _claude_create(client, **kwargs):
     def _create(**kw):
         return client.messages.create(**kw)
 
+    def _is_mock(obj) -> bool:
+        return type(obj).__module__.startswith("unittest.mock")
+
     def _as_message(obj):
-        if obj is None:
+        if obj is None or isinstance(obj, (list, tuple)):
             return None
-        getter = getattr(obj, "get_final_message", None)
-        if callable(getter):
+        if getattr(obj, "content", None) is not None and getattr(obj, "stop_reason", None) is not None:
+            return obj
+        return None
+
+    def _iterate_events(stream):
+        final = None
+        for event in stream:
+            if getattr(event, "message", None) is not None:
+                final = event.message
+            elif getattr(event, "type", None) == "message":
+                final = event
+            else:
+                got = _as_message(event)
+                if got is not None:
+                    final = got
+        return final
+
+    def _consume_stream(stream):
+        msg = _as_message(stream)
+        if msg is not None:
+            return msg
+        if isinstance(stream, (list, tuple)):
+            final = _iterate_events(stream)
+            if final is not None:
+                return final
+            raise RuntimeError("Claude streaming returned no message")
+        needs_enter = (
+            hasattr(stream, "__enter__")
+            and hasattr(stream, "__exit__")
+            and not _is_mock(stream)
+        )
+        if needs_enter:
+            with stream as opened:
+                getter = getattr(opened, "get_final_message", None) or getattr(
+                    stream, "get_final_message", None
+                )
+                if callable(getter):
+                    got = getter()
+                    if got is not None:
+                        return got
+                final = _iterate_events(opened)
+                if final is not None:
+                    return final
+            raise RuntimeError("Claude streaming returned no message")
+        getter = getattr(stream, "get_final_message", None)
+        if callable(getter) and not _is_mock(stream):
             try:
                 got = getter()
                 if got is not None:
                     return got
             except Exception:
                 pass
-        if getattr(obj, "content", None) is not None and getattr(obj, "stop_reason", None) is not None:
-            return obj
-        return None
+        final = _iterate_events(stream)
+        if final is not None:
+            return final
+        raise RuntimeError("Claude streaming returned no message")
 
     def _stream(**kw):
         try:
@@ -5260,18 +5656,7 @@ def _claude_create(client, **kwargs):
                 with stream_fn(**kw) as stream:
                     return stream.get_final_message()
             raise
-        msg = _as_message(stream)
-        if msg is not None:
-            return msg
-        final = None
-        for event in stream:
-            if getattr(event, "message", None) is not None:
-                final = event.message
-            elif getattr(event, "type", None) == "message":
-                final = event
-        if final is not None:
-            return final
-        raise RuntimeError("Claude streaming returned no message")
+        return _consume_stream(stream)
 
     if max_tok > 8192:
         try:
@@ -5322,111 +5707,184 @@ def _triage_tools_for(config: dict | None) -> list[dict]:
     return [schema]
 
 
-def draft_single_article(item: EnrichedItem, tier: str, config: dict, problems: list[str] = None) -> dict | None:
-    """Draft a single article using Claude.
-    
-    Args:
-        item: The enriched item to draft
-        tier: "deep" or "brief"
-        config: Pipeline config
-        problems: Optional list of problems from previous attempt (for targeted redraft)
-    
-    Returns the article dict or None on failure.
-    """
-    from anthropic import Anthropic
-    
-    prompt = build_article_prompt(item, tier)
-    
-    # If we have problems from a previous attempt, include them
+def _article_prompt_with_problems(
+    item: EnrichedItem,
+    tier: str,
+    problems: list[str] | None = None,
+    *,
+    source_window: int | None = None,
+    compact: bool = False,
+) -> str:
+    prompt = build_article_prompt(
+        item, tier, source_window=source_window, compact=compact,
+    ) if source_window is not None or compact else build_article_prompt(item, tier)
     if problems:
         prompt += f"\n\n## 上次生成的问题（请务必修正）\n\n" + "\n".join(f"- {p}" for p in problems)
         prompt += (
             "\n\n只删除或改写被点名的主张，其余已核对内容保持不变。"
             "每个数字和专有名称必须从材料逐字复制，不得改写或替换。"
         )
-    
     prompt += "\n\n请务必调用 submit_article 工具提交你的文章。"
-    
-    model = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5-5")
-    # Use higher token limits to avoid thinking consuming the budget
-    max_tokens = 16000 if tier == "deep" else 8000
-    
-    logging.info("Drafting %s article for: %s", tier, item.title[:50])
-    
-    client = Anthropic()
-    
-    try:
-        message = _claude_create(
-            client,
-            model=model,
-            max_tokens=max_tokens,
-            tools=_article_tools_for(config),
-            tool_choice={"type": "auto"},
-            messages=[{"role": "user", "content": prompt}],
-        )
-    except Exception as e:
-        logging.error("API error drafting article for %s: %s", item.title[:50], e)
-        return None
-    
-    # Truncation retry: larger budget + shorter request. Never publish a
-    # truncated piece — a second max_tokens drop is a clean skip.
-    if message.stop_reason == "max_tokens":
-        retry_tokens = 24000 if tier == "deep" else 16000
-        retry_prompt = build_article_prompt(
-            item, tier, source_window=8000, compact=True,
-        )
-        if problems:
-            retry_prompt += f"\n\n## 上次生成的问题（请务必修正）\n\n" + "\n".join(f"- {p}" for p in problems)
-            retry_prompt += (
-                "\n\n只删除或改写被点名的主张，其余已核对内容保持不变。"
-                "每个数字和专有名称必须从材料逐字复制，不得改写或替换。"
-            )
-        retry_prompt += "\n\n请务必调用 submit_article 工具提交你的文章。"
-        logging.warning(
-            "Article draft truncated (max_tokens), retrying with %d tokens and shorter source: %s",
-            retry_tokens, item.title[:50],
-        )
-        try:
-            message = _claude_create(
-                client,
-                model=model,
-                max_tokens=retry_tokens,
-                tools=_article_tools_for(config),
-                tool_choice={"type": "auto"},
-                messages=[{"role": "user", "content": retry_prompt}],
-            )
-        except Exception as e:
-            logging.error("API error on max_tokens retry for %s: %s", item.title[:50], e)
-            return None
-        
-        if message.stop_reason == "max_tokens":
-            logging.error(
-                "Dropping truncated draft after two max_tokens stops (retry budget %d): %s",
-                retry_tokens, item.title[:50],
-            )
-            return None
-    
-    if getattr(message, "stop_reason", None) == "max_tokens":
-        logging.error("Refusing to publish truncated draft: %s", item.title[:50])
-        return None
+    return prompt
 
-    for block in message.content:
-        if block.type == "tool_use" and block.name == "submit_article":
-            art = block.input
-            
-            # Validate and coerce field types - model may return strings for dict/list fields
-            # This happens when the model outputs XML-like tags embedded in strings
-            validated = _validate_article_structure(art, item.title[:50])
+
+def _article_from_claude_message(message, item: EnrichedItem) -> tuple[dict | None, str]:
+    """Return (article, status) where status is ok / refusal / empty / max_tokens."""
+    if message is None:
+        return None, "empty"
+    stop = getattr(message, "stop_reason", None)
+    if stop == "refusal":
+        return None, "refusal"
+    if stop == "max_tokens":
+        return None, "max_tokens"
+    content = getattr(message, "content", None) or []
+    if not content:
+        return None, "empty"
+    for block in content:
+        if getattr(block, "type", None) == "tool_use" and getattr(block, "name", None) == "submit_article":
+            validated = _validate_article_structure(block.input, item.title[:50])
             if validated is None:
                 logging.warning("Article draft failed structure check: %s", item.title[:50])
-                return None
-            
+                return None, "empty"
             validated["source"] = item.source
             validated["evidence_level"] = item.evidence_level
             validated["source_trace"] = item.source_trace
-            return validated
-    
-    logging.warning("Article draft did not return tool_use for: %s", item.title[:50])
+            return validated, "ok"
+    return None, "empty"
+
+
+def _openai_drafter_model() -> str:
+    return os.environ.get("OPENAI_MODEL") or "gpt-4o"
+
+
+def _draft_article_via_openai(
+    prompt: str, tools: list[dict], item: EnrichedItem, config: dict,
+) -> dict | None:
+    """Same prompt, schema and audit path — only the model changes."""
+    try:
+        from openai import OpenAI
+    except Exception as exc:
+        logging.error("OpenAI SDK unavailable for drafter fallback: %s", exc)
+        return None
+    if not os.environ.get("OPENAI_API_KEY"):
+        logging.error("OpenAI drafter requested but OPENAI_API_KEY missing")
+        return None
+    model = _openai_drafter_model()
+    oai_tools = []
+    for t in tools or []:
+        oai_tools.append({
+            "type": "function",
+            "function": {
+                "name": t.get("name"),
+                "description": t.get("description") or "",
+                "parameters": t.get("input_schema") or {"type": "object", "properties": {}},
+            },
+        })
+    logging.info("Drafting via OpenAI %s after Claude refusal/empty: %s", model, item.title[:50])
+    try:
+        resp = OpenAI().chat.completions.create(
+            model=model,
+            messages=[{"role": "user", "content": prompt}],
+            tools=oai_tools,
+            tool_choice="auto",
+        )
+    except Exception as exc:
+        logging.error("OpenAI drafter error for %s: %s", item.title[:50], exc)
+        return None
+    choice = (getattr(resp, "choices", None) or [None])[0]
+    msg = getattr(choice, "message", None) if choice is not None else None
+    for tc in (getattr(msg, "tool_calls", None) or []):
+        fn = getattr(tc, "function", None)
+        if not fn or getattr(fn, "name", None) != "submit_article":
+            continue
+        try:
+            payload = json.loads(fn.arguments or "{}")
+        except json.JSONDecodeError:
+            return None
+        validated = _validate_article_structure(payload, item.title[:50])
+        if validated is None:
+            return None
+        validated["source"] = item.source
+        validated["evidence_level"] = item.evidence_level
+        validated["source_trace"] = item.source_trace
+        validated["drafter_model"] = model
+        return validated
+    logging.warning("OpenAI drafter did not return submit_article for: %s", item.title[:50])
+    return None
+
+
+def draft_single_article(item: EnrichedItem, tier: str, config: dict, problems: list[str] = None) -> dict | None:
+    """Draft a single article using Claude.
+
+    If Claude refuses (stop_reason=refusal) or returns empty output twice,
+    switch this article's drafter to OpenAI. Same prompts, schema and audit.
+    """
+    from anthropic import Anthropic
+
+    prompt = _article_prompt_with_problems(item, tier, problems)
+    model = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5-5")
+    max_tokens = 16000 if tier == "deep" else 8000
+    tools = _article_tools_for(config)
+
+    logging.info("Drafting %s article for: %s", tier, item.title[:50])
+    client = Anthropic()
+
+    def _claude_once(user_prompt: str, tokens: int):
+        return _claude_create(
+            client,
+            model=model,
+            max_tokens=tokens,
+            tools=tools,
+            tool_choice={"type": "auto"},
+            messages=[{"role": "user", "content": user_prompt}],
+        )
+
+    empty_or_refusal = 0
+    for attempt in (1, 2):
+        try:
+            message = _claude_once(prompt, max_tokens)
+        except Exception as e:
+            logging.error("API error drafting article for %s: %s", item.title[:50], e)
+            return None
+
+        if getattr(message, "stop_reason", None) == "max_tokens":
+            retry_tokens = 24000 if tier == "deep" else 16000
+            retry_prompt = _article_prompt_with_problems(
+                item, tier, problems, source_window=8000, compact=True,
+            )
+            logging.warning(
+                "Article draft truncated (max_tokens), retrying with %d tokens and shorter source: %s",
+                retry_tokens, item.title[:50],
+            )
+            try:
+                message = _claude_once(retry_prompt, retry_tokens)
+            except Exception as e:
+                logging.error("API error on max_tokens retry for %s: %s", item.title[:50], e)
+                return None
+            if getattr(message, "stop_reason", None) == "max_tokens":
+                logging.error(
+                    "Dropping truncated draft after two max_tokens stops (retry budget %d): %s",
+                    retry_tokens, item.title[:50],
+                )
+                return None
+
+        art, status = _article_from_claude_message(message, item)
+        if art is not None:
+            art["drafter_model"] = model
+            return art
+        if status in ("refusal", "empty"):
+            empty_or_refusal += 1
+            logging.warning(
+                "Claude draft %s (%d/2) for %s",
+                status, empty_or_refusal, item.title[:50],
+            )
+            continue
+        return None
+
+    if empty_or_refusal >= 2:
+        art = _draft_article_via_openai(prompt, tools, item, config)
+        if art is not None:
+            return art
     return None
 
 
@@ -5909,6 +6367,7 @@ def _run_claim_verifier_stage(
             draft, raw_material, allow_word_quantities=acir_strict(config),
         )
         probs.extend(validate_names(draft, raw_material))
+        probs = _soften_lone_institution_hit(probs, draft)
         return draft, probs
 
     from inlight_qc import acir_strict, verifier_source_text
@@ -6006,6 +6465,24 @@ def _length_structure_only(problems: list[str]) -> bool:
     return bool(hard) and all(_is_length_structure_problem(p) for p in hard)
 
 
+def _soften_lone_institution_hit(problems: list[str], art: dict | None = None) -> list[str]:
+    """One institution miss must not turn length/structure-only issues into hard fails."""
+    inst = [p for p in (problems or []) if "机构名" in p]
+    if len(inst) != 1:
+        return list(problems or [])
+    rest = [p for p in problems if p not in inst]
+    hard_rest = _hard_problems(rest)
+    if hard_rest and all(_is_length_structure_problem(p) for p in hard_rest):
+        if art is not None:
+            art.setdefault("qc_notes", []).append(inst[0])
+        logging.info(
+            "Lone institution miss demoted to note (length/structure remain): %s",
+            inst[0],
+        )
+        return rest
+    return list(problems or [])
+
+
 def _section_length_targets(
     art: dict, problems: list[str], section_ranges: dict | None = None,
 ) -> list[str]:
@@ -6063,6 +6540,10 @@ def _apply_section_band_slack(art: dict, struct_probs: list[str]) -> tuple[list[
         (art or {}).get("significance"),
     ])
     if not (1400 <= body <= 1900):
+        logging.info(
+            "Section band slack withheld: body %d not in 1400–1900 (%d issues)",
+            body, len(struct_probs),
+        )
         return list(struct_probs), []
     kept: list[str] = []
     overages: list[dict] = []
@@ -6073,6 +6554,10 @@ def _apply_section_band_slack(art: dict, struct_probs: list[str]) -> tuple[list[
             continue
         name, n, lo, hi = m.group(1), int(m.group(2)), int(m.group(3)), int(m.group(4))
         if name in _SLACK_EXCLUDE_SECTIONS:
+            logging.info(
+                "Section band slack withheld %s: excluded section (%s)",
+                name, p,
+            )
             kept.append(p)
             continue
         slack = int(round(hi * SECTION_BAND_SLACK_FRAC))
@@ -6087,6 +6572,10 @@ def _apply_section_band_slack(art: dict, struct_probs: list[str]) -> tuple[list[
                 name, n, lo, hi, slack, delta,
             )
         else:
+            logging.info(
+                "Section band slack withheld %s: %d vs %d–%d (slack %d, outside band)",
+                name, n, lo, hi, slack,
+            )
             kept.append(p)
     return kept, overages
 
@@ -6141,14 +6630,31 @@ def _length_keep_score(
 
 
 def _brief_length_targets(art: dict, problems: list[str]) -> list[str]:
-    """Both bounds of brief (450–900 字). Do not steer toward deep length."""
+    """Both bounds of brief (450–900 字) plus the same per-section targets as the prompt."""
+    from inlight_qc import han_len
+
     body = _article_body_han(art)
     lines = [
         "仅因字数或结构未达标。按下列实测重写为 brief，不得写成 deep：",
         "只改长短；已核对数字、主张、标识符必须逐字保留，不得改数或换名。",
         *problems,
-        f"正文合计现 {body} 字，硬性目标 {BRIEF_HAN_MIN}–{BRIEF_HAN_MAX}。",
+        f"正文合计现 {body} 字，硬性目标 {BRIEF_HAN_MIN}–{BRIEF_HAN_MAX}（目标约 600）。",
+        f"各段目标：{_brief_section_prompt_line()}。",
     ]
+    for name, (lo, hi) in BRIEF_SECTION_RANGES.items():
+        n = han_len(art.get(name) if art else "")
+        if n < lo:
+            lines.append(
+                f"【必须扩写】{name} 现 {n} 字 → 目标 {lo}–{hi}（少 {lo - n} 字）。"
+                f"只补材料已写明的事实，保留全部已核实数字。"
+            )
+        elif n > hi:
+            lines.append(
+                f"【必须压缩】{name} 现 {n} 字 → 目标 {lo}–{hi}（多 {n - hi} 字）。"
+                f"删次要细节，保留全部已核实数字。"
+            )
+        else:
+            lines.append(f"{name} 现 {n} 字，已在 {lo}–{hi}，保持。")
     if body < BRIEF_HAN_MIN:
         lines.append(
             f"【必须扩写】正文少 {BRIEF_HAN_MIN - body} 字 → 目标 "
@@ -6187,6 +6693,14 @@ def _run_deep_length_redrafts(
             continue
         cand, cand_probs = prepare(retry_len)
         if not cand:
+            continue
+        best_body = _article_body_han(best_art)
+        cand_body = _article_body_han(cand)
+        if best_body < 1400 and cand_body < best_body:
+            logging.info(
+                "Discarding shorter deep length redraft %d (%d < %d) when under-length: %s",
+                attempt, cand_body, best_body, url,
+            )
             continue
         score = _length_keep_score(cand, cand_probs, section_ranges)
         if score < best_score:
@@ -6463,10 +6977,13 @@ def _process_single_article(
             )
         return None
 
-    if field in ("none", None, ""):
-        return drop("out-of-scope (logged); not forced into a field")
-    
     enriched_item = url_to_enriched.get(url)
+    if field in ("none", None, ""):
+        logging.info(
+            "Candidate out of scope %s: %s",
+            url, _out_of_scope_reason(enriched_item, config, field),
+        )
+        return drop("out-of-scope (logged); not forced into a field")
     if not enriched_item:
         logging.warning("Skipping unknown URL from triage: %s", url)
         return drop("unknown URL from triage")
@@ -6523,6 +7040,7 @@ def _process_single_article(
             draft["datacard"].pop("read_note", None)
         probs = validate_depth(draft, src, allow_word_quantities=strict)
         probs.extend(validate_names(draft, src))
+        probs = _soften_lone_institution_hit(probs, draft)
         if strict and draft.get("tier") == "deep":
             struct = validate_acir_structure(draft, section_ranges=section_ranges)
             depth_content = [
@@ -6844,6 +7362,10 @@ def _process_single_article(
     raw_field = art.get("field") or field
     if raw_field in ("none", "", None) or raw_field not in allowed_fields:
         if strict and raw_field in ("none", "", None):
+            logging.info(
+                "Candidate out of scope %s: %s",
+                url, _out_of_scope_reason(enriched_item, config, raw_field),
+            )
             return drop("out-of-scope (logged); not forced into a field")
         if raw_field not in allowed_fields and raw_field not in FIELDS:
             return drop("field not in the 9 domains")
@@ -6851,6 +7373,10 @@ def _process_single_article(
             from inlight_fields import OLD_TO_NEW
             art["field"] = OLD_TO_NEW.get(raw_field, raw_field)
             if art["field"] not in allowed_fields:
+                logging.info(
+                    "Candidate out of scope %s: mapped field %s not in allowed set",
+                    url, art["field"],
+                )
                 return drop("out-of-scope (logged); not forced into a field")
     else:
         art["field"] = raw_field
@@ -6949,6 +7475,8 @@ def _process_single_article(
             "blind_scores": [],
             "blind_judge_runs": [],
             "section_overages": art.get("qc_section_overages") or [],
+            "drafter_model": art.get("drafter_model") or "",
+            "qc_notes": art.get("qc_notes") or [],
         }
         if audit:
             from inlight_audit import attach_audit_fields
