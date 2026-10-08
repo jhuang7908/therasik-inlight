@@ -961,6 +961,101 @@ def _test_adversarial_deals():
     return passed == total
 
 
+def _test_integration_deal_pipeline():
+    """Integration test: full deal pipeline with mocked model response.
+    
+    Simulates what happens when the model returns a deal with quotes,
+    and verifies the full pipeline processes it correctly.
+    """
+    # Simulate real Alector/Genentech filing text
+    filing_text = """
+    UNITED STATES SECURITIES AND EXCHANGE COMMISSION
+    Washington, D.C. 20549
+    FORM 8-K
+    CURRENT REPORT
+    
+    Date of Report (Date of earliest event reported): October 1, 2026
+    
+    ALECTOR, INC.
+    
+    Item 1.01 Entry into a Material Definitive Agreement
+    
+    On October 1, 2026, Alector, Inc. (the "Company") entered into a Collaboration 
+    Agreement (the "Agreement") with Genentech, Inc. ("Genentech"), a member of the 
+    Roche Group. Pursuant to the Agreement, the Company granted Genentech an 
+    exclusive, worldwide license to develop, manufacture and commercialize antibody 
+    products for up to two targets.
+    
+    Under the terms of the Agreement, the Company will receive an upfront payment 
+    of $100 million in cash. The Company is eligible to receive up to an aggregate 
+    of $1.0 billion in potential development, regulatory and commercial milestone 
+    payments. Additionally, Genentech will pay tiered royalties on worldwide net 
+    sales ranging from mid-single digits to low double digits.
+    """
+    
+    # Simulate correct model response with quotes
+    model_response = {
+        'url': 'https://www.sec.gov/Archives/edgar/data/1653087/test/8k.htm',
+        'party1_name': 'Alector',
+        'party1_quote': 'Alector, Inc. (the "Company") entered into a Collaboration Agreement',
+        'party2_name': 'Genentech',
+        'party2_quote': 'Collaboration Agreement (the "Agreement") with Genentech, Inc.',
+        'deal_type_quote': 'granted Genentech an exclusive, worldwide license',
+        'amount_quotes': {
+            'upfront': 'upfront payment of $100 million in cash',
+            'milestones': 'up to an aggregate of $1.0 billion in potential development',
+        },
+    }
+    
+    # Process the deal
+    result = process_deal_with_quotes(model_response, filing_text, 'Alector, Inc.')
+    
+    tests_passed = 0
+    total_tests = 6
+    
+    # Test 1: Deal should be accepted (not None)
+    if result is not None:
+        tests_passed += 1
+    else:
+        print("FAIL: Valid deal was rejected")
+        return False
+    
+    # Test 2: Company name correct
+    if result.get('company') == 'Alector':
+        tests_passed += 1
+    else:
+        print(f"FAIL: Company wrong: {result.get('company')}")
+    
+    # Test 3: Counterparty correct
+    if result.get('counterparty') == 'Genentech':
+        tests_passed += 1
+    else:
+        print(f"FAIL: Counterparty wrong: {result.get('counterparty')}")
+    
+    # Test 4: Deal type is license (from quote)
+    if result.get('kinds') == ['lic']:
+        tests_passed += 1
+    else:
+        print(f"FAIL: Deal type wrong: {result.get('kinds')}")
+    
+    # Test 5: Upfront amount parsed correctly ($100M = 1亿美元)
+    upfront = result.get('upfront', '')
+    if '1 亿美元' in upfront or '1亿美元' in upfront:
+        tests_passed += 1
+    else:
+        print(f"FAIL: Upfront amount wrong: {upfront}")
+    
+    # Test 6: Verified quotes stored
+    verified = result.get('verified_quotes', {})
+    if verified.get('party1') and verified.get('deal_type'):
+        tests_passed += 1
+    else:
+        print(f"FAIL: Verified quotes not stored: {verified}")
+    
+    print(f"_test_integration_deal_pipeline: {tests_passed}/{total_tests} tests passed")
+    return tests_passed == total_tests
+
+
 def process_deal_with_quotes(raw_deal: dict, filing_text: str, filer_name: str) -> dict | None:
     """Process a deal using the evidence-quote system.
     
@@ -3672,6 +3767,7 @@ def _extract_numbers_from_text(text: str) -> set[str]:
     """Extract all numbers (including currency amounts, percentages, and Chinese numerals).
     
     Fix B3: Must handle Chinese numerals like 五十亿, 一百亿, etc.
+    Round-6: Also handle 万亿 (trillion), 点 decimals (一点五亿), percentages.
     Returns a set of normalized number strings IN MILLIONS for comparison.
     """
     numbers = set()
@@ -3679,13 +3775,28 @@ def _extract_numbers_from_text(text: str) -> set[str]:
     # Chinese numeral mapping
     cn_nums = {'一': 1, '二': 2, '两': 2, '三': 3, '四': 4, '五': 5, 
                '六': 6, '七': 7, '八': 8, '九': 9, '十': 10,
-               '百': 100, '千': 1000}
+               '百': 100, '千': 1000, '零': 0}
     
     def parse_complex_cn_number(s: str) -> float | None:
-        """Parse complex Chinese numerals like 五十, 一百, 三十五."""
+        """Parse complex Chinese numerals like 五十, 一百, 三十五, 一点五."""
         s = s.strip()
         if not s:
             return None
+        
+        # Handle '点' decimal (一点五 = 1.5)
+        if '点' in s:
+            parts = s.split('点')
+            if len(parts) == 2:
+                integer_part = parse_complex_cn_number(parts[0]) or 0
+                decimal_part = parse_complex_cn_number(parts[1]) or 0
+                # Decimal part: 五 = 0.5, 五五 = 0.55, etc.
+                decimal_str = ''
+                for char in parts[1]:
+                    if char in cn_nums:
+                        decimal_str += str(cn_nums[char])
+                if decimal_str:
+                    return float(f"{int(integer_part)}.{decimal_str}")
+                return float(integer_part)
             
         # Handle X百/X千/X十 patterns
         total = 0
@@ -3706,13 +3817,15 @@ def _extract_numbers_from_text(text: str) -> set[str]:
     
     # Extract Arabic numbers with optional decimal - standalone numbers in millions
     # Pattern: $X million, $X billion, X million, X billion
-    for m in re.finditer(r'\$?\s*([\d,]+(?:\.\d+)?)\s*(million|billion|M|B)\b', text, re.IGNORECASE):
+    for m in re.finditer(r'\$?\s*([\d,]+(?:\.\d+)?)\s*(million|billion|trillion|M|B|T)\b', text, re.IGNORECASE):
         num_str = m.group(1).replace(',', '')
         unit = m.group(2).lower()
         try:
             val = float(num_str)
             # Convert to millions for normalization
-            if unit in ['billion', 'b']:
+            if unit in ['trillion', 't']:
+                val *= 1_000_000
+            elif unit in ['billion', 'b']:
                 val *= 1000
             # Store as millions
             if val == int(val):
@@ -3722,18 +3835,40 @@ def _extract_numbers_from_text(text: str) -> set[str]:
         except ValueError:
             pass
     
-    # Extract Chinese 亿 amounts (1亿 = 100 million) - convert to millions
-    # Fix B3: These must be stripped if not verified
-    # Patterns: N亿, 估值N亿, N万 (1万 = 10000 = 0.01 million)
+    # Extract percentages (for verification)
+    for m in re.finditer(r'([\d,]+(?:\.\d+)?)\s*%', text):
+        num_str = m.group(1).replace(',', '')
+        try:
+            val = float(num_str)
+            # Store percentages with 'pct' marker
+            numbers.add(f"pct_{val:.1f}")
+        except ValueError:
+            pass
     
-    # Pattern: [Chinese or Arabic number]亿
-    for m in re.finditer(r'([一二三四五六七八九十百千两]+|\d+(?:\.\d+)?)\s*亿', text):
+    # Extract Chinese 万亿 amounts (1万亿 = 1 trillion = 1,000,000 million)
+    for m in re.finditer(r'([一二三四五六七八九十百千两]+点?[一二三四五六七八九零]*|\d+(?:\.\d+)?)\s*万亿', text):
+        cn_str = m.group(1)
+        if cn_str.replace('.', '').isdigit():
+            val = float(cn_str) * 1_000_000  # 1万亿 = 1,000,000 million
+        else:
+            parsed = parse_complex_cn_number(cn_str)
+            val = (parsed * 1_000_000) if parsed else None
+        
+        if val is not None:
+            if val == int(val):
+                numbers.add(str(int(val)))
+            else:
+                numbers.add(f"{val:.2f}")
+    
+    # Extract Chinese 亿 amounts (1亿 = 100 million) - convert to millions
+    # Include '点' decimal support (一点五亿 = 1.5亿 = 150 million)
+    for m in re.finditer(r'([一二三四五六七八九十百千两]+点?[一二三四五六七八九零]*|\d+(?:\.\d+)?)\s*亿(?!万)', text):
         cn_str = m.group(1)
         if cn_str.replace('.', '').isdigit():
             # Arabic number before 亿
             val = float(cn_str) * 100  # 1亿 = 100 million
         else:
-            # Chinese numeral
+            # Chinese numeral (possibly with 点 decimal)
             parsed = parse_complex_cn_number(cn_str)
             val = (parsed * 100) if parsed else None  # Convert to millions
         
@@ -3743,8 +3878,9 @@ def _extract_numbers_from_text(text: str) -> set[str]:
             else:
                 numbers.add(f"{val:.2f}")
     
-    # Pattern: [Chinese or Arabic number]万 (1万 = 10000 = 0.01 million)
-    for m in re.finditer(r'([一二三四五六七八九十百千两]+|\d+(?:\.\d+)?)\s*万(?:美元)?', text):
+    # Extract Chinese 万 amounts (1万 = 10000 = 0.01 million)
+    # Exclude 万亿 which is handled above
+    for m in re.finditer(r'([一二三四五六七八九十百千两]+点?[一二三四五六七八九零]*|\d+(?:\.\d+)?)\s*万(?!亿)(?:美元)?', text):
         cn_str = m.group(1)
         if cn_str.replace('.', '').isdigit():
             val = float(cn_str) * 0.01  # 1万 = 0.01 million
@@ -3757,10 +3893,6 @@ def _extract_numbers_from_text(text: str) -> set[str]:
                 numbers.add(str(int(val)))
             else:
                 numbers.add(f"{val:.2f}")
-    
-    # Also extract bare numbers that look like currency amounts (standalone big numbers)
-    # This catches things like "另加3亿" -> 3亿 = 300 million
-    # But we already handle this above with the 亿 pattern
     
     return numbers
 
@@ -3915,6 +4047,15 @@ def _test_chinese_number_extraction():
         ("首付1亿，另加3亿", {"100", "300"}),
         # Mixed with English
         ("首付$100 million，另加五十亿里程碑", {"100", "5000"}),
+        # Round-6: 点 decimals (一点五亿 = 1.5亿 = 150 million)
+        ("一点五亿美元", {"150"}),  # 1.5 * 100 = 150 million
+        ("三点二亿", {"320"}),  # 3.2 * 100 = 320 million
+        # Round-6: 万亿 (trillion = 1,000,000 million)
+        ("一万亿美元", {"1000000"}),  # 1 trillion
+        ("三点五万亿", {"3500000"}),  # 3.5 trillion = 3,500,000 million
+        # Round-6: Percentages
+        ("占股19.9%", {"pct_19.9"}),
+        ("约10%股权", {"pct_10.0"}),
     ]
     
     passed = 0
@@ -4803,6 +4944,7 @@ def main() -> None:
         all_passed &= _test_company_whole_word()
         all_passed &= _test_real_sec_filings()
         all_passed &= _test_adversarial_deals()
+        all_passed &= _test_integration_deal_pipeline()
         print(f"\n{'All tests passed!' if all_passed else 'Some tests failed.'}")
         raise SystemExit(0 if all_passed else 1)
     
