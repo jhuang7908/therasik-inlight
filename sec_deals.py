@@ -326,7 +326,6 @@ Do not paraphrase or modify the quotes - they must be exact substrings of the fi
         message = claude_client.messages.create(
             model=model,
             max_tokens=4000,
-            temperature=0,
             tools=[DEAL_VERIFICATION_SCHEMA],
             tool_choice={"type": "auto"},
             messages=[{"role": "user", "content": prompt}],
