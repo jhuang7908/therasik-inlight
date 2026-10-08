@@ -176,9 +176,11 @@ article .ahead{display:grid;gap:11px;padding-bottom:18px;border-bottom:1px solid
 svg text{font-family:var(--body)}
 .metarow{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;row-gap:4px}
 .metarow .date,.metarow .idate{white-space:nowrap;flex-shrink:0}
-.metarow .expbtn{margin-left:auto;flex-shrink:0}
+.metarow .expbtn{margin-left:auto;flex-shrink:0;min-width:32px;padding:4px 6px}
 .metarow .jname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1 1 0;min-width:0}
-.metarow .tagrow{display:contents}
+.metarow .tagrow{display:flex;gap:4px;overflow:hidden;flex-shrink:1;min-width:0}
+.metarow .tagrow .kind{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:80px}
+.feed .metarow .tagrow .kind:nth-child(n+2){display:none}
 .metarow .kind{flex-shrink:0}
 .thumb{display:block;width:100%;aspect-ratio:5/3;max-width:100%}
 .thumb svg{display:block;width:100%;height:100%}
@@ -312,20 +314,13 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 .feed{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;align-items:stretch}
 @media (max-width:1023px){.feed{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (max-width:768px){.feed{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.feed .item.expanded{grid-column:1/-1;align-self:start}
 
 .item{background:var(--surface);border:1px solid var(--line);border-radius:14px;display:grid;grid-template-rows:auto 1fr;overflow:hidden}
 .item .cbody{padding:8px 10px 9px;display:flex;flex-direction:column;gap:4px}
 .item .cbody h3{flex:0 0 auto}
 .item .cbody .metarow{margin-top:auto}
-.card.wide{grid-column:1/-1;grid-template-columns:190px minmax(0,1fr)}
-.card.wide .cover{aspect-ratio:auto;height:100%;min-height:112px}
-.card.wide .cbody{padding:11px 13px 12px}
-@media (max-width:560px){.card.wide{grid-template-columns:minmax(0,1fr)}.card.wide .cover{aspect-ratio:2/1;height:auto}}
-.item.wide{grid-column:1/-1;grid-template-columns:200px minmax(0,1fr)}
-.item.wide .cover{aspect-ratio:auto;height:100%;min-height:140px}
-.item.wide .cbody{padding:11px 14px 12px}
-.item.wide h3{-webkit-line-clamp:2;font-size:14.5px}
-@media (max-width:620px){.item.wide{grid-template-columns:minmax(0,1fr)}.item.wide .cover{aspect-ratio:2/1;height:auto}}
+.item.expanded{align-self:start}
 .item h3{font-size:13.5px;line-height:1.45;font-family:var(--display);font-weight:800;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
   min-height:calc(2 * 1.45 * 13.5px)}
@@ -371,27 +366,25 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
   /* Reduce tracker chart sizes on mobile */
   .tracker svg{max-height:120px}
 }
-/* Compact 2-col grid on phone (≤480px) with tag management */
+/* Compact 2-col grid on phone (≤480px) */
 @media (max-width:480px){
   .nav-in a{padding:0 8px;font-size:13px}
   .grid,.feed{gap:8px}
   /* Compact cards */
-  .grid .item,.grid .card,.feed .item{grid-template-rows:auto 1fr}
+  .grid .item,.grid .card{grid-template-rows:auto 1fr}
   .grid .item .cover,.grid .card .cover{display:block;aspect-ratio:3/2;min-height:auto;height:auto}
   .item h3,.card h3{font-size:12px;-webkit-line-clamp:2;min-height:calc(2 * 1.45 * 12px)}
   .cbody{padding:6px 8px 8px;gap:3px}
-  /* Tags: show max 1, truncate with ellipsis, keep 阅读/详情 on same line */
-  .metarow{flex-wrap:nowrap}
-  .metarow .tagrow{display:flex;gap:4px;overflow:hidden;flex-shrink:1;min-width:0}
-  .metarow .tagrow .kind{max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  /* Tags: max 1 visible, truncate */
+  .metarow .tagrow .kind{max-width:50px}
   .metarow .tagrow .kind:nth-child(n+2){display:none}
-  .idate{font-size:9px}
-  .jname{font-size:9px;display:none}
-  .kind{font-size:9px;padding:0 5px}
-  .expbtn{font-size:11px;min-height:32px;flex-shrink:0}
+  .idate{font-size:11px}
+  .jname{font-size:10px;display:none}
+  .kind{font-size:10px;padding:0 5px}
+  .expbtn{font-size:11px;min-height:32px;min-width:32px;flex-shrink:0}
   /* Deals card fixes */
-  .item .money{font-size:11px}
-  .item .msline{font-size:10px}
+  .item .money{font-size:12px}
+  .item .msline{font-size:11px}
 }
 </style>
 </head>
@@ -1003,10 +996,7 @@ function renderPaper(id){
       </div>
     </article>`;
 }
-function colsOf(el){return getComputedStyle(el).gridTemplateColumns.split(' ').filter(Boolean).length}
-function fitRows(el,html){
-  el.innerHTML=html;
-}
+function setHtml(el,html){ el.innerHTML=html; }
 function arcRow(a){
   return `<a class="arow" style="--dc:var(--${a.f})" href="${a.deep?('#'+a.deep):('#p-'+a.id)}">
     <span class="adate">${a.disp}</span>
@@ -1106,6 +1096,7 @@ document.addEventListener('click',e=>{
   if(!box) return;
   const open=box.hidden;
   box.hidden=!open;
+  item.classList.toggle('expanded',open);
   b.setAttribute('aria-expanded',String(open));
   b.textContent=open?'收起 ↑':'详情 ↓';
 });
@@ -1155,7 +1146,7 @@ const hf=document.getElementById('homefeed');
 const hfHtml=DEALS.slice(0,4).map((x,i)=>dealCard(x,'h'+i)).join('');
 const lg=document.getElementById('latestgrid');
 let lgHtml='';
-function refit(){ fitRows(lg,lgHtml); fitRows(hf,hfHtml); wireExpand(hf); }
+function refit(){ setHtml(lg,lgHtml); setHtml(hf,hfHtml); wireExpand(hf); }
 let rt; addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{
   if(!document.getElementById('v-home').hidden) refit();
   if(!document.getElementById('v-deals').hidden) renderFeed();
