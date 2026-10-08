@@ -250,7 +250,9 @@ class TestValidateDepth(unittest.TestCase):
         }
         raw = "the response rate was 52% in 36 patients who were enrolled"
         problems = validate_depth(art, raw)
-        self.assertTrue(any("study_type" in p for p in problems))
+        # Missing datacard values are omitted at publish time, not a defect
+        self.assertFalse(any("应写" in p and "未给出" in p for p in problems))
+        self.assertFalse(any("数据卡字段为空" in p for p in problems))
     
     def test_fabricated_number(self):
         """Numbers in article must be registered in data_points."""
@@ -789,16 +791,29 @@ class TestIdentifierSubstringBug(unittest.TestCase):
         self.assertFalse(result, "Invented '18' should be caught - not in source as standalone")
     
     def test_cd8_identifier_in_context_allowed(self):
-        """'CD8细胞' should be allowed when CD8 is in source AND context mentions CD8."""
-        from inlight_articles import number_exists_in_source, extract_identifiers_from_source, normalize_source_text
-        
+        """Digits inside the identifier token CD8 are not claimed numbers.
+
+        A nearby identifier must not evidence a count: '8例' next to CD8 is invented.
+        Copying 'CD8细胞' verbatim is fine because the 8 is not extracted as data.
+        """
+        from inlight_articles import (
+            extract_number_core,
+            extract_numbers_with_context,
+            number_exists_in_source,
+            extract_identifiers_from_source,
+            normalize_source_text,
+        )
+
         source = "CD8 T cells showed enhanced killing."
         source_norm = normalize_source_text(source)
         identifiers = extract_identifiers_from_source(source)
-        
-        # "8" appears in context as part of "CD8细胞" - should be OK
-        result = number_exists_in_source("8", source_norm, identifiers, "CD8细胞呈现杀伤表型")
-        self.assertTrue(result, "CD8 identifier digit should be allowed when identifier is in context")
+
+        extracted = extract_numbers_with_context("CD8细胞呈现杀伤表型")
+        cores = [extract_number_core(n) for n, _ in extracted]
+        self.assertNotIn("8", cores, f"CD8 must not yield a claimed '8': {extracted}")
+        # A count that merely sits next to the identifier is still invented
+        result = number_exists_in_source("8", source_norm, identifiers, "CD8阳性患者8例")
+        self.assertFalse(result, "A nearby CD8 must not evidence an invented 8例")
     
     def test_standalone_number_allowed(self):
         """Numbers that actually exist in source should pass."""
@@ -1389,6 +1404,114 @@ class TestMalformedModelResponse(unittest.TestCase):
             self.assertIsInstance(problems, list)
         except AttributeError as e:
             self.fail(f"validate_depth crashed with AttributeError: {e}")
+
+
+class TestDedupAndBetterDraft(unittest.TestCase):
+    """Acceptance item #12: dedup and better-draft must be tested, not just live."""
+
+    def test_near_duplicate_rss_abstract_omitted_from_prompt(self):
+        from inlight_articles import EnrichedItem, _article_prompt_abstract, is_near_duplicate
+
+        abstract = (
+            "Here we report a new method for in vivo delivery across human primary cells. "
+            "The platform enables targeted editing with high efficiency."
+        )
+        rss = abstract  # bioRxiv RSS teaser == EPMC abstract
+        self.assertTrue(is_near_duplicate(rss, abstract))
+        item = EnrichedItem(
+            url="https://www.biorxiv.org/content/10.64898/example",
+            title="Example",
+            source="bioRxiv",
+            date="2026-10-01",
+            abstract=abstract,
+            rss_summary=rss,
+        )
+        block = _article_prompt_abstract(item)
+        snippet = abstract[10:70]
+        self.assertEqual(block.count(snippet), 1)
+        self.assertNotIn("RSS 摘要", block)
+
+    def test_distinct_rss_is_kept_once_each(self):
+        from inlight_articles import EnrichedItem, _article_prompt_abstract
+
+        item = EnrichedItem(
+            url="https://example.com",
+            title="Example",
+            source="Nature",
+            date="2026-10-01",
+            abstract="The trial enrolled 36 patients and reported a 52% response rate.",
+            rss_summary="Press teaser: a new antibody shows activity in early testing.",
+        )
+        block = _article_prompt_abstract(item)
+        self.assertIn("52% response rate", block)
+        self.assertIn("Press teaser", block)
+        self.assertEqual(block.count("Press teaser"), 1)
+
+    def test_better_draft_keeps_first_when_retry_is_worse(self):
+        """If the retry introduces an invented number, keep the first draft."""
+        from unittest.mock import patch
+        from inlight_articles import EnrichedItem, _process_single_article
+
+        body = (
+            "这项研究在小鼠模型中验证了抗体阻断方案。"
+            "研究者按每周一次给药，持续四周后评估炎症指标。"
+            "结果显示相关通路信号下降，组织损伤减轻。"
+            "该方案为后续人体试验提供了剂量参考。"
+            "样本来自已建立的炎症模型，结果与既有观察一致。" * 8
+        )
+        first = {
+            "url": "https://www.biorxiv.org/content/10.64898/example",
+            "tier": "brief",
+            "title": "抗体阻断减轻炎症",
+            "journal": "bioRxiv",
+            "authors": "",
+            "one_liner": "抗体阻断后炎症指标下降。",
+            "background": body[:80],
+            "design": "小鼠模型，每周一次给药共四周。",
+            "results": ["四周后炎症指标下降，给药持续四周。"],
+            "mechanism": "",
+            "limitations": ["动物模型，外推有限。"],
+            "significance": "为后续人体试验提供剂量参考。",
+            "datacard": {"study_type": "动物实验", "n": "不适用"},
+            "data_points": [
+                {"value": "4", "meaning": "周数", "source_quote": "once a week for 4 weeks"},
+            ],
+            "steps": ["给药", "观察", "评估"],
+        }
+        retry = dict(first)
+        retry["results"] = [first["results"][0] + "研究共纳入12只小鼠。"]
+
+        source = "Antibody blockade given once a week for 4 weeks reduced inflammation."
+        enriched = EnrichedItem(
+            url=first["url"],
+            title=first["title"],
+            source="bioRxiv",
+            date="2026-10-01",
+            abstract=source,
+            rss_summary=source,
+            journal="bioRxiv",
+        )
+        # Pad first body to clear the 450-Han gate
+        extra = "研究者随后比较了给药前后的组织切片与细胞因子读出，观察到一致的下降趋势。" * 12
+        first["background"] = extra
+        retry["background"] = extra
+
+        calls = {"n": 0}
+
+        def fake_draft(item, tier, config, problems=None):
+            calls["n"] += 1
+            return dict(first) if calls["n"] == 1 else dict(retry)
+
+        with patch("inlight_articles.draft_single_article", side_effect=fake_draft):
+            art = _process_single_article(
+                {"url": first["url"], "tier": "brief", "field": "c4"},
+                {first["url"]: enriched},
+                {},
+            )
+        self.assertIsNotNone(art)
+        published = " ".join(art.get("results") or [])
+        self.assertNotIn("12只", published)
+        self.assertIn("四周", published)
 
 
 if __name__ == "__main__":

@@ -516,14 +516,15 @@ def fetch_all(config: dict) -> list[dict]:
 
 
 def _truncate_items_for_legacy(items: list[dict]) -> list[dict]:
-    """Truncate item summaries to 700 chars for legacy claude_draft path.
-    
-    This maintains byte-identical prompts with main branch which used [:700].
-    The new pipeline uses full summaries via enrich_item.
+    """Prepare items for the legacy claude_draft prompt.
+
+    Main serializes only source/kind/title/url/date/summary and truncates
+    summaries to 700 chars. Extra keys (e.g. journal, added for the new
+    pipeline) must not leak into this prompt.
     """
     result = []
     for item in items:
-        truncated = dict(item)
+        truncated = {k: v for k, v in item.items() if k != "journal"}
         if "summary" in truncated:
             truncated["summary"] = truncated["summary"][:700]
         result.append(truncated)

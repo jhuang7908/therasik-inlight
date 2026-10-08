@@ -583,11 +583,11 @@ def extract_numbers_from_text(text: str) -> set[str]:
 
 # English number words to Arabic
 ENGLISH_NUMBER_WORDS = {
-    'zero': '0', 'one': '1', 'two': '2', 'three': '3', 'four': '4',
-    'five': '5', 'six': '6', 'seven': '7', 'eight': '8', 'nine': '9',
-    'ten': '10', 'eleven': '11', 'twelve': '12', 'thirteen': '13',
-    'fourteen': '14', 'fifteen': '15', 'sixteen': '16', 'seventeen': '17',
-    'eighteen': '18', 'nineteen': '19', 'twenty': '20'
+    'zero': '0', 'once': '1', 'one': '1', 'twice': '2', 'two': '2',
+    'three': '3', 'four': '4', 'five': '5', 'six': '6', 'seven': '7',
+    'eight': '8', 'nine': '9', 'ten': '10', 'eleven': '11', 'twelve': '12',
+    'thirteen': '13', 'fourteen': '14', 'fifteen': '15', 'sixteen': '16',
+    'seventeen': '17', 'eighteen': '18', 'nineteen': '19', 'twenty': '20',
 }
 
 
@@ -752,6 +752,21 @@ def build_triage_prompt(items: list[EnrichedItem], config: dict) -> str:
 """
 
 
+def _article_prompt_abstract(item: EnrichedItem) -> str:
+    """Abstract block for the article prompt, with RSS text at most once."""
+    abstract = (item.abstract or "").strip()
+    rss = (item.rss_summary or "").strip()
+    if abstract:
+        parts = [abstract[:8000]]
+        # Only append the RSS teaser when it is not the same text as the abstract
+        if rss and not is_near_duplicate(rss, abstract):
+            parts.append("RSS 摘要：\n" + rss[:8000])
+        return "\n".join(parts)
+    if rss:
+        return rss[:8000]
+    return "无"
+
+
 def build_article_prompt(item: EnrichedItem, tier: str) -> str:
     """Build prompt for single article drafting."""
     return f"""你是「前沿追踪」的科学编辑。下面是一篇论文的可核实材料，请据此写一篇中文解读。
@@ -759,7 +774,7 @@ def build_article_prompt(item: EnrichedItem, tier: str) -> str:
 ## 不可违反的规则
 
 1. **只写材料已经写明的事实**。材料里没有的数字、作者、适应症、剂量、人群、金额，一律不要写。
-2. **材料里查不到的字段，写「原文未给出」或「未读到该部分」**，不要留空，不要推测，不要用相近的数字代替。
+2. **材料里查不到的字段，直接省略，不要写「未给出」「原文未给出」或任何占位句**，不要推测，不要用相近的数字代替。
 3. **每个数字都要有 source_quote**。你引用的每一个数字，都必须能在材料里找到对应的原句。把这些原句逐字放进 data_points[].source_quote。
    凑不出 source_quote 的数字，就不要写进正文。
 4. **不要把标识符登记为数字**。CD4、CD8、CD14、IL-23、HLA-DP04 等是蛋白/基因名称，不是数据；NCT、RPCEC 等是试验编号，不是数据。
@@ -795,7 +810,7 @@ evidence_level 为 press/secondary 时只能填 brief。
 - limitations 局限与不确定：至少 3 条，合计 200–280 字。每条都要具体，必须覆盖以下三类中的至少两类：
   ① 外推性（物种、人群、样本量、单中心、无对照、剂量未优化）
   ② 终点与随访（替代终点、随访过短、未按疗效设定检验效能、开放标签）
-  ③ 未报告项（「原文未给出 X」）
+  ③ 未报告项（材料没写的终点、随访、统计量——只写材料里实际缺的内容，不要写「未给出」）
   禁止写「仍需更多研究验证」「期待后续大样本研究」这类空话。
 
 ## brief 档要求
@@ -816,13 +831,13 @@ evidence_level 为 press/secondary 时只能填 brief。
 ## 材料
 
 标题：{item.title}
-期刊 / 来源：{item.source}
+期刊 / 来源：{item.journal or item.source}
 日期：{item.date}
 DOI / 链接：{item.url}
 证据等级：{item.evidence_level}
 
 摘要：
-{item.abstract[:8000] if item.abstract else '无'}
+{_article_prompt_abstract(item)}
 
 全文结果与讨论（若有）：
 {item.fulltext_results[:15000] if item.fulltext_results else '无'}
@@ -1092,6 +1107,9 @@ def normalize_source_text(text: str) -> str:
     
     # Plus-minus
     result = result.replace('±', '+/-')
+
+    # Angstrom variants: "2.8 Å" and "2.8 A" are the same measurement
+    result = result.replace('å', 'a').replace('Å', 'a')
     
     return result
 
@@ -1139,6 +1157,93 @@ def extract_identifiers_from_source(source: str) -> set[str]:
     return identifiers
 
 
+# Tokens that look like identifiers, not data claims. Digits inside these
+# must not be extracted as claimed numbers and must not evidence a count/% .
+_IDENTIFIER_TOKEN_RE = re.compile(
+    r'(?i)(?:'
+    r'(?:CD|IL|HLA|IFN|NK|NF|CCR|CCL|CXCL|CXCR|Th|TAK|PD|MK|p)\s*-?\s*[A-Za-z]?\d+[A-Za-z0-9./-]*'
+    r'|(?:NCT|RPCEC|ISRCTN|EudraCT|ACTRN|ChiCTR)\d+'
+    r'|Nissle\s+\d+'
+    r'|\b[A-Z]\d+\b'
+    r')'
+)
+
+# English number words that cannot stand in as a data_point value
+_ENGLISH_NUMERAL_VALUE_RE = re.compile(
+    r'(?i)\b(?:zero|once|one|twice|two|three|four|five|six|seven|eight|nine|ten|'
+    r'eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|'
+    r'twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|'
+    r'million|billion|tens?|hundreds?|thousands?)\b'
+)
+
+HAN_CHAR_RE = re.compile(r'[\u4e00-\u9fff]')
+LENGTH_BODY_FIELDS = (
+    "one_liner", "background", "design", "results",
+    "mechanism", "significance", "limitations",
+)
+MISSING_VALUE_MARK = "未给出"
+
+
+def identifier_spans(text: str) -> list[tuple[int, int]]:
+    """Character spans of identifier tokens (CD318, IL-6, p38, NCT…)."""
+    if not text:
+        return []
+    return [m.span() for m in _IDENTIFIER_TOKEN_RE.finditer(text)]
+
+
+def span_covers(pos: int, end: int, spans: list[tuple[int, int]]) -> bool:
+    return any(s <= pos and end <= e for s, e in spans)
+
+
+def han_len_fields(art: dict) -> int:
+    """Han-character count over the published body fields only."""
+    total = 0
+    for key in LENGTH_BODY_FIELDS:
+        val = art.get(key)
+        if isinstance(val, list):
+            for item in val:
+                if isinstance(item, str):
+                    total += len(HAN_CHAR_RE.findall(item))
+        elif isinstance(val, str):
+            total += len(HAN_CHAR_RE.findall(val))
+    return total
+
+
+def source_has_equivalent_number(num_core: str, context: str, source_norm: str) -> bool:
+    """Accept honest unit conversions that preserve the same quantity.
+
+    21 days ↔ 3 weeks, 1 year ↔ 12 months. The converted number must appear
+    in the source next to the matching unit, not as a bare digit.
+    """
+    if not num_core or not context or not source_norm:
+        return False
+    try:
+        n = float(num_core)
+    except ValueError:
+        return False
+    if abs(n - round(n)) > 1e-9:
+        return False
+    n = int(round(n))
+    ctx = context.lower()
+    src = source_norm.lower()
+
+    def has(num: int, units: str) -> bool:
+        return bool(re.search(
+            rf'(?<![a-zA-Z0-9.\-]){num}(?![a-zA-Z0-9])\s*-?\s*(?:{units})',
+            src,
+        ))
+
+    if re.search(r'周', ctx) and has(n * 7, r'days?|天|日'):
+        return True
+    if re.search(r'天|日', ctx) and n % 7 == 0 and has(n // 7, r'weeks?|wk|周'):
+        return True
+    if re.search(r'个?月', ctx) and n % 12 == 0 and has(n // 12, r'years?|yr|年'):
+        return True
+    if re.search(r'年', ctx) and has(n * 12, r'months?|mo|个?月'):
+        return True
+    return False
+
+
 def number_exists_in_source(num_str: str, source_norm: str, source_identifiers: set[str], 
                             context_window: str = "") -> bool:
     """Check if a number exists in the source text (after normalization).
@@ -1166,22 +1271,15 @@ def number_exists_in_source(num_str: str, source_norm: str, source_identifiers: 
     if not num_core:
         return True  # Not a number (empty after extraction)
     
-    # Check if the number in output is part of an identifier FROM SOURCE
-    # Only allow if the FULL identifier appears in the context_window of output
-    # This handles: output says "CD8细胞" and source has "CD8" -> the "8" is OK
-    # But NOT: output says "8例死亡" and source has "CD8" -> the "8" is INVENTED
-    if context_window:
-        for ident in source_identifiers:
-            ident_lower = ident.lower()
-            # Only relevant if the identifier contains this number
-            if num_core in ident_lower:
-                # Check if the FULL identifier appears near the number in output
-                context_lower = context_window.lower()
-                if ident_lower in context_lower:
-                    # The identifier (e.g., CD8) appears in output context
-                    # AND the number is part of that identifier -> allow
-                    return True
-    
+    # Identifiers in the source (CD318, IL-6, NCT…) are never evidence for a
+    # claimed number. A nearby "CD318" must not justify "31例".
+    # Digits that are themselves an identifier token are skipped earlier
+    # by extract_numbers_with_context.
+
+    # Honest unit conversions (21 days ↔ 3 weeks, 1 year ↔ 12 months)
+    if source_has_equivalent_number(num_core, context_window or "", source_norm):
+        return True
+
     # Check if the number exists in source with word boundaries
     # This is the primary check: the number must appear as standalone data
     if number_in_text_as_word_boundary(num_core, source_norm):
@@ -1214,20 +1312,15 @@ EXEMPT_NUMBER_PATTERNS = [
     r'p\s*[<>=]\s*0?\.\d+',
     r'hr\s*[=:]\s*\d',
     r'or\s*[=:]\s*\d',
-    # Gene/protein identifiers with numbers: p38, CD19, IL-6, PD-1
-    r'\bp\d+\b',  # p38, p53
-    r'CD\d+',  # CD4, CD8, CD19, CD318
-    r'IL-?\d+',  # IL-6, IL-2
-    r'PD-?\d+',  # PD-1, PD-L1
     # Frequency phrases: 一次/周, once a week, 每周1次
     r'[一二三四五六七八九十]\s*次\s*[/／每]\s*(周|天|月|日)',
     r'\d\s*次\s*[/／每]\s*(周|天|月|日)',
     r'once\s+a\s+(week|day|month)',
     r'twice\s+(weekly|daily|a\s+week)',
     r'每\s*(周|天|日|月)\s*[一二三四五六七八九十\d]+\s*次',
-    # Trial IDs: NCT\d+, RPCEC\d+
-    r'NCT\d+',
-    r'RPCEC\d+',
+    # Roman / class labels (MHC II类, class II) — not invented numbers
+    r'(?:mhc|hla|class|级|类)\s*[ivxⅠ-Ⅻ]+',
+    r'[ivxⅠ-Ⅻ]+\s*(?:类|期|class)',
     # Dosing identifiers: 100 mg, 200 mg (when part of dosing scheme description)
     r'\d+\s*mg\s*每',  # 100 mg每周
     r'每\s*(周|天)\s*\d+\s*mg',
@@ -1249,12 +1342,15 @@ def is_exempt_number_context(context: str, number: str) -> bool:
     """
     # First, check if the context contains any exempt patterns
     for pattern in EXEMPT_NUMBER_RE:
-        match = pattern.search(context)
-        if match:
-            # Verify the number is actually within or adjacent to the matched pattern
-            matched_text = match.group(0)
-            if number in matched_text or str(int(float(number)) if '.' not in number else number) in matched_text:
-                return True
+        for match in pattern.finditer(context):
+            # The number itself must sit inside the matched terminology span.
+            # "31" inside a nearby "CD318" is not exemption — those tokens are
+            # skipped at extraction time instead.
+            start, end = match.start(), match.end()
+            # Find this number occurrence nearest the match
+            for nm in re.finditer(re.escape(number), context):
+                if start <= nm.start() < end or abs(nm.start() - start) <= 1:
+                    return True
     
     # Check for "原文未给出/未报告" - any number in these phrases is exempt
     if re.search(r'原文未给出|原文未报告|未读到|未给出|未报告', context):
@@ -1280,11 +1376,15 @@ def normalize_unit_spacing(text: str) -> str:
 # These are pairs where using the same number would be semantically wrong
 CONTRADICTORY_METRIC_PAIRS = [
     # Response rate vs adverse events - completely different metrics
-    ({"response", "缓解", "orr", "crr", "cr", "pr", "客观缓解", "完全缓解", "部分缓解", "有效"},
+    ({"response", "缓解", "orr", "crr", "cr", "pr", "客观缓解", "完全缓解", "部分缓解", "有效",
+      "疾病控制", "dcr", "控制率"},
      {"adverse", "不良", "ae", "toxicity", "毒性", "side effect", "副作用", "trae", "teae"}),
-    # Response rate vs mortality - one is good, one is bad
-    ({"response", "缓解", "orr", "有效"},
-     {"死亡", "mortality", "death", "致死"}),
+    # Response / disease-control vs mortality
+    ({"response", "缓解", "orr", "有效", "疾病控制", "dcr", "控制率", "完全缓解", "客观缓解"},
+     {"死亡", "mortality", "death", "致死", "died"}),
+    # Overall survival vs progression-free survival
+    ({"pfs", "无进展", "progression-free", "progression free"},
+     {"os", "总生存", "overall survival", "一年生存", "1-year", "1 year", "1年"}),
     # Survival vs adverse events
     ({"survival", "生存", "os", "pfs", "存活"},
      {"adverse", "不良", "ae", "toxicity", "毒性"}),
@@ -1309,9 +1409,11 @@ def extract_metric_keywords(context: str) -> set[str]:
     # Key metrics to detect
     all_keywords = [
         "response", "缓解", "orr", "crr", "cr", "pr", "客观缓解", "完全缓解", "部分缓解",
-        "有效", "efficacy",
+        "有效", "efficacy", "疾病控制", "dcr", "控制率",
         "survival", "生存", "os", "pfs", "dfs", "efs", "存活",
-        "死亡", "mortality", "death", "致死",
+        "无进展", "progression-free", "progression free", "总生存", "overall survival",
+        "一年生存", "1-year", "1 year", "1年",
+        "死亡", "mortality", "death", "致死", "died",
         "adverse", "不良", "ae", "toxicity", "毒性", "safety", "side effect", "副作用",
         "trae", "teae",
     ]
@@ -1344,18 +1446,20 @@ def number_meaning_matches_source(num_str: str, output_context: str, source_text
     if not num_core:
         return True, ""
     
-    # Only look at IMMEDIATE context (8 chars before number) for metric keywords
-    # This catches "死亡率28%" or "CR rate 28%" but not distant mentions
-    # Find the number in the output context and look at what's immediately before it
-    num_match = re.search(rf'{re.escape(num_core)}', output_context)
+    # Look at a local window around EVERY occurrence (before AND after).
+    # "28%的患者死亡" puts the metric after the number; "无进展生存率26%" is
+    # longer than 8 characters.
+    output_keywords = set()
+    for num_match in re.finditer(re.escape(num_core), output_context):
+        immediate_start = max(0, num_match.start() - 16)
+        immediate_end = min(len(output_context), num_match.end() + 10)
+        output_keywords.update(extract_metric_keywords(
+            output_context[immediate_start:immediate_end]
+        ))
+    # Keep a representative match for the unit-type check below
+    num_match = re.search(re.escape(num_core), output_context)
     if not num_match:
         return True, ""
-    
-    # Get the 8 characters immediately before the number
-    immediate_start = max(0, num_match.start() - 8)
-    immediate_context = output_context[immediate_start:num_match.end()].lower()
-    
-    output_keywords = extract_metric_keywords(immediate_context)
     
     # Find all occurrences of this number in source 
     source_norm = source_text.lower()
@@ -1431,7 +1535,11 @@ def extract_numbers_with_context(text: str) -> list[tuple[str, str]]:
     
     # Arabic numbers with optional units
     number_pattern = r'(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?(?:\s*(?:%|％|倍|年|个月|天|周|小时|例|名|mg|kg|mL|µg|nM|pM|µM|mM|μg|μL))?'
+    id_spans = identifier_spans(text)
     for match in re.finditer(number_pattern, text):
+        # Skip digits that live inside an identifier token (CD318, p38, NCT…)
+        if span_covers(match.start(), match.end(), id_spans):
+            continue
         num = match.group(0)
         start = max(0, match.start() - 20)
         end = min(len(text), match.end() + 20)
@@ -1523,6 +1631,11 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
         if not re.search(r'\d', value):
             # No digits at all - reject
             problems.append(f"data_point value 必须包含数字：'{value}'")
+            continue
+
+        # English number words are not numeric data ("nine doses", "millions")
+        if _ENGLISH_NUMERAL_VALUE_RE.search(value):
+            problems.append(f"data_point value 必须使用阿拉伯数字，不能用英文数词：'{value}'")
             continue
         
         # Check for vague/imprecise quantifiers that lack specific numbers
@@ -1649,36 +1762,23 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
         for field in required_fields:
             val = str(datacard.get(field, "")).strip()
             if not val:
-                problems.append(f"数据卡字段为空：{field}（应写'原文未给出'或'不适用'）")
+                # Missing datacard values are omitted at publish time, not written out.
+                continue
     else:
         problems.append("datacard 字段格式错误（应为对象）")
     
-    # Character count check
-    body_parts = [
-        art.get("one_liner", ""),
-        art.get("background", ""),
-        art.get("design", ""),
-        *art.get("results", []),
-        art.get("mechanism", ""),
-        art.get("significance", ""),
-    ]
-    body = " ".join(body_parts)
-    total_chars = cn_len(body) + cn_len(" ".join(limitations))
+    # Character count: Han characters in body fields only (titles/datacard/journal excluded)
+    total_chars = han_len_fields(art)
     
-    # Character count validation - hard limits
-    # Brief: minimum 450 Han chars (no tolerance)
-    # Deep: 1400-1900 with 15% tolerance
+    # Hard limits: brief ≥ 450 Han; deep ≤ 1900 Han
     if tier == "deep":
-        if total_chars < 1400 * 0.85:
-            problems.append(f"deep 档正文 {total_chars} 字，低于下限 1190 字")
-        elif total_chars > 1900 * 1.15:
-            problems.append(f"deep 档正文 {total_chars} 字，超过上限 2185 字")
+        if total_chars > 1900:
+            problems.append(f"deep 档正文 {total_chars} 汉字，超过上限 1900 字")
+        elif total_chars < 450:
+            problems.append(f"deep 档正文 {total_chars} 汉字，低于下限 450 字")
     else:
-        # Hard minimum for brief - no tolerance below 450
         if total_chars < 450:
-            problems.append(f"brief 档正文 {total_chars} 字，低于下限 450 字")
-        elif total_chars > 650 * 1.15:
-            problems.append(f"brief 档正文 {total_chars} 字，超过上限 748 字")
+            problems.append(f"brief 档正文 {total_chars} 汉字，低于下限 450 字")
     
     # Evidence level check
     if isinstance(datacard, dict):
@@ -1704,12 +1804,6 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
     elif not results_numbers:
         # No numbers at all in results
         problems.append("结果字段应包含至少一个可核实的数字（来自原文）")
-    
-    # Check for excessive "未给出" boilerplate (soft warning)
-    # If an article has too many "未给出" phrases, it may lack substantive content
-    not_given_count = all_text.count("未给出") + all_text.count("未报告") + all_text.count("未提供")
-    if not_given_count > 8:
-        problems.append(f"文章含有过多「未给出/未报告」({not_given_count}处)，内容可能过于空洞")
     
     return problems
 
@@ -1920,6 +2014,7 @@ def draft_single_article(item: EnrichedItem, tier: str, config: dict, problems: 
             # This happens when the model outputs XML-like tags embedded in strings
             validated = _validate_article_structure(art, item.title[:50])
             if validated is None:
+                logging.warning("Article draft failed structure check: %s", item.title[:50])
                 return None
             
             validated["source"] = item.source
@@ -2127,6 +2222,91 @@ def _validate_article_structure(art: dict, title_snippet: str) -> dict | None:
     return art
 
 
+def _replace_literal_backslash_n(text: str) -> str:
+    """Turn the two-character sequence backslash-n into a real newline."""
+    if not isinstance(text, str) or "\\n" not in text:
+        return text
+    return text.replace("\\n", "\n")
+
+
+def _omit_missing_value_text(text: str) -> str:
+    """Drop sentences that write out a missing value as 未给出."""
+    if not isinstance(text, str):
+        return ""
+    text = _replace_literal_backslash_n(text)
+    if MISSING_VALUE_MARK not in text:
+        return text
+    parts = re.split(r'(?<=[。！？；;\n])', text)
+    kept = [p for p in parts if MISSING_VALUE_MARK not in p]
+    return "".join(kept).strip()
+
+
+def _walk_omit_missing(obj: Any) -> Any:
+    """Recursively omit 未给出 and literal \\n from nested article fields."""
+    if isinstance(obj, str):
+        return _omit_missing_value_text(obj)
+    if isinstance(obj, list):
+        return [v for v in (_walk_omit_missing(x) for x in obj) if v not in ("", None, [], {})]
+    if isinstance(obj, dict):
+        out = {}
+        for k, v in obj.items():
+            cleaned = _walk_omit_missing(v)
+            if cleaned in ("", None, [], {}):
+                continue
+            out[k] = cleaned
+        return out
+    return obj
+
+
+def sanitize_published_article(art: dict, enriched: EnrichedItem | None = None) -> dict:
+    """Prepare an article for publication: omit missing-value boilerplate, drop
+    literal \\n, and prefer the journal name from the source item.
+    """
+    visible_keys = [
+        "title", "one_liner", "background", "design", "results", "mechanism",
+        "significance", "limitations", "journal", "authors", "lead", "body",
+        "discuss", "datacard", "steps", "unknowns",
+    ]
+    for key in visible_keys:
+        if key in art:
+            art[key] = _walk_omit_missing(art[key])
+
+    # Journal: always prefer the name from the RSS/esummary/EPMC item
+    known = (enriched.journal if enriched else "") or ""
+    written = (art.get("journal") or "").strip()
+    if known:
+        art["journal"] = known
+    elif written and MISSING_VALUE_MARK in written:
+        art["journal"] = (enriched.source if enriched else "") or ""
+
+    authors = art.get("authors") or ""
+    if isinstance(authors, str) and MISSING_VALUE_MARK in authors:
+        art["authors"] = ""
+
+    # Final sweep: no remaining literal \n in any string
+    def _scrub(obj: Any) -> Any:
+        if isinstance(obj, str):
+            return _replace_literal_backslash_n(obj)
+        if isinstance(obj, list):
+            return [_scrub(x) for x in obj]
+        if isinstance(obj, dict):
+            return {k: _scrub(v) for k, v in obj.items()}
+        return obj
+
+    return _scrub(art)
+
+
+def _hard_problems(problems: list[str]) -> list[str]:
+    """Problems that block publishing (redraft or drop)."""
+    markers = (
+        "未找到", "无法回溯", "编造", "营销词汇", "新闻稿",
+        "含义不匹配", "单位不匹配", "汉字", "上限", "下限",
+        "data_point", "作者", "术语翻译", "必须包含数字",
+        "必须使用阿拉伯", "过短", "过长",
+    )
+    return [p for p in problems if any(m in p for m in markers)]
+
+
 def process_articles(items: list[dict], config: dict) -> dict:
     """Process items through enrichment, triage, drafting, and validation.
     
@@ -2215,115 +2395,96 @@ def _process_single_article(selection: dict, url_to_enriched: dict, config: dict
             raw_parts.append(enriched_item.rss_summary)
     raw_material = "\n".join(raw_parts)
     
+    def _prepare(draft: dict | None) -> tuple[dict | None, list[str]]:
+        if not draft:
+            return None, ["draft missing"]
+        draft = sanitize_published_article(dict(draft), enriched_item)
+        draft["field"] = field
+        draft["tier"] = tier
+        probs = validate_depth(draft, raw_material)
+        probs.extend(validate_names(draft, raw_material))
+        return draft, probs
+
     art = draft_single_article(enriched_item, tier, config)
+    if not art:
+        # Malformed / empty / text-only replies get exactly one redraft
+        logging.warning("Malformed or empty draft, redrafting once: %s", url)
+        art = draft_single_article(enriched_item, tier, config)
     if not art:
         logging.warning("Failed to draft article for: %s", url)
         return None
-    
-    art["field"] = field
-    
-    problems = validate_depth(art, raw_material)
-    name_problems = validate_names(art, raw_material)
-    problems.extend(name_problems)
-    
+
+    art, problems = _prepare(art)
+
     if problems:
         logging.warning("Validation issues for %s: %s", url, problems)
-        
-        # Classify first draft problems
-        first_hard_problems = [p for p in problems if any(x in p for x in [
-            '未找到', '无法回溯', '编造', '营销词汇', '新闻稿', '含义不匹配'
-        ])]
+
+        first_hard_problems = _hard_problems(problems)
         first_soft_problems = [p for p in problems if p not in first_hard_problems]
         first_has_soft_only = len(first_hard_problems) == 0 and len(first_soft_problems) > 0
-        
-        # Keep first draft as fallback for soft-only failures
-        first_art = art.copy()
-        first_problems = problems.copy()
-        
-        # Targeted redraft with specific problems listed
+
+        first_art = art
+        first_problems = problems
+
         logging.info("Targeted redraft with %d problems listed...", len(problems))
         retry_art = draft_single_article(enriched_item, tier, config, problems=problems)
-        
+
         if retry_art is None:
             logging.error("Targeted redraft failed for %s", url)
             if tier == "deep":
-                # Try brief as fallback
                 logging.info("Trying brief fallback for: %s", url)
                 retry_art = draft_single_article(enriched_item, "brief", config)
                 if retry_art is None:
                     logging.error("Brief fallback also failed, dropping: %s", url)
                     return None
                 tier = "brief"
+                art, problems = _prepare(retry_art)
+            elif first_has_soft_only:
+                logging.warning("Redraft failed but first draft had soft-only problems, keeping first: %s", url)
+                art = first_art
+                problems = first_problems
             else:
-                # For brief: if first draft had soft-only problems, keep it
-                if first_has_soft_only:
-                    logging.warning("Redraft failed but first draft had soft-only problems, keeping first: %s", url)
-                    art = first_art
-                    problems = first_problems
-                else:
-                    return None
+                logging.error("Dropping %s after failed redraft: %s", url, first_hard_problems)
+                return None
         else:
-            retry_art["field"] = field
-            retry_problems = validate_depth(retry_art, raw_material)
-            retry_problems.extend(validate_names(retry_art, raw_material))
-            
-            # Compare first and retry drafts - publish the better one
-            retry_hard = [p for p in retry_problems if any(x in p for x in [
-                '未找到', '无法回溯', '编造', '营销词汇', '新闻稿', '含义不匹配'
-            ])]
-            retry_soft = [p for p in retry_problems if p not in retry_hard]
-            
-            # Determine which draft is better:
-            # 1. Fewer hard problems is better
-            # 2. If tied on hard, fewer total problems is better
+            retry_art, retry_problems = _prepare(retry_art)
+            retry_hard = _hard_problems(retry_problems)
+
             first_score = (len(first_hard_problems), len(first_problems))
             retry_score = (len(retry_hard), len(retry_problems))
-            
+
             if retry_score <= first_score:
-                # Retry is same or better
                 art = retry_art
                 problems = retry_problems
                 logging.info("Using retry draft (score %s vs first %s): %s", retry_score, first_score, url)
             else:
-                # First draft is better, keep it
                 art = first_art
                 problems = first_problems
                 logging.info("Keeping first draft (score %s vs retry %s): %s", first_score, retry_score, url)
-            
+
             if problems:
-                # Re-classify the selected draft's problems
-                hard_problems = [p for p in problems if any(x in p for x in [
-                    '未找到', '无法回溯', '编造', '营销词汇', '新闻稿', '含义不匹配'
-                ])]
+                hard_problems = _hard_problems(problems)
                 soft_problems = [p for p in problems if p not in hard_problems]
-                
+
                 if hard_problems:
-                    # Hard problems: downgrade or drop
                     if tier == "deep":
                         logging.warning("Downgrading %s from deep to brief after retry - hard problems: %s", url, hard_problems)
                         brief_art = draft_single_article(enriched_item, "brief", config, problems=problems)
                         if brief_art is None:
                             logging.error("Brief targeted redraft failed, dropping: %s", url)
                             return None
-                        brief_art["field"] = field
-                        art = brief_art
                         tier = "brief"
-                        problems = validate_depth(art, raw_material)
-                        problems.extend(validate_names(art, raw_material))
-                        hard_problems = [p for p in problems if any(x in p for x in [
-                            '未找到', '无法回溯', '编造', '营销词汇', '新闻稿', '含义不匹配'
-                        ])]
+                        art, problems = _prepare(brief_art)
+                        hard_problems = _hard_problems(problems)
                         if hard_problems:
                             logging.error("Dropping %s after brief redraft - hard problems: %s", url, hard_problems)
                             return None
-                        # Soft-only problems after downgrade: accept with warning
                         if problems:
                             logging.warning("Accepting %s with soft problems: %s", url, problems)
                     else:
                         logging.error("Dropping %s after retry - hard problems: %s", url, hard_problems)
                         return None
                 else:
-                    # Only soft problems: accept with a warning
                     logging.warning("Accepting %s with soft-only problems: %s", url, soft_problems)
     
     # Transform new format to include legacy fields needed by write_output
@@ -2479,7 +2640,7 @@ def wechat_html_article(art: dict, include_ai_disclaimer: bool = False) -> str:
     }
     for key, label in field_names.items():
         val = datacard.get(key, "")
-        if val and val != "不适用":
+        if val and val != "不适用" and MISSING_VALUE_MARK not in str(val):
             datacard_rows.append(f'<tr><td style="padding:6px 10px;border:1px solid #eee;font-weight:700;width:80px;">{label}</td><td style="padding:6px 10px;border:1px solid #eee;">{_escape_html(val)}</td></tr>')
     
     if datacard_rows:
@@ -2533,9 +2694,13 @@ def wechat_html_article(art: dict, include_ai_disclaimer: bool = False) -> str:
     # Author and journal - skip if "原文未给出" 
     authors = art.get("authors", "")
     journal = art.get("journal", "")
-    if authors and "原文未给出" not in authors:
-        parts.append(f'<p style="font-size:13px;color:#666;margin:1em 0;">{_escape_html(authors)} · {_escape_html(journal)}</p>')
-    elif journal:
+    if authors and MISSING_VALUE_MARK not in authors:
+        journal_bit = journal if journal and MISSING_VALUE_MARK not in journal else ""
+        if journal_bit:
+            parts.append(f'<p style="font-size:13px;color:#666;margin:1em 0;">{_escape_html(authors)} · {_escape_html(journal_bit)}</p>')
+        else:
+            parts.append(f'<p style="font-size:13px;color:#666;margin:1em 0;">{_escape_html(authors)}</p>')
+    elif journal and MISSING_VALUE_MARK not in journal:
         parts.append(f'<p style="font-size:13px;color:#666;margin:1em 0;">{_escape_html(journal)}</p>')
     
     # DOI - show for any source that has one

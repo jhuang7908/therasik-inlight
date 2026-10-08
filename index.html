@@ -1006,7 +1006,7 @@ function renderPaper(id){
       ['statistics', '统计量'],
       ['safety', '安全性'],
     ];
-    const rows = fields.filter(([k]) => dc[k] && dc[k] !== '不适用')
+    const rows = fields.filter(([k]) => dc[k] && dc[k] !== '不适用' && !String(dc[k]).includes('未给出'))
       .map(([k, label]) => `<div><span class="k">${label}</span><p>${dc[k]}</p></div>`).join('');
     const evidence = a.evidence_level || dc.evidence_level || 'abstract';
     const evidenceLabels = {fulltext: '全文', abstract: '摘要', preprint: '预印本', press: '新闻稿', secondary: '二手'};
@@ -1026,7 +1026,7 @@ function renderPaper(id){
     if (a.results && a.results.length) {
       const primaryResult = a.datacard?.primary_endpoint_result;
       html += `<div class="sec"><h2>核心结果</h2>`;
-      if (primaryResult && primaryResult !== '原文未给出') {
+      if (primaryResult && primaryResult !== '原文未给出' && !String(primaryResult).includes('未给出')) {
         html += `<div class="primary-endpoint-block"><span class="pe-label">主要终点</span><span class="pe-value">${primaryResult}</span></div>`;
       }
       html += a.results.map(p => `<p>${p}</p>`).join('');
@@ -1045,33 +1045,18 @@ function renderPaper(id){
   }
   
   function renderLegacyBody() {
-    // For legacy format: use same section headings as main branch
-    // Headings: 这篇在解决什么 / 他们怎么做、看到了什么 / 讨论
-    
-    // Check if we have actual separate fields (not derived from sum splitting)
-    const hasDistinctLead = a.lead && a.lead !== a.sum;
-    const hasDistinctBody = a.body && a.body !== a.sum && a.body !== a.lead;
-    const hasDistinctDiscuss = a.discuss && a.discuss !== a.sum && a.discuss !== a.body;
-    
-    if (!hasDistinctLead && !hasDistinctBody && !hasDistinctDiscuss) {
-      // Only have sum - show it under main's heading style
-      return `<div class="sec"><h2>这篇在解决什么</h2><p>${a.sum || open}</p></div>`;
+    // Catalog pages keep main's heading tuple. Split `sum` the same way
+    // main does so 43/44 pages get 这篇在解决什么 / 他们怎么做、看到了什么 /
+    // 讨论, and pages with a one-sentence sum (e.g. c8-vac-5) omit the walk.
+    const legacyBits = (a.sum || '').split(/(?<=。)/).map(s => s.trim()).filter(Boolean);
+    const legacyOpen = a.lead || legacyBits[0] || a.sum || '';
+    const legacyWalk = a.body || legacyBits.slice(1, Math.max(1, legacyBits.length - 1)).join('');
+    const legacyClose = a.discuss || (legacyBits.length > 1 ? legacyBits[legacyBits.length - 1] : '');
+    let html = `<div class="sec"><h2>这篇在解决什么</h2><p>${legacyOpen}</p></div>`;
+    if (legacyWalk) {
+      html += `<div class="sec"><h2>他们怎么做、看到了什么</h2><p>${legacyWalk}</p></div>`;
     }
-    
-    // Have distinct fields - show them with main's headings
-    let html = '';
-    const leadText = a.lead || bits[0] || '';
-    if (leadText) {
-      html += `<div class="sec"><h2>这篇在解决什么</h2><p>${leadText}</p></div>`;
-    }
-    const walkText = a.body || '';
-    if (walkText && walkText !== leadText) {
-      html += `<div class="sec"><h2>他们怎么做、看到了什么</h2><p>${walkText}</p></div>`;
-    }
-    const closeText = a.discuss || '';
-    if (closeText && closeText !== leadText && closeText !== walkText) {
-      html += `<div class="sec"><h2>讨论</h2><p>${closeText}</p></div>`;
-    }
+    html += `<div class="sec"><h2>讨论</h2><p>${legacyClose || legacyOpen}</p></div>`;
     return html;
   }
   
