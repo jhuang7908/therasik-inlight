@@ -40,12 +40,58 @@ FIELDS = {
 
 MARKETING_BLOCKLIST = re.compile(r"重磅|颠覆|改写教科书|震撼|碾压|轰动|史诗级|划时代", re.IGNORECASE)
 
-# Terminology glossary: correct translations for scientific terms
-# Format: {English term: (correct Chinese, common incorrect translations)}
+# English / INN form -> (preferred Chinese, common incorrect Chinese forms).
+# Used both to catch mistranslations and to map a Chinese drug name back
+# to the source's international name.
 TERMINOLOGY_GLOSSARY = {
     "mesaconate": ("中康酸", ["美康酸", "梅沙康酸", "麦康酸"]),
     "mesaconic acid": ("中康酸", ["美康酸", "梅沙康酸", "麦康酸"]),
 }
+
+# Chinese display name -> source-language forms that justify publishing it.
+DRUG_CN_TO_SOURCE = {
+    "中康酸": ("mesaconate", "mesaconic acid"),
+    "莫妥珠单抗": ("mosunetuzumab",),
+    "格菲妥单抗": ("glofitamab",),
+    "特瑞普利单抗": ("toripalimab",),
+    "普特利单抗": ("pucotenlimab",),
+    "普可欣": ("pucotenlimab",),
+    "帕博利珠单抗": ("pembrolizumab", "keytruda"),
+    "派姆单抗": ("pembrolizumab",),
+    "纳武利尤单抗": ("nivolumab", "opdivo"),
+    "替雷利珠单抗": ("tislelizumab",),
+    "信迪利单抗": ("sintilimab",),
+    "卡瑞利珠单抗": ("camrelizumab",),
+    "度伐利尤单抗": ("durvalumab",),
+    "阿替利珠单抗": ("atezolizumab",),
+    "伊匹木单抗": ("ipilimumab",),
+    "利妥昔单抗": ("rituximab",),
+    "曲妥珠单抗": ("trastuzumab",),
+    "贝伐珠单抗": ("bevacizumab",),
+    "西妥昔单抗": ("cetuximab",),
+    "帕妥珠单抗": ("pertuzumab",),
+    "奥妥珠单抗": ("obinutuzumab",),
+    "维泊妥珠单抗": ("polatuzumab", "polatuzumab vedotin"),
+    "兰瑞肽": ("lanreotide",),
+}
+
+INST_CN_TO_SOURCE = {
+    "中山大学肿瘤防治中心": ("sun yat-sen", "sysucc", "zhongshan university cancer"),
+    "北京大学": ("peking university", "beijing university"),
+    "清华大学": ("tsinghua",),
+    "复旦大学": ("fudan",),
+    "上海交通大学": ("shanghai jiao tong", "sjtu"),
+    "中国医学科学院": ("chinese academy of medical", "cams"),
+    "哈佛": ("harvard",),
+    "斯坦福": ("stanford",),
+    "纪念斯隆凯特琳": ("memorial sloan", "mskcc"),
+    "md安德森": ("md anderson", "m.d. anderson"),
+}
+
+AUTHOR_PLACEHOLDER_RE = re.compile(
+    r"原文未提供|原文未列出|原文未报告作者|未提供作者|未列出作者|作者信息"
+)
+PREPRINT_SOURCE_RE = re.compile(r"biorxiv|medrxiv", re.IGNORECASE)
 
 CHINESE_NUMBER_MAP = {
     "零": "0", "一": "1", "二": "2", "三": "3", "四": "4",
@@ -461,6 +507,8 @@ def enrich_item(row: dict) -> EnrichedItem:
             item.journal = core.get("journalTitle")
         elif core.get("journalInfo", {}).get("journal", {}).get("title"):
             item.journal = core["journalInfo"]["journal"]["title"]
+        if core.get("authorString"):
+            item.authors = core.get("authorString") or item.authors
         if item.abstract:
             item.evidence_level = "abstract"
             item.source_trace.append(f"EPMC abstract: {len(item.abstract)} chars")
@@ -2340,21 +2388,37 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
     return problems
 
 
+_GENE_ACRONYM_ALLOW = {
+    "ORR", "DCR", "CRR", "PFS", "DFS", "EFS", "DOR", "CBR", "BOR",
+    "SAE", "TEAE", "TRAE", "CRS", "DLT", "AUC", "FDA", "NIH", "WHO",
+    "EMA", "DNA", "RNA", "MRNA", "PCR", "HIV", "HBV", "HCV", "HPV",
+    "EBV", "CMV", "MHC", "HLA", "APC", "TCR", "BCR", "CAR", "NCT",
+    "DOI", "PMID", "PMC", "USA", "UK", "EU", "COVID", "IFN", "TNF",
+    "IL", "NK", "DC", "OS", "HR", "OR", "RR", "CI", "AE", "CR", "PR",
+}
+
+
+def _source_has_name_form(name: str, source_lower: str) -> bool:
+    """True if name or a hyphen/space variant appears in the source."""
+    if not name:
+        return False
+    needle = name.lower()
+    if needle in source_lower:
+        return True
+    compact = re.sub(r"[\s\-]+", "", needle)
+    src_compact = re.sub(r"[\s\-]+", "", source_lower)
+    return bool(compact) and compact in src_compact
+
+
 def validate_names(art: dict, raw_material: str) -> list[str]:
-    """Check that proper names in output appear in source.
-    
-    Per spec B, we check ONLY:
-    1. Latin-script tokens (author names, drug names, company names)
-    2. Chinese institution suffix patterns with a preceding proper name
-    3. 'X等' author patterns
-    
-    We do NOT flag:
-    - Generic terms like '单中心', '中心数', '多中心'
-    - Common Chinese words that happen to end in institution suffixes
+    """Check that proper names in output appear in the source (or a known alias).
+
+    Covers Latin and Chinese drugs, gene/protein symbols, institutions,
+    authors and trial-like names. Generic 单中心 / 中心数 are not institutions.
     """
     problems = []
     norm = normalize_whitespace(raw_material).lower()
-    
+
     def _name_chunks(val) -> list[str]:
         if isinstance(val, str) and val:
             return [val]
@@ -2373,83 +2437,86 @@ def validate_names(art: dict, raw_material: str) -> list[str]:
         *_name_chunks(art.get("authors")),
         *_name_chunks(art.get("limitations")),
     ])
-    
-    # 1. Latin-script author names: "Zhang 等", "Li 等", "Smith 等"
-    latin_author_pattern = r'([A-Z][a-z]+)\s*等'
-    for match in re.finditer(latin_author_pattern, all_text):
+
+    # 1. Latin-script author names: "Zhang 等", "Smith 等"
+    for match in re.finditer(r'([A-Z][a-z]+)\s*等', all_text):
         name = match.group(1).lower()
-        if len(name) >= 2 and name not in norm:
-            # Check with various boundaries
-            if not any(x in norm for x in [f"{name},", f"{name} ", f"{name}.", f" {name}"]):
-                problems.append(f"作者姓氏 '{match.group(1)}' 在原始材料中未找到")
-    
-    # 2. Chinese 'X等' author patterns (single surname + 等)
-    # ONLY flag when the pattern looks like an author reference, not enumeration
-    # 
-    # Examples that ARE author patterns (flag if not in source):
-    #   - "张等发现" (Zhang et al. found)
-    #   - "由李等报道" (reported by Li et al.)
-    #
-    # Examples that are NOT author patterns (don't flag):
-    #   - "乏力、皮疹等" (fatigue, rash, etc.) - list enumeration
-    #   - "细胞因子等" (cytokines, etc.) - noun enumeration
-    #   - "活动等" (activities, etc.) - noun enumeration
-    #
-    # Heuristic: "X等" is likely an author pattern only if:
-    # - Preceded by a sentence boundary (。？！), comma (，), or start of text
-    # - AND followed by a verb or attribution word (发现, 报道, 称, 指出, 认为)
-    
-    chinese_surname_pattern = r'([\u4e00-\u9fff])等'
-    # List of verbs that indicate author attribution (expanded to include 报告)
+        if len(name) >= 2 and not _source_has_name_form(name, norm):
+            problems.append(f"作者姓氏 '{match.group(1)}' 在原始材料中未找到")
+
     author_verbs = r'发现|报道|报告|称|指出|认为|表示|提出|观察|测定|检测|分析|开展|证明|证实'
-    author_context_pattern = rf'(?:^|[。？！，、])\s*[\u4e00-\u9fff]等\s*(?:{author_verbs})'
-    
-    # Only flag if we find author-context pattern
-    author_contexts = set(re.findall(rf'([\u4e00-\u9fff])等(?=\s*(?:{author_verbs}))', all_text))
-    for char in author_contexts:
+    for char in set(re.findall(rf'([\u4e00-\u9fff])等(?=\s*(?:{author_verbs}))', all_text)):
         if char not in raw_material:
             problems.append(f"中文作者姓氏 '{char}' 在原始材料中未找到")
-    
-    # 3. Chinese institution patterns: PROPER NAME + suffix
-    # Only match if there's a clear proper name before the suffix
-    # Proper name indicators: capitalized/title case, or known institution name patterns
-    # E.g., "北京大学", "哈佛医院", but NOT "单中心", "中心数"
-    
-    # 3. Chinese institution patterns: SKIP
-    # 
-    # We no longer flag Chinese institution names because:
-    # 1. Translated institution names (哈佛医学院 for Harvard Medical School) are legitimate
-    # 2. Real institutions mentioned in affiliations are standard practice
-    # 3. False positives (e.g., "分子免疫中心" flagged for "子") cause article drops
-    #
-    # Instead, we rely on number/data validation to catch fabrication.
-    # Institutional affiliation fabrication is rare and lower priority than data fabrication.
-    
-    # 4. Latin-script drug/compound names (specific patterns)
-    drug_pattern = r'\b([A-Z][a-z]+(?:mab|nib|lib|zumab|ximab|tinib|ciclib|lizumab))\b'
+
+    # 2. Latin drug / compound names anywhere, any case (toripalimab, Glofitamab)
+    drug_pattern = r'(?i)\b([a-z]{4,}(?:mab|nib|limab|zumab|ximab|tinib|ciclib|lizumab|cept))\b'
+    seen_drugs: set[str] = set()
     for match in re.finditer(drug_pattern, all_text):
-        drug = match.group(1).lower()
-        if drug not in norm:
-            problems.append(f"药物名 '{match.group(1)}' 在原始材料中未找到")
-    
-    # 5. Terminology check: flag incorrect translations
+        drug = match.group(1)
+        key = drug.lower()
+        if key in seen_drugs:
+            continue
+        seen_drugs.add(key)
+        if not _source_has_name_form(key, norm):
+            problems.append(f"药物名 '{drug}' 在原始材料中未找到")
+
+    # 3. Chinese drug / biologic names: accept only if the source form is present
+    seen_cn_drugs: set[str] = set()
+    for match in re.finditer(r'[\u4e00-\u9fff]{1,8}(?:单抗|替尼|利单抗|珠单抗|昔单抗|妥单抗)', all_text):
+        seen_cn_drugs.add(match.group(0))
+    seen_cn_drugs.update(cn for cn in DRUG_CN_TO_SOURCE if cn in all_text)
+    for cn in seen_cn_drugs:
+        if cn in raw_material:
+            continue
+        aliases = DRUG_CN_TO_SOURCE.get(cn, ())
+        if any(_source_has_name_form(a, norm) for a in aliases):
+            continue
+        problems.append(f"药物名 '{cn}' 在原始材料中未找到")
+
+    # 4. Gene / protein symbols, including those without digits (TIGIT)
+    seen_genes: set[str] = set()
+    for match in re.finditer(r'(?<![A-Za-z0-9])[A-Z][A-Z0-9]{2,7}(?![A-Za-z0-9])', all_text):
+        sym = match.group(0)
+        if sym in _GENE_ACRONYM_ALLOW or sym in seen_genes:
+            continue
+        seen_genes.add(sym)
+        if not _source_has_name_form(sym, norm):
+            problems.append(f"基因 '{sym}' 在原始材料中未找到")
+
+    # 5. Chinese institutions. Do not use bare 中心 (单中心 / 中心数 / 医疗中心).
+    inst_pat = r'[\u4e00-\u9fff]{2,8}(?:大学|医院|医学院|肿瘤防治中心|附属医院|研究所|研究院)'
+    seen_inst: set[str] = set()
+    for match in re.finditer(inst_pat, all_text):
+        inst = re.sub(r'^(?:研究)?(?:由|在|于|来自)', '', match.group(0))
+        if inst in seen_inst or inst in ("单中心", "多中心", "中心数") or len(inst) < 4:
+            continue
+        seen_inst.add(inst)
+        if inst in raw_material or _source_has_name_form(inst, norm):
+            continue
+        aliases = ()
+        for stem, forms in INST_CN_TO_SOURCE.items():
+            if stem in inst or inst in stem:
+                aliases = forms
+                break
+        if aliases and any(_source_has_name_form(a, norm) for a in aliases):
+            continue
+        problems.append(f"机构名 '{inst}' 在原始材料中未找到")
+
+    # 6. Terminology: incorrect Chinese for a source English term
     for eng_term, (correct, incorrect_list) in TERMINOLOGY_GLOSSARY.items():
-        # Check if source mentions the English term
         if eng_term.lower() in norm:
-            # Check if output uses an incorrect translation
             for wrong in incorrect_list:
                 if wrong in all_text:
                     problems.append(f"术语翻译错误：'{wrong}' 应为 '{correct}'（英文：{eng_term}）")
-    
-    # 5. Latin-script company names
+
     company_pattern = r'([A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+)?)\s*(?:公司|Inc\.?|Ltd\.?|Corp\.?|Therapeutics|Pharma|Biopharma)'
     for match in re.finditer(company_pattern, all_text):
         company = match.group(1).lower()
         if len(company) >= 3 and company not in norm:
-            # Skip very common English words
             if company not in ['the', 'and', 'bio', 'new', 'global', 'inc', 'international']:
                 problems.append(f"公司名 '{match.group(1)}' 在原始材料中未找到")
-    
+
     return problems
 
 
@@ -2810,16 +2877,39 @@ def sanitize_published_article(art: dict, enriched: EnrichedItem | None = None) 
         if key in art:
             art[key] = _walk_omit_missing(art[key])
 
-    # Journal: always prefer the name from the RSS/esummary/EPMC item
+    # Journal and authors come from source metadata. The model never
+    # supplies a journal for a preprint, and never supplies authors
+    # the source did not list.
     known = (enriched.journal if enriched else "") or ""
-    written = (art.get("journal") or "").strip()
-    if known:
+    url = ((enriched.url if enriched else "") + " " + (enriched.source if enriched else "")).lower()
+    is_preprint = bool(
+        (enriched and enriched.evidence_level == "preprint")
+        or PREPRINT_SOURCE_RE.search(url)
+    )
+    if is_preprint:
+        if known:
+            art["journal"] = known
+        elif enriched and PREPRINT_SOURCE_RE.search(enriched.url or ""):
+            host = "medRxiv" if "medrxiv" in (enriched.url or "").lower() else "bioRxiv"
+            art["journal"] = f"{host}（预印本）"
+        elif enriched and enriched.source:
+            art["journal"] = enriched.source
+        else:
+            art["journal"] = "bioRxiv（预印本）"
+    elif known:
         art["journal"] = known
-    elif written and MISSING_VALUE_MARK in written:
-        art["journal"] = (enriched.source if enriched else "") or ""
+    else:
+        written = str(art.get("journal") or "").strip()
+        if written and (MISSING_VALUE_MARK in written or AUTHOR_PLACEHOLDER_RE.search(written)):
+            art["journal"] = (enriched.source if enriched else "") or ""
 
-    authors = art.get("authors") or ""
-    if isinstance(authors, str) and MISSING_VALUE_MARK in authors:
+    src_authors = (enriched.authors if enriched else "") or ""
+    if src_authors.strip():
+        art["authors"] = src_authors.strip()
+    else:
+        art["authors"] = ""
+    authors = str(art.get("authors") or "")
+    if AUTHOR_PLACEHOLDER_RE.search(authors) or MISSING_VALUE_MARK in authors:
         art["authors"] = ""
 
     # Final sweep: no remaining literal \n in any string
@@ -3239,15 +3329,23 @@ def wechat_html_article(art: dict, include_ai_disclaimer: bool = False) -> str:
         parts.append(f'<p style="margin:0.5em 0;">{_escape_html(art["significance"])}</p>')
     
     # Author and journal - skip if "原文未给出" 
-    authors = art.get("authors", "")
-    journal = art.get("journal", "")
-    if authors and MISSING_VALUE_MARK not in authors:
-        journal_bit = journal if journal and MISSING_VALUE_MARK not in journal else ""
-        if journal_bit:
-            parts.append(f'<p style="font-size:13px;color:#666;margin:1em 0;">{_escape_html(authors)} · {_escape_html(journal_bit)}</p>')
-        else:
-            parts.append(f'<p style="font-size:13px;color:#666;margin:1em 0;">{_escape_html(authors)}</p>')
-    elif journal and MISSING_VALUE_MARK not in journal:
+    authors = str(art.get("authors", "") or "")
+    journal = str(art.get("journal", "") or "")
+    authors_ok = (
+        authors
+        and MISSING_VALUE_MARK not in authors
+        and not AUTHOR_PLACEHOLDER_RE.search(authors)
+    )
+    journal_ok = (
+        journal
+        and MISSING_VALUE_MARK not in journal
+        and not AUTHOR_PLACEHOLDER_RE.search(journal)
+    )
+    if authors_ok and journal_ok:
+        parts.append(f'<p style="font-size:13px;color:#666;margin:1em 0;">{_escape_html(authors)} · {_escape_html(journal)}</p>')
+    elif authors_ok:
+        parts.append(f'<p style="font-size:13px;color:#666;margin:1em 0;">{_escape_html(authors)}</p>')
+    elif journal_ok:
         parts.append(f'<p style="font-size:13px;color:#666;margin:1em 0;">{_escape_html(journal)}</p>')
     
     # DOI - show for any source that has one
