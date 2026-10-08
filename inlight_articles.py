@@ -1615,6 +1615,8 @@ def number_in_text_as_word_boundary(number: str, text: str) -> bool:
     - '2' from matching '3.2' (decimal)
     - '45' from matching 'NCT04512345'
     """
+    if source_has_numeric_value(number, text):
+        return True
     # Remove commas from both
     number_clean = number.replace(",", "").replace("，", "").strip()
     text_clean = text.replace(",", "").replace("，", "")
@@ -1848,36 +1850,292 @@ def _collapse_spaced_labels(text: str) -> str:
     return t
 
 
-def normalize_for_match(text: str, *, convert_english_words: bool = False) -> str:
-    """Canonical form for number/identifier matching. Apply to draft and source.
+_SUPERSCRIPT_DIGIT_MAP = str.maketrans("⁰¹²³⁴⁵⁶⁷⁸⁹", "0123456789")
+_ID_DASH_RE = re.compile(r'[\s\-\u2010\u2011\u2012\u2013\u2014\u2212]+')
+_THOUSANDS_INSIDE_RE = re.compile(r'\d{1,3}(?:[, \u00a0\u202f\u2009\u2007]\d{3})+')
+_CJK_PUNCT_RE = re.compile(r'[，、；：。（）【】《》『』「」]')
+_NUM_TOKEN_RE = re.compile(
+    r'(?:'
+    r'\d{1,3}(?:[, \u00a0\u202f\u2009\u2007]\d{3})+'
+    r'|\d+'
+    r')'
+    r'(?:[.\u00b7\u2022]\d+)?'
+)
+_NUM_SCALE_RE = re.compile(r'(?i)[\s\u00a0]*(million|billion|万|亿)')
+_ID_UNSPACED_RE = re.compile(
+    r'(?i)(?:'
+    r'(?<![A-Za-z0-9])(?:NCT|RPCEC|ISRCTN|EUDRACT|ACTRN|CHICTR)\d+'
+    r'|(?<![A-Za-z0-9])\d+-\d+[A-Za-z]{1,8}'
+    r'|(?<![A-Za-z0-9])(?:' + "|".join(_IDENTIFIER_PREFIXES) + r')-?[A-Za-z]{0,8}-?\d+[A-Za-z0-9]*'
+    r'|(?<![A-Za-z0-9])[A-Za-z][A-Za-z]{0,14}-?\d+[A-Za-z0-9]*'
+    r')'
+)
+_TRAILING_ID_WORD_RE = re.compile(r'-[a-z]{5,}$', re.IGNORECASE)
+_ID_SPACED_RE = re.compile(
+    r'(?i)(?<![A-Za-z0-9])(?:'
+    r'[A-Za-z](?:[\t ]+[A-Za-z]){1,6}'
+    r'|(?:' + "|".join(_IDENTIFIER_PREFIXES + ("log",)) + r')'
+    r')[\t ]+\d+[A-Za-z0-9]*'
+)
+_CLINICAL_CLAIM_RE = re.compile(
+    r'(?i)%|％|例|名|率|倍|死亡|缓解|生存|HR|ORR|DCR|PFS|OS|患者|hazard'
+)
+_MAX_MINOR_UNMATCHED = 2
 
-    Builds on normalize_source_text, then:
-    - Strip spaces inside alphanumeric labels (T H 17 → TH17, CD 8 → CD8)
-    - Split numbers from adjacent dashes / CJK (—184,973 / 共527例)
-    - Expand 至/到/~ ranges so both endpoints are standalone
-    English number words become digits only when convert_english_words=True
-    (source side). Draft-side words like six/four stay non-claims.
+
+@dataclass
+class NumToken:
+    value: float
+    raw: str
+    start: int
+    end: int
+    context: str
+
+
+@dataclass
+class IdToken:
+    key: str
+    raw: str
+    start: int
+    end: int
+
+
+@dataclass
+class MatchDoc:
+    """Shared draft/source tokenization. The live verifier uses only this."""
+    canonical: str
+    numbers: list[NumToken]
+    identifiers: list[IdToken]
+    values: set[float]
+
+
+def _ident_key(raw: str) -> str:
+    t = (raw or "").translate(_SUBSCRIPT_DIGIT_MAP).translate(_SUPERSCRIPT_DIGIT_MAP)
+    t = _TRAILING_ID_WORD_RE.sub("", t)
+    return _ID_DASH_RE.sub("", t).lower()
+
+
+def _id_keys_compatible(draft_key: str, src_keys: set[str]) -> bool:
+    """True when draft and source name the same label in different dress.
+
+    Spacing/case/dashes/subscripts already share a key. HLA-DP04 vs DP04
+    is the same allele written with or without the locus prefix.
     """
-    t = _collapse_spaced_labels(
-        normalize_source_text(text or "", convert_english_words=convert_english_words)
+    if draft_key in src_keys:
+        return True
+    d_tail = re.search(r"(\d+[a-z0-9]*)$", draft_key)
+    if not d_tail:
+        return False
+    tail = d_tail.group(1)
+    for src in src_keys:
+        if not src.endswith(tail):
+            continue
+        if draft_key.endswith(src) or src.endswith(draft_key):
+            return True
+        d_stem = draft_key[: -len(tail)]
+        s_stem = src[: -len(tail)]
+        if d_stem and s_stem and (d_stem.endswith(s_stem) or s_stem.endswith(d_stem)):
+            return True
+    return False
+
+
+def parse_numeric_value(text: str) -> float | None:
+    """Parse a numeric token to a float. Thousands seps and middle-dots allowed."""
+    if not text:
+        return None
+    s = (
+        str(text)
+        .replace(",", "").replace("，", "")
+        .replace("\u00a0", "").replace("\u202f", "")
+        .replace("\u2009", "").replace("\u2007", "").replace(" ", "")
+        .replace("·", ".").replace("•", ".")
     )
-    # Split a leading dash from a number (—184973) but keep 4-1BB / TAK-981 intact.
-    t = re.sub(r'(?<![A-Za-z0-9])-(?=\d)', "- ", t)
-    # 1-year / 2-week → 1 year / 2 week, matching CJK-split 1年 / 2周.
-    t = re.sub(r'(?<=\d)-(?=[A-Za-z])', " ", t)
-    t = re.sub(r'(?<=[\u4e00-\u9fff])(?=\d)', " ", t)
-    t = re.sub(r'(?<=\d)(?=[\u4e00-\u9fff])', " ", t)
-    t = re.sub(
-        r'(\d+(?:\.\d+)?)\s*(?:至|到|~|～)\s*(\d+(?:\.\d+)?)',
-        r"\1 \2",
-        t,
+    s = re.sub(r'[^0-9.+-]', '', s)
+    if not s or s in "+-.":
+        return None
+    try:
+        return float(s)
+    except ValueError:
+        return None
+
+
+def values_equivalent(a: float, b: float) -> bool:
+    """Same numeric value, plus 0.5 ↔ 50% and scaled million-style aliases."""
+    if abs(a - b) <= max(1e-9, 1e-6 * max(abs(a), abs(b), 1.0)):
+        return True
+    lo, hi = (a, b) if a <= b else (b, a)
+    if lo <= 1.0 + 1e-9 and hi <= 100.0 + 1e-6:
+        if abs(lo * 100.0 - hi) <= max(1e-6, 1e-4 * hi):
+            return True
+    return False
+
+
+def _scale_factor(word: str) -> float:
+    w = (word or "").lower()
+    if w == "million":
+        return 1_000_000.0
+    if w == "billion":
+        return 1_000_000_000.0
+    if w == "万":
+        return 10_000.0
+    if w == "亿":
+        return 100_000_000.0
+    return 1.0
+
+
+def _match_scan_text(text: str, *, convert_english_words: bool = False) -> str:
+    """Lowercase scan that keeps number/identifier boundaries.
+
+    Thousands separators, CJK punctuation and dash characters stay in
+    place so 184,973 / TH17，1,139 / totaled—184,973 cannot collapse
+    into one identifier. Middle-dots become decimals; English words
+    convert only when asked.
+    """
+    scan = (text or "").lower()
+    scan = re.sub(r"\s+", " ", scan)
+    if convert_english_words:
+        scan = english_number_to_arabic(scan)
+    scan = scan.translate(_SUBSCRIPT_DIGIT_MAP).translate(_SUPERSCRIPT_DIGIT_MAP)
+    scan = scan.replace("·", ".").replace("•", ".")
+    scan = scan.replace("å", "a").replace("Å", "a")
+    return scan
+
+
+def match_document(text: str, *, convert_english_words: bool = False) -> MatchDoc:
+    """Tokenize numbers (by value) and identifiers with one shared scanner.
+
+    A number is digits plus optional thousands separators and a decimal.
+    Letters, every dash/hyphen, CJK punctuation, brackets and whitespace
+    are boundaries and never merge into the number. Identifiers are
+    letter-digit runs with no whitespace, no CJK punctuation, and no
+    thousands-formatted number inside. Spaced/unspaced and
+    subscript/superscript forms share a key.
+    """
+    raw = text or ""
+    scan = _match_scan_text(raw, convert_english_words=convert_english_words)
+
+    id_spans: list[tuple[int, int, str]] = []
+    for cre in (_ID_UNSPACED_RE, _ID_SPACED_RE):
+        for m in cre.finditer(scan):
+            tok = m.group(0).rstrip(".,;:)]}>\"'")
+            tok = _TRAILING_ID_WORD_RE.sub("", tok)
+            if not tok:
+                continue
+            if _CJK_PUNCT_RE.search(tok) or _THOUSANDS_INSIDE_RE.search(tok):
+                continue
+            end = m.start() + len(tok)
+            id_spans.append((m.start(), end, tok))
+    id_spans.sort(key=lambda x: (x[0], -(x[1] - x[0])))
+    kept_ids: list[tuple[int, int, str]] = []
+    for start, end, tok in id_spans:
+        if any(s <= start and end <= e for s, e, _ in kept_ids):
+            continue
+        kept_ids.append((start, end, tok))
+
+    numbers: list[NumToken] = []
+    for m in _NUM_TOKEN_RE.finditer(scan):
+        if any(s <= m.start() and m.end() <= e for s, e, _ in kept_ids):
+            continue
+        raw_num = m.group(0)
+        val = parse_numeric_value(raw_num)
+        if val is None:
+            continue
+        end = m.end()
+        scale_m = _NUM_SCALE_RE.match(scan, end)
+        if scale_m:
+            val *= _scale_factor(scale_m.group(1))
+            end = scale_m.end()
+        ctx = scan[max(0, m.start() - 20):min(len(scan), end + 20)]
+        if is_bibliographic_number(raw_num, ctx) or _QUALITATIVE_SCALE_RE.search(ctx):
+            continue
+        after = scan[end:end + 4]
+        if re.match(r'\s*(?:种|类|次)', after):
+            continue
+        numbers.append(NumToken(value=val, raw=raw_num, start=m.start(), end=end, context=ctx))
+
+    identifiers = [
+        IdToken(key=_ident_key(tok), raw=tok, start=s, end=e)
+        for s, e, tok in kept_ids
+    ]
+    pieces: list[str] = []
+    cursor = 0
+    events = (
+        [(s, e, "id", _ident_key(tok)) for s, e, tok in kept_ids]
+        + [(n.start, n.end, "num", _canonical_number(n.value)) for n in numbers]
     )
-    t = re.sub(
-        r'(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)(?![A-Za-z])',
-        r"\1 \2",
-        t,
-    )
-    return re.sub(r"\s+", " ", t).strip()
+    events.sort(key=lambda x: (x[0], x[1]))
+    used: list[tuple[int, int]] = []
+    for start, end, _kind, repl in events:
+        if any(u <= start and end <= v for u, v in used):
+            continue
+        pieces.append(scan[cursor:start])
+        pieces.append(repl)
+        used.append((start, end))
+        cursor = max(cursor, end)
+    pieces.append(scan[cursor:])
+    canonical = re.sub(r"\s+", " ", "".join(pieces)).strip()
+    values = {n.value for n in numbers}
+    for n in numbers:
+        values.update(_value_aliases(n.value))
+    return MatchDoc(canonical=canonical, numbers=numbers, identifiers=identifiers, values=values)
+
+
+def _canonical_number(val: float) -> str:
+    if abs(val - round(val)) <= 1e-9:
+        return str(int(round(val)))
+    return f"{val:.12g}"
+
+
+def _value_aliases(val: float) -> set[float]:
+    out = {val}
+    if 0 < val <= 1.0 + 1e-9:
+        out.add(val * 100.0)
+    if 0 < val <= 100.0 + 1e-6:
+        out.add(val / 100.0)
+    return out
+
+
+def _claim_is_clinical_count_or_rate(num_str: str, context: str = "") -> bool:
+    blob = f"{context or ''} {num_str or ''}"
+    unit = classify_unit_in_context(blob, extract_number_core(num_str) or "")
+    return unit in (UNIT_COUNT, UNIT_RATE) or bool(_CLINICAL_CLAIM_RE.search(blob))
+
+
+def source_has_numeric_value(num_str: str, *texts: str, context: str = "") -> bool:
+    """True when the claimed number's value appears as a standalone token.
+
+    Formatting around the digits is ignored (dashes, CJK punctuation, spaces,
+    thousands separators, %, units, 0.5↔50%, million/万/亿). Identifier
+    digits and English-converted words are not evidence. A clinical count or
+    rate does not match a time or dose token (1例 ↛ 1-year; 6例 ↛ six doses).
+    """
+    core = extract_number_core(num_str) or num_str
+    claimed = parse_numeric_value(core)
+    if claimed is None:
+        cn = extract_number_core(chinese_numeral_to_arabic(num_str))
+        claimed = parse_numeric_value(cn) if cn else None
+    if claimed is None:
+        return True
+    claim_clinical = _claim_is_clinical_count_or_rate(num_str, context)
+    for text in texts:
+        if not text:
+            continue
+        doc = match_document(text, convert_english_words=False)
+        for tok in doc.numbers:
+            if not values_equivalent(claimed, tok.value):
+                continue
+            src_unit = classify_unit_in_context(tok.context, _canonical_number(tok.value))
+            if claim_clinical and src_unit in _TIME_UNITS | {UNIT_DOSE}:
+                continue
+            return True
+        if not claim_clinical and any(values_equivalent(claimed, v) for v in doc.values):
+            return True
+    return False
+
+
+def normalize_for_match(text: str, *, convert_english_words: bool = False) -> str:
+    """Canonical form from the shared tokenizer. Draft and source use this."""
+    return match_document(text or "", convert_english_words=convert_english_words).canonical
 
 
 def _identifier_scan_text(text: str) -> str:
@@ -1889,7 +2147,7 @@ def identifier_spans(text: str) -> list[tuple[int, int]]:
     """Character spans of identifier tokens (CD318, IL-6, p38, NCT…)."""
     if not text:
         return []
-    return [m.span() for m in _IDENTIFIER_TOKEN_RE.finditer(_identifier_scan_text(text))]
+    return [(tok.start, tok.end) for tok in match_document(text, convert_english_words=False).identifiers]
 
 
 def span_covers(pos: int, end: int, spans: list[tuple[int, int]]) -> bool:
@@ -2280,11 +2538,12 @@ def number_exists_in_source(num_str: str, source_norm: str, source_identifiers: 
     num_core = extract_number_core(num_clean)
     if not num_core:
         return True  # Not a number (empty after extraction)
-    
-    # Identifiers in the source (CD318, IL-6, NCT…) are never evidence for a
-    # claimed number. A nearby "CD318" must not justify "31例".
-    # Digits that are themselves an identifier token are skipped earlier
-    # by extract_numbers_with_context.
+
+    # Value-anywhere on actual Arabic tokens (not English-word conversions).
+    # Formatting around the digits is ignored; identifier digits are not.
+    raw_for_value = source_raw if source_raw is not None else source_norm
+    if source_has_numeric_value(num_str, raw_for_value, context=context_window or ""):
+        return True
 
     # Honest unit conversions (21 days ↔ 3 weeks, 1 year ↔ 12 months).
     # Weeks are never months.
@@ -2700,7 +2959,7 @@ def _source_number_spans(num_core: str, source: str) -> list[re.Match]:
         if span_covers(m.start(), m.end(), id_spans):
             continue
         prev = source[m.start() - 1] if m.start() else ""
-        if prev.isalnum() or prev == ".":
+        if _is_ascii_alnum(prev) or prev == ".":
             continue
         nxt = source[m.end():m.end() + 1]
         nxt2 = source[m.end() + 1:m.end() + 2] if m.end() + 1 < len(source) else ""
@@ -2732,7 +2991,7 @@ def _original_meaning_windows(token: str, original: str) -> list[str]:
         for m in re.finditer(re.escape(needle), original):
             if needle == core:
                 prev = original[m.start() - 1] if m.start() else ""
-                if prev.isalnum() or prev == ".":
+                if _is_ascii_alnum(prev) or prev == ".":
                     continue
                 nxt = original[m.end():m.end() + 1]
                 nxt2 = original[m.end() + 1:m.end() + 2] if m.end() + 1 < len(original) else ""
@@ -2774,7 +3033,7 @@ def number_meaning_matches_source(num_str: str, output_context: str, source_text
     id_spans = identifier_spans(output_context)
     claimed_matches = [
         num_match
-        for num_match in re.finditer(re.escape(num_core), output_context)
+        for num_match in _source_number_spans(num_core, output_context)
         if not span_covers(num_match.start(), num_match.end(), id_spans)
     ]
     if not claimed_matches:
@@ -2893,26 +3152,9 @@ def extract_numbers_with_context(text: str) -> list[tuple[str, str]]:
     """
     results = []
     
-    # Arabic numbers with optional units. Middle-dot decimals (18·9) count.
-    # Normalize first so T H 17 / —184,973 / 6至23 are the same tokens as the source.
-    text = normalize_for_match((text or "").replace("·", ".").replace("•", "."), convert_english_words=False)
-    number_pattern = r'(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?(?:\s*(?:%|％|倍|年|个月|天|周|小时|例|名|mg|kg|mL|µg|nM|pM|µM|mM|μg|μL))?'
-    id_spans = identifier_spans(text)
-    for match in re.finditer(number_pattern, text):
-        # Skip digits that live inside an identifier token (CD318, p38, NCT…)
-        if span_covers(match.start(), match.end(), id_spans):
-            continue
-        after = text[match.end():match.end() + 4]
-        if re.match(r'\s*(?:种|类|次)', after):
-            continue
-        num = match.group(0)
-        start = max(0, match.start() - 20)
-        end = min(len(text), match.end() + 20)
-        context = text[start:end]
-        if is_bibliographic_number(num, context) or _QUALITATIVE_SCALE_RE.search(context):
-            continue
-        results.append((num, context))
-    
+    doc = match_document((text or "").replace("·", ".").replace("•", "."), convert_english_words=False)
+    for tok in doc.numbers:
+        results.append((_canonical_number(tok.value), tok.context))
     return results
 
 
@@ -3000,6 +3242,41 @@ def _invented_numeric_range(output: str, source: str) -> list[str]:
     return problems
 
 
+def _strip_unmatched_number_claims(art: dict, nums: list[str]) -> list[dict]:
+    """Drop sentences (or the number itself) that carry 1–2 minor unmatched values."""
+    removed: list[dict] = []
+
+    def _keep_text(text: str) -> str:
+        if not text:
+            return text
+        parts = re.split(r'(?<=[。！？.!?])\s*', text)
+        kept: list[str] = []
+        for part in parts:
+            hit = next((n for n in nums if source_has_numeric_value(n, part)), None)
+            if hit:
+                removed.append({"number": hit, "text": part.strip()})
+                continue
+            kept.append(part)
+        return "".join(kept).strip()
+
+    for key in (
+        "title", "one_liner", "background", "design", "results",
+        "mechanism", "significance", "limitations",
+    ):
+        val = art.get(key)
+        if isinstance(val, list):
+            art[key] = [kept for item in val if (kept := _keep_text(str(item)))]
+        elif isinstance(val, str) and val:
+            art[key] = _keep_text(val)
+    datacard = art.get("datacard")
+    if isinstance(datacard, dict):
+        for key, val in list(datacard.items()):
+            if isinstance(val, str) and any(source_has_numeric_value(n, val) for n in nums):
+                removed.append({"number": next(n for n in nums if source_has_numeric_value(n, val)), "text": val, "field": f"datacard.{key}"})
+                datacard.pop(key, None)
+    return removed
+
+
 def validate_depth(art: dict, raw_material: str) -> list[str]:
     """Validate generated article against SOURCE TEXT.
     
@@ -3064,28 +3341,31 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
     ) and _preprint_claims_publication(all_text):
         problems.append("预印本正文不得声称已在期刊发表或已经同行评议")
 
-    # Identifier tokens in the output (NCT…, IL-6, CD19, …) must occur in
-    # the source. Skipping their digits as claimed numbers must not let an
-    # invented registry ID through.
-    src_scan = _identifier_scan_text(source_raw)
-    src_id_keys = {
-        re.sub(r'[\s-]+', '', m.group(0).lower())
-        for m in _IDENTIFIER_TOKEN_RE.finditer(src_scan)
-    }
-    src_lower = src_scan.lower()
+    # Identifier formatting (spacing, case, dashes, subscripts) is a soft
+    # warning when the collapsed key matches. A key that is not in the
+    # source at all is an invented label and stays a hard drop.
+    src_ids = match_document(raw_material, convert_english_words=False).identifiers
+    src_id_keys = {tok.key for tok in src_ids}
+    src_id_raws = {tok.key: tok.raw for tok in src_ids}
     seen_ids: set[str] = set()
-    draft_scan = _identifier_scan_text(normalize_for_match(all_text, convert_english_words=False))
-    for match in _IDENTIFIER_TOKEN_RE.finditer(draft_scan):
-        tok = match.group(0)
-        key = re.sub(r'[\s-]+', '', tok.lower())
-        if key in seen_ids:
+    id_warnings: list[str] = []
+    for tok in match_document(all_text, convert_english_words=False).identifiers:
+        if tok.key in seen_ids:
             continue
-        seen_ids.add(key)
-        if re.match(r'(?i)(?:10\.\d{4,}/|pmc\d+|pmid\d*|doi$)', key):
+        seen_ids.add(tok.key)
+        if re.match(r'(?i)(?:10\.\d{4,}/|pmc\d+|pmid\d*|doi$)', tok.key):
             continue
-        if key in src_id_keys or tok.lower() in src_lower:
+        if tok.key in src_id_keys:
+            src_raw = src_id_raws.get(tok.key, "")
+            if src_raw and src_raw.replace(" ", "") != tok.raw.replace(" ", ""):
+                id_warnings.append(f"标识符写法不一致（软警告）：'{tok.raw}'")
             continue
-        problems.append(f"标识符 '{tok}' 在原始材料中未找到")
+        if _id_keys_compatible(tok.key, src_id_keys):
+            id_warnings.append(f"标识符写法不一致（软警告）：'{tok.raw}'")
+            continue
+        problems.append(f"标识符 '{tok.raw}' 在原始材料中未找到")
+    if isinstance(art, dict) and id_warnings:
+        art.setdefault("qc_id_warnings", []).extend(id_warnings)
     
     # Validate data_points
     norm = normalize_whitespace(raw_material)
@@ -3193,6 +3473,7 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
     source_norm_units = normalize_unit_spacing(source_norm)
     source_raw_units = normalize_unit_spacing(source_raw)
     
+    unmatched: list[tuple[str, str]] = []
     # Extract Arabic numbers with context
     for num, context in extract_numbers_with_context(all_text):
         num_core = extract_number_core(num)
@@ -3210,7 +3491,7 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
             num, source_norm_units, source_identifiers, context_norm,
             source_raw=source_raw_units,
         ):
-            problems.append(f"数字 '{num}' 在原始材料中未找到")
+            unmatched.append((num, context))
         else:
             # Meaning reads original local windows. The match-normalized
             # ±20 context CJK-splits "1年生存率26%" into "1 年生存率 26%",
@@ -3245,13 +3526,13 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
             _source_has_grouping(arabic_core, source_norm_units)
             or _source_has_grouping(arabic_core, source_raw_units)
         ):
-            problems.append(f"中文数字 '{cn_num}' ({arabic}) 在原始材料中未找到")
+            unmatched.append((cn_num, context))
             continue
         if not number_exists_in_source(
             arabic, source_norm_units, source_identifiers, context,
             source_raw=source_raw_units,
         ):
-            problems.append(f"中文数字 '{cn_num}' ({arabic}) 在原始材料中未找到")
+            unmatched.append((cn_num, context))
         else:
             for window in _original_meaning_windows(cn_num, all_text) or [context]:
                 meaning_ok, meaning_reason = number_meaning_matches_source(
@@ -3260,6 +3541,19 @@ def validate_depth(art: dict, raw_material: str) -> list[str]:
                 if not meaning_ok:
                     problems.append(meaning_reason)
                     break
+
+    clinical_unmatched = [(n, c) for n, c in unmatched if _CLINICAL_CLAIM_RE.search(c or "")]
+    minor_unmatched = [(n, c) for n, c in unmatched if (n, c) not in clinical_unmatched]
+    if clinical_unmatched:
+        for num, _ctx in clinical_unmatched:
+            problems.append(f"数字 '{num}' 在原始材料中未找到")
+    elif 1 <= len(minor_unmatched) <= _MAX_MINOR_UNMATCHED and isinstance(art, dict):
+        removed = _strip_unmatched_number_claims(art, [n for n, _ in minor_unmatched])
+        if removed:
+            art.setdefault("qc_removed_numbers", []).extend(removed)
+    else:
+        for num, _ctx in unmatched:
+            problems.append(f"数字 '{num}' 在原始材料中未找到")
     
     # Limitations count and quality
     min_limits = 3 if tier == "deep" else 1
@@ -4997,6 +5291,19 @@ def _process_single_article(
         empty_check("images",
                     (art.get("tier") != "deep") or (real_ft and not art.get("skip_mechanism_figure")),
                     "mechanism figure requires fulltext"),
+        empty_check(
+            "id_warnings",
+            True,
+            "; ".join(art.get("qc_id_warnings") or []) or "ok",
+        ),
+        empty_check(
+            "removed_numbers",
+            True,
+            "; ".join(
+                f"{r.get('number')}: {str(r.get('text') or '')[:40]}"
+                for r in (art.get("qc_removed_numbers") or [])
+            ) or "ok",
+        ),
     ]
     if gemini_result is not None:
         checks.append(empty_check("gemini", bool(gemini_result.get("pass")),
@@ -5038,6 +5345,8 @@ def _process_single_article(
             "read_note": enriched_item.read_note,
             "sections_read": enriched_item.sections_read,
             "gemini": (gemini_result or {}).get("scores"),
+            "id_warnings": art.get("qc_id_warnings") or [],
+            "removed_numbers": art.get("qc_removed_numbers") or [],
         }
         if writing_audit:
             from inlight_audit import attach_audit_fields
@@ -5053,6 +5362,8 @@ def _process_single_article(
         "read_note": enriched_item.read_note,
         "sections_read": enriched_item.sections_read,
         "gemini": (gemini_result or {}).get("scores"),
+        "id_warnings": art.get("qc_id_warnings") or [],
+        "removed_numbers": art.get("qc_removed_numbers") or [],
     }
     if writing_audit:
         from inlight_audit import attach_audit_fields

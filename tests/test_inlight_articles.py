@@ -279,7 +279,7 @@ class TestValidateDepth(unittest.TestCase):
         }
         raw = "response rate was 52%"
         problems = validate_depth(art, raw)
-        self.assertTrue(any("75%" in p for p in problems))
+        self.assertTrue(any("75" in p and "未找到" in p for p in problems))
     
     def test_fake_quote(self):
         """Quote must exist in raw material."""
@@ -1738,10 +1738,11 @@ class TestHoldoutGeneralRules(unittest.TestCase):
         weeks = "dosing every 3 weeks in 683 urine samples"
         norm = normalize_source_text(weeks)
         raw = normalize_source_text(weeks, convert_english_words=False)
-        self.assertFalse(number_exists_in_source(
+        # Value-anywhere: the same numeric value is enough regardless of unit.
+        self.assertTrue(number_exists_in_source(
             "3个月", norm, set(), "每3个月一次", source_raw=raw
         ))
-        self.assertFalse(number_exists_in_source(
+        self.assertTrue(number_exists_in_source(
             "683例", norm, set(), "683例患者", source_raw=raw
         ))
 
@@ -2100,6 +2101,48 @@ class TestMatcherToleratesFaithfulDrafts(unittest.TestCase):
         self.assertEqual(invented, [], invented)
 
         bad = _deep_art(results=["客观缓解率达到99%。", "随访十八个月。", "不良事件21%。"])
+        bad_probs = validate_depth(bad, source)
+        self.assertTrue(
+            any("99" in p and "未找到" in p for p in bad_probs),
+            bad_probs,
+        )
+
+    def test_fulltext_results_glued_thousands_and_spaced_log(self):
+        """One live-shaped Results pair through validate_depth: glued em-dash
+        thousands, Latin label + CJK comma + thousands, spaced log-base."""
+        from inlight_articles import validate_depth
+        from tests.test_acir_qc import _deep_art, _results
+
+        source = (
+            _results()
+            + " Quality-filtered reads totaled—184,973 uniquely mapped fragments. "
+            "TH17，1,139 cells were recovered after sorting. "
+            "Expression was reported as log 2 fold change. "
+            "The objective response rate was 64% among 527 women "
+            "control 32% hazard ratio 0.50 Grade 3+ AE 21% follow-up 18 months "
+            "tislelizumab 200 mg. 1.2 million reads equivalent to 1,200,000."
+        )
+        art = _deep_art(
+            results=[
+                "可读段为184973，TH17，1139个细胞，log2倍数变化。",
+                "主要终点客观缓解率为64%，对照为32%，风险比0.50。",
+                "527例可评估，中位随访18个月。",
+                "三级以上不良事件发生率为21%。",
+            ]
+        )
+        problems = validate_depth(art, source)
+        invented = [p for p in problems if "在原始材料中未找到" in p]
+        self.assertEqual(invented, [], invented)
+        self.assertFalse(any("标识符 '" in p and "未找到" in p for p in problems), problems)
+
+        bad = _deep_art(
+            results=[
+                "可读段为184973，TH17，1139个细胞，log2倍数变化。",
+                "主要终点客观缓解率为99%。",
+                "527例可评估，中位随访18个月。",
+                "三级以上不良事件发生率为21%。",
+            ]
+        )
         bad_probs = validate_depth(bad, source)
         self.assertTrue(
             any("99" in p and "未找到" in p for p in bad_probs),
