@@ -15,6 +15,7 @@ from inlight_audit import (
     claim_support_rate,
     combine_blind_judges,
     extract_must_cover,
+    reason_cites_concrete_defect,
     field_is_incidental_tool,
     figure_numbers_subset_of_data_points,
     hard_errors,
@@ -32,7 +33,8 @@ from inlight_qc import validate_acir_structure
 from tests.test_acir_qc import _deep_art, _results
 
 
-def _pass_judge(judge="claude", dim_override=None, major=False, available=True):
+def _pass_judge(judge="claude", dim_override=None, major=False, available=True,
+                reasons=None):
     scores = {k: 8 for k in BLIND_DIMS}
     if dim_override:
         scores.update(dim_override)
@@ -43,6 +45,8 @@ def _pass_judge(judge="claude", dim_override=None, major=False, available=True):
         and all(scores[k] >= 7 for k in BLIND_DIMS)
         and overall >= 7
     )
+    if reasons is None:
+        reasons = "ok" if passed else "fail"
     return {
         "available": available,
         "pass": passed,
@@ -50,7 +54,7 @@ def _pass_judge(judge="claude", dim_override=None, major=False, available=True):
         "scores": scores,
         "overall": round(overall, 2),
         "major_factual_error": major,
-        "reasons": "ok" if passed else "fail",
+        "reasons": reasons,
     }
 
 
@@ -291,10 +295,15 @@ class TestDualBlindJudging(unittest.TestCase):
 
     def test_fail_any_dimension_below_seven(self):
         combo = combine_blind_judges(
-            _pass_judge("claude", dim_override={"accuracy": 6}),
+            _pass_judge(
+                "claude",
+                dim_override={"accuracy": 6},
+                reasons="ORR 64% is swapped with the control 32% in Results",
+            ),
             _pass_judge("gemini"),
         )
         self.assertFalse(combo["pass"])
+        self.assertFalse(combo["fail_closed"])
 
     def test_fail_major_factual_error(self):
         combo = combine_blind_judges(_pass_judge("claude", major=True), _pass_judge("gemini"))
@@ -316,7 +325,11 @@ class TestDualBlindJudging(unittest.TestCase):
         self.assertTrue(ok["pass"])
         bad = combine_blind_judges(
             {"available": False, "pass": False, "judge": "claude", "reasons": "PARSEERR"},
-            _pass_judge("gemini", dim_override={"information": 5}),
+            _pass_judge(
+                "gemini",
+                dim_override={"information": 5},
+                reasons="information: omitted the 527-patient n from Results",
+            ),
         )
         self.assertFalse(bad["pass"])
 
@@ -352,7 +365,11 @@ class TestDualBlindJudging(unittest.TestCase):
         rewrites = {"n": 0}
 
         def fail_judge(*_a, **_k):
-            return _pass_judge("claude", dim_override={"understanding": 4})
+            return _pass_judge(
+                "claude",
+                dim_override={"understanding": 4},
+                reasons="mechanism claims HLA-I clearance is proven; figure omits 21% AE",
+            )
 
         def redraft(current, reasons):
             rewrites["n"] += 1
@@ -369,6 +386,79 @@ class TestDualBlindJudging(unittest.TestCase):
         self.assertEqual(rewrites["n"], 2)
         self.assertTrue(stats["drops"])
         self.assertFalse(stats["qc_report"]["articles"][0].get("publish_allowed", True))
+
+    def test_sub7_without_reason_reruns_then_passes(self):
+        calls = {"n": 0}
+
+        def scorer(*_a, **_k):
+            calls["n"] += 1
+            if calls["n"] == 1:
+                return _pass_judge("claude", dim_override={"accuracy": 6}, reasons="fail")
+            return _pass_judge("claude")
+
+        def gemini(*_a, **_k):
+            return _pass_judge("gemini")
+
+        art = _deep_art()
+        stats = {"drops": [], "qc_report": {"articles": [{"url": art["url"], "published": True}]}}
+        kept = apply_dual_blind_to_week(
+            [art], stats, {"min_deep": 3},
+            score_claude=scorer, score_gemini=gemini, redraft=None,
+        )
+        self.assertEqual(len(kept), 1)
+        self.assertGreaterEqual(calls["n"], 2)
+        self.assertTrue(reason_cites_concrete_defect(
+            "ORR 64% omitted from Results"
+        ))
+        self.assertFalse(reason_cites_concrete_defect("fail"))
+        runs = stats["qc_report"]["articles"][0].get("blind_judge_runs") or []
+        claude_run = next(r for r in runs if r.get("judge") == "claude")
+        self.assertIsNotNone(claude_run.get("original"))
+        self.assertIsNotNone(claude_run.get("rerun"))
+        self.assertEqual((claude_run["original"] or {}).get("scores", {}).get("accuracy"), 6)
+        self.assertGreaterEqual((claude_run["rerun"] or {}).get("overall") or 0, 7)
+
+    def test_sub7_with_concrete_defect_fails(self):
+        def scorer(*_a, **_k):
+            return _pass_judge(
+                "claude",
+                dim_override={"accuracy": 5},
+                reasons="Results claim ORR 99% which is not in the source",
+            )
+
+        art = _deep_art()
+        stats = {"drops": [], "qc_report": {"articles": [{"url": art["url"], "published": True}]}}
+        kept = apply_dual_blind_to_week(
+            [art], stats, {"min_deep": 3},
+            score_claude=scorer, score_gemini=lambda *_a, **_k: _pass_judge("gemini"),
+            redraft=None,
+        )
+        self.assertEqual(kept, [])
+        self.assertTrue(stats["drops"])
+        self.assertIn("accuracy", stats["drops"][0]["reason"])
+        runs = stats["qc_report"]["articles"][0].get("blind_judge_runs") or []
+        claude_run = next(r for r in runs if r.get("judge") == "claude")
+        self.assertIsNotNone(claude_run.get("original"))
+        self.assertIsNone(claude_run.get("rerun"))
+
+    def test_rerun_still_sub7_without_defect_fails_closed(self):
+        def scorer(*_a, **_k):
+            return _pass_judge("claude", dim_override={"exposition": 4}, reasons="vague")
+
+        art = _deep_art()
+        stats = {"drops": [], "qc_report": {"articles": [{"url": art["url"], "published": True}]}}
+        kept = apply_dual_blind_to_week(
+            [art], stats, {"min_deep": 3},
+            score_claude=scorer, score_gemini=lambda *_a, **_k: _pass_judge("gemini"),
+            redraft=lambda *_a, **_k: _deep_art(),
+        )
+        self.assertEqual(kept, [])
+        self.assertTrue(stats["drops"])
+        self.assertIn("without cited defect", stats["drops"][0]["reason"])
+        runs = stats["qc_report"]["articles"][0].get("blind_judge_runs") or []
+        claude_run = next(r for r in runs if r.get("judge") == "claude")
+        self.assertIsNotNone(claude_run.get("original"))
+        self.assertIsNotNone(claude_run.get("rerun"))
 
 
 class TestQcReportAndPublishGate(unittest.TestCase):

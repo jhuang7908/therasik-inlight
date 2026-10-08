@@ -40,7 +40,8 @@ QC_REPORT_FIELDS = (
     "gate_fulltext", "structure", "number_trace", "claim_support_rate",
     "headline_ok", "endpoint_hierarchy", "must_cover_coverage",
     "figure_text_consistency", "classification", "boilerplate_count",
-    "blind_scores", "hard_errors", "rewrite_count", "publish_allowed",
+    "blind_scores", "blind_judge_runs", "hard_errors", "rewrite_count",
+    "publish_allowed",
 )
 
 BOILERPLATE_RE = re.compile(r"原文未报告|原文未给出")
@@ -78,6 +79,14 @@ ANIMAL_INCIDENTAL_RE = re.compile(r"在小鼠中验证|mouse model of|用于验�
 AB_SUBJECT_RE = re.compile(r"抗体格式|Fc\s*改造|双特异|纳米抗体|ADC 格式|抗体工程")
 AB_INCIDENTAL_RE = re.compile(r"给药途径|delivery route|静脉注射|递送路径")
 NUM_RE = re.compile(r"(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?")
+_CONCRETE_DEFECT_RE = re.compile(
+    r"(?i)"
+    r"(?:\d+(?:\.\d+)?\s*%|"
+    r"[「『“\"].{2,}[」』”\"]|"
+    r"图\s*\d|fig(?:ure|\.)?\s*\d|"
+    r"省略|未写|未报|未提|漏写|missing|omission|omit|"
+    r"ORR|DCR|PFS|OS|HR|缓解率|生存率|不良事件)"
+)
 CN_NUM_RE = re.compile(r"[零一二三四五六七八九十百千万两]+")
 _CN_DIGIT = {
     "零": 0, "一": 1, "二": 2, "两": 2, "三": 3, "四": 4,
@@ -598,6 +607,68 @@ def run_automated_audit(
     }
 
 
+def reason_cites_concrete_defect(reason: str) -> bool:
+    """True when the judge names a claim, number, omission, or figure element."""
+    text = (reason or "").strip()
+    if len(text) < 8:
+        return False
+    if _CONCRETE_DEFECT_RE.search(text):
+        return True
+    if NUM_RE.search(text) and len(text) >= 12:
+        return True
+    return False
+
+
+def _judge_has_sub7(judge: dict) -> bool:
+    scores = judge.get("scores") or {}
+    for dim, val in scores.items():
+        if dim in BLIND_DIMS and int(val or 0) < BLIND_MIN:
+            return True
+    try:
+        return float(judge.get("overall") or 0) < BLIND_MIN
+    except (TypeError, ValueError):
+        return False
+
+
+def _snapshot_judge(judge: dict) -> dict[str, Any]:
+    return {
+        "available": judge.get("available"),
+        "pass": judge.get("pass"),
+        "scores": judge.get("scores"),
+        "overall": judge.get("overall"),
+        "reasons": judge.get("reasons"),
+        "major_factual_error": judge.get("major_factual_error"),
+        "judge": judge.get("judge"),
+    }
+
+
+def score_blind_with_defect_rerun(score_fn, art: dict, source: str, config: dict | None) -> dict[str, Any]:
+    """Re-run once when a sub-7 score has no concrete cited defect."""
+    first = score_fn(art, source, config)
+    original = _snapshot_judge(first)
+    first["original_scores"] = original
+    first["rerun_scores"] = None
+    first["cited_defect"] = reason_cites_concrete_defect(first.get("reasons"))
+    if not first.get("available"):
+        return first
+    if first.get("major_factual_error"):
+        return first
+    if not _judge_has_sub7(first) or first["cited_defect"]:
+        return first
+    second = score_fn(art, source, config)
+    second["original_scores"] = original
+    second["rerun_scores"] = _snapshot_judge(second)
+    second["cited_defect"] = reason_cites_concrete_defect(second.get("reasons"))
+    if (
+        second.get("available")
+        and _judge_has_sub7(second)
+        and not second["cited_defect"]
+        and not second.get("major_factual_error")
+    ):
+        second["unsupported_sub7"] = True
+    return second
+
+
 def pick_top_deep_for_blind(articles: list[dict], limit: int = BLIND_MAX_ARTICLES) -> list[dict]:
     deep = [a for a in articles if a.get("tier") == "deep"]
 
@@ -658,6 +729,7 @@ Return JSON only:
 {{"scores": {{"accuracy":1-10,"information":1-10,"understanding":1-10,"exposition":1-10,"figure_information":1-10,"significance":1-10}},
 "major_factual_error": true/false, "reasons": "short note"}}
 Do not score writing style.
+If any score is below 7, reasons MUST cite a concrete defect: a specific claim, number, omission, or figure element. Vague notes are not valid grounds for a score below 7.
 
 ## Article
 {drafted[:FULLTEXT_WINDOW]}
@@ -693,6 +765,7 @@ def score_blind_claude(art: dict, source: str, config: dict | None = None) -> di
 Return JSON only:
 {{"scores": {{"accuracy":1-10,"information":1-10,"understanding":1-10,"exposition":1-10,"figure_information":1-10,"significance":1-10}},
 "major_factual_error": true/false, "reasons": "short note"}}
+If any score is below 7, reasons MUST cite a concrete defect: a specific claim, number, omission, or figure element. Vague notes are not valid grounds for a score below 7.
 
 ## Article
 {drafted[:FULLTEXT_WINDOW]}
@@ -723,10 +796,24 @@ Return JSON only:
         return {"available": False, "pass": False, "judge": "claude", "reasons": type(exc).__name__}
 
 
+def _blind_judge_runs(*judges: dict) -> list[dict]:
+    return [
+        {
+            "judge": j.get("judge"),
+            "original": j.get("original_scores"),
+            "rerun": j.get("rerun_scores"),
+        }
+        for j in judges
+    ]
+
+
 def combine_blind_judges(claude: dict, gemini: dict) -> dict[str, Any]:
-    """Fail if any available judge any dim <7, overall <7, or major error.
-    Both unavailable → fail closed. Style is ignored (not in the payload).
+    """Fail only on a cited sub-7 defect or a major factual error.
+
+    Both unavailable → fail closed. A sub-7 with no cited defect after the
+    one allowed re-run is also fail-closed. Style is ignored.
     """
+    runs = _blind_judge_runs(claude, gemini)
     available = [j for j in (claude, gemini) if j.get("available")]
     if not available:
         return {
@@ -734,29 +821,40 @@ def combine_blind_judges(claude: dict, gemini: dict) -> dict[str, Any]:
             "fail_closed": True,
             "reasons": "both blind judges unavailable",
             "judges": [claude, gemini],
+            "blind_judge_runs": runs,
         }
     failed = False
+    fail_closed = False
     reasons = []
     for j in available:
         if j.get("major_factual_error"):
             failed = True
             reasons.append(f"{j.get('judge')}: major factual error")
-        scores = j.get("scores") or {}
-        for dim, val in scores.items():
-            if dim in BLIND_DIMS and int(val or 0) < BLIND_MIN:
-                failed = True
-                reasons.append(f"{j.get('judge')} {dim}={val}<{BLIND_MIN}")
-        if float(j.get("overall") or 0) < BLIND_MIN:
+        if j.get("unsupported_sub7"):
             failed = True
-            reasons.append(f"{j.get('judge')} overall={j.get('overall')}<{BLIND_MIN}")
+            fail_closed = True
+            reasons.append(f"{j.get('judge')}: sub-7 without cited defect after re-run")
+            continue
+        cited = j.get("cited_defect")
+        if cited is None:
+            cited = reason_cites_concrete_defect(j.get("reasons"))
+        if _judge_has_sub7(j) and cited:
+            failed = True
+            scores = j.get("scores") or {}
+            for dim, val in scores.items():
+                if dim in BLIND_DIMS and int(val or 0) < BLIND_MIN:
+                    reasons.append(f"{j.get('judge')} {dim}={val}<{BLIND_MIN}")
+            if float(j.get("overall") or 0) < BLIND_MIN:
+                reasons.append(f"{j.get('judge')} overall={j.get('overall')}<{BLIND_MIN}")
         if j.get("pass") is False and not j.get("scores"):
             failed = True
             reasons.append(str(j.get("reasons") or "judge fail"))
     return {
         "pass": not failed,
-        "fail_closed": False,
+        "fail_closed": fail_closed,
         "reasons": "; ".join(reasons) or "ok",
         "judges": [claude, gemini],
+        "blind_judge_runs": runs,
     }
 
 
@@ -773,6 +871,7 @@ def attach_audit_fields(entry: dict, audit: dict) -> dict:
     entry["classification"] = audit.get("classification")
     entry["boilerplate_count"] = audit.get("boilerplate_count")
     entry["blind_scores"] = audit.get("blind_scores") or []
+    entry["blind_judge_runs"] = audit.get("blind_judge_runs") or []
     entry["hard_errors"] = audit.get("hard_errors") or []
     entry["rewrite_count"] = audit.get("rewrite_count") or 0
     entry["publish_allowed"] = bool(audit.get("publish_allowed"))
@@ -801,6 +900,9 @@ def _patch_qc_blind(stats: dict | None, art: dict, combo: dict, rewrite_count: i
     url = art.get("url")
     audit = dict(art.get("writing_audit") or {})
     audit["blind_scores"] = combo.get("judges") or []
+    audit["blind_judge_runs"] = combo.get("blind_judge_runs") or _blind_judge_runs(
+        *(combo.get("judges") or [])
+    )
     audit["rewrite_count"] = rewrite_count
     audit["publish_allowed"] = bool(published) and bool(audit.get("publish_allowed", True))
     art["writing_audit"] = audit
@@ -828,8 +930,14 @@ def apply_dual_blind_to_week(
     """
     if not acir_strict(config):
         return articles
-    score_claude = score_claude or score_blind_claude
-    score_gemini = score_gemini or score_blind_gemini
+    raw_claude = score_claude or score_blind_claude
+    raw_gemini = score_gemini or score_blind_gemini
+
+    def score_claude(art, source, config=None):
+        return score_blind_with_defect_rerun(raw_claude, art, source, config)
+
+    def score_gemini(art, source, config=None):
+        return score_blind_with_defect_rerun(raw_gemini, art, source, config)
     selected = pick_top_deep_for_blind(articles)
     selected_urls = {a.get("url") for a in selected}
     kept: list[dict] = []
@@ -853,11 +961,10 @@ def apply_dual_blind_to_week(
                 kept.append(current)
                 break
             if combo.get("fail_closed") or rewrite_count >= BLIND_MAX_REWRITES or redraft is None:
-                reason = (
-                    "both blind judges unavailable"
-                    if combo.get("fail_closed")
-                    else f"blind judge: {combo.get('reasons') or 'fail'}"
-                )
+                if combo.get("fail_closed"):
+                    reason = combo.get("reasons") or "both blind judges unavailable"
+                else:
+                    reason = f"blind judge: {combo.get('reasons') or 'fail'}"
                 _patch_qc_blind(stats, current, combo, rewrite_count, published=False)
                 if stats is not None:
                     stats.setdefault("drops", []).append({"url": current.get("url"), "reason": reason})
