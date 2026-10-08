@@ -1774,8 +1774,8 @@ def _test_production_stripper():
         ("一百亿美元", {"一百"}),  # At minimum, captures "一百"
         # Bare Chinese amounts (N3 fix: 两百亿市场)
         ("两百亿市场", {"两百"}),
-        # Percentages (extracts decimal parts too)
-        ("占股19.9%", {"19.9%", "19"}),  # Extracts 19.9% and 19
+        # Percentages: keep the exact figure, never the truncated integer
+        ("占股19.9%", {"19.9%"}),
     ]
     
     for text, expected in extraction_tests:

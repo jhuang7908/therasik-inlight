@@ -205,6 +205,62 @@ A field is UNSUPPORTED if there is no explicit evidence or if the evidence contr
 }
 
 
+def _verifier_field_supported(field_obj: Any, filing_text: str) -> bool:
+    """Fail-closed check for a verifier {verdict, quote} object.
+
+    A field passes only if verdict is exactly "supported" AND the quote is
+    non-empty and a verbatim whitespace-normalized substring of the filing.
+    Missing objects, unknown verdicts, empty quotes, and paraphrases all fail.
+    """
+    if not isinstance(field_obj, dict):
+        return False
+    if field_obj.get('verdict') != 'supported':
+        return False
+    quote = field_obj.get('quote')
+    if not isinstance(quote, str) or not quote.strip():
+        return False
+    return verify_quote_in_filing(quote, filing_text)
+
+
+def rebuild_published_deal(deal: dict) -> dict:
+    """Rebuild title, headline money and deal lines from the amounts that remain.
+
+    Headline money is only a non-conditional upfront or purchase price. Conditional
+    milestone totals never become the title suffix. A dropped amount is removed
+    from the deal line, the title and the money field — no stale （amount） remains.
+    """
+    deal = dict(deal)
+    amounts = [a for a in (deal.get('verified_amounts') or []) if isinstance(a, dict)]
+    deal['verified_amounts'] = amounts
+
+    detail_parts = []
+    for amt in amounts:
+        kind = amt.get('kind', '')
+        rendered = amt.get('rendered', '')
+        if kind == 'upfront':
+            detail_parts.append(f"首付：{rendered}")
+        elif kind == 'purchase_price':
+            detail_parts.append(f"收购对价：{rendered}")
+        elif kind == 'milestones_total':
+            detail_parts.append(f"里程碑：{rendered}")
+    deal['structure'] = ' | '.join(detail_parts)
+
+    headline = ''
+    for amt in amounts:
+        if amt.get('up_to'):
+            continue
+        if amt.get('kind') in ('upfront', 'purchase_price'):
+            headline = amt.get('rendered', '') or ''
+            break
+    deal['money'] = headline
+
+    title = re.sub(r'（[^）]+）$', '', deal.get('title') or '')
+    if headline:
+        title = f"{title}（{headline}）"
+    deal['title'] = title
+    return deal
+
+
 def verify_deal_with_claude(
     deal: dict,
     filing_text: str,
@@ -212,36 +268,38 @@ def verify_deal_with_claude(
     timeout_seconds: float = 30.0
 ) -> dict | None:
     """Run independent verification of a deal using a second Claude call.
-    
-    Args:
-        deal: The deal dict from process_sec_deal()
-        filing_text: Original filing text for quote verification
-        claude_client: Anthropic client
-        timeout_seconds: Timeout for the verification call
-    
-    Returns:
-        Verified deal dict (possibly with some amounts removed), or None if deal should be dropped.
+
+    Fail-closed: any of the following drops the whole deal — exception, timeout,
+    reply without verify_deal tool_use, stop_reason other than tool_use, a missing
+    company/counterparty/deal_type/date field, a verdict that is not exactly
+    "supported", an empty quote, or a quote that is not verbatim in the filing.
+
+    Amounts are matched by ROLE (upfront / milestones_total / purchase_price),
+    never by list index. A missing, unsupported, or non-verbatim amount entry
+    drops that amount only. The published title and lines are then rebuilt from
+    the amounts that remain.
     """
     if not VERIFIER_ENABLED:
         return deal
-    
-    # Build the Chinese deal line for verification
+
     title = deal.get('title', '')
     money = deal.get('money', '')
     structure = deal.get('structure', '')
-    
-    # Build amounts description for the prompt
+
     amounts_desc = []
     for amt in deal.get('verified_amounts', []):
         role = amt.get('kind', 'unknown')
         rendered = amt.get('rendered', '')
         amounts_desc.append(f"  - {role}: {rendered}")
     amounts_str = '\n'.join(amounts_desc) if amounts_desc else '  (no amounts)'
-    
-    # Select relevant filing excerpt (focus on deal sections)
+
     relevant_text = _select_relevant_filing_sections(filing_text, max_chars=30000)
-    
-    # Build verification prompt
+    type_quote = deal.get('type_quote') or ''
+    if type_quote and normalize_whitespace(type_quote).lower() not in normalize_whitespace(relevant_text).lower():
+        # The verifier must see the same evidence the extractor quoted.
+        passage = _containing_passage(type_quote, filing_text) or type_quote
+        relevant_text = f"{passage}\n\n{relevant_text}"
+
     prompt = f"""Verify each field of this deal is supported by the filing text.
 
 FILING TEXT:
@@ -264,7 +322,7 @@ Do not paraphrase or modify the quotes - they must be exact substrings of the fi
 
     try:
         model = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5-5")
-        
+
         message = claude_client.messages.create(
             model=model,
             max_tokens=4000,
@@ -273,112 +331,54 @@ Do not paraphrase or modify the quotes - they must be exact substrings of the fi
             tool_choice={"type": "auto"},
             messages=[{"role": "user", "content": prompt}],
         )
-        
-        # Extract verification response
+
+        stop_reason = getattr(message, 'stop_reason', None)
+        if stop_reason != 'tool_use':
+            logging.warning("Verifier stop_reason=%s (need tool_use), dropping deal", stop_reason)
+            return None
+
         verification = None
         for block in message.content:
             if block.type == "tool_use" and block.name == "verify_deal":
                 verification = block.input
                 break
-        
-        if not verification:
+
+        if not verification or not isinstance(verification, dict):
             logging.warning("Verifier did not return structured response, dropping deal")
             return None
-        
-        # Validate the verifier's quotes exist in the filing
-        # Check company
-        company_v = verification.get('company', {})
-        if company_v.get('verdict') == 'unsupported':
-            logging.info("Verifier: company unsupported, dropping deal")
+
+        for field_name in ('company', 'counterparty', 'deal_type', 'date'):
+            if field_name not in verification:
+                logging.info("Verifier: missing field %s, dropping deal", field_name)
+                return None
+            if not _verifier_field_supported(verification[field_name], filing_text):
+                logging.info("Verifier: %s not supported with a verbatim quote, dropping deal", field_name)
+                return None
+
+        if 'amounts' not in verification or not isinstance(verification.get('amounts'), list):
+            logging.info("Verifier: missing amounts list, dropping deal")
             return None
-        if company_v.get('quote') and not verify_quote_in_filing(company_v['quote'], filing_text):
-            logging.info("Verifier: company quote not found in filing, dropping deal")
-            return None
-        
-        # Check counterparty
-        cp_v = verification.get('counterparty', {})
-        if cp_v.get('verdict') == 'unsupported':
-            logging.info("Verifier: counterparty unsupported, dropping deal")
-            return None
-        if cp_v.get('quote') and not verify_quote_in_filing(cp_v['quote'], filing_text):
-            logging.info("Verifier: counterparty quote not found in filing, dropping deal")
-            return None
-        
-        # Check deal type
-        type_v = verification.get('deal_type', {})
-        if type_v.get('verdict') == 'unsupported':
-            logging.info("Verifier: deal_type unsupported, dropping deal")
-            return None
-        if type_v.get('quote') and not verify_quote_in_filing(type_v['quote'], filing_text):
-            logging.info("Verifier: deal_type quote not found in filing, dropping deal")
-            return None
-        
-        # Check amounts - drop unsupported ones
+
+        original_amounts = [a for a in (deal.get('verified_amounts') or []) if isinstance(a, dict)]
+        amounts_v = [a for a in verification['amounts'] if isinstance(a, dict)]
         verified_amounts = []
-        amounts_v = verification.get('amounts', [])
-        original_amounts = deal.get('verified_amounts', [])
-        
-        for i, amt in enumerate(original_amounts):
-            # Find matching verification result
-            amt_v = amounts_v[i] if i < len(amounts_v) else {}
-            
-            if amt_v.get('verdict') == 'unsupported':
-                logging.info("Verifier: amount %s unsupported, dropping amount", amt.get('rendered'))
+        for amt in original_amounts:
+            role = amt.get('kind')
+            amt_v = next((a for a in amounts_v if a.get('role') == role), None)
+            if amt_v is None:
+                logging.info("Verifier: no entry for amount role %s, dropping amount", role)
                 continue
-            
-            # Verify the verifier's quote exists
-            if amt_v.get('quote') and not verify_quote_in_filing(amt_v['quote'], filing_text):
-                logging.info("Verifier: amount quote not found in filing, dropping amount: %s", amt.get('rendered'))
+            if not _verifier_field_supported(amt_v, filing_text):
+                logging.info("Verifier: amount role %s not supported with a verbatim quote, dropping amount", role)
                 continue
-            
             verified_amounts.append(amt)
-        
-        # Update deal with verified amounts
-        deal = dict(deal)
-        deal['verified_amounts'] = verified_amounts
-        
-        # Rebuild structure line from remaining amounts
-        if verified_amounts:
-            # Reconstruct detail lines from verified amounts
-            detail_parts = []
-            for amt in verified_amounts:
-                kind = amt.get('kind', 'other')
-                rendered = amt.get('rendered', '')
-                if kind == 'upfront':
-                    detail_parts.append(f"首付：{rendered}")
-                elif kind == 'purchase_price':
-                    detail_parts.append(f"收购对价：{rendered}")
-                elif kind == 'milestones_total':
-                    detail_parts.append(f"里程碑：{rendered}")
-                else:
-                    detail_parts.append(rendered)
-            deal['structure'] = ' | '.join(detail_parts)
-        else:
-            deal['structure'] = ''
-        
-        # Update headline money if needed
-        if verified_amounts:
-            # Use first non-up_to amount for headline
-            for amt in verified_amounts:
-                if not amt.get('up_to'):
-                    deal['money'] = amt.get('rendered', '')
-                    break
-            else:
-                deal['money'] = verified_amounts[0].get('rendered', '') if verified_amounts else ''
-        else:
-            deal['money'] = ''
-        
-        # Update title if money changed
-        if not deal['money'] and '（' in deal['title']:
-            # Remove amount suffix from title
-            deal['title'] = re.sub(r'（[^）]+）$', '', deal['title'])
-        
-        logging.info("Verifier: deal passed with %d/%d amounts", 
-                    len(verified_amounts), len(original_amounts))
+
+        deal = rebuild_published_deal({**deal, 'verified_amounts': verified_amounts})
+        logging.info("Verifier: deal passed with %d/%d amounts",
+                     len(verified_amounts), len(original_amounts))
         return deal
-        
+
     except Exception as e:
-        # Verifier error or timeout - fail closed
         logging.warning("Verifier error: %s: %s - dropping deal", type(e).__name__, e)
         return None
 
@@ -427,60 +427,88 @@ CN_UNITS = {'十': 10, '百': 100, '千': 1000, '万': 10000, '亿': 100000000}
 
 def chinese_to_int(cn_str: str) -> int | None:
     """Convert Chinese numeral string to integer.
-    
+
     Correctly handles:
     - 一百二十 = 120 (not 10020)
     - 三十五 = 35 (not 305)
     - 两 = 2
     - 十二 = 12
+    - 十二亿 = 1_200_000_000
+    - 两千万 = 20_000_000
     - 一百零五 = 105
-    
-    Returns None if string contains non-Chinese-numeral characters.
+
+    Returns None if the string contains non-numeral characters (including 点).
+    Use chinese_to_number() for decimals such as 一点五.
     """
     if not cn_str:
         return None
-    
-    # Handle single digit
+
     if len(cn_str) == 1:
         if cn_str in CN_DIGITS:
             return CN_DIGITS[cn_str]
         if cn_str in CN_UNITS:
-            return CN_UNITS[cn_str]  # 十 alone = 10
+            return CN_UNITS[cn_str]
         return None
-    
+
     result = 0
-    current_section = 0  # accumulates within a 万/亿 section
-    current_num = 0  # the digit waiting for a unit
-    
+    current_section = 0
+    current_num = 0
+
     for char in cn_str:
         if char in CN_DIGITS:
             current_num = CN_DIGITS[char]
         elif char in CN_UNITS:
             unit = CN_UNITS[char]
-            if unit >= 10000:  # 万 or 亿 - section marker
-                # If we have a pending number, add it
+            if unit >= 10000:
                 if current_num > 0:
                     current_section += current_num
                     current_num = 0
-                # If section is 0 (e.g., just 一亿), use 1
                 if current_section == 0:
                     current_section = 1
                 result += current_section * unit
                 current_section = 0
-            else:  # 十, 百, 千 - regular unit
+            else:
                 if current_num == 0:
-                    current_num = 1  # implicit 一 (e.g., 十二 = 12)
+                    current_num = 1
                 current_section += current_num * unit
                 current_num = 0
         else:
-            return None  # Unknown character
-    
-    # Add any remaining number
+            return None
+
     if current_num > 0:
         current_section += current_num
     result += current_section
-    
     return result
+
+
+def chinese_to_number(cn_str: str) -> float | None:
+    """Convert a Chinese numeral, including decimals with 点, to a number.
+
+    一点五 = 1.5, 十二 = 12, 十二亿 = 1.2e9. Returns None on mis-parse
+    rather than a silently wrong scale.
+    """
+    if not cn_str:
+        return None
+    if '点' not in cn_str:
+        value = chinese_to_int(cn_str)
+        return float(value) if value is not None else None
+    left, _, right = cn_str.partition('点')
+    if left:
+        whole = chinese_to_int(left)
+        if whole is None:
+            return None
+    else:
+        whole = 0
+    if not right:
+        return float(whole)
+    frac = 0.0
+    place = 0.1
+    for char in right:
+        if char not in CN_DIGITS:
+            return None
+        frac += CN_DIGITS[char] * place
+        place *= 0.1
+    return whole + frac
 
 
 def parse_chinese_decimal(text: str) -> set[str]:
@@ -605,6 +633,34 @@ def find_quote_position(quote: str, filing_text: str) -> int | None:
     
     pos = norm_filing.find(norm_quote)
     return pos if pos >= 0 else None
+
+
+def _containing_passage(quote: str, filing_text: str) -> str:
+    """Return the sentence (fallback: paragraph) that contains a verified quote.
+
+    Used to judge whether a grant/acquire quote sits inside an amendment,
+    termination, historical, or divestiture sentence — the quote alone is
+    not enough when the model excerpts only the operative verb.
+    """
+    if not quote or not filing_text:
+        return ''
+    paragraphs = split_into_paragraphs(filing_text)
+    norm_quote = normalize_whitespace(quote).lower()
+    host = ''
+    for _, _, para in paragraphs:
+        if norm_quote in normalize_whitespace(para).lower():
+            host = para
+            break
+    if not host:
+        if verify_quote_in_filing(quote, filing_text):
+            return normalize_whitespace(filing_text)
+        return ''
+    # Split the host paragraph into sentences without breaking decimals.
+    parts = re.split(r'(?<=[。！？])|(?<=(?<!\d)\.(?!\d))\s+', host)
+    for sent in parts:
+        if norm_quote in normalize_whitespace(sent).lower():
+            return sent.strip()
+    return host.strip()
 
 
 def _find_item_section(filing_text: str, position: int) -> str | None:
@@ -755,83 +811,73 @@ def match_company_whole_word(name: str, text: str) -> bool:
     return False
 
 
+_ROLE_NOUNS = (
+    'licensee', 'licensor', 'lenders', 'lender', 'purchaser', 'seller',
+    'borrower', 'parties', 'investors', 'investor', 'agent',
+)
+
+
+def _companies_defined_as_role(role: str, filing_text: str) -> list[str]:
+    """Return company names that the filing defines as a role noun.
+
+    Handles both quoted and unquoted forms:
+    - Calloway Therapeutics Ltd. (the Licensee)
+    - Hercules Capital, Inc. ("Hercules")
+    - Partner Corp (the "Licensee")
+    """
+    if not role or not filing_text:
+        return []
+    role_re = re.escape(role)
+    pattern = re.compile(
+        rf'([A-Z][A-Za-z0-9&.\' -]{{1,80}}?)\s*\(\s*(?:the\s+)?["\u201c]?{role_re}["\u201d]?\s*\)',
+        re.IGNORECASE,
+    )
+    names = []
+    for match in pattern.finditer(filing_text):
+        name = match.group(1).strip().rstrip(',').strip()
+        name = re.sub(r'\s+', ' ', name)
+        if name:
+            names.append(name)
+    return names
+
+
 def verify_counterparty_in_quotes(
     counterparty: str, 
     counterparty_quote: str, 
     type_quote: str,
     filing_text: str = ""
 ) -> bool:
-    """Verify counterparty name appears in quotes, supporting defined terms resolution.
-    
-    SEC filings often use defined terms like "the parties", "the Lenders", "Licensor"
-    after establishing them earlier in the document. This function allows:
-    1. Direct counterparty name match in both quotes, OR
-    2. Counterparty in counterparty_quote AND a defined term in type_quote if:
-       - The defined term is established in the filing (e.g., 'Sanofi ("Sanofi")')
-       - OR the defined term appears near counterparty name in same paragraph
+    """Verify the claimed counterparty is the party named in the type quote.
+
+    Direct name match in both quotes is enough. If the type quote uses a role
+    noun (the Licensee, the Purchaser, …) instead of a name, that noun must
+    resolve in the filing to the *claimed* counterparty — not to some other
+    company that happens to have a parenthetical short name elsewhere.
     """
     if not counterparty:
         return False
-    
-    # Counterparty must be in counterparty_quote
     if not counterparty_quote:
         return False
     if not match_company_whole_word(counterparty, counterparty_quote):
         return False
-    
-    # Check if counterparty is directly in type_quote
     if type_quote and match_company_whole_word(counterparty, type_quote):
         return True
-    
-    # If not direct match in type_quote, check for defined terms
-    if type_quote and filing_text:
-        # Common defined terms in SEC filings
-        # Patterns handle both "the Lenders" and the "Lenders" (quoted term)
-        defined_term_patterns = [
-            r'\b(?:the\s+)?["\u201c]?parties["\u201d]?\b',
-            r'\b(?:the\s+)?["\u201c]?lenders?["\u201d]?\b',
-            r'\b(?:the\s+)?["\u201c]?licensor["\u201d]?\b',
-            r'\b(?:the\s+)?["\u201c]?licensee["\u201d]?\b',
-            r'\b(?:the\s+)?["\u201c]?investors?["\u201d]?\b',
-            r'\b(?:the\s+)?["\u201c]?purchaser["\u201d]?\b',
-            r'\b(?:the\s+)?["\u201c]?seller["\u201d]?\b',
-            r'\b(?:the\s+)?["\u201c]?borrower["\u201d]?\b',
-            r'\b(?:the\s+)?["\u201c]?agent["\u201d]?\b',
-        ]
-        
-        type_quote_lower = type_quote.lower()
-        
-        for pattern in defined_term_patterns:
-            if re.search(pattern, type_quote_lower):
-                counterparty_normalized = normalize_company_name(counterparty).lower()
-                filing_lower = filing_text.lower()
-                
-                # Check if counterparty is established with a definition in parens
-                # Common SEC patterns:
-                # - "Hercules Capital, Inc., a Maryland corporation ("Hercules")"
-                # - "Sanofi, a French société anonyme ("Sanofi")"
-                # - "Bristol-Myers Squibb Company ("BMS" or the "Licensor")"
-                # The key is: counterparty name followed by (possibly with description) a quoted term in parens
-                
-                def_patterns = [
-                    # Company, description ("Any Short Name") - most common real pattern
-                    rf'{re.escape(counterparty_normalized)}[^()]*\(\s*["\u201c][^"\u201d]+["\u201d]\s*\)',
-                    # Company ("Company" or the "Role")
-                    rf'{re.escape(counterparty_normalized)}\s*\(\s*["\u201c]?(?:the\s+)?(?:{pattern[2:-2]}|{re.escape(counterparty_normalized)})["\u201d]?\s*\)',
-                    # Herein/hereinafter patterns
-                    rf'{re.escape(counterparty_normalized)}\s*(?:,\s*)?(?:herein|hereinafter)\s+(?:referred\s+to\s+as\s+)?["\u201c]?(?:the\s+)?{pattern[2:-2]}["\u201d]?',
-                ]
-                
-                for def_pattern in def_patterns:
-                    if re.search(def_pattern, filing_lower, re.IGNORECASE):
-                        logging.debug("Counterparty '%s' verified via definition sentence for '%s'", counterparty, pattern)
-                        return True
-    
-    # No type_quote means we can't verify
-    if not type_quote:
+    if not type_quote or not filing_text:
         return False
-    
-    # Strict: counterparty must be in type_quote directly if no defined term match
+    if verify_defined_term_in_type_quote(counterparty, type_quote, filing_text):
+        return True
+
+    type_lower = type_quote.lower()
+    for role in _ROLE_NOUNS:
+        if not re.search(rf'\b(?:the\s+)?["\u201c]?{re.escape(role)}["\u201d]?\b', type_lower):
+            continue
+        defined_as = _companies_defined_as_role(role, filing_text)
+        for name in defined_as:
+            if (match_company_whole_word(counterparty, name)
+                    or match_company_whole_word(name, counterparty)):
+                return True
+        # A role noun is present but does not resolve to the claimed name.
+        return False
     return False
 
 
@@ -1785,55 +1831,112 @@ def infer_deal_type_from_quote(type_quote: str) -> DealType | None:
 
 
 def is_historical_agreement(type_quote: str) -> bool:
-    """Check if the type_quote describes a historical/past agreement rather than current event.
-    
-    Key insight: When the current 8-K event IS an amendment to a prior agreement,
-    references to the original agreement's date (e.g., "dated as of November 29, 2017")
-    are NOT historical - the current event is the amendment itself.
-    
-    BUT: "previously entered into...as amended" is STILL historical - "as amended" is just
-    a parenthetical describing the prior agreement's state, not indicating a current amendment event.
-    
-    We look for CURRENT amendment language: "entered into Amendment No. X" or "entered into 
-    the Sixth Amendment" - these indicate the current event IS an amendment.
+    """True when the quote describes a prior agreement, not a newly entered one.
+
+    Any amendment is out of scope (even one that adds a product or territory).
+    Historical markers include 'previously disclosed/entered', 'dated YEAR, as
+    amended', and past-perfect grant language ('had granted').
     """
     if not type_quote:
         return False
-    
+
     text_lower = type_quote.lower()
-    
-    # First check for CURRENT amendment event patterns:
-    # "entered into Amendment No. X" or "entered into the Sixth Amendment"
-    # These indicate the current 8-K is ABOUT an amendment, so it's NOT historical
-    current_amendment_patterns = [
-        # Explicit amendment action: "entered into Amendment No. 4"
-        r'\b(?:enter(?:ed|s)?|execut(?:ed|es)?|sign(?:ed|s)?)\s+(?:into\s+)?(?:the\s+)?(?:amendment\s+no\.?\s*\d+|(?:first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth)\s+amendment)\b',
-        # "The Amendment removes" - describing current amendment action
-        r'\bthe\s+amendment\s+(?:removes?|eliminates?|terminates?|provides?|grants?)\b',
-    ]
-    
-    for pattern in current_amendment_patterns:
-        if re.search(pattern, text_lower):
-            return False
-    
-    # Now check for historical patterns - these indicate past, not current event:
-    # NOTE: ", as amended" alone does NOT make something historical.
-    # "entered into the Third Amendment to the License Agreement, as amended" is CURRENT.
-    # Only "previously entered" type patterns are historical.
+
     historical_patterns = [
-        # "previously entered" clearly indicates past, not current
-        r'\bpreviously\s+(?:entered|agreed|executed|signed)\b',
-        # "original agreement" when not in context of amendment
+        r'\bpreviously\s+(?:entered|agreed|executed|signed|disclosed|announced)\b',
         r'\boriginal\s+agreement\b',
-        # "as amended through [date]" or "as amended prior to" (describing history)
         r'\bas\s+amended\s+(?:and\s+restated\s+)?(?:from\s+time\s+to\s+time\s+)?(?:through|prior\s+to)\b',
+        r'\bdated(?:\s+as\s+of)?\s+(?:january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{1,2},\s+(?:19\d\d|20[01]\d|202[0-5])\b',
+        r'\bhad\s+granted\b',
+        r'\bhad\s+entered\b',
     ]
-    
-    for pattern in historical_patterns:
-        if re.search(pattern, text_lower):
-            return True
-    
+    return any(re.search(p, text_lower) for p in historical_patterns)
+
+
+def is_amendment_language(text: str) -> bool:
+    """True if the text is about amending an existing agreement."""
+    if not text:
+        return False
+    t = text.lower()
+    return bool(re.search(
+        r'\b(?:amendment\s+no\.?\s*\d+'
+        r'|(?:first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth)\s+amendment'
+        r'|amended\s+and\s+restated'
+        r'|as\s+amended'
+        r'|the\s+amendment\b)',
+        t,
+    ))
+
+
+def is_termination_or_assignment_language(text: str) -> bool:
+    """True if the text is a termination, assignment, or similar non-new deal."""
+    if not text:
+        return False
+    t = text.lower()
+    return bool(re.search(
+        r'\b(?:terminat(?:e|ed|es|ing|ion)'
+        r'|assign(?:s|ed|ment)'
+        r'|waiv(?:e|ed|er|es|ing)'
+        r'|item\s+1\.02)\b',
+        t,
+    ))
+
+
+def is_divestiture_or_asset_sale(text: str) -> bool:
+    """True if the text describes a business-unit sale, not an acquisition of a company."""
+    if not text:
+        return False
+    t = text.lower()
+    if re.search(r'\bdivest(?:iture|ed|s|ing)?\b', t):
+        return True
+    if re.search(
+        r'\bacquir(?:e|es|ed|ing)\s+the\s+company[\'\u2019]s\s+'
+        r'[\w\s-]{0,40}?(?:business|division|unit|assets|operations|portfolio)\b',
+        t,
+    ):
+        return True
+    if re.search(
+        r'\b(?:sale|dispos(?:e|al)|sell(?:s|ing)?)\s+of\s+(?:the\s+)?'
+        r'(?:company[\'\u2019]s\s+)?[\w\s-]{0,40}?'
+        r'(?:business|division|unit|subsidiary|assets)\b',
+        t,
+    ):
+        return True
+    if re.search(r'\bwholly-owned\s+subsidiary\b', t) and re.search(
+        r'\b(?:sale|sold|divest|dispos|acquir)', t
+    ):
+        return True
     return False
+
+
+def out_of_scope_deal_reason(type_quote: str, filing_text: str) -> str | None:
+    """Return a drop reason if the quote's filing context is out of scope.
+
+    Scope is only (a) a newly entered license/collaboration and (b) a
+    definitive acquisition or merger of a company. Amendments, historical
+    agreements, Item 1.02 terminations, assignments and divestitures are out
+    even when the model excerpts only the grant/acquire clause.
+    """
+    if not type_quote:
+        return 'empty type_quote'
+    passage = _containing_passage(type_quote, filing_text) or type_quote
+    combined = f"{type_quote} {passage}"
+
+    if is_amendment_language(type_quote) or is_amendment_language(passage):
+        return 'amendment'
+    if is_historical_agreement(type_quote) or is_historical_agreement(passage):
+        return 'historical agreement'
+    if is_termination_or_assignment_language(type_quote) or is_termination_or_assignment_language(passage):
+        return 'termination/assignment'
+    if is_divestiture_or_asset_sale(type_quote) or is_divestiture_or_asset_sale(passage):
+        return 'divestiture/asset sale'
+
+    pos = find_quote_position(type_quote, filing_text)
+    if pos is not None:
+        item = _find_item_section(filing_text, pos)
+        if item and item.replace(' ', '') in ('item1.02', 'item2.03'):
+            return f'out-of-scope item ({item})'
+    return None
 
 
 # =============================================================================
@@ -1959,55 +2062,59 @@ def build_deal_lines(
 
 def has_license_grant_language(type_quote: str) -> bool:
     """Check if type_quote contains license/collaboration grant language.
-    
-    Returns True only if the quote contains explicit grant wording like:
-    - 'grants...license'
-    - 'granted...license'
-    - 'exclusive license to'
-    - 'collaboration agreement' (only if NEW, not amendment)
-    - 'license agreement' (only if NEW)
+
+    Accepts ordinary SEC phrasing such as 'granted X an exclusive worldwide
+    license'. Rejects the quote itself when it is an amendment, termination,
+    assignment or waiver — those are out of scope even if they grant rights.
     """
     if not type_quote:
         return False
     text = type_quote.lower()
-    
-    # Reject if this is an amendment/termination/assignment
-    if re.search(r'\b(amend|terminat|assign|divest|transfer|waiv)', text):
+
+    if re.search(
+        r'\b(?:amend(?:ment|ed|s)?'
+        r'|terminat(?:e|ed|es|ing|ion)'
+        r'|assign(?:s|ed|ment)'
+        r'|divest(?:iture|ed|s)?'
+        r'|transfer(?:red|s)?'
+        r'|waiv(?:e|ed|er|es|ing))\b',
+        text,
+    ):
         return False
-    
-    # Check for grant patterns
+
     grant_patterns = [
-        r'\bgrants?\s+(?:\w+\s+){0,3}(?:exclusive\s+)?license\b',
-        r'\bgranted\s+(?:\w+\s+){0,3}(?:exclusive\s+)?license\b',
-        r'\bexclusive\s+license\s+to\b',
-        r'\bnon-exclusive\s+license\s+to\b',
-        r'\bcollaboration\s+agreement\b',
-        r'\blicense\s+agreement\b',
-        r'\bentere[ds]\s+into\s+(?:a\s+)?(?:\w+\s+)?(?:license|collaboration)\b',
+        r'\bgrants?\s+.{0,80}?\blicen[sc]e\b',
+        r'\bgranted\s+.{0,80}?\blicen[sc]e\b',
+        r'\bgranting\s+.{0,80}?\blicen[sc]e\b',
+        r'\bexclusive(?:ly)?(?:\s+\w+){0,4}\s+licen[sc]e\b',
+        r'\bnon-exclusive(?:ly)?(?:\s+\w+){0,4}\s+licen[sc]e\b',
+        r'\bcollaboration\s+(?:and\s+license\s+)?agreement\b',
+        r'\blicen[sc]e\s+(?:and\s+collaboration\s+)?agreement\b',
+        r'\bentere[ds]\s+into\s+(?:a\s+)?(?:\w+\s+){0,5}(?:license|collaboration)\b',
     ]
-    for pattern in grant_patterns:
-        if re.search(pattern, text):
-            return True
-    return False
+    return any(re.search(p, text) for p in grant_patterns)
 
 
 def has_acquisition_language(type_quote: str) -> bool:
-    """Check if type_quote contains acquisition/merger language.
-    
-    Returns True only if the quote contains explicit acquire/merge wording:
-    - 'acquire' / 'acquired' / 'acquisition'
-    - 'merger' / 'merge'
-    - 'purchase' (in context of company acquisition)
+    """Check if type_quote contains acquisition/merger of a company.
+
+    Business-unit sales, assignments and amendments are rejected here.
     """
     if not type_quote:
         return False
     text = type_quote.lower()
-    
-    # Reject if this is an amendment/termination/assignment
-    if re.search(r'\b(amend|terminat|assign|waiv)', text):
+
+    if re.search(
+        r'\b(?:amend(?:ment|ed|s)?'
+        r'|terminat(?:e|ed|es|ing|ion)'
+        r'|assign(?:s|ed|ment)'
+        r'|waiv(?:e|ed|er|es|ing))\b',
+        text,
+    ):
         return False
-    
-    # Check for acquisition patterns
+    if is_divestiture_or_asset_sale(type_quote):
+        return False
+
     acq_patterns = [
         r'\bacquire[sd]?\b',
         r'\bacquisition\b',
@@ -2016,10 +2123,7 @@ def has_acquisition_language(type_quote: str) -> bool:
         r'\bpurchase\s+(?:of|all)\s+(?:the\s+)?(?:outstanding\s+)?(?:shares|stock|equity)\b',
         r'\bpurchase\s+agreement\b.*\b(?:shares|stock|equity|company)\b',
     ]
-    for pattern in acq_patterns:
-        if re.search(pattern, text):
-            return True
-    return False
+    return any(re.search(p, text) for p in acq_patterns)
 
 
 def has_role_keyword_for_kind(quote: str, kind: AmountKind) -> bool:
@@ -2076,6 +2180,7 @@ def verify_defined_term_in_type_quote(counterparty: str, type_quote: str, filing
         r'"([^"]+)"\s*\((?:the\s+)?"([^"]+)"\)',  # "Name" (the "Term")
         r'"([^"]+)",?\s+as\s+(?:the\s+)?"([^"]+)"',  # "Name", as "Term"
         r'([A-Z][A-Za-z\s&,.]+),?\s*\((?:the\s+)?"([^"]+)"\)',  # Name (the "Term")
+        r'([A-Z][A-Za-z0-9&.\'\s-]{1,80}?)\s*\(\s*(?:the\s+)?([A-Za-z]+)\s*\)',
     ]
     
     # Search in filing text for counterparty's defined term
@@ -2159,9 +2264,12 @@ def process_sec_deal(
         logging.info("Deal dropped: non-deal agreement type (services/lease/employment): %s", type_quote[:80])
         return None
     
-    # Verification 1b: Check if this describes a historical agreement
-    if is_historical_agreement(type_quote):
-        logging.info("Deal dropped: type_quote describes historical agreement: %s", type_quote[:80])
+    # Verification 1b: historical / amendment / termination / assignment / divestiture
+    # Look at the quote AND the filing sentence it came from — the model may
+    # excerpt only the grant/acquire clause of an out-of-scope event.
+    scope_reason = out_of_scope_deal_reason(type_quote, filing_text)
+    if scope_reason:
+        logging.info("Deal out_of_scope: %s (%s)", scope_reason, type_quote[:80])
         return None
     
     # PRECISION-FIRST: Verify deal-type-specific language in type_quote
@@ -2448,6 +2556,7 @@ def process_sec_deal(
         ],
         'deal_type': deal_type.value,
         'filer_role': filer_role,
+        'type_quote': type_quote,
     }
 
 
@@ -2758,150 +2867,117 @@ def extract_numbers_from_text(text: str) -> set[str]:
     - 三期 (phase 3) when followed by 试验/临床 - but this is ALLOWED in clinical text
     """
     numbers = set()
-    
-    # Arabic numerals with optional decimal - these are clear quantities
-    for m in re.finditer(r'[\d,]+(?:\.\d+)?', text):
-        num = m.group().replace(',', '')
+
+    def _add_exact(num: str) -> None:
+        """Record a quantity exactly — never the truncated integer of a decimal."""
         if num and num != '.':
             numbers.add(num)
-            # Also add without decimals for matching
-            if '.' in num:
-                numbers.add(num.split('.')[0])
-    
-    # GENERAL RULE: Unit conversion must be EXACT, no rounding
+
+    # Arabic numerals with optional decimal. 11.7 is not 11; 4.125 is not 4.
+    for m in re.finditer(r'[\d,]+(?:\.\d+)?', text):
+        _add_exact(m.group().replace(',', ''))
+
+    # Unit conversion must be EXACT, no rounding:
     # $1.17 billion = 11.7 亿 (NOT 11 or 12)
-    # $200 million = 2 亿 (200/100 = 2, exact)
-    # $3 billion = 30 亿 (3*10 = 30, exact)
-    
+    # $412.5 million = 4.125 亿 (NOT 4)
     billion_pattern = r'\$?([\d,.]+)\s*billion'
     for m in re.finditer(billion_pattern, text, re.IGNORECASE):
         num_str = m.group(1).replace(',', '')
         try:
             num = float(num_str)
-            # $X billion = X * 10 亿 (exact conversion)
             converted = num * 10
-            # Add exact value (may be decimal like 11.7)
             if converted == int(converted):
-                numbers.add(str(int(converted)))
+                _add_exact(str(int(converted)))
                 numbers.add(f"{int(converted)}亿")
             else:
-                numbers.add(str(converted))
+                _add_exact(str(converted))
                 numbers.add(f"{converted}亿")
-            # Also add the original number
-            numbers.add(num_str)
-            if '.' in num_str:
-                numbers.add(num_str.split('.')[0])
+            _add_exact(num_str)
         except ValueError:
             pass
-    
+
     million_pattern = r'\$?([\d,.]+)\s*million'
     for m in re.finditer(million_pattern, text, re.IGNORECASE):
         num_str = m.group(1).replace(',', '')
         try:
             num = float(num_str)
-            # $X million = X / 100 亿 (exact conversion)
             converted_yi = num / 100
             if converted_yi >= 1:
                 if converted_yi == int(converted_yi):
-                    numbers.add(str(int(converted_yi)))
+                    _add_exact(str(int(converted_yi)))
                     numbers.add(f"{int(converted_yi)}亿")
                 else:
-                    numbers.add(str(converted_yi))
+                    _add_exact(str(converted_yi))
                     numbers.add(f"{converted_yi}亿")
-            # Also add the raw million number
-            numbers.add(num_str)
-            if '.' in num_str:
-                numbers.add(num_str.split('.')[0])
+            _add_exact(num_str)
         except ValueError:
             pass
-    
-    # Chinese number mapping for patient counts and quantities
-    # 一百二十名 = 120, 九名 = 9, etc.
-    cn_to_arabic = {
-        '零': 0, '〇': 0, '一': 1, '二': 2, '三': 3, '四': 4, '五': 5,
-        '六': 6, '七': 7, '八': 8, '九': 9, '十': 10, '两': 2,
-        '百': 100, '千': 1000, '万': 10000, '亿': 100000000,
-    }
-    
-    def chinese_to_int(cn_str: str) -> int | None:
-        """Convert Chinese numeral to integer. Returns None if cannot parse."""
-        if not cn_str:
-            return None
-        result = 0
-        temp = 0
-        for char in cn_str:
-            if char not in cn_to_arabic:
-                return None
-            val = cn_to_arabic[char]
-            if val >= 10:  # Unit character
-                if temp == 0:
-                    temp = 1  # 十 = 10, not 0
-                if val >= 10000:  # 万 or 亿
-                    result = (result + temp) * val
-                    temp = 0
-                else:
-                    temp = temp * val
-            else:
-                temp = temp * 10 + val if temp >= 10 else val
-        return result + temp
-    
-    # Extract Chinese patient counts: X名/例/位患者, X个/X次, etc.
-    # IMPORTANT: Do NOT extract small count words that are idiomatic:
-    # - "两组" (two groups) is idiomatic in clinical trial context
-    # - "一项" (a/an item) is idiomatic (single)
-    # - "一种" (a kind of) is idiomatic
-    # 
-    # Only extract counts >= 3 for 组/项/种, or counts attached to explicit patient words
+
+    def _record_chinese(cn_num: str) -> None:
+        parsed = chinese_to_number(cn_num)
+        if parsed is None:
+            return
+        if parsed == int(parsed):
+            numbers.add(str(int(parsed)))
+        else:
+            numbers.add(str(parsed))
+        numbers.add(cn_num)
+        # Keep the coefficient of a trailing 万/亿 so "三亿美元" still
+        # records 三 (used when matching Chinese source text).
+        if cn_num.endswith(('亿', '万')) and len(cn_num) > 1:
+            numbers.add(cn_num[:-1])
+
+    # Patient / person counts: 一百二十名 = 120, 三十五名 = 35
     cn_patient_count_pattern = r'([零一二三四五六七八九十百千两〇]+)\s*(?:名|例|位|人)(?:\s*(?:患者|受试者|病人|对照))?'
     for m in re.finditer(cn_patient_count_pattern, text):
-        cn_num = m.group(1)
-        arabic = chinese_to_int(cn_num)
-        if arabic is not None:
-            numbers.add(str(arabic))
-            numbers.add(cn_num)
-    
-    # "X组" only when it's a large explicit count (三组 or more), NOT small idiomatic uses
-    # "两组" / "一组" / "二组" are idiomatic in clinical trials (分为两组, 两组之间, etc.)
+        _record_chinese(m.group(1))
+
+    # 四家中心 / 三家医院 — classifiers that are real counts (not 一种/一项 idioms).
+    # Skip 一/一家 which is the idiomatic "a/an".
+    cn_jia_pattern = r'([二三四五六七八九十百千两〇][零一二三四五六七八九十百千两〇]*)\s*家'
+    for m in re.finditer(cn_jia_pattern, text):
+        _record_chinese(m.group(1))
+
+    # "X组" only when it's a large explicit count (三组 or more)
     cn_group_count_pattern = r'([三四五六七八九十百千〇]+[零一二三四五六七八九十百千两〇]*)\s*组'
     for m in re.finditer(cn_group_count_pattern, text):
-        cn_num = m.group(1)
-        arabic = chinese_to_int(cn_num)
-        if arabic is not None:
-            numbers.add(str(arabic))
-            numbers.add(cn_num)
-    
-    # Chinese amounts with currency
-    # Mixed format: Arabic number + 亿/万 + currency (e.g., "11.7 亿美元")
-    mixed_currency_pattern = r'([\d,.]+)\s*(亿|万)\s*(?:美元|欧元|英镑|元|人民币|港币|日元)'
+        _record_chinese(m.group(1))
+
+    # Mixed Arabic + 亿/万 + currency (11.7 亿美元). Keep the exact decimal.
+    mixed_currency_pattern = r'([\d,.]+)\s*(亿|万)\s*(?:美元|欧元|英镑|元|人民币|港币|日元)?'
     for m in re.finditer(mixed_currency_pattern, text):
         num = m.group(1).replace(',', '')
         unit = m.group(2)
-        # Add the combined form
         numbers.add(f"{num}{unit}")
-        numbers.add(num)
-        if '.' in num:
-            numbers.add(num.split('.')[0])
-    
-    # Pure Chinese format: Chinese numerals + unit + currency
+        _add_exact(num)
+
+    # Chinese decimal amounts: 一点五亿, 十二亿, 两千万
+    cn_decimal_amount = r'([零一二三四五六七八九十百千两〇]*点[零一二三四五六七八九十]+)\s*(亿|万)?'
+    for m in re.finditer(cn_decimal_amount, text):
+        parsed = chinese_to_number(m.group(1))
+        if parsed is None:
+            continue
+        numbers.add(str(parsed))
+        numbers.add(m.group(1))
+        if m.group(2):
+            numbers.add(f"{parsed}{m.group(2)}")
+
+    # Pure Chinese format: 三亿美元 / 十二亿美元
     cn_currency_pattern = r'([零一二三四五六七八九十百千万亿两〇]+)\s*(?:亿|万|百|千)?\s*(?:美元|欧元|英镑|元|人民币|港币|日元)'
     for m in re.finditer(cn_currency_pattern, text):
         cn_num = m.group(1)
-        # Skip standalone unit characters
         if cn_num in '亿万百千':
             continue
-        arabic = chinese_to_int(cn_num)
-        if arabic is not None:
-            numbers.add(str(arabic))
-        numbers.add(cn_num)
-    
-    # Large standalone Chinese numbers (市场规模两百亿, etc.)
-    cn_large_pattern = r'([零一二三四五六七八九十两〇][零一二三四五六七八九十百千万亿两〇]*[百千万亿])'
+        _record_chinese(cn_num)
+
+    # Large standalone Chinese numbers (市场规模两百亿, 十二亿, 两千万).
+    # Do not take a prefix of a longer numeral: 一百 inside 一百二十 is not 100.
+    cn_large_pattern = (
+        r'([零一二三四五六七八九十两〇][零一二三四五六七八九十百千万亿两〇]*[百千万亿])'
+        r'(?![零一二三四五六七八九十百千万亿两〇])'
+    )
     for m in re.finditer(cn_large_pattern, text):
-        cn_num = m.group(1)
-        arabic = chinese_to_int(cn_num)
-        if arabic is not None:
-            numbers.add(str(arabic))
-        numbers.add(cn_num)
+        _record_chinese(m.group(1))
     
     # Percentages
     for m in re.finditer(r'\d+(?:\.\d+)?%', text):
@@ -2930,20 +3006,32 @@ def strip_unverified_numbers_from_text(
     if not sentences:
         return text
     
+    def _number_supported(token: str) -> bool:
+        """A token is supported if it, or the quantity it denotes, is in the source.
+
+        一百二十 (120) is honest when the English source has 120 patients.
+        四家 is invented when the source has no 4. Never treat a truncated
+        scale (11 for 11.7) as a match — that token is simply absent.
+        """
+        if token in source_numbers:
+            return True
+        parsed = chinese_to_number(token)
+        if parsed is None:
+            return False
+        if parsed == int(parsed):
+            return str(int(parsed)) in source_numbers
+        return str(parsed) in source_numbers
+
     kept_sentences = []
     
     for start, end, sentence in sentences:
         sentence_numbers = extract_numbers_from_text(sentence)
-        
-        # Check if all numbers in sentence are verified
-        unverified = sentence_numbers - source_numbers
+        unverified = {n for n in sentence_numbers if not _number_supported(n)}
         
         if unverified:
-            # This sentence has unverified numbers - skip it
             logging.debug("Stripping sentence with unverified numbers %s: %s", 
                          unverified, sentence[:50])
         else:
-            # Keep this sentence
             kept_sentences.append(sentence)
     
     if not kept_sentences:
