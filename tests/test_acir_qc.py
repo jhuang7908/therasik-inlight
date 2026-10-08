@@ -256,6 +256,21 @@ class TestStructureAndChart(unittest.TestCase):
         self.assertTrue(
             any("primary_endpoint_result" in p for p in validate_acir_structure(clinical))
         )
+        nonclin = _deep_art()
+        nonclin["datacard"] = {
+            "study_type": "非临床对照实验",
+            "n": "12只小鼠",
+            "control": "溶剂对照",
+            "intervention": "体外给药",
+            "followup": "无",
+            "primary_endpoint": "通路激活",
+            "statistics": "无",
+            "safety": "无",
+        }
+        self.assertFalse(requires_primary_endpoint_result(nonclin))
+        self.assertFalse(
+            any("primary_endpoint_result" in p for p in validate_acir_structure(nonclin))
+        )
 
     def test_word_and_paragraph_limits(self):
         art = _deep_art()

@@ -278,20 +278,29 @@ def extract_methods_from_html(html: str) -> str:
 
 
 def extract_fig_captions_from_html(html: str, max_chars: int = 6000) -> str:
-    """Figure legends from HTML figcaption / caption blocks."""
+    """Full figure legends from HTML (figure body, figcaption, caption classes)."""
     if not html:
         return ""
     caps: list[str] = []
     seen: set[str] = set()
+
+    def _add(text: str) -> None:
+        text = re.sub(r"\s+", " ", html_visible_text(text or "")).strip()
+        if text and text not in seen and not re.fullmatch(r"(?i)fig(?:ure)?\.?\s*\d+", text):
+            seen.add(text)
+            caps.append(text)
+
+    for m in re.finditer(r'(?is)<figure\b[^>]*>(.*?)</figure>', html):
+        _add(m.group(1))
     for pat in (
         r'(?is)<figcaption\b[^>]*>(.*?)</figcaption>',
         r'(?is)<(?:fig\b[^>]*>\s*)?<caption\b[^>]*>(.*?)</caption>',
+        r'(?is)<(?:div|p|section)[^>]*(?:id|class)\s*=\s*["\'][^"\']*'
+        r'(?:fig(?:ure)?[-_]?(?:caption|legend|desc)|c-article-section__figure)'
+        r'[^"\']*["\'][^>]*>(.*?)</(?:div|p|section)>',
     ):
         for m in re.finditer(pat, html):
-            text = html_visible_text(m.group(1)).strip()
-            if text and text not in seen:
-                seen.add(text)
-                caps.append(text)
+            _add(m.group(1))
     return "\n\n".join(caps)[:max_chars]
 
 
@@ -618,17 +627,28 @@ def secondhand_label(item: Any) -> str:
 
 
 _CLINICAL_STUDY_RE = re.compile(
-    r"(?i)随机|对照|临床|试验|一期|二期|三期|I{1,3}\s*期|"
-    r"phase\s*[ivx1-3]|RCT|interventional|trial|患者入组"
+    r"(?i)"
+    r"(?<!非)临床(?:试验|研究)|"
+    r"随机(?:对照)?|"
+    r"(?:I{1,3}|[123一二三]|一期|二期|三期)\s*期|"
+    r"phase\s*[ivx1-3]|"
+    r"\bRCT\b|interventional|"
+    r"(?<![A-Za-z])trial(?![A-Za-z])|"
+    r"患者入组|受试者|"
+    r"NCT\d{8}|ChiCTR|"
+    r"(?:主要|次要)?终点|"
+    r"endpoint|"
+    r"(?:给药|剂量|dosing).{0,12}(?:患者|受试|participant)|"
+    r"(?:患者|受试|participant).{0,12}(?:给药|剂量|dosing)"
 )
 _DESCRIPTIVE_STUDY_RE = re.compile(
     r"(?i)图谱|atlas|描述性|descriptive|资源库|建库|表征|"
-    r"characteri[sz]|综述|review|方法学"
+    r"characteri[sz]|综述|review|方法学|非临床"
 )
 
 
 def requires_primary_endpoint_result(art: dict) -> bool:
-    """Schema: primary_endpoint_result is for clinical/interventional studies."""
+    """Schema: primary_endpoint_result is for interventional/trial studies only."""
     dc = (art or {}).get("datacard") if isinstance(art, dict) else None
     if not isinstance(dc, dict):
         return False

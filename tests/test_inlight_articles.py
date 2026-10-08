@@ -552,6 +552,38 @@ class TestXMLExtraction(unittest.TestCase):
         self.assertLess(scaled["design"][0], 200)
         self.assertLess(scaled["design"][1], 200)
 
+    def test_oa_html_methods_prefer_design_and_full_legends(self):
+        from inlight_articles import extract_design_methods_from_html
+        from inlight_qc import extract_fig_captions_from_html
+
+        html = """
+        <html><body>
+        <h2>Methods</h2>
+        <h3>Animal care and housing</h3>
+        <p>Animals were housed under IACUC-approved veterinary husbandry conditions with standard chow.</p>
+        <h3>Statistical analysis</h3>
+        <p>Mice were randomized 1:1. Primary endpoint was ORR among 36 patients.</p>
+        <h2>Results</h2>
+        <figure>
+          <figcaption>
+            <p class="c-article-section__figure-caption">Fig. 1: Overview.</p>
+            <p class="c-article-section__figure-desc">Mice were randomized 1:1. ORR was 36% in the treated arm.</p>
+          </figcaption>
+        </figure>
+        </body></html>
+        """
+        methods = extract_design_methods_from_html(html)
+        self.assertIn("randomized", methods)
+        self.assertIn("ORR", methods)
+        self.assertTrue(
+            methods.find("randomized") < methods.find("housed")
+            or "housed" not in methods,
+            methods,
+        )
+        figs = extract_fig_captions_from_html(html)
+        self.assertIn("36%", figs)
+        self.assertIn("Overview", figs)
+
 
 class TestEnrichItemMocked(unittest.TestCase):
     """Test enrich_item with mocked HTTP responses."""
@@ -1154,7 +1186,7 @@ class TestDataPointValidation(unittest.TestCase):
         raw = (
             "Sampling in the first week showed recovery in 10 patients. "
             "Mice were split into five groups. Expression rose twofold. "
-            "分为五组，信号增加两倍。"
+            "分为五组，信号增加两倍。Sixteen patients recovered."
         )
         problems = validate_depth(art, raw)
         self.assertFalse(
@@ -1201,6 +1233,16 @@ class TestDataPointValidation(unittest.TestCase):
         self.assertTrue(
             any("数字" in p for p in invented_grp),
             invented_grp,
+        )
+        art["data_points"] = [{
+            "value": "six",
+            "meaning": "子串基数",
+            "source_quote": "Sixteen patients recovered.",
+        }]
+        substring = validate_depth(art, raw, allow_word_quantities=True)
+        self.assertTrue(
+            any("数字" in p and "six" in p for p in substring),
+            substring,
         )
 
     def test_clinical_class_uses_own_sentence(self):
@@ -2544,12 +2586,13 @@ class TestMatcherToleratesFaithfulDrafts(unittest.TestCase):
         self.assertEqual(_trim_institution_lead("合作与西湖生物医学研究所"), "西湖生物医学研究所")
         self.assertEqual(_trim_institution_lead("合作及西湖生物医学研究所"), "西湖生物医学研究所")
         self.assertEqual(_trim_institution_lead("入组、西湖生物医学研究所"), "西湖生物医学研究所")
+        self.assertEqual(_trim_institution_lead("小鼠实验经斯坦福大学"), "斯坦福大学")
 
         art = {
             "title": "使用中山大学肿瘤防治中心队列",
             "one_liner": "和中山大学合作完成入组。",
             "background": "",
-            "design": "合作及西湖生物医学研究所（WBRI）完成入组。",
+            "design": "合作及西湖生物医学研究所（WBRI）完成入组。实验经斯坦福大学IACUC批准。",
             "results": ["缓解率64%。"],
             "mechanism": "",
             "significance": "",
@@ -2559,12 +2602,13 @@ class TestMatcherToleratesFaithfulDrafts(unittest.TestCase):
         raw = (
             "Patients were enrolled at Sun Yat-sen University Cancer Center (SYSUCC) "
             "and Westlake Biomedical Research Institute (WBRI). "
+            "All procedures were approved by the Stanford University IACUC. "
             "Objective response rate was 64%."
         )
         ok = validate_names(art, raw)
         self.assertFalse(any("机构名" in p for p in ok), ok)
         invented = validate_names(
-            {**art, "design": "由虚构医科大学入组。", "title": "虚构医科大学队列"},
+            {**art, "design": "由虚构医科大学（WBRI）入组。", "title": "虚构医科大学队列"},
             raw,
         )
         self.assertTrue(any("机构名" in p and "虚构医科大学" in p for p in invented), invented)
@@ -2599,6 +2643,7 @@ class TestMatcherToleratesFaithfulDrafts(unittest.TestCase):
                 "所读材料未报告总生存期。论文未报告人体数据。文中未报告随访上限。",
                 "The source does not report median OS.",
                 "安全性可耐受，未报告3级以上不良事件。",
+                "文中未提及安全性信号，提示耐受性良好。",
             ],
             "limitations": ["原文未给出随访上限。随访18个月。"],
         })
@@ -2612,6 +2657,8 @@ class TestMatcherToleratesFaithfulDrafts(unittest.TestCase):
         self.assertIn("11.2", blob)
         self.assertNotIn("中位PFS为11.", blob.replace("11.2", ""))
         self.assertIn("未报告3级以上不良事件", blob)
+        self.assertNotIn("提示耐受性良好", blob)
+        self.assertNotIn("未提及安全性信号", blob)
         self.assertTrue(_is_unreported_disclaimer("the source does not report X"))
         self.assertTrue(_is_unreported_disclaimer("原文未报告人体数据"))
         self.assertTrue(_is_unreported_disclaimer("所读材料未报告总生存期"))
@@ -3467,6 +3514,10 @@ class TestReviewYieldAndPrecision(unittest.TestCase):
                 any("Europe PMC fullTextXML" in m for m in records),
                 records,
             )
+            self.assertTrue(
+                any("OA lookup DOI" in m and "start" in m for m in records),
+                records,
+            )
 
             pmc_item = EnrichedItem(
                 url="https://doi.org/10.1038/s41586-026-00002-2",
@@ -3500,6 +3551,74 @@ class TestReviewYieldAndPrecision(unittest.TestCase):
         self.assertEqual(row.evidence_level, "preprint")
         from inlight_qc import item_has_real_fulltext as _has_ft
         self.assertFalse(_has_ft(row))
+
+    def test_unpaywall_submitted_version_and_research_square_skipped(self):
+        from inlight_articles import try_legal_oa_fulltext
+        import logging
+
+        payload = json.dumps({
+            "best_oa_location": {
+                "url": "https://www.researchsquare.com/article/rs-1/v1",
+                "version": "submittedVersion",
+            }
+        }).encode()
+        records = []
+
+        class _H(logging.Handler):
+            def emit(self, record):
+                records.append(record.getMessage())
+
+        h = _H()
+        log = logging.getLogger()
+        prev = log.level
+        log.setLevel(logging.INFO)
+        log.addHandler(h)
+        try:
+            item = EnrichedItem(
+                url="https://doi.org/10.21203/rs.3.rs-1/v1",
+                title="T", source="N", date="2026-01-01",
+                doi="10.21203/rs.3.rs-1/v1",
+            )
+            with patch("inlight_articles.epmc_core_search", return_value={}):
+                with patch("inlight_articles._http_get", return_value=payload):
+                    ok = try_legal_oa_fulltext(item)
+        finally:
+            log.removeHandler(h)
+            log.setLevel(prev)
+        self.assertFalse(ok)
+        self.assertNotEqual(item.evidence_level, "fulltext")
+        blob = "\n".join(records)
+        self.assertIn("researchsquare.com", blob)
+        self.assertIn("submittedVersion", blob)
+        self.assertTrue(any("OA lookup DOI" in m for m in records), records)
+
+    def test_brief_length_targets_both_bounds(self):
+        from inlight_articles import _brief_length_targets
+
+        short = {
+            "one_liner": "测" * 20, "background": "测" * 20, "design": "测" * 20,
+            "results": ["测" * 20], "mechanism": "", "limitations": ["测" * 10],
+            "significance": "测" * 10,
+        }
+        short_blob = "\n".join(_brief_length_targets(
+            short, ["brief 档正文 200 汉字，低于下限 450 字"],
+        ))
+        self.assertIn("450", short_blob)
+        self.assertIn("900", short_blob)
+        self.assertIn("必须扩写", short_blob)
+        self.assertNotIn("1400–1900", short_blob)
+        long = {
+            "one_liner": "测" * 80, "background": "测" * 240, "design": "测" * 220,
+            "results": ["测" * 200], "mechanism": "测" * 200,
+            "limitations": ["测" * 120], "significance": "测" * 160,
+        }
+        long_blob = "\n".join(_brief_length_targets(
+            long, ["brief 档正文 1200 汉字，超过上限 900 字"],
+        ))
+        self.assertIn("必须压缩", long_blob)
+        self.assertIn("450", long_blob)
+        self.assertIn("900", long_blob)
+        self.assertNotIn("1400–1900", long_blob)
 
     def test_headline_product_price_is_not_deal_valuation(self):
         from run_weekly import normalize_deal_money

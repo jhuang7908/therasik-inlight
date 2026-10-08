@@ -74,6 +74,13 @@ _INST_LEAD_WORDS = (
     "研究", "由", "在", "于", "来自", "和", "与", "对", "将", "把",
     "经", "以", "从", "向", "其", "该", "本", "此", "所",
 )
+_INST_LEAD_CLAUSES = (
+    "实验经", "研究经", "方案经", "工作经", "实验由", "研究由",
+    "已经", "已由",
+) + _INST_LEAD_WORDS
+_INST_SUFFIX_RE = re.compile(
+    r"(?:大学|医院|医学院|肿瘤防治中心|附属医院|研究所|研究院|实验室)$"
+)
 
 # Chinese institution → English name / bracketed acronym aliases.
 _INSTITUTION_ALIASES = {
@@ -95,9 +102,96 @@ _INSTITUTION_ALIASES = {
     "中国科学院": ("chinese academy of sciences", "cas"),
     "中国医学科学院": ("chinese academy of medical sciences", "cams"),
     "北京协和医院": ("peking union medical college hospital", "pumch"),
+    "北京协和医学院": ("peking union medical college", "pumc"),
     "四川大学": ("sichuan university",),
     "华中科技大学": ("huazhong university of science and technology", "hust"),
+    "西湖大学": ("westlake university",),
+    "西湖实验室": ("westlake laboratory", "westlake lab"),
+    "西湖生物医学研究所": (
+        "westlake biomedical research institute", "wbri",
+    ),
+    "南方医科大学": ("southern medical university",),
+    "中国科学技术大学": (
+        "university of science and technology of china", "ustc",
+    ),
+    "南京大学": ("nanjing university",),
+    "武汉大学": ("wuhan university",),
+    "中南大学": ("central south university",),
+    "山东大学": ("shandong university",),
+    "吉林大学": ("jilin university",),
+    "厦门大学": ("xiamen university",),
+    "斯坦福大学": ("stanford university", "stanford"),
+    "哈佛大学": ("harvard university", "harvard"),
+    "麻省理工学院": ("massachusetts institute of technology", "mit"),
+    "耶鲁大学": ("yale university", "yale"),
+    "牛津大学": ("university of oxford", "oxford"),
+    "剑桥大学": ("university of cambridge", "cambridge"),
+    "约翰霍普金斯大学": ("johns hopkins university", "johns hopkins"),
+    "安德森癌症中心": ("md anderson", "m.d. anderson"),
+    "梅奥诊所": ("mayo clinic",),
+    "卡罗林斯卡医学院": ("karolinska institutet", "karolinska"),
+    "巴斯德研究所": ("institut pasteur", "pasteur institute"),
+    "马克斯普朗克研究所": ("max planck",),
+    "美国国立卫生研究院": ("national institutes of health", "nih"),
+    "纪念斯隆凯特琳癌症中心": (
+        "memorial sloan kettering", "mskcc", "sloan kettering",
+    ),
 }
+
+_CN_EN_INST_TYPES = (
+    ("肿瘤防治中心", ("cancer center", "cancer hospital")),
+    ("附属医院", ("affiliated hospital", "hospital")),
+    ("医学院", ("medical college", "medical school", "school of medicine", "institutet")),
+    ("研究所", ("research institute", "institute")),
+    ("研究院", ("academy", "research academy", "institute")),
+    ("实验室", ("laboratory", "lab")),
+    ("大学", ("university", "universität", "universidad")),
+    ("医院", ("hospital", "clinic")),
+    ("学院", ("college", "institute", "institut")),
+)
+_CN_EN_INST_TOKENS = (
+    ("生物医学", ("biomedical",)),
+    ("肿瘤", ("cancer", "oncology", "tumor")),
+    ("西湖", ("westlake", "west lake")),
+    ("中山", ("sun yat-sen", "sun yat sen", "zhongshan")),
+    ("北京", ("peking", "beijing")),
+    ("清华", ("tsinghua",)),
+    ("复旦", ("fudan",)),
+    ("浙江", ("zhejiang",)),
+    ("上海交通", ("shanghai jiao tong", "shanghai jiaotong")),
+    ("斯坦福", ("stanford",)),
+    ("哈佛", ("harvard",)),
+    ("麻省理工", ("massachusetts institute of technology", "mit")),
+    ("耶鲁", ("yale",)),
+    ("牛津", ("oxford",)),
+    ("剑桥", ("cambridge",)),
+    ("约翰霍普金斯", ("johns hopkins",)),
+    ("安德森", ("anderson", "md anderson")),
+    ("梅奥", ("mayo",)),
+    ("卡罗林斯卡", ("karolinska",)),
+    ("巴斯德", ("pasteur",)),
+    ("马克斯普朗克", ("max planck",)),
+    ("纪念斯隆", ("memorial sloan", "mskcc", "sloan kettering")),
+    ("南方医科", ("southern medical",)),
+    ("中国科学技", ("university of science and technology of china", "ustc")),
+    ("南京", ("nanjing",)),
+    ("武汉", ("wuhan",)),
+    ("中南", ("central south",)),
+    ("山东", ("shandong",)),
+    ("吉林", ("jilin",)),
+    ("厦门", ("xiamen",)),
+    ("华中科技", ("huazhong", "hust")),
+    ("四川", ("sichuan",)),
+    ("协和", ("peking union", "pumc", "pumch")),
+)
+_EN_INST_PHRASE_RE = re.compile(
+    r"\b([A-Z][A-Za-z][A-Za-z .'\-]{0,80}"
+    r"(?:University|Hospital|Institute|Institut|Academy|College|"
+    r"Center|Centre|Laboratory|Clinic)\b)"
+)
+_ETHICS_CTX_RE = re.compile(
+    r"(?i)伦理|IACUC|IRB|animal care and use|ethics committee|伦理委员会"
+)
 
 _CN_DRUG_SUFFIX_RE = re.compile(r'单抗|替尼')
 # Function words that must not be glued onto a generic name.
@@ -135,10 +229,33 @@ AUTHOR_PLACEHOLDER_RE = re.compile(
 PREPRINT_SOURCE_RE = re.compile(r"biorxiv|medrxiv", re.IGNORECASE)
 
 
+_PREPRINT_HOST_MARKERS = (
+    "biorxiv.org", "medrxiv.org", "researchsquare.com", "ssrn.com",
+    "arxiv.org", "preprints.org", "osf.io", "chemrxiv.org",
+    "psyarxiv.com", "authorea.com", "techrxiv.org", "eartharxiv.org",
+    "peerj.com/preprints", "advance.sagepub",
+)
+
+
 def _is_preprint_host(url: str) -> bool:
-    """True for bioRxiv / medRxiv hosts. Preprints are never deep sources."""
+    """True for preprint hosts. Preprints are never deep sources."""
     u = (url or "").lower()
-    return "biorxiv.org" in u or "medrxiv.org" in u
+    return any(h in u for h in _PREPRINT_HOST_MARKERS)
+
+
+def _oa_host_label(url: str) -> str:
+    try:
+        return (urllib.parse.urlparse(url or "").hostname or "").lower()
+    except Exception:
+        return ""
+
+
+def _is_preprint_oa(url: str = "", version: str = "") -> bool:
+    """Reject submittedVersion and preprint hosts (Research Square, arXiv, …)."""
+    ver = (version or "").strip()
+    if ver.lower() == "submittedversion":
+        return True
+    return _is_preprint_host(url or "")
 
 CHINESE_NUMBER_MAP = {
     "零": "0", "一": "1", "二": "2", "三": "3", "四": "4",
@@ -446,42 +563,99 @@ def try_legal_oa_fulltext(item: EnrichedItem) -> bool:
 
     if item_has_real_fulltext(item):
         return True
-    url_l = (item.url or "").lower()
-    if "biorxiv.org" in url_l or "medrxiv.org" in url_l:
-        logging.info("Skip preprint as deep full-text source: %s", item.url)
+    if _is_preprint_host(item.url):
+        logging.info(
+            "OA lookup skip preprint host=%s url=%s",
+            _oa_host_label(item.url) or "preprint", item.url,
+        )
         return False
     doi = item.doi or extract_doi(item.url)
     if not doi:
-        logging.info("No DOI for OA full-text lookup: %s", item.url)
+        logging.info("OA lookup no DOI for %s", item.url)
         return False
+    tried: list[str] = []
+    logging.info("OA lookup DOI %s: start url=%s pmcid=%s", doi, item.url, item.pmcid or "")
     if not item.pmcid:
+        tried.append("EPMC core search")
         core = epmc_core_search(doi)
         if core:
             item.pmcid = core.get("pmcid") or item.pmcid
             item.pmid = core.get("pmid") or item.pmid
+            logging.info(
+                "OA lookup DOI %s: EPMC core search -> pmcid=%s",
+                doi, item.pmcid or "none",
+            )
+        else:
+            logging.info("OA lookup DOI %s: EPMC core search -> miss", doi)
     if item.pmcid:
+        tried.append("Europe PMC fullTextXML")
         xml = epmc_fulltext_xml(item.pmcid)
+        logging.info(
+            "OA lookup DOI %s: Europe PMC fullTextXML %s -> %s",
+            doi, item.pmcid, "hit" if xml else "miss",
+        )
         if xml and _apply_fulltext_xml(item, xml, f"Europe PMC fullTextXML {item.pmcid}"):
+            logging.info(
+                "OA lookup DOI %s: used Europe PMC fullTextXML host=europepmc.org version=published",
+                doi,
+            )
             return True
+        tried.append("PMC OA efetch")
         xml = pmc_oa_efetch_xml(item.pmcid)
+        logging.info(
+            "OA lookup DOI %s: PMC OA efetch %s -> %s",
+            doi, item.pmcid, "hit" if xml else "miss",
+        )
         if xml and _apply_fulltext_xml(item, xml, f"PMC OA {item.pmcid}"):
+            logging.info(
+                "OA lookup DOI %s: used PMC OA host=ncbi.nlm.nih.gov version=published",
+                doi,
+            )
             return True
-    oa_url = unpaywall_oa_url(doi)
+    tried.append("Unpaywall")
+    loc = unpaywall_oa_location(doi)
+    oa_url, version, host = loc.get("url") or "", loc.get("version") or "", loc.get("host") or ""
+    logging.info(
+        "OA lookup DOI %s: Unpaywall -> host=%s version=%s url=%s",
+        doi, host or "none", version or "none", (oa_url or "")[:80],
+    )
+    if oa_url and _is_preprint_oa(oa_url, version):
+        logging.info(
+            "OA lookup DOI %s: skip Unpaywall preprint host=%s version=%s",
+            doi, host or _oa_host_label(oa_url), version or "unknown",
+        )
+        oa_url = ""
     if not oa_url:
+        tried.append("OpenAlex")
         oa_work = openalex_work(doi)
         oa_url = (oa_work or {}).get("oa_url") or ""
-    if oa_url and _is_preprint_host(oa_url):
-        logging.info("Skip preprint OA landing as deep source: %s", oa_url)
-        oa_url = ""
+        host = _oa_host_label(oa_url)
+        logging.info(
+            "OA lookup DOI %s: OpenAlex -> host=%s url=%s",
+            doi, host or "none", (oa_url or "")[:80],
+        )
+        if oa_url and _is_preprint_oa(oa_url):
+            logging.info(
+                "OA lookup DOI %s: skip OpenAlex preprint host=%s",
+                doi, host or _oa_host_label(oa_url),
+            )
+            oa_url = ""
     if oa_url:
         ft, methods, figs = fetch_oa_sections(oa_url)
+        src = f"Unpaywall/OA {oa_url[:60]}"
         if ft and record_fulltext(
-            item, ft, methods=methods, figs=figs,
-            source_label=f"Unpaywall/OA {oa_url[:60]}",
+            item, ft, methods=methods, figs=figs, source_label=src,
         ):
-            logging.info("OA full text supplied by Unpaywall/OA for %s", item.url)
+            logging.info(
+                "OA lookup DOI %s: used %s host=%s version=%s",
+                doi, src, host or _oa_host_label(oa_url), version or "unknown",
+            )
             return True
-    logging.info("No legal OA full text for DOI %s (%s)", doi, item.url)
+        logging.info("OA lookup DOI %s: OA HTML fetch -> no real Results", doi)
+    logging.info(
+        "OA lookup DOI %s: exhausted (tried %s) url=%s",
+        doi, ", ".join(tried) or "none", item.url,
+    )
     return False
 
 
@@ -669,6 +843,93 @@ def extract_design_methods_from_xml(xml_text: str, max_chars: int = 4000) -> str
         picked.append(take)
         n += len(take)
     return "\n\n".join(picked)[:max_chars]
+
+
+def _pick_scored_methods(blocks: list[tuple[int, str]], max_chars: int) -> str:
+    if not blocks:
+        return ""
+    blocks = sorted(blocks, key=lambda x: x[0], reverse=True)
+    picked: list[str] = []
+    n = 0
+    for score, body in blocks:
+        if score < 0 and picked:
+            continue
+        if n >= max_chars:
+            break
+        take = body[: max_chars - n]
+        picked.append(take)
+        n += len(take)
+    return "\n\n".join(picked)[:max_chars]
+
+
+def extract_design_methods_from_html(html: str, max_chars: int = 4000) -> str:
+    """Prefer design/statistics Methods subsections from OA HTML pages."""
+    from inlight_qc import (
+        html_visible_text, strip_page_chrome, extract_methods_from_html,
+        _METHODS_TITLE, _AFTER_METHODS,
+    )
+
+    raw = html or ""
+    block = ""
+    m = re.search(
+        rf'(?is)<sec[^>]*sec-type\s*=\s*["\'](?:methods|materials)["\'][^>]*>(.*?)(?:</sec>|<sec\b)',
+        raw,
+    )
+    if m:
+        block = m.group(1)
+    if not block:
+        m = re.search(
+            rf'(?is)<(?:h[1-4]|header)[^>]*>\s*(?:<[^>]+>\s*)*{_METHODS_TITLE}'
+            rf'\s*(?:</[^>]+>\s*)*</(?:h[1-4]|header)>(.*?)'
+            rf'(?=<(?:h[1-4]|header)[^>]*>\s*(?:<[^>]+>\s*)*{_AFTER_METHODS}|\Z)',
+            raw,
+        )
+        if m:
+            block = m.group(1)
+    if not block:
+        m = re.search(
+            rf'(?is)<(?:div|section)[^>]*(?:id|class)\s*=\s*["\'][^"\']*\bmethods?\b'
+            rf'[^"\']*["\'][^>]*>(.*?)'
+            rf'(?=<(?:div|section|h[1-4])[^>]*(?:id|class|)\s*(?:=)?[^>]{{0,80}}{_AFTER_METHODS}|\Z)',
+            raw,
+        )
+        if m:
+            block = m.group(1)
+
+    blocks: list[tuple[int, str]] = []
+    if block:
+        parts = re.split(r'(?is)(<(?:h[2-6])\b[^>]*>.*?</(?:h[2-6])>)', block)
+        title = ""
+        buf: list[str] = []
+
+        def _flush() -> None:
+            body = html_visible_text(strip_page_chrome("".join(buf)))
+            if body:
+                blocks.append((_methods_block_score(title, body), body))
+
+        for part in parts:
+            if re.match(r'(?is)<(?:h[2-6])\b', part or ""):
+                if buf or title:
+                    _flush()
+                title = html_visible_text(part)
+                buf = []
+            else:
+                buf.append(part or "")
+        if buf or title:
+            _flush()
+    if not blocks:
+        text = extract_methods_from_html(raw)
+        if not text:
+            return ""
+        chunks = re.split(
+            r'(?i)(?=\b(?:animal care|animal welfare|statistical analysis|'
+            r'study design|patients?|participants?|randomi[sz]|ethics)\b)',
+            text,
+        )
+        for ch in chunks:
+            if ch.strip():
+                blocks.append((_methods_block_score(ch[:80], ch), ch.strip()))
+    return _pick_scored_methods(blocks, max_chars)
 
 
 def pubmed_efetch_abstract(pmid: str) -> str:
@@ -917,10 +1178,11 @@ def openalex_work(doi: str) -> dict:
     return {"abstract": abstract, "oa_url": oa}
 
 
-def unpaywall_oa_url(doi: str) -> str:
-    """Best public OA URL from Unpaywall. No paywall bypass."""
+def unpaywall_oa_location(doi: str) -> dict:
+    """Best public OA location from Unpaywall: url, version, host. No paywall bypass."""
+    empty = {"url": "", "version": "", "host": ""}
     if not doi:
-        return ""
+        return empty
     url = (
         "https://api.unpaywall.org/v2/"
         + urllib.parse.quote(doi)
@@ -928,19 +1190,36 @@ def unpaywall_oa_url(doi: str) -> str:
     )
     data = _http_get(url)
     if not data:
-        return ""
+        return empty
     try:
         msg = json.loads(data.decode("utf-8"))
         loc = msg.get("best_oa_location") or {}
-        return loc.get("url_for_pdf") or loc.get("url") or ""
+        oa_url = loc.get("url_for_pdf") or loc.get("url") or ""
+        return {
+            "url": oa_url,
+            "version": loc.get("version") or "",
+            "host": _oa_host_label(oa_url) or (loc.get("host_type") or ""),
+        }
     except (json.JSONDecodeError, TypeError, AttributeError):
+        return empty
+
+
+def unpaywall_oa_url(doi: str) -> str:
+    """Best public OA URL from Unpaywall. Preprint versions/hosts are skipped."""
+    loc = unpaywall_oa_location(doi)
+    if _is_preprint_oa(loc.get("url") or "", loc.get("version") or ""):
+        logging.info(
+            "OA skip Unpaywall preprint DOI %s host=%s version=%s",
+            doi, loc.get("host") or "", loc.get("version") or "",
+        )
         return ""
+    return loc.get("url") or ""
 
 
 def _oa_text_sections(raw: str) -> tuple[str, str, str]:
     """Results, methods, and figure legends from OA HTML or JATS XML."""
     from inlight_qc import (
-        extract_results_from_html, extract_methods_from_html,
+        extract_results_from_html,
         extract_fig_captions_from_html, extract_results_from_xml,
         FULLTEXT_WINDOW,
     )
@@ -955,7 +1234,7 @@ def _oa_text_sections(raw: str) -> tuple[str, str, str]:
         if results or methods or figs:
             return (results or "")[:FULLTEXT_WINDOW], methods, figs
     results = extract_results_from_html(raw)
-    methods = extract_methods_from_html(raw)
+    methods = extract_design_methods_from_html(raw)
     figs = extract_fig_captions_from_html(raw)
     return (results or "")[:FULLTEXT_WINDOW], methods, figs
 
@@ -1345,6 +1624,45 @@ def _quantity_digits(text: str) -> set[str]:
     return set(re.findall(r'\d+(?:\.\d+)?', _quantity_words_to_arabic(text or "")))
 
 
+_CJK_NUMERAL_CHARS = set("零一二三四五六七八九十两廿卅百千万亿")
+
+
+def _token_boundary_in_text(needle: str, haystack: str) -> bool:
+    """True when needle sits on a word/number boundary (not inside a longer word)."""
+    needle = normalize_whitespace(needle or "")
+    haystack = normalize_whitespace(haystack or "")
+    if not needle or not haystack:
+        return False
+    pat = re.compile(
+        r"(?i)(?<![A-Za-z0-9])" + re.escape(needle) + r"(?![A-Za-z0-9])"
+    )
+    for m in pat.finditer(haystack):
+        before = haystack[m.start() - 1] if m.start() else ""
+        after = haystack[m.end()] if m.end() < len(haystack) else ""
+        if before in _CJK_NUMERAL_CHARS or after in _CJK_NUMERAL_CHARS:
+            continue
+        return True
+    return False
+
+
+def _word_quantity_boundary_in_quote(value: str, quote: str) -> bool:
+    """Value wording or number must match on a boundary inside the quote."""
+    value_norm = normalize_whitespace(value or "")
+    quote_n = normalize_whitespace(quote or "")
+    if not value_norm or not quote_n:
+        return False
+    if _token_boundary_in_text(value_norm, quote_n):
+        return True
+    quote_ar = normalize_whitespace(_quantity_words_to_arabic(quote_n))
+    val_ar = normalize_whitespace(_quantity_words_to_arabic(value_norm))
+    if val_ar and _token_boundary_in_text(val_ar, quote_ar):
+        return True
+    for digit in _quantity_digits(value_norm):
+        if number_in_text_as_word_boundary(digit, quote_ar):
+            return True
+    return False
+
+
 def _quote_verbatim_in_source(quote: str, source: str) -> bool:
     """Normalized quote must appear verbatim in the source (no fuzzy fallback)."""
     quote_n = normalize_whitespace(quote or "")
@@ -1359,18 +1677,11 @@ def _quote_verbatim_in_source(quote: str, source: str) -> bool:
 
 
 def _word_quantity_in_passage(value: str, quote: str, source: str) -> bool:
-    """Accept only when quote is verbatim in the source and the value is inside it."""
+    """Quote verbatim in source; value on a word/number boundary inside that quote."""
     quote_n = normalize_whitespace(quote or "")
     if not quote_n or not _quote_verbatim_in_source(quote_n, source):
         return False
-    value_norm = normalize_whitespace(value)
-    if value_norm and (value_norm in quote_n or value_norm.lower() in quote_n.lower()):
-        return True
-    val_qty = _canonical_quantity(value)
-    if val_qty and val_qty in _canonical_quantity(quote_n):
-        return True
-    val_nums = _quantity_digits(value)
-    return bool(val_nums) and val_nums <= _quantity_digits(quote_n)
+    return _word_quantity_boundary_in_quote(value, quote_n)
 
 
 def english_number_to_arabic(text: str) -> str:
@@ -2153,6 +2464,7 @@ LENGTH_BODY_FIELDS = (
     "mechanism", "significance", "limitations",
 )
 MISSING_VALUE_MARK = "未给出"
+BRIEF_HAN_MIN = 450
 BRIEF_HAN_MAX = 900
 SEE_BODY_RE = re.compile(r"详见正文")
 
@@ -3863,6 +4175,8 @@ def validate_depth(art: dict, raw_material: str, *, allow_word_quantities: bool 
             continue
 
         if word_qty_ok:
+            if not _word_quantity_boundary_in_quote(value, quote):
+                problems.append(f"data_point value 必须包含数字：'{value}'")
             continue
         
         # Check value appears in quote. Unit spacing is ignored so
@@ -4008,8 +4322,8 @@ def validate_depth(art: dict, raw_material: str, *, allow_word_quantities: bool 
         if total_chars > 1900:
             problems.append(f"deep 档正文 {total_chars} 汉字，超过上限 1900 字")
     else:
-        if total_chars < 450:
-            problems.append(f"brief 档正文 {total_chars} 汉字，低于下限 450 字")
+        if total_chars < BRIEF_HAN_MIN:
+            problems.append(f"brief 档正文 {total_chars} 汉字，低于下限 {BRIEF_HAN_MIN} 字")
         elif total_chars > BRIEF_HAN_MAX:
             problems.append(f"brief 档正文 {total_chars} 汉字，超过上限 {BRIEF_HAN_MAX} 字")
     
@@ -4146,15 +4460,25 @@ def _source_has_name_form(name: str, source_lower: str) -> bool:
 
 
 def _trim_institution_lead(inst: str) -> str:
-    """Strip leading verbs/prepositions; keep the token after the last 和/与/及/、."""
+    """Strip lead clauses anywhere (实验经…); keep the token after the last 和/与/及/、."""
     out = inst or ""
+    leads = tuple(sorted(_INST_LEAD_CLAUSES, key=len, reverse=True))
     changed = True
     while changed and out:
         changed = False
-        for w in _INST_LEAD_WORDS:
+        for w in leads:
             if out.startswith(w) and len(out) - len(w) >= 4:
                 out = out[len(w):]
                 changed = True
+                break
+    for w in leads:
+        idx = out.find(w)
+        if idx < 0:
+            continue
+        rest = out[idx + len(w):]
+        if len(rest) >= 4 and _INST_SUFFIX_RE.search(rest):
+            out = rest
+            break
     bits = re.split(r"[和与及、]", out)
     if len(bits) > 1 and len(bits[-1]) >= 4:
         out = bits[-1]
@@ -4177,27 +4501,50 @@ def _draft_inst_acronym(inst: str, all_text: str) -> str:
     return m.group(1) if m else ""
 
 
-def _source_has_english_bracketed_acronym(acronym: str, raw_material: str) -> bool:
-    """True when the source has 'English Name (ACR)' with this acronym."""
-    if not acronym:
+def _english_translates_chinese_inst(inst: str, english: str) -> bool:
+    """True when English is an alias or a type-matched translation of inst."""
+    eng = (english or "").lower()
+    if not inst or not eng:
         return False
-    return bool(re.search(
-        r"[A-Za-z][A-Za-z .'\-]{2,80}[\(（]\s*" + re.escape(acronym) + r"\s*[\)）]",
+    for alias in _institution_aliases(inst):
+        a = (alias or "").lower()
+        if a and (a in eng or eng in a):
+            return True
+    rest = inst
+    type_ok = False
+    for cn, ens in _CN_EN_INST_TYPES:
+        if inst.endswith(cn) and any(e in eng for e in ens):
+            type_ok = True
+            rest = inst[: -len(cn)]
+            break
+    if not type_ok:
+        return False
+    leftover = rest
+    for cn, ens in _CN_EN_INST_TOKENS:
+        if cn in leftover and any(e in eng for e in ens):
+            leftover = leftover.replace(cn, "")
+    leftover = re.sub(r"[的和与及、\s]", "", leftover)
+    return not re.search(r"[\u4e00-\u9fff]", leftover)
+
+
+def _source_english_tied_to_acronym(acronym: str, raw_material: str) -> list[str]:
+    """English names immediately before (ACR) in the source."""
+    if not acronym:
+        return []
+    found = []
+    for m in re.finditer(
+        r"([A-Za-z][A-Za-z .'\-]{2,80})[\(（]\s*" + re.escape(acronym) + r"\s*[\)）]",
         raw_material or "",
-    ))
+    ):
+        found.append(m.group(1).strip(" ,;:-"))
+    return found
 
 
 def _institution_in_source(
     inst: str, raw_material: str, source_lower: str, all_text: str = "",
 ) -> bool:
-    """Accept Chinese name, English name, bracketed acronym, or alias map hit."""
+    """Accept Chinese name, tied English translation/alias, or tied 中文名（ACR）."""
     if inst in raw_material or _source_has_name_form(inst, source_lower):
-        return True
-    acr = _draft_inst_acronym(inst, all_text)
-    if acr and (
-        re.search(r'[\(（]\s*' + re.escape(acr) + r'\s*[\)）]', raw_material, re.I)
-        or _source_has_english_bracketed_acronym(acr, raw_material)
-    ):
         return True
     for alias in _institution_aliases(inst):
         a = alias.lower()
@@ -4205,6 +4552,14 @@ def _institution_in_source(
             return True
         if re.search(r'[\(（]\s*' + re.escape(alias) + r'\s*[\)）]', raw_material, re.I):
             return True
+    for m in _EN_INST_PHRASE_RE.finditer(raw_material or ""):
+        if _english_translates_chinese_inst(inst, m.group(1)):
+            return True
+    acr = _draft_inst_acronym(inst, all_text)
+    if acr:
+        for eng in _source_english_tied_to_acronym(acr, raw_material):
+            if _english_translates_chinese_inst(inst, eng):
+                return True
     return False
 
 
@@ -4280,7 +4635,7 @@ def validate_names(art: dict, raw_material: str) -> list[str]:
             problems.append(f"基因 '{sym}' 在原始材料中未找到")
 
     # 5. Chinese institutions. Do not use bare 中心 (单中心 / 中心数 / 医疗中心).
-    inst_pat = r'[\u4e00-\u9fff]{2,8}(?:大学|医院|医学院|肿瘤防治中心|附属医院|研究所|研究院)'
+    inst_pat = r'[\u4e00-\u9fff]{2,12}(?:大学|医院|医学院|肿瘤防治中心|附属医院|研究所|研究院|实验室)'
     seen_inst: set[str] = set()
     for match in re.finditer(inst_pat, all_text):
         inst = _trim_institution_lead(match.group(0))
@@ -4289,6 +4644,21 @@ def validate_names(art: dict, raw_material: str) -> list[str]:
         seen_inst.add(inst)
         if _institution_in_source(inst, raw_material, norm, all_text):
             continue
+        window = all_text[max(0, match.start() - 12): match.end() + 16]
+        if _ETHICS_CTX_RE.search(window) and _institution_in_source(
+            inst, raw_material, norm, all_text,
+        ):
+            continue
+        if _ETHICS_CTX_RE.search(window):
+            ethics_hit = False
+            for m in _EN_INST_PHRASE_RE.finditer(raw_material or ""):
+                if _ETHICS_CTX_RE.search(raw_material) and _english_translates_chinese_inst(
+                    inst, m.group(1),
+                ):
+                    ethics_hit = True
+                    break
+            if ethics_hit:
+                continue
         problems.append(f"机构名 '{inst}' 在原始材料中未找到")
 
     # 6. Terminology: incorrect Chinese for a source English term
@@ -5285,12 +5655,21 @@ def _walk_omit_missing(obj: Any) -> Any:
 _UNREPORTED_CLAIM_RE = re.compile(
     r'(?:'
     r'(?:原文|所读材料|论文|文中|来源|摘要)(?:中)?'
-    r'(?:未报告|未给出|未提及|未列出|未提供|没有报告)|'
+    r'(?:未报告|未给出|未提及|未列出|未提供|没有报告|没有提及)|'
     r'(?:the\s+)?source\s+(?:does|did)\s+not\s+(?:report|mention|provide|list|give)|'
     r'(?:the\s+)?(?:paper|article|text|materials?)\s+(?:does|did)\s+not\s+'
-    r'(?:report|mention|provide|list|give)'
+    r'(?:report|mention|provide|list|give)|'
+    r'(?:no|not\s+a)\s+(?:safety\s+)?(?:signal|finding)s?\s+(?:was\s+)?(?:mentioned|reported)'
     r')',
     re.IGNORECASE,
+)
+_INFERENCE_AFTER_UNREPORTED_RE = re.compile(
+    r'(?i)^[\s，、；;]*'
+    r'(?:因此|所以|由此可见|据此|可见|提示|表明|说明|认为|'
+    r'thus|therefore|hence|suggesting|indicating|implying|'
+    r'so\b|consistent with)'
+    r'.{0,80}(?:耐受|安全|tolerab|well[-\s]?tolerat|'
+    r'no (?:safety )?(?:concern|issue))'
 )
 
 
@@ -5299,6 +5678,13 @@ def _is_unreported_disclaimer(text: str) -> bool:
     if not _UNREPORTED_CLAIM_RE.search(text or ""):
         return False
     return not re.search(r'\d', text or "")
+
+
+def _is_dependent_inference(text: str) -> bool:
+    """Tolerability/safety conclusion that only follows an unreported disclaimer."""
+    if re.search(r'\d', text or ""):
+        return False
+    return bool(_INFERENCE_AFTER_UNREPORTED_RE.search((text or "").strip()))
 
 
 def _split_clauses_no_decimal(text: str) -> list[str]:
@@ -5339,10 +5725,19 @@ def _split_clauses_no_decimal(text: str) -> list[str]:
 
 
 def _strip_unreported_text(text: str) -> str:
-    """Remove only disclaimer clauses; never a clause that contains a number."""
+    """Remove disclaimer clauses and inference that depends on them; never a numbered finding."""
     if not text:
         return text
-    kept = [c for c in _split_clauses_no_decimal(text) if not _is_unreported_disclaimer(c)]
+    kept: list[str] = []
+    skip_inference = False
+    for clause in _split_clauses_no_decimal(text):
+        if _is_unreported_disclaimer(clause):
+            skip_inference = True
+            continue
+        if skip_inference and _is_dependent_inference(clause):
+            continue
+        skip_inference = False
+        kept.append(clause)
     cleaned = "".join(kept)
     cleaned = re.sub(r"[ \t]{2,}", " ", cleaned)
     cleaned = re.sub(r"^[，、；;。.!?]+", "", cleaned)
@@ -5696,9 +6091,29 @@ def _apply_section_band_slack(art: dict, struct_probs: list[str]) -> tuple[list[
     return kept, overages
 
 
-def _band_distance(art: dict, section_ranges: dict | None = None) -> int:
+def _article_body_han(art: dict | None) -> int:
+    from inlight_qc import han_len
+    return han_len([
+        (art or {}).get("one_liner"), (art or {}).get("background"),
+        (art or {}).get("design"), (art or {}).get("results"),
+        (art or {}).get("mechanism"), (art or {}).get("limitations"),
+        (art or {}).get("significance"),
+    ])
+
+
+def _band_distance(
+    art: dict, section_ranges: dict | None = None, *, brief: bool = False,
+) -> int:
     """How far a draft sits from section bands (lower is closer)."""
     from inlight_qc import SECTION_RANGES, han_len
+
+    if brief:
+        body = _article_body_han(art)
+        if body < BRIEF_HAN_MIN:
+            return BRIEF_HAN_MIN - body
+        if body > BRIEF_HAN_MAX:
+            return body - BRIEF_HAN_MAX
+        return 0
 
     ranges = section_ranges or SECTION_RANGES
     dist = 0
@@ -5710,12 +6125,7 @@ def _band_distance(art: dict, section_ranges: dict | None = None) -> int:
             dist += lo - n
         elif n > hi:
             dist += n - hi
-    body = han_len([
-        (art or {}).get("one_liner"), (art or {}).get("background"),
-        (art or {}).get("design"), (art or {}).get("results"),
-        (art or {}).get("mechanism"), (art or {}).get("limitations"),
-        (art or {}).get("significance"),
-    ])
+    body = _article_body_han(art)
     if body < 1400:
         dist += 1400 - body
     elif body > 1900:
@@ -5725,8 +6135,33 @@ def _band_distance(art: dict, section_ranges: dict | None = None) -> int:
 
 def _length_keep_score(
     art: dict, problems: list[str], section_ranges: dict | None = None,
+    *, brief: bool = False,
 ) -> tuple[int, int]:
-    return (len(_hard_problems(problems)), _band_distance(art, section_ranges))
+    return (len(_hard_problems(problems)), _band_distance(art, section_ranges, brief=brief))
+
+
+def _brief_length_targets(art: dict, problems: list[str]) -> list[str]:
+    """Both bounds of brief (450–900 字). Do not steer toward deep length."""
+    body = _article_body_han(art)
+    lines = [
+        "仅因字数或结构未达标。按下列实测重写为 brief，不得写成 deep：",
+        "只改长短；已核对数字、主张、标识符必须逐字保留，不得改数或换名。",
+        *problems,
+        f"正文合计现 {body} 字，硬性目标 {BRIEF_HAN_MIN}–{BRIEF_HAN_MAX}。",
+    ]
+    if body < BRIEF_HAN_MIN:
+        lines.append(
+            f"【必须扩写】正文少 {BRIEF_HAN_MIN - body} 字 → 目标 "
+            f"{BRIEF_HAN_MIN}–{BRIEF_HAN_MAX}。只补材料已写明的事实。"
+        )
+    elif body > BRIEF_HAN_MAX:
+        lines.append(
+            f"【必须压缩】正文多 {body - BRIEF_HAN_MAX} 字 → 目标 "
+            f"{BRIEF_HAN_MIN}–{BRIEF_HAN_MAX}。删次要句，保留已核实数字。"
+        )
+    else:
+        lines.append(f"正文已在 {BRIEF_HAN_MIN}–{BRIEF_HAN_MAX}，保持。")
+    return lines
 
 
 def _run_deep_length_redrafts(
@@ -5791,7 +6226,7 @@ def _run_brief_length_redraft(
         return art, problems, None
     if not (_hard_problems(problems) and _length_structure_only(problems)):
         return art, problems, None
-    targets = _section_length_targets(art, problems, section_ranges)
+    targets = _brief_length_targets(art, problems)
     logging.info("Brief length-only redraft for %s: %s", url, problems)
     retry = draft_single_article(enriched_item, "brief", config, problems=targets)
     if retry is None:
@@ -5799,8 +6234,8 @@ def _run_brief_length_redraft(
             "brief length redraft failed: " + "; ".join(_hard_problems(problems)[:4])
         )
     cand, cand_probs = prepare(retry)
-    if cand and _length_keep_score(cand, cand_probs, section_ranges) < _length_keep_score(
-        art, problems, section_ranges
+    if cand and _length_keep_score(cand, cand_probs, brief=True) < _length_keep_score(
+        art, problems, brief=True
     ):
         art, problems = cand, cand_probs
     if _hard_problems(problems):
