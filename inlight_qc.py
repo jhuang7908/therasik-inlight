@@ -617,6 +617,30 @@ def secondhand_label(item: Any) -> str:
     return f"二手：仅读摘要，未读原文"
 
 
+_CLINICAL_STUDY_RE = re.compile(
+    r"(?i)随机|对照|临床|试验|一期|二期|三期|I{1,3}\s*期|"
+    r"phase\s*[ivx1-3]|RCT|interventional|trial|患者入组"
+)
+_DESCRIPTIVE_STUDY_RE = re.compile(
+    r"(?i)图谱|atlas|描述性|descriptive|资源库|建库|表征|"
+    r"characteri[sz]|综述|review|方法学"
+)
+
+
+def requires_primary_endpoint_result(art: dict) -> bool:
+    """Schema: primary_endpoint_result is for clinical/interventional studies."""
+    dc = (art or {}).get("datacard") if isinstance(art, dict) else None
+    if not isinstance(dc, dict):
+        return False
+    blob = " ".join(
+        str(dc.get(k) or "")
+        for k in ("study_type", "intervention", "n", "control")
+    )
+    if _DESCRIPTIVE_STUDY_RE.search(blob) and not _CLINICAL_STUDY_RE.search(blob):
+        return False
+    return bool(_CLINICAL_STUDY_RE.search(blob))
+
+
 def section_ranges_for_material(item: Any = None, sections_read: dict | None = None) -> dict:
     """Scale design/results bands to the methods/fig material actually read."""
     ranges = {k: tuple(v) for k, v in SECTION_RANGES.items()}
@@ -710,9 +734,10 @@ def validate_acir_structure(art: dict, section_ranges: dict | None = None) -> li
     if not isinstance(dc, dict):
         problems.append("数据卡缺失")
     else:
-        for key in ("primary_endpoint", "primary_endpoint_result"):
-            if not str(dc.get(key) or "").strip():
-                problems.append(f"数据卡缺 {key}")
+        if not str(dc.get("primary_endpoint") or "").strip():
+            problems.append("数据卡缺 primary_endpoint")
+        if requires_primary_endpoint_result(art) and not str(dc.get("primary_endpoint_result") or "").strip():
+            problems.append("数据卡缺 primary_endpoint_result")
         for key, val in dc.items():
             if re.search(r"原文未给出|原文未报告", str(val or "")):
                 problems.append(f"数据卡 {key} 不要写占位套话，缺项请省略")

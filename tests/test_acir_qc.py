@@ -24,6 +24,7 @@ from inlight_qc import (
     mechanism_image_prompt,
     record_fulltext,
     render_data_chart_svg,
+    requires_primary_endpoint_result,
     secondhand_label,
     validate_acir_structure,
 )
@@ -229,6 +230,33 @@ class TestFulltextAdmission(unittest.TestCase):
 
 
 class TestStructureAndChart(unittest.TestCase):
+    def test_primary_endpoint_result_only_for_clinical(self):
+        atlas = _deep_art()
+        atlas["datacard"] = {
+            "study_type": "描述性图谱",
+            "n": "12例组织",
+            "control": "无",
+            "intervention": "单细胞表征",
+            "followup": "无",
+            "primary_endpoint": "细胞分群完整性",
+            "statistics": "无",
+            "safety": "无",
+        }
+        self.assertFalse(requires_primary_endpoint_result(atlas))
+        atlas_probs = validate_acir_structure(atlas)
+        self.assertFalse(
+            any("primary_endpoint_result" in p for p in atlas_probs),
+            atlas_probs,
+        )
+        clinical = _deep_art()
+        dc = dict(clinical["datacard"])
+        dc.pop("primary_endpoint_result", None)
+        clinical["datacard"] = dc
+        self.assertTrue(requires_primary_endpoint_result(clinical))
+        self.assertTrue(
+            any("primary_endpoint_result" in p for p in validate_acir_structure(clinical))
+        )
+
     def test_word_and_paragraph_limits(self):
         art = _deep_art()
         self.assertEqual(validate_acir_structure(art), [])
@@ -703,11 +731,17 @@ class TestTriageBackfillAndPublishedQc(unittest.TestCase):
         try:
             with patch("anthropic.Anthropic") as mock_cls:
                 mock_client = mock_cls.return_value
-                mock_client.messages.create.return_value = make_triage_response([
-                    {"url": items[0].url, "tier": "deep", "field": "f1"},
-                    {"url": items[1].url, "tier": "deep", "field": "f4"},
-                    {"url": items[2].url, "tier": "deep", "field": "f6"},
-                ])
+                mock_client.messages.create.side_effect = [
+                    make_triage_response([
+                        {"url": items[0].url, "tier": "deep", "field": "f1"},
+                        {"url": items[1].url, "tier": "deep", "field": "f4"},
+                        {"url": items[2].url, "tier": "deep", "field": "f6"},
+                    ]),
+                    make_triage_response([
+                        {"url": items[3].url, "tier": "deep", "field": "f8"},
+                        {"url": items[5].url, "tier": "deep", "field": "none"},
+                    ]),
+                ]
                 out = triage_items(items, {"min_deep": 3, "max_deep": 5, "acir_qc": True})
         finally:
             log.removeHandler(h)

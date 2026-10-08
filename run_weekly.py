@@ -80,6 +80,32 @@ FIELDS = {
     "c9": "小核酸与 LNP",
 }
 DEAL_KINDS = {"acq", "lic", "newco", "clin", "inv", "policy"}
+_PRODUCT_PRICE_HEADLINE_RE = re.compile(
+    r"(?i)"
+    r"\$\s*\d+(?:\.\d+)?\s*(?:billion|bn|b)\s+(?:dollar\s+)?(?:drug|therapy|asset|product|candidate)"
+    r"|\$\d+(?:\.\d+)?B\s+drug"
+    r"|\d+(?:\.\d+)?\s*(?:亿美元|亿)\s*(?:的)?(?:药物|疗法|产品|资产)"
+    r"|(?:drug|therapy|product)\s+(?:worth|valued|priced)\s+"
+)
+_DEAL_VALUE_LANG_RE = re.compile(
+    r"(?i)收购|并购|授权|许可费|预付款|首付款|融资额|投资额|交易额|成交价|"
+    r"acqui[rs]|licen[cs]e|upfront|milestone|financ|raised|"
+    r"series\s+[a-e]|takeover|buyout|deal\s+value|transaction\s+value"
+)
+
+
+def normalize_deal_money(money: str, title: str = "", why: str = "", source_title: str = "") -> str:
+    """Keep deal consideration as the source stated it.
+
+    A '$2.2B drug' / product-price headline is not a deal valuation.
+    """
+    money = (money or "未披露").strip() or "未披露"
+    money = re.sub(r"^\$(\d+(?:\.\d+)?)\s*亿", r"\1 亿美元", money)
+    money = re.sub(r"(\d)亿", r"\1 亿", money)
+    blob = " ".join(x for x in (title, why, source_title) if x)
+    if _PRODUCT_PRICE_HEADLINE_RE.search(blob) and not _DEAL_VALUE_LANG_RE.search(blob):
+        return "未披露"
+    return money
 try:
     from inlight_qc import (
         IMAGE_PREFIX, IMAGE_SUFFIX, IMAGE_REGEN_LIMIT, IMAGE_MODELS,
@@ -691,6 +717,7 @@ def claude_draft(items: list[dict], config: dict) -> dict:
 kinds 只能是这些词的子集：acq 收购、lic 授权、newco NewCo、clin 临床进展、inv 投资融资、policy 监管政策。
 - policy 仅限监管机构的正式政策或审批决定。裁员、战略调整、公司重组不是 policy。
 - 金额格式统一为"X 亿美元"或"X 亿元人民币"或"未披露"。不要写"$26亿"这种混合格式。
+- 金额必须是交易本身的对价（收购价、授权预付款、融资金额）。按来源对交易金额的原述报告。来源标题里的"$2.2B drug"、"价值22亿美元的药物"是产品标价或峰值销售，不是交易估值，应写"未披露"。
 
 ## authors 字段
 
@@ -826,12 +853,12 @@ steps 必须是 3-5 个简短步骤（每个≤25字），描述论文的核心�
             kinds = ["clin"]
         src = by_url[url]
         
-        # Normalize money format
-        money = (raw.get("money") or "未披露").strip()
-        # Convert $26亿 to 26 亿美元
-        money = re.sub(r'^\$(\d+(?:\.\d+)?)\s*亿', r'\1 亿美元', money)
-        # Ensure space before 亿
-        money = re.sub(r'(\d)亿', r'\1 亿', money)
+        money = normalize_deal_money(
+            raw.get("money") or "未披露",
+            title=raw.get("title") or src.get("title") or "",
+            why=raw.get("why") or "",
+            source_title=src.get("title") or "",
+        )
         
         deals.append({
             "url": url,

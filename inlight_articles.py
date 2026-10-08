@@ -134,6 +134,12 @@ AUTHOR_PLACEHOLDER_RE = re.compile(
 )
 PREPRINT_SOURCE_RE = re.compile(r"biorxiv|medrxiv", re.IGNORECASE)
 
+
+def _is_preprint_host(url: str) -> bool:
+    """True for bioRxiv / medRxiv hosts. Preprints are never deep sources."""
+    u = (url or "").lower()
+    return "biorxiv.org" in u or "medrxiv.org" in u
+
 CHINESE_NUMBER_MAP = {
     "零": "0", "一": "1", "二": "2", "三": "3", "四": "4",
     "五": "5", "六": "6", "七": "7", "八": "8", "九": "9",
@@ -389,11 +395,94 @@ def epmc_fulltext_xml(pmcid: str) -> str | None:
     """Fetch OA full text XML from Europe PMC."""
     if not pmcid:
         return None
+    pmcid = pmcid if str(pmcid).upper().startswith("PMC") else f"PMC{pmcid}"
     url = f"https://www.ebi.ac.uk/europepmc/webservices/rest/{pmcid}/fullTextXML"
     data = _http_get(url, timeout=60)
     if data:
         return data.decode("utf-8", errors="replace")
     return None
+
+
+def pmc_oa_efetch_xml(pmcid: str) -> str | None:
+    """Legal PMC OA XML via NCBI efetch (not a preprint)."""
+    if not pmcid:
+        return None
+    pid = re.sub(r"(?i)^PMC", "", str(pmcid))
+    url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?" + urllib.parse.urlencode({
+        "db": "pmc",
+        "id": pid,
+        "rettype": "full",
+        "retmode": "xml",
+    })
+    data = _http_get(url, timeout=60)
+    if data:
+        return data.decode("utf-8", errors="replace")
+    return None
+
+
+def _apply_fulltext_xml(item: EnrichedItem, xml: str, source_label: str) -> bool:
+    from inlight_qc import record_fulltext, FULLTEXT_WINDOW
+
+    results = extract_sections_from_xml(xml, ("Results",))
+    figs = extract_fig_captions_from_xml(xml)
+    methods = extract_design_methods_from_xml(xml)
+    if not record_fulltext(item, results, methods=methods, figs=figs, source_label=source_label):
+        return False
+    discussion = extract_sections_from_xml(xml, ("Discussion",))
+    if discussion:
+        item.fulltext_results = (
+            (item.fulltext_results or "") + "\n\n" + discussion
+        )[:FULLTEXT_WINDOW]
+    logging.info("OA full text supplied by %s for %s", source_label, item.url)
+    return True
+
+
+def try_legal_oa_fulltext(item: EnrichedItem) -> bool:
+    """Unpaywall / Europe PMC fullTextXML / PMC OA for abstract-only DOIs.
+
+    Preprints are never promoted to deep full-text sources.
+    """
+    from inlight_qc import item_has_real_fulltext, record_fulltext
+
+    if item_has_real_fulltext(item):
+        return True
+    url_l = (item.url or "").lower()
+    if "biorxiv.org" in url_l or "medrxiv.org" in url_l:
+        logging.info("Skip preprint as deep full-text source: %s", item.url)
+        return False
+    doi = item.doi or extract_doi(item.url)
+    if not doi:
+        logging.info("No DOI for OA full-text lookup: %s", item.url)
+        return False
+    if not item.pmcid:
+        core = epmc_core_search(doi)
+        if core:
+            item.pmcid = core.get("pmcid") or item.pmcid
+            item.pmid = core.get("pmid") or item.pmid
+    if item.pmcid:
+        xml = epmc_fulltext_xml(item.pmcid)
+        if xml and _apply_fulltext_xml(item, xml, f"Europe PMC fullTextXML {item.pmcid}"):
+            return True
+        xml = pmc_oa_efetch_xml(item.pmcid)
+        if xml and _apply_fulltext_xml(item, xml, f"PMC OA {item.pmcid}"):
+            return True
+    oa_url = unpaywall_oa_url(doi)
+    if not oa_url:
+        oa_work = openalex_work(doi)
+        oa_url = (oa_work or {}).get("oa_url") or ""
+    if oa_url and _is_preprint_host(oa_url):
+        logging.info("Skip preprint OA landing as deep source: %s", oa_url)
+        oa_url = ""
+    if oa_url:
+        ft, methods, figs = fetch_oa_sections(oa_url)
+        if ft and record_fulltext(
+            item, ft, methods=methods, figs=figs,
+            source_label=f"Unpaywall/OA {oa_url[:60]}",
+        ):
+            logging.info("OA full text supplied by Unpaywall/OA for %s", item.url)
+            return True
+    logging.info("No legal OA full text for DOI %s (%s)", doi, item.url)
+    return False
 
 
 SUPERSCRIPT_MAP = {
@@ -464,25 +553,33 @@ def extract_sections_from_xml(xml_text: str, section_names: tuple[str, ...]) -> 
 
 
 def extract_fig_captions_from_xml(xml_text: str, max_chars: int = 6000) -> str:
-    """Extract figure captions from PMC XML.
-    
-    Uses itertext() to properly handle nested elements.
-    """
+    """Extract full figure legends (title + body), not label-only titles."""
     if not xml_text:
         return ""
     try:
         root = ET.fromstring(xml_text)
     except ET.ParseError:
         return ""
-    
-    captions = []
+
+    captions: list[str] = []
+    seen: set[str] = set()
     for fig in root.iter("fig"):
+        bits: list[str] = []
         cap = fig.find("caption")
         if cap is not None:
-            cap_text = element_text_with_superscripts(cap).strip()
-            if cap_text:
-                captions.append(cap_text)
-    
+            bits.append(element_text_with_superscripts(cap).strip())
+        for p in fig.iter("p"):
+            para = element_text_with_superscripts(p).strip()
+            if para:
+                bits.append(para)
+        title_elem = fig.find("title")
+        if title_elem is not None and not bits:
+            bits.append(element_text_with_superscripts(title_elem).strip())
+        text = re.sub(r"\s+", " ", " ".join(b for b in bits if b)).strip()
+        if text and text not in seen and not re.fullmatch(r"(?i)fig(?:ure)?\.?\s*\d+", text):
+            seen.add(text)
+            captions.append(text)
+
     result = "\n\n".join(captions)
     return result[:max_chars]
 
@@ -506,8 +603,29 @@ def _sec_is_methods(sec) -> bool:
     )
 
 
+_METHODS_DESIGN_HINTS = (
+    "study design", "statistical", "statistic", "randomiz", "patient",
+    "participant", "cohort", "sample size", "endpoint", "inclusion",
+    "exclusion", "treatment", "dosing", "dose", "intervention",
+    "analysis", "outcome", "primary", "secondary",
+    "设计", "统计", "随机", "患者", "入组", "终点", "给药", "分析", "分组",
+)
+_METHODS_SKIP_HINTS = (
+    "animal care", "animal welfare", "ethics approval", "housing",
+    "husbandry", "veterinary", "iacuc", "arrive",
+    "动物饲养", "伦理批准", "饲养条件", "福利",
+)
+
+
+def _methods_block_score(title: str, body: str) -> int:
+    blob = f"{title} {body}".lower()
+    if any(h in blob for h in _METHODS_SKIP_HINTS):
+        return -2
+    return sum(1 for h in _METHODS_DESIGN_HINTS if h in blob)
+
+
 def extract_design_methods_from_xml(xml_text: str, max_chars: int = 4000) -> str:
-    """Extract the Methods / Materials section from PMC/OA XML (all paragraphs)."""
+    """Prefer design/statistics Methods subsections over animal-care lead-in."""
     if not xml_text:
         return ""
     try:
@@ -515,22 +633,42 @@ def extract_design_methods_from_xml(xml_text: str, max_chars: int = 4000) -> str
     except ET.ParseError:
         return ""
 
+    def _local_tag(tag) -> str:
+        return tag.split("}")[-1] if isinstance(tag, str) else ""
+
+    blocks: list[tuple[int, str]] = []
     seen: set[str] = set()
-    sections: list[str] = []
     for sec in root.iter("sec"):
         if not _sec_is_methods(sec):
             continue
-        text_parts = []
-        for p in sec.iter("p"):
-            para_text = element_text_with_superscripts(p).strip()
-            if para_text and para_text not in seen:
-                seen.add(para_text)
-                text_parts.append(para_text)
-        if text_parts:
-            sections.append(" ".join(text_parts))
+        subs = [c for c in list(sec) if _local_tag(c.tag) == "sec"]
+        for block_sec in (subs or [sec]):
+            title = _sec_title_text(block_sec)
+            text_parts = []
+            for p in block_sec.iter("p"):
+                para_text = element_text_with_superscripts(p).strip()
+                if para_text and para_text not in seen:
+                    seen.add(para_text)
+                    text_parts.append(para_text)
+            if not text_parts:
+                continue
+            body = " ".join(text_parts)
+            blocks.append((_methods_block_score(title, body), body))
 
-    result = "\n\n".join(sections)
-    return result[:max_chars]
+    if not blocks:
+        return ""
+    blocks.sort(key=lambda x: x[0], reverse=True)
+    picked: list[str] = []
+    n = 0
+    for score, body in blocks:
+        if score < 0 and picked:
+            continue
+        if n >= max_chars:
+            break
+        take = body[: max_chars - n]
+        picked.append(take)
+        n += len(take)
+    return "\n\n".join(picked)[:max_chars]
 
 
 def pubmed_efetch_abstract(pmid: str) -> str:
@@ -973,6 +1111,9 @@ def enrich_item(row: dict) -> EnrichedItem:
         if oa_work.get("abstract"):
             abstracts.append(("OpenAlex abstract", oa_work["abstract"]))
         oa_url = oa_work.get("oa_url") or unpaywall_oa_url(doi)
+        if oa_url and _is_preprint_host(oa_url):
+            logging.info("Skip preprint OA landing as deep source: %s", oa_url)
+            oa_url = ""
         if oa_url and not item.fulltext_results:
             from inlight_qc import record_fulltext
             ft, methods, figs = fetch_oa_sections(oa_url)
@@ -1006,20 +1147,17 @@ def enrich_item(row: dict) -> EnrichedItem:
         item.evidence_level = "press"
         item.source_trace.append("Fallback to RSS summary")
 
-    if "biorxiv.org" in item.url or "medrxiv.org" in item.url:
-        if not item.fulltext_results:
-            from inlight_qc import record_fulltext
-            ft, methods, figs = scrape_biorxiv_sections(item.url)
-            if ft:
-                record_fulltext(
-                    item, ft, methods=methods, figs=figs,
-                    source_label="bioRxiv/medRxiv HTML",
-                )
-        if item.evidence_level in ("abstract", "press"):
-            item.evidence_level = "preprint"
+    from inlight_qc import item_has_real_fulltext
+    if not item_has_real_fulltext(item) and not _is_preprint_host(item.url):
+        try_legal_oa_fulltext(item)
+
+    if _is_preprint_host(item.url):
+        if item.evidence_level == "fulltext":
+            logging.info("Do not use preprint as deep full-text source: %s", item.url)
+        item.evidence_level = "preprint"
         if not item.journal:
             item.journal = (
-                "medRxiv（预印本）" if "medrxiv.org" in item.url else "bioRxiv（预印本）"
+                "medRxiv（预印本）" if "medrxiv.org" in item.url.lower() else "bioRxiv（预印本）"
             )
 
     return item
@@ -1207,28 +1345,32 @@ def _quantity_digits(text: str) -> set[str]:
     return set(re.findall(r'\d+(?:\.\d+)?', _quantity_words_to_arabic(text or "")))
 
 
-def _word_quantity_in_passage(value: str, quote: str, source: str) -> bool:
-    """Accept when the same wording or the same number is in the quoted passage."""
-    value_norm = normalize_whitespace(value)
+def _quote_verbatim_in_source(quote: str, source: str) -> bool:
+    """Normalized quote must appear verbatim in the source (no fuzzy fallback)."""
     quote_n = normalize_whitespace(quote or "")
     src_n = normalize_whitespace(source or "")
-    src_cmp = src_n.lower()
-    if quote_n and quote_n.lower() in src_cmp:
-        passage = quote_n
-    elif quote_n:
-        passage = quote_n
-    else:
-        passage = src_n
-    if value_norm and (value_norm in passage or value_norm in src_n):
+    if not quote_n or not src_n:
+        return False
+    if quote_n in src_n or quote_n.lower() in src_n.lower():
+        return True
+    quote_en = normalize_whitespace(english_number_to_arabic(quote_n))
+    src_en = normalize_whitespace(english_number_to_arabic(src_n))
+    return bool(quote_en) and (quote_en in src_en or quote_en.lower() in src_en.lower())
+
+
+def _word_quantity_in_passage(value: str, quote: str, source: str) -> bool:
+    """Accept only when quote is verbatim in the source and the value is inside it."""
+    quote_n = normalize_whitespace(quote or "")
+    if not quote_n or not _quote_verbatim_in_source(quote_n, source):
+        return False
+    value_norm = normalize_whitespace(value)
+    if value_norm and (value_norm in quote_n or value_norm.lower() in quote_n.lower()):
         return True
     val_qty = _canonical_quantity(value)
-    if val_qty and (
-        val_qty in _canonical_quantity(passage)
-        or val_qty in _canonical_quantity(src_n)
-    ):
+    if val_qty and val_qty in _canonical_quantity(quote_n):
         return True
     val_nums = _quantity_digits(value)
-    return bool(val_nums) and val_nums <= _quantity_digits(passage)
+    return bool(val_nums) and val_nums <= _quantity_digits(quote_n)
 
 
 def english_number_to_arabic(text: str) -> str:
@@ -3648,22 +3790,20 @@ def validate_depth(art: dict, raw_material: str, *, allow_word_quantities: bool 
             if _is_qualitative_datapoint(value, meaning):
                 continue
             # Source-faithful word quantities (any unit, fold words, or a
-            # bare cardinal whose wording/number is in the quoted passage)
-            # are not invented. allow_word_quantities=False keeps the
-            # locked-suite contract (bare nine/five/six still rejected).
+            # bare cardinal). Quote must be verbatim in the source and the
+            # value must sit inside that quote — no full-text fallback.
+            # allow_word_quantities=False keeps the locked-suite contract.
             allow_words = allow_word_quantities or bool(_ORDINAL_TIME_RE.search(value))
             if allow_words and _is_word_quantity_phrase(value):
-                converted = _quantity_words_to_arabic(value)
-                if _word_quantity_in_passage(value, quote, raw_material):
-                    continue
-                if re.search(r'\d', converted):
-                    value = converted
-                else:
+                if not _word_quantity_in_passage(value, quote, raw_material):
                     problems.append(f"data_point value 必须包含数字：'{value}'")
                     continue
+                word_qty_ok = True
             else:
                 problems.append(f"data_point value 必须包含数字：'{value}'")
                 continue
+        else:
+            word_qty_ok = False
         
         # Check for vague/imprecise quantifiers that lack specific numbers
         vague_patterns = [
@@ -3720,6 +3860,9 @@ def validate_depth(art: dict, raw_material: str, *, allow_word_quantities: bool 
             and quote_cmp not in src_cmp
         ):
             problems.append(f"data_point 无法回溯：{value} (quote: {quote_norm[:50]}...)")
+            continue
+
+        if word_qty_ok:
             continue
         
         # Check value appears in quote. Unit spacing is ignored so
@@ -4003,7 +4146,7 @@ def _source_has_name_form(name: str, source_lower: str) -> bool:
 
 
 def _trim_institution_lead(inst: str) -> str:
-    """Strip leading verbs/prepositions glued onto a Chinese institution."""
+    """Strip leading verbs/prepositions; keep the token after the last 和/与/及/、."""
     out = inst or ""
     changed = True
     while changed and out:
@@ -4012,6 +4155,9 @@ def _trim_institution_lead(inst: str) -> str:
             if out.startswith(w) and len(out) - len(w) >= 4:
                 out = out[len(w):]
                 changed = True
+    bits = re.split(r"[和与及、]", out)
+    if len(bits) > 1 and len(bits[-1]) >= 4:
+        out = bits[-1]
     return out
 
 
@@ -4023,9 +4169,35 @@ def _institution_aliases(inst: str) -> list[str]:
     return found
 
 
-def _institution_in_source(inst: str, raw_material: str, source_lower: str) -> bool:
+def _draft_inst_acronym(inst: str, all_text: str) -> str:
+    m = re.search(
+        re.escape(inst) + r"\s*[\(（]([A-Za-z][A-Za-z0-9\-]{1,11})[\)）]",
+        all_text or "",
+    )
+    return m.group(1) if m else ""
+
+
+def _source_has_english_bracketed_acronym(acronym: str, raw_material: str) -> bool:
+    """True when the source has 'English Name (ACR)' with this acronym."""
+    if not acronym:
+        return False
+    return bool(re.search(
+        r"[A-Za-z][A-Za-z .'\-]{2,80}[\(（]\s*" + re.escape(acronym) + r"\s*[\)）]",
+        raw_material or "",
+    ))
+
+
+def _institution_in_source(
+    inst: str, raw_material: str, source_lower: str, all_text: str = "",
+) -> bool:
     """Accept Chinese name, English name, bracketed acronym, or alias map hit."""
     if inst in raw_material or _source_has_name_form(inst, source_lower):
+        return True
+    acr = _draft_inst_acronym(inst, all_text)
+    if acr and (
+        re.search(r'[\(（]\s*' + re.escape(acr) + r'\s*[\)）]', raw_material, re.I)
+        or _source_has_english_bracketed_acronym(acr, raw_material)
+    ):
         return True
     for alias in _institution_aliases(inst):
         a = alias.lower()
@@ -4115,7 +4287,7 @@ def validate_names(art: dict, raw_material: str) -> list[str]:
         if inst in seen_inst or inst in _GENERIC_FACILITY or len(inst) < 4:
             continue
         seen_inst.add(inst)
-        if _institution_in_source(inst, raw_material, norm):
+        if _institution_in_source(inst, raw_material, norm, all_text):
             continue
         problems.append(f"机构名 '{inst}' 在原始材料中未找到")
 
@@ -4596,11 +4768,23 @@ def _backfill_deep_selections(
         key=lambda it: _score_fields_for_item(it, cfg)[1],
         reverse=True,
     )
-    model_fields = _model_field_assignments(ranked[: max(need, 0)], cfg)
+    candidates = ranked[:need]
+    model_fields = _model_field_assignments(candidates, cfg)
+    if candidates and not model_fields:
+        logging.info(
+            "Triage skip %d backfill candidate(s): model field triage failed",
+            len(candidates),
+        )
     out = list(selections)
-    for it in ranked[:need]:
-        kw_field, score = _score_fields_for_item(it, cfg)
-        field = model_fields.get(it.url, kw_field)
+    for it in candidates:
+        score = _score_fields_for_item(it, cfg)[1]
+        if it.url not in model_fields:
+            logging.info(
+                "Triage skip %s: model field triage failed or skipped this item",
+                it.url,
+            )
+            continue
+        field = model_fields.get(it.url)
         if field in ("none", "", None):
             logging.info("Triage skip %s: out of scope of the 9 fields", it.url)
             continue
@@ -5099,30 +5283,71 @@ def _walk_omit_missing(obj: Any) -> Any:
 
 
 _UNREPORTED_CLAIM_RE = re.compile(
-    r'(?:原文未报告|原文未给出|原文未提及|原文未列出|原文未提供|'
-    r'(?:the\s+)?source\s+does\s+not\s+(?:report|mention|provide|list|give)|'
-    r'(?:the\s+)?source\s+did\s+not\s+(?:report|mention|provide|list|give))',
-    re.IGNORECASE,
-)
-_UNREPORTED_SENT_RE = re.compile(
-    r'(?s)(?:^|(?<=[。！？.!?\n]))[^.。！？\n]*?'
-    r'(?:原文未报告|原文未给出|原文未提及|原文未列出|原文未提供|'
-    r'(?:the\s+)?source\s+does\s+not\s+(?:report|mention|provide|list|give)|'
-    r'(?:the\s+)?source\s+did\s+not\s+(?:report|mention|provide|list|give))'
-    r'[^.。！？\n]*[.。！？]?',
+    r'(?:'
+    r'(?:原文|所读材料|论文|文中|来源|摘要)(?:中)?'
+    r'(?:未报告|未给出|未提及|未列出|未提供|没有报告)|'
+    r'(?:the\s+)?source\s+(?:does|did)\s+not\s+(?:report|mention|provide|list|give)|'
+    r'(?:the\s+)?(?:paper|article|text|materials?)\s+(?:does|did)\s+not\s+'
+    r'(?:report|mention|provide|list|give)'
+    r')',
     re.IGNORECASE,
 )
 
 
 def _is_unreported_disclaimer(text: str) -> bool:
-    return bool(_UNREPORTED_CLAIM_RE.search(text or ""))
+    """True for a disclaimer clause with no number/finding (keep 未报告3级以上…)."""
+    if not _UNREPORTED_CLAIM_RE.search(text or ""):
+        return False
+    return not re.search(r'\d', text or "")
+
+
+def _split_clauses_no_decimal(text: str) -> list[str]:
+    """Split on sentence/clause punctuation, never at a decimal point (11.2)."""
+    parts: list[str] = []
+    buf: list[str] = []
+    i = 0
+    n = len(text)
+    while i < n:
+        ch = text[i]
+        if (
+            ch == "."
+            and i > 0
+            and i + 1 < n
+            and text[i - 1].isdigit()
+            and text[i + 1].isdigit()
+        ):
+            buf.append(ch)
+            i += 1
+            continue
+        if ch in "。！？；;\n，、":
+            buf.append(ch)
+            parts.append("".join(buf))
+            buf = []
+            i += 1
+            continue
+        if ch in ".!?" and (i + 1 >= n or text[i + 1].isspace() or text[i + 1] in "\"'”’"):
+            buf.append(ch)
+            parts.append("".join(buf))
+            buf = []
+            i += 1
+            continue
+        buf.append(ch)
+        i += 1
+    if buf:
+        parts.append("".join(buf))
+    return parts
 
 
 def _strip_unreported_text(text: str) -> str:
+    """Remove only disclaimer clauses; never a clause that contains a number."""
     if not text:
         return text
-    cleaned = _UNREPORTED_SENT_RE.sub(" ", text)
-    return re.sub(r'[ \t]{2,}', ' ', cleaned).strip()
+    kept = [c for c in _split_clauses_no_decimal(text) if not _is_unreported_disclaimer(c)]
+    cleaned = "".join(kept)
+    cleaned = re.sub(r"[ \t]{2,}", " ", cleaned)
+    cleaned = re.sub(r"^[，、；;。.!?]+", "", cleaned)
+    cleaned = re.sub(r"[，、；;]+$", "", cleaned)
+    return cleaned.strip()
 
 
 def strip_unreported_disclaimer_sentences(art: dict) -> dict:
@@ -5285,7 +5510,9 @@ def _run_claim_verifier_stage(
             strip_unreported_disclaimer_sentences(draft)
         draft["field"] = field
         draft["tier"] = tier
-        probs = validate_depth(draft, raw_material)
+        probs = validate_depth(
+            draft, raw_material, allow_word_quantities=acir_strict(config),
+        )
         probs.extend(validate_names(draft, raw_material))
         return draft, probs
 
@@ -5469,6 +5696,39 @@ def _apply_section_band_slack(art: dict, struct_probs: list[str]) -> tuple[list[
     return kept, overages
 
 
+def _band_distance(art: dict, section_ranges: dict | None = None) -> int:
+    """How far a draft sits from section bands (lower is closer)."""
+    from inlight_qc import SECTION_RANGES, han_len
+
+    ranges = section_ranges or SECTION_RANGES
+    dist = 0
+    for name, (lo, hi) in ranges.items():
+        if name == "title":
+            continue
+        n = han_len(art.get(name) if art else "")
+        if n < lo:
+            dist += lo - n
+        elif n > hi:
+            dist += n - hi
+    body = han_len([
+        (art or {}).get("one_liner"), (art or {}).get("background"),
+        (art or {}).get("design"), (art or {}).get("results"),
+        (art or {}).get("mechanism"), (art or {}).get("limitations"),
+        (art or {}).get("significance"),
+    ])
+    if body < 1400:
+        dist += 1400 - body
+    elif body > 1900:
+        dist += body - 1900
+    return dist
+
+
+def _length_keep_score(
+    art: dict, problems: list[str], section_ranges: dict | None = None,
+) -> tuple[int, int]:
+    return (len(_hard_problems(problems)), _band_distance(art, section_ranges))
+
+
 def _run_deep_length_redrafts(
     art: dict,
     problems: list[str],
@@ -5478,21 +5738,36 @@ def _run_deep_length_redrafts(
     prepare,
     section_ranges: dict | None = None,
 ) -> tuple[dict, list[str], str | None]:
-    """Up to 2 deep redrafts for length/structure-only. No brief downgrade."""
+    """Up to 2 deep redrafts for length/structure-only. Keep the best draft."""
+    best_art, best_probs = art, problems
+    best_score = _length_keep_score(art, problems, section_ranges)
     for attempt in (1, 2):
-        targets = _section_length_targets(art, problems, section_ranges)
+        targets = _section_length_targets(best_art, best_probs, section_ranges)
         logging.info(
             "Deep length/structure redraft %d/2 for %s: %s",
-            attempt, url, problems,
+            attempt, url, best_probs,
         )
         retry_len = draft_single_article(enriched_item, "deep", config, problems=targets)
         if retry_len is None:
             continue
-        art, problems = prepare(retry_len)
-        if not _hard_problems(problems):
-            return art, problems, None
-        if not _length_structure_only(problems):
-            return art, problems, None
+        cand, cand_probs = prepare(retry_len)
+        if not cand:
+            continue
+        score = _length_keep_score(cand, cand_probs, section_ranges)
+        if score < best_score:
+            logging.info(
+                "Keeping length redraft %d (score %s) over previous %s: %s",
+                attempt, score, best_score, url,
+            )
+            best_art, best_probs, best_score = cand, cand_probs, score
+        else:
+            logging.info(
+                "Discarding shorter/worse length redraft %d (score %s vs best %s): %s",
+                attempt, score, best_score, url,
+            )
+        if not _hard_problems(best_probs):
+            return best_art, best_probs, None
+    art, problems = best_art, best_probs
     if _hard_problems(problems) and _length_structure_only(problems):
         return art, problems, (
             "deep length/structure still failing after 2 redrafts: "
@@ -5523,7 +5798,11 @@ def _run_brief_length_redraft(
         return art, problems, (
             "brief length redraft failed: " + "; ".join(_hard_problems(problems)[:4])
         )
-    art, problems = prepare(retry)
+    cand, cand_probs = prepare(retry)
+    if cand and _length_keep_score(cand, cand_probs, section_ranges) < _length_keep_score(
+        art, problems, section_ranges
+    ):
+        art, problems = cand, cand_probs
     if _hard_problems(problems):
         return art, problems, (
             "brief length still failing: " + "; ".join(_hard_problems(problems)[:4])

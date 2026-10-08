@@ -507,18 +507,24 @@ class TestXMLExtraction(unittest.TestCase):
         self.assertIn("12", result)
     
     def test_fig_captions_preserve_nested(self):
-        """Figure captions should handle nested italic and superscript."""
+        """Full figure legends; Methods prefer design/stats over animal care."""
         from inlight_articles import extract_design_methods_from_xml
         from inlight_qc import section_ranges_for_material
 
         xml = """<article>
             <fig>
+                <label>Figure 1</label>
                 <caption>
-                    <p>Figure showing <italic>Rag2</italic><sup>-/-</sup> mice.</p>
+                    <title>Overview of the trial.</title>
+                    <p>Figure showing <italic>Rag2</italic><sup>-/-</sup> mice randomized 1:1. ORR was 36%.</p>
                 </caption>
             </fig>
             <sec sec-type="methods">
                 <title>Methods</title>
+                <sec>
+                    <title>Animal care and housing</title>
+                    <p>Animals were housed under IACUC-approved veterinary husbandry conditions with standard chow.</p>
+                </sec>
                 <sec>
                     <title>Statistical analysis</title>
                     <p>Mice were randomized 1:1. Primary endpoint was ORR.</p>
@@ -529,9 +535,16 @@ class TestXMLExtraction(unittest.TestCase):
         self.assertIn("Rag2", result)
         # Superscript "-/-" becomes "⁻/⁻"
         self.assertIn("⁻", result)
+        self.assertIn("36%", result)
+        self.assertIn("Overview of the trial", result)
         methods = extract_design_methods_from_xml(xml)
         self.assertIn("randomized", methods)
         self.assertIn("ORR", methods)
+        self.assertTrue(
+            methods.find("randomized") < methods.find("housed")
+            or "housed" not in methods,
+            methods,
+        )
         scaled = section_ranges_for_material(
             sections_read={"methods": {"chars": 0}, "fig_captions": {"chars": 0},
                            "results": {"chars": 9000}},
@@ -1182,7 +1195,7 @@ class TestDataPointValidation(unittest.TestCase):
         art["data_points"] = [{
             "value": "nineteen groups",
             "meaning": "编造分组",
-            "source_quote": "Mice were split into five groups",
+            "source_quote": "Mice were split into nineteen groups",
         }]
         invented_grp = validate_depth(art, raw, allow_word_quantities=True)
         self.assertTrue(
@@ -2525,13 +2538,18 @@ class TestMatcherToleratesFaithfulDrafts(unittest.TestCase):
         self.assertTrue(any("雷利珠单抗" in p for p in bad), bad)
 
     def test_institution_lead_trim_and_english_alias(self):
-        from inlight_articles import validate_names
+        from inlight_articles import validate_names, _trim_institution_lead
+
+        self.assertEqual(_trim_institution_lead("南开大学和西湖生物医学研究所"), "西湖生物医学研究所")
+        self.assertEqual(_trim_institution_lead("合作与西湖生物医学研究所"), "西湖生物医学研究所")
+        self.assertEqual(_trim_institution_lead("合作及西湖生物医学研究所"), "西湖生物医学研究所")
+        self.assertEqual(_trim_institution_lead("入组、西湖生物医学研究所"), "西湖生物医学研究所")
 
         art = {
             "title": "使用中山大学肿瘤防治中心队列",
             "one_liner": "和中山大学合作完成入组。",
             "background": "",
-            "design": "由中山大学肿瘤防治中心入组。",
+            "design": "合作及西湖生物医学研究所（WBRI）完成入组。",
             "results": ["缓解率64%。"],
             "mechanism": "",
             "significance": "",
@@ -2539,7 +2557,8 @@ class TestMatcherToleratesFaithfulDrafts(unittest.TestCase):
             "limitations": [],
         }
         raw = (
-            "Patients were enrolled at Sun Yat-sen University Cancer Center (SYSUCC). "
+            "Patients were enrolled at Sun Yat-sen University Cancer Center (SYSUCC) "
+            "and Westlake Biomedical Research Institute (WBRI). "
             "Objective response rate was 64%."
         )
         ok = validate_names(art, raw)
@@ -2568,22 +2587,40 @@ class TestMatcherToleratesFaithfulDrafts(unittest.TestCase):
     def test_strip_source_does_not_report_sentences(self):
         from inlight_articles import (
             strip_unreported_disclaimer_sentences, _is_unreported_disclaimer,
+            _strip_unreported_text,
         )
 
         art = strip_unreported_disclaimer_sentences({
             "title": "缓解率达64%",
             "results": [
                 "客观缓解率为64%。原文未报告总生存期。",
+                "中位PFS为11.2个月；原文未报告OS。",
+                "缓解率64%，原文未报告OS。",
+                "所读材料未报告总生存期。论文未报告人体数据。文中未报告随访上限。",
                 "The source does not report median OS.",
+                "安全性可耐受，未报告3级以上不良事件。",
             ],
             "limitations": ["原文未给出随访上限。随访18个月。"],
         })
         blob = " ".join(str(x) for x in (art.get("results"), art.get("limitations")))
         self.assertNotIn("原文未报告", blob)
+        self.assertNotIn("所读材料未报告", blob)
+        self.assertNotIn("论文未报告", blob)
+        self.assertNotIn("文中未报告", blob)
         self.assertNotIn("source does not report", blob.lower())
         self.assertIn("64%", blob)
+        self.assertIn("11.2", blob)
+        self.assertNotIn("中位PFS为11.", blob.replace("11.2", ""))
+        self.assertIn("未报告3级以上不良事件", blob)
         self.assertTrue(_is_unreported_disclaimer("the source does not report X"))
         self.assertTrue(_is_unreported_disclaimer("原文未报告人体数据"))
+        self.assertTrue(_is_unreported_disclaimer("所读材料未报告总生存期"))
+        self.assertTrue(_is_unreported_disclaimer("论文未报告OS"))
+        self.assertTrue(_is_unreported_disclaimer("文中未报告人体数据"))
+        self.assertFalse(_is_unreported_disclaimer("未报告3级以上不良事件"))
+        kept = _strip_unreported_text("中位PFS为11.2个月；原文未报告OS。")
+        self.assertIn("11.2", kept)
+        self.assertNotIn("未报告", kept)
 
     def test_preprint_body_cannot_claim_peer_review(self):
         from inlight_articles import validate_depth
@@ -3295,6 +3332,202 @@ class TestWeeklyDefaultUsesStrictNewPipeline(unittest.TestCase):
             parse_weekly_args(["--use-new-pipeline"]),
             {},
         ))
+
+
+class TestReviewYieldAndPrecision(unittest.TestCase):
+    def test_keep_best_length_redraft(self):
+        from inlight_articles import _run_deep_length_redrafts
+
+        first = {
+            "title": "first-draft",
+            "one_liner": "测" * 50,
+            "background": "测" * 200,
+            "design": "测" * 220,
+            "results": ["测" * 140] * 4,
+            "mechanism": "测" * 250,
+            "limitations": ["测" * 80] * 3,
+            "significance": "测" * 160,
+        }
+        worse = {
+            "title": "worse-short",
+            "one_liner": "短",
+            "background": "短",
+            "design": "短",
+            "results": ["短"],
+            "mechanism": "短",
+            "limitations": ["短"],
+            "significance": "短",
+        }
+        first_probs = ["results 字数 560，要求 500–700"]
+
+        def prepare(draft):
+            if (draft or {}).get("title") == "first-draft":
+                return draft, list(first_probs)
+            return draft, [
+                "results 字数 80，要求 500–700",
+                "deep 正文 200 汉字，要求 1400–1900",
+                "background 字数 1，要求 180–240",
+            ]
+
+        with patch("inlight_articles.draft_single_article", return_value=dict(worse)):
+            art, probs, _drop = _run_deep_length_redrafts(
+                first, list(first_probs),
+                EnrichedItem(url="https://doi.org/10.1/keep", title="T",
+                             source="N", date="2026-01-01"),
+                {"min_deep": 3},
+                "https://doi.org/10.1/keep",
+                prepare,
+            )
+        self.assertEqual(art.get("title"), "first-draft")
+        self.assertEqual(probs, first_probs)
+
+    def test_claim_verifier_prepare_uses_strict_word_quantities(self):
+        from inlight_articles import _run_claim_verifier_stage
+
+        seen = []
+
+        def vd(draft, raw, allow_word_quantities=False, **_k):
+            seen.append(allow_word_quantities)
+            return []
+
+        item = EnrichedItem(
+            url="https://doi.org/10.1/wq", title="T", source="N", date="2026-01-01",
+            abstract="Mice were split into five groups.", evidence_level="abstract",
+        )
+        art = {
+            "tier": "brief",
+            "title": "测试",
+            "results": ["分为五组。"],
+            "data_points": [{
+                "value": "five groups",
+                "meaning": "分组",
+                "source_quote": "Mice were split into five groups",
+            }],
+        }
+        retry = dict(art)
+        with patch("inlight_articles.validate_depth", side_effect=vd):
+            with patch("inlight_articles.validate_names", return_value=[]):
+                with patch("inlight_articles.draft_single_article", return_value=retry):
+                    with patch("inlight_articles.verify_article_claims", side_effect=[
+                        {"status": "not_in_source", "problems": ["原文未支持"],
+                         "calls": 1, "input_tokens": 1, "output_tokens": 1},
+                        {"status": "ok", "problems": [],
+                         "calls": 1, "input_tokens": 1, "output_tokens": 1},
+                    ]):
+                        out, dropped = _run_claim_verifier_stage(
+                            art, [], "Mice were split into five groups.",
+                            item, {"min_deep": 3, "acir_qc": True},
+                            "brief", "c3",
+                        )
+        self.assertFalse(dropped)
+        self.assertIsNotNone(out)
+        self.assertTrue(seen)
+        self.assertTrue(all(seen), seen)
+
+    def test_try_legal_oa_fulltext_logs_source_and_skips_preprint(self):
+        from inlight_articles import try_legal_oa_fulltext
+        import logging
+
+        preprint = EnrichedItem(
+            url="https://www.biorxiv.org/content/10.1101/2026.01.01.123456",
+            title="T", source="bioRxiv", date="2026-01-01", doi="10.1101/2026.01.01.123456",
+        )
+        self.assertFalse(try_legal_oa_fulltext(preprint))
+        self.assertNotEqual(preprint.evidence_level, "fulltext")
+
+        xml = (
+            "<article><sec sec-type=\"results\"><title>Results</title><p>"
+            + ("outcome " * 1600)
+            + "objective response rate was 64% among 527 women."
+            + "</p></sec></article>"
+        )
+        records = []
+
+        class _H(logging.Handler):
+            def emit(self, record):
+                records.append(record.getMessage())
+
+        h = _H()
+        log = logging.getLogger()
+        prev = log.level
+        log.setLevel(logging.INFO)
+        log.addHandler(h)
+        try:
+            item = EnrichedItem(
+                url="https://doi.org/10.1038/s41586-026-00001-1",
+                title="T", source="N", date="2026-01-01",
+                doi="10.1038/s41586-026-00001-1",
+            )
+            with patch("inlight_articles.epmc_core_search", return_value={"pmcid": "PMC999001"}):
+                with patch("inlight_articles.epmc_fulltext_xml", return_value=xml):
+                    ok = try_legal_oa_fulltext(item)
+            self.assertTrue(ok)
+            self.assertEqual(item.evidence_level, "fulltext")
+            self.assertTrue(
+                any("Europe PMC fullTextXML" in m for m in records),
+                records,
+            )
+
+            pmc_item = EnrichedItem(
+                url="https://doi.org/10.1038/s41586-026-00002-2",
+                title="T", source="N", date="2026-01-01",
+                doi="10.1038/s41586-026-00002-2", pmcid="PMC999002",
+            )
+            records.clear()
+            with patch("inlight_articles.epmc_fulltext_xml", return_value=None):
+                with patch("inlight_articles.pmc_oa_efetch_xml", return_value=xml):
+                    ok_pmc = try_legal_oa_fulltext(pmc_item)
+            self.assertTrue(ok_pmc)
+            self.assertTrue(any("PMC OA" in m for m in records), records)
+        finally:
+            log.removeHandler(h)
+            log.setLevel(prev)
+
+        with patch("inlight_articles.scrape_biorxiv_sections", return_value=(
+            ("outcome " * 1600) + "rate 64%",
+            "methods",
+            "fig",
+        )):
+            with patch("inlight_articles._http_get", return_value=None):
+                row = enrich_item({
+                    "url": "https://www.biorxiv.org/content/10.1101/2026.01.01.123456",
+                    "title": "Preprint",
+                    "source": "bioRxiv",
+                    "date": "2026-01-01",
+                    "kind": "academic",
+                    "summary": "abstract only " * 20,
+                })
+        self.assertEqual(row.evidence_level, "preprint")
+        from inlight_qc import item_has_real_fulltext as _has_ft
+        self.assertFalse(_has_ft(row))
+
+    def test_headline_product_price_is_not_deal_valuation(self):
+        from run_weekly import normalize_deal_money
+
+        self.assertEqual(
+            normalize_deal_money(
+                "2.2 亿美元",
+                title="Company X's $2.2B drug enters Phase 3",
+                source_title="Company X's $2.2B drug enters Phase 3",
+            ),
+            "未披露",
+        )
+        self.assertEqual(
+            normalize_deal_money(
+                "22 亿美元",
+                title="价值22亿美元的药物公布新数据",
+                source_title="价值22亿美元的药物公布新数据",
+            ),
+            "未披露",
+        )
+        self.assertEqual(
+            normalize_deal_money(
+                "2.2 亿美元",
+                title="Acquires rights to a $2.2B drug in an upfront deal",
+                source_title="Acquires rights to a $2.2B drug in an upfront deal",
+            ),
+            "2.2 亿美元",
+        )
 
 
 if __name__ == "__main__":
