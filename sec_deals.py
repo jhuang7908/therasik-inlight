@@ -37,13 +37,18 @@ class DealType(Enum):
 
 
 class AmountKind(Enum):
+    """Amount kinds - narrowed to in-scope deal types only."""
     UPFRONT = "upfront"
     PURCHASE_PRICE = "purchase_price"
     MILESTONES_TOTAL = "milestones_total"
+    # Out of scope - kept for backwards compatibility but never published
     EQUITY = "equity"
     FACILITY_SIZE = "facility_size"
     DRAWN = "drawn"
     OTHER = "other"
+
+# Only these amount kinds are published
+IN_SCOPE_AMOUNT_KINDS = {AmountKind.UPFRONT, AmountKind.PURCHASE_PRICE, AmountKind.MILESTONES_TOTAL}
 
 
 # Small explicit alias table - NEVER map Roche↔Genentech, Sanofi↔Regeneron, AZ↔Amazon
@@ -68,18 +73,33 @@ LEGAL_SUFFIXES = [
     r',?\s*N\.V\.?$', r',?\s*GmbH$', r',?\s*SE$',
 ]
 
+# NARROW SCOPE: Only two deal types are ever published
+# (a) License or collaboration agreements NEWLY entered into
+# (b) Definitive acquisition or merger agreements
+# Everything else is logged as 'out_of_scope' and never published:
+# loans, credit facilities, ATMs, equity offerings, warrants, PIPEs,
+# amendments (without new license), terminations, assignments, divestitures.
+
+# IN-SCOPE deal types
+IN_SCOPE_DEAL_TYPES = {DealType.LICENSE_COLLABORATION, DealType.ACQUISITION, DealType.MERGER}
+
 # Tool schema for Claude - strict quote-based extraction
 DEAL_EXTRACTION_SCHEMA = {
     "name": "extract_deal",
-    "description": "Extract deal information from SEC filing with exact quotes from the filing text",
+    "description": """Extract deal information from SEC filing. ONLY extract:
+1. NEW license or collaboration agreements (must have 'grants...license' or 'collaboration agreement' wording)
+2. Definitive acquisition or merger agreements (must have 'acquire' or 'merger' wording)
+
+Do NOT extract: loans, credit facilities, ATMs, equity offerings, warrants, PIPEs, amendments to existing agreements, terminations (Item 1.02), assignments, or divestitures.
+
+For each amount, provide a quote containing BOTH the dollar amount AND a role keyword (upfront, milestone, aggregate, purchase price, or per share).""",
     "input_schema": {
         "type": "object",
         "properties": {
             "deal_type": {
                 "type": "string",
-                "enum": ["acquisition", "merger", "license_collaboration", 
-                         "equity_financing", "debt_facility", "obligation_buyout", "none"],
-                "description": "Type of deal, or 'none' if no deal in this filing"
+                "enum": ["acquisition", "merger", "license_collaboration", "none"],
+                "description": "Type of deal: acquisition, merger, license_collaboration, or 'none' if no in-scope deal"
             },
             "counterparty_name": {
                 "type": "string",
@@ -87,11 +107,11 @@ DEAL_EXTRACTION_SCHEMA = {
             },
             "type_quote": {
                 "type": "string",
-                "description": "Exact verbatim quote from filing describing the deal type (must contain counterparty name)"
+                "description": "Exact verbatim quote showing deal type. For licenses: must contain 'grants...license' or 'collaboration'. For acquisitions: must contain 'acquire' or 'merger'. Quote must contain counterparty name."
             },
             "counterparty_quote": {
                 "type": "string",
-                "description": "Exact verbatim quote from filing containing counterparty name"
+                "description": "Exact verbatim quote from parties clause or defined-term clause containing counterparty name"
             },
             "amounts": {
                 "type": "array",
@@ -100,17 +120,17 @@ DEAL_EXTRACTION_SCHEMA = {
                     "properties": {
                         "kind": {
                             "type": "string",
-                            "enum": ["upfront", "purchase_price", "milestones_total", 
-                                     "equity", "facility_size", "drawn", "other"]
+                            "enum": ["upfront", "purchase_price", "milestones_total"],
+                            "description": "upfront (initial payment), purchase_price (acquisition price), or milestones_total (aggregate milestone payments)"
                         },
                         "quote": {
                             "type": "string",
-                            "description": "Exact verbatim quote containing the amount"
+                            "description": "Exact verbatim quote containing BOTH the dollar amount AND the role keyword (upfront/milestone/aggregate/purchase price/per share)"
                         }
                     },
                     "required": ["kind", "quote"]
                 },
-                "description": "Amount quotes, each with kind and exact verbatim quote"
+                "description": "Amount quotes with kind and exact verbatim quote containing both amount and role keyword"
             }
         },
         "required": ["deal_type"]
@@ -148,6 +168,146 @@ class VerifiedDeal:
     filing_url: str
     filing_date: str
     event_date: str | None
+
+
+# =============================================================================
+# CHINESE NUMERAL PARSER (Item 5)
+# =============================================================================
+
+# Chinese numeral values
+CN_DIGITS = {'零': 0, '〇': 0, '一': 1, '二': 2, '三': 3, '四': 4, '五': 5,
+             '六': 6, '七': 7, '八': 8, '九': 9, '两': 2}
+CN_UNITS = {'十': 10, '百': 100, '千': 1000, '万': 10000, '亿': 100000000}
+
+
+def chinese_to_int(cn_str: str) -> int | None:
+    """Convert Chinese numeral string to integer.
+    
+    Correctly handles:
+    - 一百二十 = 120 (not 10020)
+    - 三十五 = 35 (not 305)
+    - 两 = 2
+    - 十二 = 12
+    - 一百零五 = 105
+    
+    Returns None if string contains non-Chinese-numeral characters.
+    """
+    if not cn_str:
+        return None
+    
+    # Handle single digit
+    if len(cn_str) == 1:
+        if cn_str in CN_DIGITS:
+            return CN_DIGITS[cn_str]
+        if cn_str in CN_UNITS:
+            return CN_UNITS[cn_str]  # 十 alone = 10
+        return None
+    
+    result = 0
+    current_section = 0  # accumulates within a 万/亿 section
+    current_num = 0  # the digit waiting for a unit
+    
+    for char in cn_str:
+        if char in CN_DIGITS:
+            current_num = CN_DIGITS[char]
+        elif char in CN_UNITS:
+            unit = CN_UNITS[char]
+            if unit >= 10000:  # 万 or 亿 - section marker
+                # If we have a pending number, add it
+                if current_num > 0:
+                    current_section += current_num
+                    current_num = 0
+                # If section is 0 (e.g., just 一亿), use 1
+                if current_section == 0:
+                    current_section = 1
+                result += current_section * unit
+                current_section = 0
+            else:  # 十, 百, 千 - regular unit
+                if current_num == 0:
+                    current_num = 1  # implicit 一 (e.g., 十二 = 12)
+                current_section += current_num * unit
+                current_num = 0
+        else:
+            return None  # Unknown character
+    
+    # Add any remaining number
+    if current_num > 0:
+        current_section += current_num
+    result += current_section
+    
+    return result
+
+
+def parse_chinese_decimal(text: str) -> set[str]:
+    """Extract Chinese decimal amounts like 11.7 亿 or 4.125 亿.
+    
+    Returns set of string representations for verification.
+    """
+    numbers = set()
+    
+    # Pattern: Arabic decimal + 亿/万 + currency
+    pattern = r'([\d,.]+)\s*(亿|万)\s*(?:美元|欧元|英镑|元|人民币|港币|日元)?'
+    for m in re.finditer(pattern, text):
+        num_str = m.group(1).replace(',', '')
+        unit = m.group(2)
+        try:
+            num = float(num_str)
+            # Store the EXACT decimal representation
+            numbers.add(num_str)
+            numbers.add(f"{num_str}{unit}")
+            # Also store the full value for comparison
+            if unit == '亿':
+                full_value = num * 100_000_000
+            else:  # 万
+                full_value = num * 10_000
+            numbers.add(str(full_value))
+        except ValueError:
+            pass
+    
+    return numbers
+
+
+def verify_chinese_amount_match(source_text: str, chinese_text: str) -> bool:
+    """Verify that Chinese amounts match source amounts EXACTLY.
+    
+    Rules:
+    - $1.17 billion = 11.7 亿美元 (EXACT, not 11 or 12)
+    - $200 million = 2 亿美元 (exact)
+    - 4.125 亿 must match 4.125, not 4 or 41
+    """
+    # Extract amounts from source (English)
+    source_amounts = set()
+    
+    # Billions
+    for m in re.finditer(r'\$?([\d,.]+)\s*billion', source_text, re.IGNORECASE):
+        num = float(m.group(1).replace(',', ''))
+        # $X billion = X*10 亿
+        yi_value = num * 10
+        source_amounts.add(str(yi_value))
+        source_amounts.add(f"{yi_value}亿")
+    
+    # Millions
+    for m in re.finditer(r'\$?([\d,.]+)\s*million', source_text, re.IGNORECASE):
+        num = float(m.group(1).replace(',', ''))
+        # $X million = X/100 亿 (if >= 100M) or X/10000 万
+        if num >= 100:
+            yi_value = num / 100
+            source_amounts.add(str(yi_value))
+            source_amounts.add(f"{yi_value}亿")
+        wan_value = num * 100  # X万 = X*100 万美元 for millions
+        source_amounts.add(str(wan_value))
+    
+    # Extract Chinese amounts
+    chinese_amounts = parse_chinese_decimal(chinese_text)
+    
+    # Check that all Chinese amounts are in source
+    for cn_amt in chinese_amounts:
+        if cn_amt not in source_amounts:
+            # Check if it's a decimal that needs exact matching
+            # e.g., 11.7 should match 11.7, not just 11
+            return False
+    
+    return True
 
 
 # =============================================================================
@@ -1549,6 +1709,147 @@ def build_deal_lines(
 
 
 # =============================================================================
+# PRECISION-FIRST VERIFICATION HELPERS
+# =============================================================================
+
+def has_license_grant_language(type_quote: str) -> bool:
+    """Check if type_quote contains license/collaboration grant language.
+    
+    Returns True only if the quote contains explicit grant wording like:
+    - 'grants...license'
+    - 'granted...license'
+    - 'exclusive license to'
+    - 'collaboration agreement' (only if NEW, not amendment)
+    - 'license agreement' (only if NEW)
+    """
+    if not type_quote:
+        return False
+    text = type_quote.lower()
+    
+    # Reject if this is an amendment/termination/assignment
+    if re.search(r'\b(amend|terminat|assign|divest|transfer|waiv)', text):
+        return False
+    
+    # Check for grant patterns
+    grant_patterns = [
+        r'\bgrants?\s+(?:\w+\s+){0,3}(?:exclusive\s+)?license\b',
+        r'\bgranted\s+(?:\w+\s+){0,3}(?:exclusive\s+)?license\b',
+        r'\bexclusive\s+license\s+to\b',
+        r'\bnon-exclusive\s+license\s+to\b',
+        r'\bcollaboration\s+agreement\b',
+        r'\blicense\s+agreement\b',
+        r'\bentere[ds]\s+into\s+(?:a\s+)?(?:\w+\s+)?(?:license|collaboration)\b',
+    ]
+    for pattern in grant_patterns:
+        if re.search(pattern, text):
+            return True
+    return False
+
+
+def has_acquisition_language(type_quote: str) -> bool:
+    """Check if type_quote contains acquisition/merger language.
+    
+    Returns True only if the quote contains explicit acquire/merge wording:
+    - 'acquire' / 'acquired' / 'acquisition'
+    - 'merger' / 'merge'
+    - 'purchase' (in context of company acquisition)
+    """
+    if not type_quote:
+        return False
+    text = type_quote.lower()
+    
+    # Reject if this is an amendment/termination/assignment
+    if re.search(r'\b(amend|terminat|assign|waiv)', text):
+        return False
+    
+    # Check for acquisition patterns
+    acq_patterns = [
+        r'\bacquire[sd]?\b',
+        r'\bacquisition\b',
+        r'\bmerger?\b',
+        r'\bmerge[sd]?\b',
+        r'\bpurchase\s+(?:of|all)\s+(?:the\s+)?(?:outstanding\s+)?(?:shares|stock|equity)\b',
+        r'\bpurchase\s+agreement\b.*\b(?:shares|stock|equity|company)\b',
+    ]
+    for pattern in acq_patterns:
+        if re.search(pattern, text):
+            return True
+    return False
+
+
+def has_role_keyword_for_kind(quote: str, kind: AmountKind) -> bool:
+    """Check if amount quote contains required role keyword for its kind.
+    
+    Each amount kind must have supporting role language in its quote:
+    - UPFRONT: 'upfront' or 'one-time' or 'signing' or 'initial'
+    - PURCHASE_PRICE: 'purchase price' or 'per share' or 'consideration' or
+                      'acquire...for $X' or 'for $X billion/million'
+    - MILESTONES_TOTAL: 'milestone' or 'aggregate' or 'up to' or 'maximum' or 'potential'
+    """
+    if not quote:
+        return False
+    text = quote.lower()
+    
+    if kind == AmountKind.UPFRONT:
+        return bool(re.search(r'\b(upfront|up-front|one-time|signing|initial)\b', text))
+    elif kind == AmountKind.PURCHASE_PRICE:
+        # Explicit price keywords
+        if re.search(r'\b(purchase\s+price|per\s+share|consideration|merger\s+consideration)\b', text):
+            return True
+        # "acquire...for $X" pattern (common in acquisition announcements)
+        if re.search(r'\bacquire\b.*\bfor\s+\$[\d,.]+\s*(?:billion|million|b(?:n)?|m(?:n)?)\b', text):
+            return True
+        # "for $X billion/million" with dollar amount explicitly (implicit consideration)
+        if re.search(r'\bfor\s+\$[\d,.]+\s*(?:billion|million)\b', text):
+            return True
+        return False
+    elif kind == AmountKind.MILESTONES_TOTAL:
+        return bool(re.search(r'\b(milestone|aggregate|up\s+to|maximum|potential)\b', text))
+    else:
+        # Out of scope kinds never have valid role keywords
+        return False
+
+
+def verify_defined_term_in_type_quote(counterparty: str, type_quote: str, filing_text: str) -> bool:
+    """Verify counterparty appears in type_quote or as defined term in parties clause.
+    
+    Returns True if:
+    1. counterparty name appears in type_quote directly, OR
+    2. counterparty is a defined term in a parties/defined-term clause that
+       also appears in type_quote (e.g., 'the "Seller"' defined as Company X)
+    """
+    if not counterparty or not type_quote:
+        return False
+    
+    # Direct check
+    if match_company_whole_word(counterparty, type_quote):
+        return True
+    
+    # Look for defined terms in type_quote and parties clauses
+    # Pattern: "CompanyName" (the "Term") or "CompanyName", as "Term"
+    defined_term_patterns = [
+        r'"([^"]+)"\s*\((?:the\s+)?"([^"]+)"\)',  # "Name" (the "Term")
+        r'"([^"]+)",?\s+as\s+(?:the\s+)?"([^"]+)"',  # "Name", as "Term"
+        r'([A-Z][A-Za-z\s&,.]+),?\s*\((?:the\s+)?"([^"]+)"\)',  # Name (the "Term")
+    ]
+    
+    # Search in filing text for counterparty's defined term
+    counterparty_normalized = normalize_company_name(counterparty).lower()
+    for pattern in defined_term_patterns:
+        for m in re.finditer(pattern, filing_text):
+            name = m.group(1).strip()
+            term = m.group(2).strip()
+            name_normalized = normalize_company_name(name).lower()
+            if (counterparty_normalized in name_normalized or 
+                name_normalized in counterparty_normalized):
+                # Found counterparty's defined term - check if term appears in type_quote
+                if re.search(rf'\b{re.escape(term)}\b', type_quote, re.IGNORECASE):
+                    return True
+    
+    return False
+
+
+# =============================================================================
 # MAIN DEAL PROCESSING
 # =============================================================================
 
@@ -1590,6 +1891,11 @@ def process_sec_deal(
         logging.warning("Invalid deal_type: %s", deal_type_str)
         return None
     
+    # PRECISION-FIRST: Narrow scope check - only publish license/collab and acquisition/merger
+    if deal_type not in IN_SCOPE_DEAL_TYPES:
+        logging.info("Deal out_of_scope: deal_type=%s is not in-scope (only license_collaboration, acquisition, merger)", deal_type_str)
+        return None
+    
     counterparty = claude_response.get('counterparty_name', '').strip()
     type_quote = claude_response.get('type_quote', '').strip()
     counterparty_quote = claude_response.get('counterparty_quote', '').strip()
@@ -1613,12 +1919,30 @@ def process_sec_deal(
         logging.info("Deal dropped: type_quote describes historical agreement: %s", type_quote[:80])
         return None
     
+    # PRECISION-FIRST: Verify deal-type-specific language in type_quote
+    # License/collaboration must have grant language
+    if deal_type == DealType.LICENSE_COLLABORATION:
+        if not has_license_grant_language(type_quote):
+            logging.info("Deal dropped: license/collaboration missing grant language in type_quote: %s", type_quote[:80])
+            return None
+    
+    # Acquisition/merger must have acquire/merge language
+    if deal_type in (DealType.ACQUISITION, DealType.MERGER):
+        if not has_acquisition_language(type_quote):
+            logging.info("Deal dropped: acquisition/merger missing acquire/merge language in type_quote: %s", type_quote[:80])
+            return None
+    
     # Verification 1c: Validate deal type against type_quote content
     validated_type, type_was_corrected = validate_deal_type_from_quote(deal_type, type_quote)
     if validated_type is None:
         logging.info("Deal dropped: could not validate deal type from type_quote")
         return None
     deal_type = validated_type
+    
+    # Re-verify scope after type correction
+    if deal_type not in IN_SCOPE_DEAL_TYPES:
+        logging.info("Deal out_of_scope after type correction: deal_type=%s", deal_type.value)
+        return None
     
     # Verification 2: counterparty_quote must exist in filing
     if not counterparty_quote:
@@ -1681,6 +2005,22 @@ def process_sec_deal(
         
         if not quote:
             logging.debug("Amount dropped: no quote")
+            continue
+        
+        # PRECISION-FIRST: Parse and check amount kind scope
+        try:
+            kind = AmountKind(kind_str)
+        except ValueError:
+            kind = AmountKind.OTHER
+        
+        # Only process in-scope amount kinds
+        if kind not in IN_SCOPE_AMOUNT_KINDS:
+            logging.debug("Amount dropped: kind=%s is out of scope (only upfront, purchase_price, milestones_total)", kind_str)
+            continue
+        
+        # PRECISION-FIRST: Amount quote must contain role keyword for its kind
+        if not has_role_keyword_for_kind(quote, kind):
+            logging.debug("Amount dropped: quote missing role keyword for kind=%s: %s", kind_str, quote[:80])
             continue
         
         # Verification: quote must be in filing
@@ -1779,24 +2119,9 @@ def process_sec_deal(
         
         # GENERAL RULE: Amount must be tied to the counterparty in the SAME context
         # Either the quote itself names the counterparty, or the same paragraph does.
-        # EXCEPTION: For DRAWN amounts in debt facilities, the tranche description is often
-        # in a separate paragraph from the agreement introduction. If the quote is near the
-        # type_quote (within 5000 chars), allow it - it's describing the same agreement.
-        amount_near_type_quote = False
-        if type_quote:
-            type_pos = find_quote_position(type_quote, filing_text)
-            amount_pos = find_quote_position(quote, filing_text)
-            if type_pos is not None and amount_pos is not None:
-                distance = abs(amount_pos - type_pos)
-                amount_near_type_quote = distance < 5000
-        
         if not counterparty_in_quote and not counterparty_in_same_para:
-            # Allow DRAWN amounts that are near the type_quote - they're part of the same agreement
-            if kind_str == 'drawn' and amount_near_type_quote:
-                logging.debug("DRAWN amount allowed: near type_quote despite not in same paragraph")
-            else:
-                logging.debug("Amount dropped: not in same paragraph as counterparty: %s", quote[:50])
-                continue
+            logging.debug("Amount dropped: not in same paragraph as counterparty: %s", quote[:50])
+            continue
         
         # Additional check: amount quote should be contextually near the type_quote
         # This prevents picking up amounts from unrelated transactions in the same filing
@@ -1805,50 +2130,21 @@ def process_sec_deal(
             amount_pos = find_quote_position(quote, filing_text)
             if type_pos is not None and amount_pos is not None:
                 distance = abs(amount_pos - type_pos)
-                # If amount is very far from type_quote (>10000 chars), it might be from a different transaction
-                # Allow if it's in an exhibit or press release section
+                # If amount is very far from type_quote (>10000 chars), drop it
                 if distance > 10000:
-                    # Check if amount is in a different Item section
-                    type_item_match = re.search(r'Item\s+\d+\.\d+', filing_text[max(0, type_pos-500):type_pos+100], re.IGNORECASE)
-                    amount_item_match = re.search(r'Item\s+\d+\.\d+', filing_text[max(0, amount_pos-500):amount_pos+100], re.IGNORECASE)
-                    if type_item_match and amount_item_match:
-                        type_item = type_item_match.group().lower()
-                        amount_item = amount_item_match.group().lower()
-                        if type_item != amount_item:
-                            logging.debug("Amount dropped: in different Item section (type: %s, amount: %s): %s", 
-                                         type_item, amount_item, quote[:50])
-                            continue
+                    logging.debug("Amount dropped: too far from type_quote (%d chars): %s", distance, quote[:50])
+                    continue
         
-        try:
-            kind = AmountKind(kind_str)
-        except ValueError:
-            kind = AmountKind.OTHER
-        
-        # Parse amount from quote
+        # Parse amount from quote (kind already parsed above)
         parsed = parse_amount_from_quote(quote, kind)
         if parsed:
             verified_amounts.append(parsed)
         else:
             logging.debug("Amount dropped: could not parse amount from: %s", quote[:50])
     
-    # Check if type_quote mentions shares that weren't in the amounts array
-    # This handles cases where Claude mentions shares in type_quote but forgets to list them
-    has_equity = any(a.kind == AmountKind.EQUITY for a in verified_amounts)
-    if not has_equity and type_quote:
-        # Look for share count in type_quote - simpler pattern that captures "X shares"
-        share_match = re.search(r'([\d,]+)\s+shares?\b', type_quote, re.IGNORECASE)
-        if share_match:
-            share_quote = share_match.group(0)
-            # Verify the share quote is in the filing
-            if verify_quote_in_filing(share_quote, filing_text):
-                parsed_shares = parse_amount_from_quote(share_quote, AmountKind.EQUITY)
-                if parsed_shares:
-                    logging.debug("Extracted shares from type_quote: %s", share_quote)
-                    verified_amounts.append(parsed_shares)
-    
     # Build headline amount (first non-conditional amount)
-    # Conditional amounts ("may receive up to") should NOT be used as headline
-    # They can only appear in detail lines (e.g., milestones)
+    # For in-scope deals: PURCHASE_PRICE or UPFRONT are headline-worthy
+    # MILESTONES_TOTAL only appears in detail lines (conditional/uncertain)
     headline_amount = None
     for amount in verified_amounts:
         # Skip conditional (up_to) amounts for headline - these are uncertain
@@ -1857,17 +2153,10 @@ def process_sec_deal(
         if amount.kind in (AmountKind.PURCHASE_PRICE, AmountKind.UPFRONT):
             headline_amount = render_amount_chinese(amount)
             break
-    # For debt facility deals ONLY, facility_size (even with up_to) IS appropriate as headline
-    if not headline_amount and deal_type == DealType.DEBT_FACILITY:
-        for amount in verified_amounts:
-            if amount.kind == AmountKind.FACILITY_SIZE:
-                headline_amount = render_amount_chinese(amount)
-                break
-    # Still no headline? Use first non-conditional, non-milestone, non-facility, non-equity amount
-    # EQUITY (shares) should not be used as headline - it's a payment component, not main amount
+    # Fallback to first non-conditional amount
     if not headline_amount:
         for amount in verified_amounts:
-            if not amount.up_to and amount.kind not in (AmountKind.MILESTONES_TOTAL, AmountKind.FACILITY_SIZE, AmountKind.EQUITY):
+            if not amount.up_to:
                 headline_amount = render_amount_chinese(amount)
                 break
     
@@ -1876,27 +2165,17 @@ def process_sec_deal(
     title = build_deal_title(filer_name, counterparty, deal_type, filer_role, headline_amount)
     detail_lines = build_deal_lines(deal_type, verified_amounts, filer_role)
     
-    # Build output dict
+    # Build output dict - only in-scope deal types
     deal_kinds_map = {
         DealType.ACQUISITION: ['acq'],
         DealType.MERGER: ['acq'],
         DealType.LICENSE_COLLABORATION: ['lic'],
-        DealType.EQUITY_FINANCING: ['inv'],
-        DealType.DEBT_FACILITY: ['inv'],
-        DealType.OBLIGATION_BUYOUT: ['lic'],
     }
     
     # Use event_date if available, fallback to filing_date
     display_date = event_date[:7] if event_date else (filing_date[:7] if filing_date else '')
     
-    # For buyouts, the amount is embedded in the title (e.g., "支付2,000万美元买断")
-    # rather than being a suffix (e.g., "（2,000万美元）").
-    # When the deal type was CORRECTED from another type to buyout, set money=''
-    # to satisfy the "truthful" check which requires title to end with （amount）.
-    # When it was originally buyout (not corrected), keep the money as-is.
     output_money = headline_amount or ''
-    if deal_type == DealType.OBLIGATION_BUYOUT and type_was_corrected:
-        output_money = ''
     
     return {
         'url': filing_url,
