@@ -2132,20 +2132,23 @@ class TestYieldAndSourceFetch(unittest.TestCase):
         from inlight_articles import pipeline_targets
 
         defaults = pipeline_targets({})
-        self.assertEqual(defaults["target_articles"], 10)
+        self.assertEqual(defaults["min_deep"], 3)
+        self.assertEqual(defaults["max_deep"], 5)
+        self.assertEqual(defaults["target_articles"], 3)
         self.assertEqual(defaults["target_deep"], 3)
+        self.assertEqual(defaults["max_brief"], 0)
         self.assertEqual(defaults["max_candidates"], 0)  # no silent cap
-        self.assertGreaterEqual(defaults["max_deep"], defaults["target_deep"])
-        self.assertGreaterEqual(
-            defaults["max_deep"] + defaults["max_brief"], defaults["target_articles"]
-        )
+        self.assertLessEqual(defaults["min_deep"], defaults["max_deep"])
         custom = pipeline_targets({
-            "target_articles": 14, "target_deep": 4, "max_deep": 6, "max_candidates": 30,
+            "min_deep": 3, "max_deep": 5, "max_brief": 0, "max_candidates": 30,
         })
-        self.assertEqual(custom["target_articles"], 14)
-        self.assertEqual(custom["target_deep"], 4)
-        self.assertEqual(custom["max_deep"], 6)
+        self.assertEqual(custom["min_deep"], 3)
+        self.assertEqual(custom["max_deep"], 5)
+        self.assertEqual(custom["max_brief"], 0)
         self.assertEqual(custom["max_candidates"], 30)
+        aliased = pipeline_targets({"target_deep": 4, "max_deep": 6})
+        self.assertEqual(aliased["min_deep"], 4)
+        self.assertEqual(aliased["max_deep"], 6)
 
     def test_omitted_max_candidates_does_not_drop_later_items(self):
         """Replay/acceptance fixtures omit the key; do not silently cap at 30."""
@@ -2171,7 +2174,7 @@ class TestYieldAndSourceFetch(unittest.TestCase):
 
         with patch("inlight_articles.enrich_item", side_effect=fake_enrich):
             with patch("inlight_articles.triage_items", return_value=[]):
-                process_articles(rows, {"target_articles": 10, "target_deep": 3})
+                process_articles(rows, {"min_deep": 3, "max_deep": 5})
         self.assertEqual(len(seen), n)
         self.assertIn("https://doi.org/10.1/item-34", seen)
 
@@ -2186,10 +2189,10 @@ class TestYieldAndSourceFetch(unittest.TestCase):
         from pathlib import Path
 
         cfg = yaml.safe_load(Path(__file__).resolve().parent.parent.joinpath("sources.yaml").read_text())
-        self.assertGreaterEqual(int(cfg["target_articles"]), 10)
-        self.assertGreaterEqual(int(cfg["target_deep"]), 3)
-        self.assertGreaterEqual(int(cfg["max_deep"]), int(cfg["target_deep"]))
-        self.assertGreaterEqual(int(cfg["max_brief"]) + int(cfg["max_deep"]), 10)
+        self.assertEqual(int(cfg["min_deep"]), 3)
+        self.assertEqual(int(cfg["max_deep"]), 5)
+        self.assertLessEqual(int(cfg["min_deep"]), int(cfg["max_deep"]))
+        self.assertEqual(int(cfg["max_brief"]), 0)
         self.assertGreaterEqual(int(cfg["max_candidates"]), 10)
 
     def test_triage_prompt_asks_for_depth_and_quantity(self):
@@ -2200,10 +2203,14 @@ class TestYieldAndSourceFetch(unittest.TestCase):
             abstract="x" * 100, evidence_level="abstract",
         )]
         prompt = build_triage_prompt(items, {})
-        self.assertIn("至少 10", prompt)
-        self.assertIn("至少 3", prompt)
-        self.assertIn("宁可少发，不可发错", prompt)
+        self.assertIn("3–5", prompt)
+        self.assertIn("宁可发 3", prompt)
+        self.assertIn("不要发 5", prompt)
+        self.assertIn("不可发错", prompt)
         self.assertIn("机制", prompt)
+        self.assertIn("可选", prompt)
+        self.assertNotIn("至少 10", prompt)
+        self.assertNotIn("凑数量", prompt)
 
     def test_enrich_oa_fulltext_and_press_fallback(self):
         from inlight_articles import enrich_item
@@ -2347,13 +2354,64 @@ class TestYieldAndSourceFetch(unittest.TestCase):
                     out = process_articles(
                         [{"url": item.url, "kind": "academic", "title": "T",
                           "source": "N", "date": "2026-01-01", "summary": "x" * 80}],
-                        {"target_articles": 10, "target_deep": 3},
+                        {"min_deep": 3, "max_deep": 5},
                     )
         self.assertEqual(out["articles"], [])
         self.assertEqual(LAST_RUN_STATS["dropped"], 1)
         self.assertEqual(LAST_RUN_STATS["candidates_triaged"], 1)
+        self.assertEqual(LAST_RUN_STATS["published_industry"], 0)
         self.assertTrue(LAST_RUN_STATS["drops"])
         self.assertIn("99%", LAST_RUN_STATS["drops"][0]["reason"])
+
+    def test_industry_optional_and_below_min_does_not_relax_checks(self):
+        from inlight_articles import process_articles, LAST_RUN_STATS, EnrichedItem, log_run_yield
+        import logging
+
+        item = EnrichedItem(
+            url="https://doi.org/10.1/deep-only",
+            title="T",
+            source="N",
+            date="2026-01-01",
+            abstract="The rate was 40% in 10 patients.",
+            evidence_level="abstract",
+        )
+
+        def fake_enrich(row):
+            return item
+
+        with patch("inlight_articles.enrich_item", side_effect=fake_enrich):
+            with patch("inlight_articles.triage_items", return_value=[]):
+                out = process_articles(
+                    [{"url": item.url, "kind": "academic", "title": "T",
+                      "source": "N", "date": "2026-01-01", "summary": "x" * 80}],
+                    {"min_deep": 3, "max_deep": 5},
+                )
+        self.assertEqual(out["articles"], [])
+        self.assertEqual(out["deals"], [])
+        self.assertEqual(LAST_RUN_STATS["published_deep"], 0)
+        self.assertEqual(LAST_RUN_STATS["published_industry"], 0)
+
+        records = []
+
+        class _H(logging.Handler):
+            def emit(self, record):
+                records.append(record)
+
+        h = _H()
+        log = logging.getLogger()
+        log.addHandler(h)
+        try:
+            log_run_yield(
+                {"published_deep": 1, "published_brief": 4, "published_industry": 0,
+                 "candidates_fetched": 20, "candidates_triaged": 5, "dropped": 4,
+                 "drops": [], "sources": {}},
+                {"min_deep": 3, "max_deep": 5},
+            )
+        finally:
+            log.removeHandler(h)
+        warnings = [r.getMessage() for r in records if r.levelno >= logging.WARNING]
+        self.assertTrue(any("未放宽核对" in w for w in warnings), warnings)
+        self.assertTrue(any("1 < 3" in w for w in warnings), warnings)
 
 
 if __name__ == "__main__":

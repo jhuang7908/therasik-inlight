@@ -5,16 +5,15 @@
 # needs_browser_ua: true 表示需要用浏览器 User-Agent 抓取
 
 window_days: 7
-# ACIR-style weekly yield. These are aims, not quotas: never relax accuracy
-# to hit them. Missing an article is OK; publishing a wrong one is not.
-target_articles: 10   # 解读 to aim for (deep + brief)
-target_deep: 3        # of those, at least this many deep
-max_deep: 5           # triage cap (above target so validation drops still leave 3)
-max_brief: 12         # triage cap
+# Weekly 解读: 3–5 deep analyses (mechanism, key data, significance, limitations).
+# Aims, not quotas. Prefer 3 excellent over 5 mediocre. Never relax accuracy.
+min_deep: 3
+max_deep: 5
+max_brief: 0          # 解读 are deep; do not pad the week with briefs
 max_candidates: 30    # academic items to enrich and triage
 max_per_source: 10
-max_academic: 16      # legacy-path publish cap; new pipeline uses the targets above
-max_industry: 4
+max_academic: 16      # legacy-path publish cap; new pipeline uses min_deep/max_deep
+max_industry: 4       # optional deals/business news; skip without error if none
 
 sources:
   # ACIR 没有 RSS，需要人工录入或专门爬虫

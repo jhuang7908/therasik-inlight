@@ -1072,16 +1072,21 @@ def main() -> None:
             logging.info("使用新文章深度管线（enrich + triage + 逐篇生成 + validate）")
             new_draft = process_articles(items, config)
             
-            # New pipeline handles articles; industry items still use old pipeline
-            # but we pass only industry items to it
+            # Industry / deals are optional. Include when available; skip
+            # without failing the week when they are missing or fail to draft.
             industry_items = [item for item in items if item.get("kind") != "academic"]
+            deals = []
             if industry_items:
-                logging.info("Processing %d industry items with old pipeline", len(industry_items))
-                old_draft = claude_draft(industry_items, config)
-                deals = old_draft.get("deals", [])
+                try:
+                    logging.info("Processing %d industry items (optional deals/business)", len(industry_items))
+                    old_draft = claude_draft(industry_items, config)
+                    deals = (old_draft or {}).get("deals") or []
+                except Exception:
+                    logging.exception("行业/交易新闻处理失败，本期跳过（可选栏目）")
+                    deals = []
             else:
-                deals = []
-            
+                logging.info("本期无行业/交易候选，跳过（可选栏目）")
+
             draft = {
                 "articles": new_draft.get("articles", []),
                 "deals": deals[:int(config.get("max_industry", 4))],

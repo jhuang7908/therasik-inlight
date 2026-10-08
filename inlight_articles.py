@@ -135,15 +135,33 @@ class EnrichedItem:
     source_trace: list[str] = field(default_factory=list)
 
 
+def _cfg_int(cfg: dict, key: str, default: int) -> int:
+    """Read an int from config. Missing/blank uses default; explicit 0 is kept."""
+    if key not in cfg or cfg[key] is None or cfg[key] == "":
+        return default
+    return int(cfg[key])
+
+
 def pipeline_targets(config: dict | None) -> dict:
-    """Configurable weekly yield. Defaults match the ACIR-style brief (10 / 3 deep)."""
+    """Configurable weekly yield. Defaults: 3–5 deep 解读 (all deep, no brief padding)."""
     cfg = config or {}
+    if "min_deep" in cfg and cfg["min_deep"] not in (None, ""):
+        min_deep = int(cfg["min_deep"])
+    elif "target_deep" in cfg and cfg["target_deep"] not in (None, ""):
+        min_deep = int(cfg["target_deep"])
+    elif "target_articles" in cfg and cfg["target_articles"] not in (None, ""):
+        min_deep = int(cfg["target_articles"])
+    else:
+        min_deep = 3
+    max_deep = _cfg_int(cfg, "max_deep", 5)
     return {
-        "target_articles": int(cfg.get("target_articles") or 10),
-        "target_deep": int(cfg.get("target_deep") or 3),
-        "max_deep": int(cfg.get("max_deep") or 5),
-        "max_brief": int(cfg.get("max_brief") or 12),
-        "max_industry": int(cfg.get("max_industry") or 4),
+        "min_deep": min_deep,
+        "max_deep": max_deep,
+        # Aliases: every 解读 is a deep analysis.
+        "target_articles": min_deep,
+        "target_deep": min_deep,
+        "max_brief": _cfg_int(cfg, "max_brief", 0),
+        "max_industry": _cfg_int(cfg, "max_industry", 4),
         # 0 = no cap. Only apply when the loaded config sets the key
         # (production sources.yaml does; acceptance/replay fixtures do not).
         "max_candidates": int(cfg["max_candidates"]) if cfg.get("max_candidates") else 0,
@@ -1067,9 +1085,8 @@ def build_triage_prompt(items: list[EnrichedItem], config: dict) -> str:
     max_deep = t["max_deep"]
     max_brief = t["max_brief"]
     max_industry = t["max_industry"]
-    target_articles = t["target_articles"]
-    target_deep = t["target_deep"]
-    
+    min_deep = t["min_deep"]
+
     items_json = []
     for item in items:
         items_json.append({
@@ -1084,20 +1101,34 @@ def build_triage_prompt(items: list[EnrichedItem], config: dict) -> str:
             "has_press": bool(item.press_coverage),
             "abstract_preview": item.abstract[:500] if item.abstract else item.rss_summary[:500],
         })
-    
+
+    if max_brief:
+        brief_rule = (
+            f"2. 最多选 {max_brief} 篇论文速览（tier=brief）。"
+            "不要用速览凑解读数量；解读必须是深度分析。"
+        )
+    else:
+        brief_rule = "2. 不要选题速览来凑数。材料不够写成深度解读的条目直接不选。"
+    if max_industry:
+        industry_rule = (
+            f"3. 行业、商业或交易新闻可选：有就最多选 {max_industry} 条（tier=industry）；"
+            "没有就跳过，不要因此报错或硬凑。"
+        )
+    else:
+        industry_rule = "3. 本期不选行业动态。"
+
     return f"""你是前沿追踪的选题编辑。下面是本周抓到的条目，请挑选最重要的进入本期周报。
 
-本期对标 ACIR 周报：要有深度，也要有数量。目标是发表至少 {target_articles} 篇解读，其中至少 {target_deep} 篇深度（机制 + 数据 + 意义 + 局限）。上限高于目标，以便核对淘汰后仍够量。宁可少发，不可发错。
+本期对标 ACIR 周报：解读必须有深度。目标是发表 {min_deep}–{max_deep} 篇深度解读（机制 + 关键数据 + 意义 + 局限）。宁可发 {min_deep} 篇过硬的，不要发 {max_deep} 篇平庸的。核对不过就少发，不可发错。
 
 ## 选题规则
 
-1. 最多选 {max_deep} 篇深度解读（tier=deep）。必须有开放获取全文或足够长的摘要（evidence_level 为 fulltext / abstract / preprint），写出机制、数据、意义与局限。优先给有全文的条目。新闻稿不能单独支撑 deep。
-2. 最多选 {max_brief} 篇论文速览（tier=brief）。深度名额用满后再用速览凑数量。
-3. 合计尽量接近 {target_articles} 篇（deep+brief），不要只选两三篇。
-4. 最多选 {max_industry} 条行业动态（tier=industry）
-5. evidence_level 为 press/secondary 的条目只能选为 brief 或 industry，不能选为 deep
-6. 优先选择：临床试验结果、首次人体数据、平台级方法突破、有开放获取全文的重要发现
-7. 不要为凑数降低事实标准。材料不够写解读的条目不要选。
+1. 选最多 {max_deep} 篇深度解读（tier=deep），目标至少 {min_deep} 篇。必须有开放获取全文或足够长的摘要（evidence_level 为 fulltext / abstract / preprint），写出机制、数据、意义与局限。优先给有全文的条目。新闻稿不能单独支撑 deep。
+{brief_rule}
+{industry_rule}
+4. evidence_level 为 press/secondary 的条目只能选为 brief 或 industry，不能选为 deep
+5. 优先选择：临床试验结果、首次人体数据、平台级方法突破、有开放获取全文的重要发现
+6. 不要为凑数降低事实标准。材料不够写深度解读的条目不要选。
 
 ## 领域分类
 
@@ -3935,10 +3966,10 @@ def log_run_yield(stats: dict, config: dict | None) -> None:
     src = stats.get("sources") or {}
     logging.info("=== 周报产量 ===")
     logging.info(
-        "候选：抓取 %d，选题 %d（目标发表 %d，目标深度 %d；上限 deep %d / brief %d）",
+        "候选：抓取 %d，选题 %d（深度解读目标 %d–%d；速览上限 %d；行业可选）",
         stats.get("candidates_fetched", 0),
         stats.get("candidates_triaged", 0),
-        t["target_articles"], t["target_deep"], t["max_deep"], t["max_brief"],
+        t["min_deep"], t["max_deep"], t["max_brief"],
     )
     logging.info(
         "来源：全文 %d / 摘要 %d / 新闻稿 %d / 预印本 %d",
@@ -3946,19 +3977,18 @@ def log_run_yield(stats: dict, config: dict | None) -> None:
         src.get("press", 0), src.get("preprint", 0),
     )
     logging.info(
-        "发表：深度 %d / 速览 %d / 丢弃 %d",
+        "发表：深度 %d / 速览 %d / 行业 %d / 丢弃 %d",
         stats.get("published_deep", 0),
         stats.get("published_brief", 0),
+        stats.get("published_industry", 0),
         stats.get("dropped", 0),
     )
     for drop in stats.get("drops") or []:
         logging.info("丢弃 %s：%s", drop.get("url", ""), drop.get("reason", ""))
-    published = stats.get("published_deep", 0) + stats.get("published_brief", 0)
-    if published < t["target_articles"] or stats.get("published_deep", 0) < t["target_deep"]:
+    if stats.get("published_deep", 0) < t["min_deep"]:
         logging.warning(
-            "产量低于目标：发表 %d（深度 %d）< 目标 %d（深度 %d）。未放宽核对。",
-            published, stats.get("published_deep", 0),
-            t["target_articles"], t["target_deep"],
+            "深度解读低于目标：%d < %d（上限 %d）。未放宽核对。",
+            stats.get("published_deep", 0), t["min_deep"], t["max_deep"],
         )
 
 
@@ -3992,13 +4022,15 @@ def process_articles(items: list[dict], config: dict) -> dict:
     
     selections = triage_items(enriched, config)
     academic_sels = [s for s in selections if s.get("tier") != "industry"]
-    
+    industry_sels = [s for s in selections if s.get("tier") == "industry"]
+
     stats = {
         "candidates_fetched": len(academic_items),
         "candidates_triaged": len(academic_sels),
         "sources": source_counts,
         "published_deep": 0,
         "published_brief": 0,
+        "published_industry": len(industry_sels),
         "dropped": 0,
         "drops": [],
     }
