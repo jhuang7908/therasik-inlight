@@ -77,11 +77,9 @@ nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:color-
 .sechead h2{font-size:18px}
 .sechead span{font-size:12.5px;color:var(--muted)}
 
-/* 固定列数，保证每行填满：桌面 3 列，平板 2 列，手机 1 列 */
-/* 小红书式卡片网格：卡片窄、列数多、间距小 */
+/* Unified card grid: 4 cols wide desktop, 3 cols narrow desktop, 2 cols tablet/phone (Xiaohongshu style) */
 .grid{display:grid;grid-template-columns:repeat(var(--cols,4),minmax(0,1fr));gap:10px;align-items:start}
-@media (max-width:1240px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
-
+@media (max-width:1279px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (max-width:860px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;display:grid;grid-template-columns:1fr;gap:0;align-content:start;overflow:hidden;color:inherit}
@@ -92,7 +90,9 @@ nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:color-
 .paperfig{max-width:none}
 .paperfig img{display:block;width:100%;height:auto;max-height:none;object-fit:cover}
 .cover svg{display:block;width:100%;height:100%}
-.cbody{display:grid;gap:4px;align-content:start;min-width:0;padding:8px 10px 9px}
+.cbody{display:flex;flex-direction:column;gap:4px;min-width:0;padding:8px 10px 9px}
+.cbody h3{flex:0 0 auto}
+.cbody .metarow{margin-top:auto}
 .card h3{font-size:13.5px;line-height:1.45;font-family:var(--display);font-weight:800;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .card .date{font-size:10.5px;letter-spacing:.03em;color:var(--muted);font-weight:700}
@@ -175,7 +175,9 @@ article .ahead{display:grid;gap:11px;padding-bottom:18px;border-bottom:1px solid
 svg text{font-family:var(--body)}
 .metarow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;row-gap:4px}
 .metarow .date,.metarow .idate{white-space:nowrap}
-.metarow .expbtn{margin-left:auto}
+.metarow .expbtn{margin-left:auto;flex-shrink:0}
+.metarow .jname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;flex:1 1 0;min-width:0}
+.metarow .kind{flex-shrink:0}
 .thumb{display:block;width:100%;aspect-ratio:5/3;max-width:100%}
 .thumb svg{display:block;width:100%;height:100%}
 .fcard .thumb{aspect-ratio:16/6}
@@ -304,13 +306,15 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 .chip{font-size:13px;padding:5px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--muted);cursor:pointer;font-family:inherit}
 .chip:hover{color:var(--fg)}
 .chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--bg);font-weight:700}
-/* 卡片网格：桌面 3 列，平板 2 列，手机 1 列 */
+/* Feed grid: same breakpoints as .grid for consistency */
 .feed{display:grid;grid-template-columns:repeat(var(--cols,4),minmax(0,1fr));gap:10px;align-items:start}
-@media (max-width:1240px){.feed{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:1279px){.feed{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (max-width:860px){.feed{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 .item{background:var(--surface);border:1px solid var(--line);border-radius:14px;display:grid;align-content:start;overflow:hidden}
-.item .cbody{padding:8px 10px 9px}
+.item .cbody{padding:8px 10px 9px;display:flex;flex-direction:column;min-height:0}
+.item .cbody h3{flex:0 0 auto}
+.item .cbody .metarow{margin-top:auto}
 .card.wide{grid-column:1/-1;grid-template-columns:190px minmax(0,1fr)}
 .card.wide .cover{aspect-ratio:auto;height:100%;min-height:112px}
 .card.wide .cbody{padding:11px 13px 12px}
@@ -352,27 +356,31 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
   .chip{min-height:44px;padding:0 16px;display:inline-flex;align-items:center}
   .expbtn{min-height:44px;display:flex;align-items:center}
   .sec p{font-size:15px}
-  .feed{grid-template-columns:1fr}
-  .grid{grid-template-columns:1fr}
-  .item{grid-template-columns:132px minmax(0,1fr);align-items:stretch}
-  .item .cover{aspect-ratio:auto;min-height:108px;height:100%}
-  .item h3{font-size:16px;-webkit-line-clamp:3}
   .panel ol,.panel ul{font-size:15px}
   nav,.navshell,.nav-in{height:56px;max-height:56px;box-sizing:border-box}
   .hb-art{display:none}
   .hero-band{min-height:0;background:var(--surface)}
   .hero-band::after{display:none}
-  .feed .item .cover{display:none}
-  .feed .item{grid-template-columns:1fr}
   /* Hide deals illustrations on mobile to reduce page height */
   #v-deals .item .cover,
   #v-deals .cover,
   .feed .cover{display:none!important}
+  .feed .item{grid-template-columns:1fr}
   /* Reduce tracker chart sizes on mobile */
   .tracker svg{max-height:120px}
 }
+/* Xiaohongshu-style compact 2-col grid on phone (≤480px) */
 @media (max-width:480px){
   .nav-in a{padding:0 8px;font-size:13px}
+  .grid,.feed{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .grid .item,.grid .card{grid-template-columns:1fr}
+  .grid .item .cover,.grid .card .cover{display:block;aspect-ratio:3/2;min-height:auto;height:auto}
+  .grid .item h3,.grid .card h3{font-size:12px;-webkit-line-clamp:2}
+  .grid .cbody{padding:6px 8px 8px;gap:3px}
+  .grid .metarow{gap:4px;row-gap:3px}
+  .grid .idate,.grid .jname{font-size:9px}
+  .grid .kind{font-size:9px;padding:0 5px}
+  .grid .expbtn{font-size:11px;min-height:32px;padding:0}
 }
 </style>
 </head>
