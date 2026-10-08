@@ -336,12 +336,13 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 
 /* Mobile improvements: 44px tap targets, better readability */
 @media (max-width:720px){
-  .nav-in{gap:4px;padding:8px 10px}
+  nav{max-height:56px}
+  .nav-in{gap:4px;padding:6px 10px}
   .nav-tabs{gap:2px}
-  .nav-in a{font-size:12px;padding:0 10px;height:36px}
+  .nav-in a{font-size:11px;padding:0 8px;height:32px}
   .brand .btext{display:none}
-  .bmark,.bmark-wrap{width:32px;height:32px}
-  .navsub{padding:0 14px;height:36px;margin-left:auto}
+  .bmark,.bmark-wrap{width:28px;height:28px}
+  .navsub{padding:0 12px;height:32px;margin-left:auto;font-size:11px}
   .btn{min-height:44px;padding:0 20px;display:inline-flex;align-items:center;justify-content:center}
   .chip{min-height:44px;padding:0 16px;display:inline-flex;align-items:center}
   .expbtn{min-height:44px;display:flex;align-items:center}
@@ -359,9 +360,15 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
   .hero-band::after{display:none}
   .feed .item .cover{display:none}
   .feed .item{grid-template-columns:1fr}
+  /* Hide deals illustrations on mobile to reduce page height */
+  #v-deals .item .cover,
+  #v-deals .cover,
+  .feed .cover{display:none!important}
+  /* Reduce tracker chart sizes on mobile */
+  .tracker svg{max-height:120px}
 }
 @media (max-width:480px){
-  .nav-in a{padding:0 8px;font-size:11px}
+  .nav-in a{padding:0 6px;font-size:10px}
 }
 </style>
 </head>
