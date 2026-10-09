@@ -438,6 +438,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 .side2 .side-card h2{font-size:15px}
 .side2 .side-card li{font-size:13px;line-height:1.65}
 .coop{border-top:3px solid #C0492F}
+.side2 .sbox.coop{border-top:3px solid #C0492F}
 .coop .coop-t{font-size:15px;color:var(--accent);font-family:var(--display)}
 .coop ul{margin:0;padding-left:1.1em;display:grid;gap:3px}
 .coop li{font-size:13.5px;line-height:1.6}

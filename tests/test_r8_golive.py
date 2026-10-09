@@ -244,7 +244,7 @@ class R8GoLiveTests(unittest.TestCase):
         self.assertEqual(cat.FIELD_KEYS["动物模型"], "animal")
 
     def test_article_rail_quick_look_author_and_coop(self):
-        """Left rail: 速览 100–200 chars, 作者介绍 present, 合作 box; 作者节已移出正文."""
+        """Left rail: 速览 100–200 han chars, 作者介绍 present, 合作 box; 作者节已移出正文."""
         expected = [
             "研究背景与待解问题",
             "研究设计",
@@ -259,9 +259,10 @@ class R8GoLiveTests(unittest.TestCase):
             look = re.search(r'<section class="sbox look">.*?<p>(.*?)</p>', page, re.S)
             self.assertIsNotNone(look, a["id"])
             text = re.sub(r"<[^>]+>", "", look.group(1))
-            n = len(re.sub(r"\s+", "", text))
-            self.assertGreaterEqual(n, 100, (a["id"], n))
-            self.assertLessEqual(n, 200, (a["id"], n))
+            # Count only CJK han characters (not Latin letters, digits, units, symbols, punctuation)
+            han_chars = len(re.findall(r'[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]', text))
+            self.assertGreaterEqual(han_chars, 100, (a["id"], han_chars))
+            self.assertLessEqual(han_chars, 200, (a["id"], han_chars))
             self.assertIn('<span class="k">作者介绍</span>', page, a["id"])
             self.assertTrue((a.get("author_intro") or "").strip(), a["id"])
             self.assertIn("InSynBio · 前沿追踪", page, a["id"])
@@ -282,6 +283,20 @@ class R8GoLiveTests(unittest.TestCase):
         self.assertIn("sbox look", src)
         self.assertIn("COOP_AD", src)
         self.assertIn("作者、出处与核对", src)
+
+    def test_quick_look_han_char_count_in_catalog(self):
+        """Every published article's quick_look must have 100–200 CJK han characters."""
+        for a in cat.published_articles(self.catalog):
+            ql = a.get("quick_look") or ""
+            han_chars = len(re.findall(r'[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]', ql))
+            self.assertGreaterEqual(han_chars, 100, f"{a['id']}: {han_chars} han chars (need ≥100)")
+            self.assertLessEqual(han_chars, 200, f"{a['id']}: {han_chars} han chars (need ≤200)")
+
+    def test_coop_border_rule_exists(self):
+        """The .side2 .sbox.coop rule must apply border-top:3px solid #C0492F."""
+        src = (ROOT / "index.html").read_text(encoding="utf-8")
+        # The specific rule that overrides .side2 .sbox{border:1px solid var(--line)}
+        self.assertIn(".side2 .sbox.coop{border-top:3px solid #C0492F}", src)
 
 
 if __name__ == "__main__":
