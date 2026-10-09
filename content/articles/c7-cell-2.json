@@ -539,7 +539,9 @@
   "chart": {
    "justified": false,
    "note": "主要终点为安全性，n=4 单臂、无对照臂；仅有的并列数值（体外 419 对体内 86 个细胞/μl）来自 1 例患者且检测口径未明确同一，故不绘数据图。"
-  }
+  },
+  "quick_look": "4例复发难治骨髓瘤单次静脉输注体内BCMA CAR-T产品ESO-T01（0.2×10^9转导单位），随访最长15个月未见新增重要相关不良事件；1例持续sCR，中位PFS 4.0个月，另3例复发或进展后死亡。4例均出现3–4级血液学毒性。",
+  "author_intro": "通讯作者Heng Mei（梅恒）为华中科技大学同济医学院附属协和医院血液内科教授、主任，并任湖北省细胞治疗临床医学中心主任。第一作者含Jia Xu等，同属该院血液内科。"
  },
  "images": {
   "mech_raw": "c7-cell-2_mech_raw_r2.png",
@@ -590,5 +592,7 @@
   "final_md": "c7-cell-2_final_r2.md",
   "final_json": "c7-cell-2_final_r2.json"
  },
- "superseded_early_files": "c7-cell-2_final.json/.md, c7-cell-2_checks.json, c7-cell-2_mech_raw.png, c7-cell-2_card.png (first assembly, superseded by the _r2 files)"
+ "superseded_early_files": "c7-cell-2_final.json/.md, c7-cell-2_checks.json, c7-cell-2_mech_raw.png, c7-cell-2_card.png (first assembly, superseded by the _r2 files)",
+ "quick_look": "4例复发难治骨髓瘤单次静脉输注体内BCMA CAR-T产品ESO-T01（0.2×10^9转导单位），随访最长15个月未见新增重要相关不良事件；1例持续sCR，中位PFS 4.0个月，另3例复发或进展后死亡。4例均出现3–4级血液学毒性。",
+ "author_intro": "通讯作者Heng Mei（梅恒）为华中科技大学同济医学院附属协和医院血液内科教授、主任，并任湖北省细胞治疗临床医学中心主任。第一作者含Jia Xu等，同属该院血液内科。"
 }

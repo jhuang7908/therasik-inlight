@@ -436,7 +436,9 @@
   "chart": {
    "justified": false,
    "note": "主要终点有SI CCS 100%和组间P值，但提供材料未包含d14 HIO对照百分比；不绘制数据图。"
-  }
+  },
+  "quick_look": "CCS在限位槽内让约4000个小肠球体暂限融合，d6取出、续培至d14后移植，植入率100%，高于同日龄常规HIO（Fisher精确检验P=9.25×10−7）；全研究动物183只，移植后随访10周。",
+  "author_intro": "通讯作者Maxime M. Mahe任职南特大学/Inserm TENS UMR1235，并兼辛辛那提儿童医院小儿普外胸外科及干细胞与类器官医学中心。第一作者Holly M. Poling任职辛辛那提儿童医院。"
  },
  "images": {
   "mech_raw": "work/r4/clean/c1-org-5_mech_raw_r4c_clean.png",
@@ -445,5 +447,7 @@
   "card_src": "work/r4/clean/c1-org-5_card_raw_r4c_clean.png (cleanup 232/200/12/6)",
   "image_model": "mech + card: Grok drawings r4c (supplied by parent run)",
   "note": "mech strict pass; card raw warm 8.7% -> 1.9% under rule (b)"
- }
+ },
+ "quick_look": "CCS在限位槽内让约4000个小肠球体暂限融合，d6取出、续培至d14后移植，植入率100%，高于同日龄常规HIO（Fisher精确检验P=9.25×10−7）；全研究动物183只，移植后随访10周。",
+ "author_intro": "通讯作者Maxime M. Mahe任职南特大学/Inserm TENS UMR1235，并兼辛辛那提儿童医院小儿普外胸外科及干细胞与类器官医学中心。第一作者Holly M. Poling任职辛辛那提儿童医院。"
 }

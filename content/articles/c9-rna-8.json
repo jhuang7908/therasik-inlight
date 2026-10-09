@@ -11,8 +11,12 @@
   ],
   "title": "优化PE-LNP单剂2 mg/kg使小鼠全肝平均prime editing达49%",
   "one_liner": "系统优化三组分prime editor的脂质纳米颗粒后，单剂总RNA 2 mg/kg在小鼠全肝实现平均49%无插入缺失的精准编辑，较初始方案提高63倍。",
-  "citation": "Jiang AY, Cristian A, Brooks DL, Feierman ER, Chen PZ, Whittaker MN, et al. Efficient prime editing in vivo and in vitro using lipid nanoparticles. Nat Nanotechnol. 2026 Jun 15. https://doi.org/10.1038/s41565-026-02200-6"
+  "citation": "Jiang AY, Cristian A, Brooks DL, Feierman ER, Chen PZ, Whittaker MN, et al. Efficient prime editing in vivo and in vitro using lipid nanoparticles. Nat Nanotechnol. 2026 Jun 15. https://doi.org/10.1038/s41565-026-02200-6",
+  "quick_look": "系统优化三组分prime editor的OF-02脂质纳米颗粒后，单剂总RNA 2 mg/kg于给药后7天在小鼠全肝达平均49%无indel精准编辑，较初始s0.1提高63倍、较s0.2提高13倍；8周时2 mg/kg为44%。",
+  "author_intro": "通讯作者David R. Liu为Broad研究所Merkin讲席教授、哈佛大学化学与化学生物学系教授及HHMI研究员，实验室开发碱基编辑与prime editing。第一作者Allen Y. Jiang任职Broad与哈佛化学系。"
  },
  "pmcid": "PMC13379318",
- "license": "cc by"
+ "license": "cc by",
+ "quick_look": "系统优化三组分prime editor的OF-02脂质纳米颗粒后，单剂总RNA 2 mg/kg于给药后7天在小鼠全肝达平均49%无indel精准编辑，较初始s0.1提高63倍、较s0.2提高13倍；8周时2 mg/kg为44%。",
+ "author_intro": "通讯作者David R. Liu为Broad研究所Merkin讲席教授、哈佛大学化学与化学生物学系教授及HHMI研究员，实验室开发碱基编辑与prime editing。第一作者Allen Y. Jiang任职Broad与哈佛化学系。"
 }

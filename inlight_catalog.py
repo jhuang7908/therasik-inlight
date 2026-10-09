@@ -332,6 +332,126 @@ def filter_public_rows(rows: list[dict], catalog: dict | None = None) -> list[di
     return out
 
 
+COOP_AD_INNER = (
+    '<span class="k">合作</span><b class="coop-t">InSynBio · 前沿追踪</b>\n'
+    "<ul><li>科技新闻实时更新</li><li>广告发布</li><li>网站建设</li>"
+    "<li>公众号制作</li><li>论文写作</li><li>智能中转服务</li></ul>\n"
+    '<p class="coop-c">欢迎合作 · '
+    '<a href="mailto:contact@therasik.com">contact@therasik.com</a></p>'
+)
+
+
+def coop_ad_html(extra_class: str = "") -> str:
+    cls = "sbox coop" + (f" {extra_class}" if extra_class else "")
+    return f'<section class="{cls}">{COOP_AD_INNER}</section>'
+
+
+def cn_date(ds: str) -> str:
+    if len(ds or "") >= 10:
+        return f"{ds[:4]} 年 {int(ds[5:7])} 月 {int(ds[8:10])} 日"
+    return ""
+
+
+def related_labels(article: dict) -> str:
+    labels = []
+    for rel in article.get("related") or []:
+        if isinstance(rel, dict):
+            labels.append(rel.get("label") or rel.get("field") or "")
+        else:
+            try:
+                labels.append(field_record(rel)["n"])
+            except KeyError:
+                labels.append(str(rel))
+    return "、".join(x for x in labels if x)
+
+
+def split_structured_body(body: str) -> dict:
+    """Lift 关键数据卡, 作者/出处与核对, and the 主领域 line out of the body."""
+    cite = ""
+    notes: list[str] = []
+    card = ""
+    rest = body
+
+    m = re.search(
+        r'<div class="sec"><h2>作者、出处与核对</h2>\s*(.*?)</div>',
+        rest,
+        re.S,
+    )
+    if m:
+        ps = re.findall(r"<p>(.*?)</p>", m.group(1), re.S)
+        if ps:
+            cite = ps[0]
+            notes = ps[1:]
+        rest = rest.replace(m.group(0), "", 1)
+
+    c = re.search(r'<div class="pv-card">(.*?)</div>', rest, re.S)
+    if c:
+        card = c.group(1)
+        rest = rest.replace(c.group(0), "", 1)
+
+    rest = re.sub(r"<p>主领域：[^<]*</p>\n?", "", rest, count=1)
+    rest = re.sub(r"\n{3,}", "\n\n", rest)
+    return {"body": rest, "card": card, "cite": cite, "notes": notes}
+
+
+def render_article_rail(
+    article: dict,
+    parts: dict,
+    *,
+    journal: str = "",
+    date_cn: str = "",
+    url: str = "",
+    field_label: str = "",
+    related: str = "",
+    quick_look: str = "",
+    author_intro: str = "",
+) -> str:
+    """Left-rail HTML: 速览 / 出处 / 作者介绍 / 关键数据卡 / 合作."""
+    look = ""
+    if quick_look:
+        look = (
+            '<section class="sbox look"><span class="k">速览</span>'
+            f"<p>{inline_markup(quick_look)}</p></section>"
+        )
+    src_bits = [f"<b>{html.escape(journal)}</b>"] if journal else []
+    if date_cn:
+        src_bits.append(html.escape(date_cn))
+    if url:
+        src_bits.append(
+            f'<a href="{html.escape(url)}" target="_blank" rel="noopener">阅读原文 ↗</a>'
+        )
+    field_line = html.escape(field_label)
+    if related:
+        field_line += f"<br>相关：{html.escape(related)}"
+    cite = parts.get("cite") or ""
+    cite_html = f'<p class="small cite">{cite}</p>' if cite else ""
+    source = (
+        '<section class="sbox"><span class="k">出处</span>'
+        f'<p>{"<br>".join(src_bits)}</p>'
+        f'<p class="small">主领域：{field_line}</p>'
+        f"{cite_html}</section>"
+    )
+    intro = ""
+    if author_intro:
+        intro += f"<p>{inline_markup(author_intro)}</p>"
+    notes = parts.get("notes") or []
+    if notes:
+        intro += '<div class="small">' + "".join(f"<p>{n}</p>" for n in notes) + "</div>"
+    author_box = (
+        f'<section class="sbox"><span class="k">作者介绍</span>{intro}</section>'
+        if intro
+        else ""
+    )
+    card = parts.get("card") or ""
+    card_box = (
+        f'<section class="sbox pv-card side-card">{card}</section>' if card else ""
+    )
+    return (
+        f'<aside class="meta side2">{look}{source}{author_box}'
+        f"{card_box}{coop_ad_html()}</aside>"
+    )
+
+
 def _public_card(a: dict) -> dict:
     """Compact card record used on the site and in latest.json."""
     rec = field_record(a["field"]) if a.get("field") else field_by_key().get(a.get("f") or "", {})
@@ -361,6 +481,9 @@ def _public_card(a: dict) -> dict:
         "j": a.get("j") or a.get("journal") or "",
         "url": a.get("url") or "",
         "au": a.get("au") or "",
+        "quick_look": a.get("quick_look") or "",
+        "author_intro": a.get("author_intro") or "",
+        "citation": a.get("citation") or "",
         "tags": [a.get("f") or rec.get("k")] if (a.get("f") or rec.get("k")) else [],
         "related": related,
         "preprint": bool(a.get("preprint")),

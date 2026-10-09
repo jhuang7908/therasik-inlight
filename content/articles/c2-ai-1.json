@@ -545,7 +545,9 @@
      "source_quote": "compared to 39% for randomly picked clones"
     }
    ]
-  }
+  },
+  "quick_look": "29家机构的511个AI设计或预测抗体经盲评实验验证：挑战1含25家机构165个提交，最佳95 pM（较亲本提高2,000倍）；挑战2中仅9.8–13.8%的提交亲和力高于簇对照，随机挑选克隆为39%。",
+  "author_intro": "通讯作者Andrew R. M. Bradbury任职Specifica（IQVIA业务，美国新墨西哥州圣菲；邮箱andrew.bradbury@iqvia.com）。第一作者M. Frank Erasmus同属该公司并同为通讯。"
  },
  "images": {
   "mech_raw": "c2-ai-1_mech_raw_r2.png",
@@ -578,5 +580,7 @@
   "final_md": "c2-ai-1_final_r2.md",
   "final_json": "c2-ai-1_final_r2.json"
  },
- "superseded_early_files": "c2-ai-1_final.json/.md, c2-ai-1_checks.json, c2-ai-1_mech_raw.png, c2-ai-1_card.png (first assembly, superseded by the _r2 files)"
+ "superseded_early_files": "c2-ai-1_final.json/.md, c2-ai-1_checks.json, c2-ai-1_mech_raw.png, c2-ai-1_card.png (first assembly, superseded by the _r2 files)",
+ "quick_look": "29家机构的511个AI设计或预测抗体经盲评实验验证：挑战1含25家机构165个提交，最佳95 pM（较亲本提高2,000倍）；挑战2中仅9.8–13.8%的提交亲和力高于簇对照，随机挑选克隆为39%。",
+ "author_intro": "通讯作者Andrew R. M. Bradbury任职Specifica（IQVIA业务，美国新墨西哥州圣菲；邮箱andrew.bradbury@iqvia.com）。第一作者M. Frank Erasmus同属该公司并同为通讯。"
 }

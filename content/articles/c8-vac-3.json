@@ -452,7 +452,9 @@
   "chart": {
    "justified": false,
    "note": "关键组间读出（记忆B细胞增幅、克隆内扩增频率）在正文中未给出可逐字核对的数值，仅有显著性或“约3倍”表述；GC持续性5/13对0缺少Fluarix分母的同口径检验。不满足≥2个同口径可核对数值，不绘数据图。"
-  }
+  },
+  "quick_look": "75名健康成人观察性队列（mRNA-1010 38人、Fluarix 37人）中，mRNA接种者HA特异性记忆B细胞增幅在第4及17/26周更高；FNA亚组13人中5人（约38%）在26周仍检出生发中心反应，Fluarix组两季均未检出。",
+  "author_intro": "通讯作者Ali H. Ellebedy任职华盛顿大学圣路易斯医学院病理与免疫学系，兼Bursky人类免疫学与免疫治疗中心。第一作者Hanover C. Matz同属病理与免疫学系。"
  },
  "images": {
   "mech_raw": "c8-vac-3_mech_raw.png",
@@ -460,5 +462,7 @@
   "card": "c8-vac-3_card.png",
   "mech_raw_source": "c8-vac-3_mech.png",
   "card_source": "c8-vac-3_cardsrc.png"
- }
+ },
+ "quick_look": "75名健康成人观察性队列（mRNA-1010 38人、Fluarix 37人）中，mRNA接种者HA特异性记忆B细胞增幅在第4及17/26周更高；FNA亚组13人中5人（约38%）在26周仍检出生发中心反应，Fluarix组两季均未检出。",
+ "author_intro": "通讯作者Ali H. Ellebedy任职华盛顿大学圣路易斯医学院病理与免疫学系，兼Bursky人类免疫学与免疫治疗中心。第一作者Hanover C. Matz同属病理与免疫学系。"
 }

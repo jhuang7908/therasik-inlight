@@ -553,7 +553,9 @@
   "chart": {
    "justified": false,
    "note": "主要终点（移植物增长、皮质占比）无同口径可比的对照数值，不画数据图。"
-  }
+  },
+  "quick_look": "在Esco2缺失的免疫缺陷无皮质小鼠中，5至17日龄每侧半球移植2个人皮质类器官（每只共4个）；移植物2至3个月约增长4.7倍（n=14），3个月时占皮质组织体积91.9%（n=7），移植成功率86.2%（29只）。",
+  "author_intro": "通讯作者Sergiu P. Pașca任职斯坦福大学精神与行为科学系及Stanford Brain Organogenesis Program（Wu Tsai Neurosciences Institute & Bio-X）。第一作者Konstantin Kaganovsky同属上述单位。"
  },
  "images": {
   "mech_raw": "c5-am-2_mech_raw_r2.png",
@@ -604,5 +606,7 @@
   "final_md": "c5-am-2_final_r2.md",
   "final_json": "c5-am-2_final_r2.json"
  },
- "superseded_early_files": "c5-am-2_final.json/.md, c5-am-2_checks.json, c5-am-2_mech_raw.png, c5-am-2_card.png (first assembly, superseded by the _r2 files)"
+ "superseded_early_files": "c5-am-2_final.json/.md, c5-am-2_checks.json, c5-am-2_mech_raw.png, c5-am-2_card.png (first assembly, superseded by the _r2 files)",
+ "quick_look": "在Esco2缺失的免疫缺陷无皮质小鼠中，5至17日龄每侧半球移植2个人皮质类器官（每只共4个）；移植物2至3个月约增长4.7倍（n=14），3个月时占皮质组织体积91.9%（n=7），移植成功率86.2%（29只）。",
+ "author_intro": "通讯作者Sergiu P. Pașca任职斯坦福大学精神与行为科学系及Stanford Brain Organogenesis Program（Wu Tsai Neurosciences Institute & Bio-X）。第一作者Konstantin Kaganovsky同属上述单位。"
 }

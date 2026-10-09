@@ -503,7 +503,9 @@
   },
   "chart": {
    "justified": false
-  }
+  },
+  "quick_look": "第8天Cre慢病毒诱导TSC2双等位缺失后，人脑类器官中TSC2−/− GLC在50、120、220天相对同一类器官内TSC2 c/−细胞均显著提高反应性星形胶质模块评分；纯化星形胶质细胞接受50 nM rapamycin或100 nM Torin-1。",
+  "author_intro": "通讯作者Helen S. Bateup任职加州大学伯克利分校分子与细胞生物学系及神经科学系（邮箱bateup@berkeley.edu）。第一作者Thomas L. Li同属上述两系。"
  },
  "images": {
   "mech_raw": "work/r4/clean/c1-org-4_mech_raw_r4c_clean.png",
@@ -512,5 +514,7 @@
   "card_src": "r3 card (passed)",
   "image_model": "mech: Grok drawing (r4/r4b/r4c, supplied by parent run); card: gpt-image-2 (earlier rounds)",
   "note": "mech strict pass"
- }
+ },
+ "quick_look": "第8天Cre慢病毒诱导TSC2双等位缺失后，人脑类器官中TSC2−/− GLC在50、120、220天相对同一类器官内TSC2 c/−细胞均显著提高反应性星形胶质模块评分；纯化星形胶质细胞接受50 nM rapamycin或100 nM Torin-1。",
+ "author_intro": "通讯作者Helen S. Bateup任职加州大学伯克利分校分子与细胞生物学系及神经科学系（邮箱bateup@berkeley.edu）。第一作者Thomas L. Li同属上述两系。"
 }

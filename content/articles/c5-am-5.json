@@ -581,7 +581,9 @@
     }
    ],
    "note": "这些为不同实验的描述性比例；48 h bNAb、21天ART/ART+bNAb和三联治疗终点口径不同，不能解读为正式疗效比较。"
-  }
+  },
+  "quick_look": "共55只约4周龄幼猴口服SHIV；72小时启动LRM（50 mg/kg）、bNAb（各20 mg/kg）和27周ART。三联组8/8在ATI后6个月无病毒血症，PBMC与组织未检出细胞相关病毒DNA，第84周IPDA亦未检出前病毒。",
+  "author_intro": "通讯作者Jonah B. Sacha任职俄勒冈健康与科学大学俄勒冈国家灵长类研究中心及疫苗与基因治疗研究所。共同通讯Nancy L. Haigwood任职同一灵长类研究中心。"
  },
  "images": {
   "mech_raw": "c5-am-5_mech_raw_r3.png",
@@ -589,5 +591,7 @@
   "card": "c5-am-5_card.png",
   "image_model": "mech: grok-imagine (drawing supplied by parent run); card: gpt-image-2 (earlier round)",
   "note": ""
- }
+ },
+ "quick_look": "共55只约4周龄幼猴口服SHIV；72小时启动LRM（50 mg/kg）、bNAb（各20 mg/kg）和27周ART。三联组8/8在ATI后6个月无病毒血症，PBMC与组织未检出细胞相关病毒DNA，第84周IPDA亦未检出前病毒。",
+ "author_intro": "通讯作者Jonah B. Sacha任职俄勒冈健康与科学大学俄勒冈国家灵长类研究中心及疫苗与基因治疗研究所。共同通讯Nancy L. Haigwood任职同一灵长类研究中心。"
 }

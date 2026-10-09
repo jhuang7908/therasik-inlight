@@ -11,8 +11,12 @@
   ],
   "title": "人源化小鼠中敲除DPP9经CARD8焦亡导致造血干细胞耗竭与全血细胞减少",
   "one_liner": "在MISTRG6小鼠中CRISPR敲除人CD34+ HSPC的DPP9，可重现外周与骨髓血细胞减少；丢失由CARD8介导的焦亡驱动，敲除CARD8或CASP1可挽救，敲除NLRP1不能。",
-  "citation": "Xiao T, Brewer JR, Carlino M, Han A, Takabe YJ, Lee CY, et al. Reverse genetics in humanized mice reveals CARD8-mediated pyroptosis causing pancytopenia in human DPP9 deficiency. J Clin Invest. 2026 Sep 15. https://doi.org/10.1172/jci207530"
+  "citation": "Xiao T, Brewer JR, Carlino M, Han A, Takabe YJ, Lee CY, et al. Reverse genetics in humanized mice reveals CARD8-mediated pyroptosis causing pancytopenia in human DPP9 deficiency. J Clin Invest. 2026 Sep 15. https://doi.org/10.1172/jci207530",
+  "quick_look": "在MISTRG6小鼠中CRISPR敲除人CD34+ HSPC的DPP9，可重现外周与骨髓血细胞减少；丢失由CARD8介导的焦亡驱动，敲除CARD8或CASP1可挽救，敲除NLRP1不能。新生鼠肝内注射30,000个细胞，主表型读出于8–9周。",
+  "author_intro": "通讯作者Richard A. Flavell任职耶鲁大学医学院免疫生物学系与霍华德·休斯医学研究所。共同通讯Diane S. Krause任职耶鲁干细胞中心及检验医学系。第一作者Tianli Xiao同属免疫生物学系。"
  },
  "pmcid": "PMC13574144",
- "license": "cc by"
+ "license": "cc by",
+ "quick_look": "在MISTRG6小鼠中CRISPR敲除人CD34+ HSPC的DPP9，可重现外周与骨髓血细胞减少；丢失由CARD8介导的焦亡驱动，敲除CARD8或CASP1可挽救，敲除NLRP1不能。新生鼠肝内注射30,000个细胞，主表型读出于8–9周。",
+ "author_intro": "通讯作者Richard A. Flavell任职耶鲁大学医学院免疫生物学系与霍华德·休斯医学研究所。共同通讯Diane S. Krause任职耶鲁干细胞中心及检验医学系。第一作者Tianli Xiao同属免疫生物学系。"
 }

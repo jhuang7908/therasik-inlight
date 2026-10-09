@@ -243,6 +243,46 @@ class R8GoLiveTests(unittest.TestCase):
         self.assertEqual(cat.FIELD_KEYS["疾病模型"], "animal")
         self.assertEqual(cat.FIELD_KEYS["动物模型"], "animal")
 
+    def test_article_rail_quick_look_author_and_coop(self):
+        """Left rail: 速览 100–200 chars, 作者介绍 present, 合作 box; 作者节已移出正文."""
+        expected = [
+            "研究背景与待解问题",
+            "研究设计",
+            "核心结果",
+            "机制解读",
+            "局限与不确定",
+            "临床/产业意义",
+        ]
+        for a in cat.published_articles(self.catalog):
+            page = (ROOT / "pages" / "article" / f"{a['id']}.html").read_text(encoding="utf-8")
+            self.assertIn('class="meta side2"', page, a["id"])
+            look = re.search(r'<section class="sbox look">.*?<p>(.*?)</p>', page, re.S)
+            self.assertIsNotNone(look, a["id"])
+            text = re.sub(r"<[^>]+>", "", look.group(1))
+            n = len(re.sub(r"\s+", "", text))
+            self.assertGreaterEqual(n, 100, (a["id"], n))
+            self.assertLessEqual(n, 200, (a["id"], n))
+            self.assertIn('<span class="k">作者介绍</span>', page, a["id"])
+            self.assertTrue((a.get("author_intro") or "").strip(), a["id"])
+            self.assertIn("InSynBio · 前沿追踪", page, a["id"])
+            self.assertIn("contact@therasik.com", page, a["id"])
+            self.assertIn("科技新闻实时更新", page, a["id"])
+            self.assertIn('class="sbox coop"', page, a["id"])
+            amain = re.search(r'<div class="amain">(.*)</div>\s*</div>\s*</article>', page, re.S)
+            self.assertIsNotNone(amain, a["id"])
+            body = amain.group(1)
+            self.assertNotIn("作者、出处与核对", body, a["id"])
+            self.assertNotIn('class="pv-card"', body, a["id"])
+            secs = re.findall(r'<div class="sec"><h2>([^<]+)</h2>', body)
+            self.assertEqual(secs, expected, a["id"])
+            self.assertIn("研究设计", body, a["id"])
+            self.assertIn("局限与不确定", body, a["id"])
+        src = (ROOT / "index.html").read_text(encoding="utf-8")
+        self.assertIn("function renderPaper", src)
+        self.assertIn("sbox look", src)
+        self.assertIn("COOP_AD", src)
+        self.assertIn("作者、出处与核对", src)
+
 
 if __name__ == "__main__":
     unittest.main()

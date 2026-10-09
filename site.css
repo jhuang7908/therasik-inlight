@@ -427,6 +427,36 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 .shell:has(#v-paper:not([hidden])){display:block;max-width:1100px}
 #v-paper.pv-art{max-width:1100px}
 
+/* v9: 文章页左栏 = 速览 / 出处 / 作者介绍 / 关键数据卡 / 合作广告；正文只放解读各小节 */
+.pv-art .abody{grid-template-columns:300px minmax(0,1fr);gap:28px}
+.meta.side2{position:static;background:none;border:0;padding:0;gap:14px}
+.side2 .sbox{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:grid;gap:8px}
+.side2 .sbox p{font-size:13.5px;line-height:1.7;margin:0}
+.side2 .small,.side2 .small p{font-size:12.5px;line-height:1.7;color:var(--muted)}
+.side2 .cite{word-break:break-word}
+.side2 .side-card{border-left:4px solid var(--accent)}
+.side2 .side-card h2{font-size:15px}
+.side2 .side-card li{font-size:13px;line-height:1.65}
+.coop{border-top:3px solid #C0492F}
+.coop .coop-t{font-size:15px;color:var(--accent);font-family:var(--display)}
+.coop ul{margin:0;padding-left:1.1em;display:grid;gap:3px}
+.coop li{font-size:13.5px;line-height:1.6}
+.coop .coop-c{font-size:13px;font-weight:700}
+@media (max-width:860px){
+  .pv-art .abody{grid-template-columns:1fr}
+  .side2{display:contents}
+  .abody .look{order:1}
+  .abody .side-card{order:2}
+  .abody .amain{order:3}
+  .side2 .sbox:not(.look):not(.side-card){order:4}
+}
+@media (min-width:861px){
+  .pv-art .abody{align-items:stretch}
+  .meta.side2{display:flex;flex-direction:column;gap:14px;align-self:stretch}
+  .side2 .side-card{position:static}
+  .side2 .coop{margin-top:0;position:sticky;top:72px}
+}
+
 /* style_unify_v2 (Oct 2026): original illustrations kept, recoloured to the site palette
    (img/pal/*). Deal type tags in deep green, amounts in terracotta #C0492F (single accent). */
 .feed .kind,.feed-details-panel .kind{border-color:#2E6B4F!important;color:#2E6B4F!important}

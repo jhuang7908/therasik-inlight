@@ -588,7 +588,9 @@
      "source_quote": "to 76.3% (174 out of 228) for CINGVCWTV (CIN)-annotated TCRs"
     }
    ]
-  }
+  },
+  "quick_look": "T-RAP将VDJdb-10库（3,693个TCR）导入Jurkat并汇集筛选，平均仅56%（n=2,667）复现原注释反应性；阵列共培养一致率96.1%。验证集上tcrdist3与AlphaFold3平均AUROC分别为0.80、0.74。",
+  "author_intro": "通讯作者Ton N. Schumacher为荷兰癌症研究所分子肿瘤与免疫学部组长、莱顿大学医学中心血液学系教授，实验室研究T细胞如何识别肿瘤细胞。第一作者Marius Messemaker同属NKI该学部。"
  },
  "images": {
   "mech_raw": "a-trap_mech_raw.png",
@@ -596,5 +598,7 @@
   "card": "a-trap_card.png",
   "mech_raw_source": "a-trap_mech.png",
   "card_source": "a-trap_cardsrc.png"
- }
+ },
+ "quick_look": "T-RAP将VDJdb-10库（3,693个TCR）导入Jurkat并汇集筛选，平均仅56%（n=2,667）复现原注释反应性；阵列共培养一致率96.1%。验证集上tcrdist3与AlphaFold3平均AUROC分别为0.80、0.74。",
+ "author_intro": "通讯作者Ton N. Schumacher为荷兰癌症研究所分子肿瘤与免疫学部组长、莱顿大学医学中心血液学系教授，实验室研究T细胞如何识别肿瘤细胞。第一作者Marius Messemaker同属NKI该学部。"
 }

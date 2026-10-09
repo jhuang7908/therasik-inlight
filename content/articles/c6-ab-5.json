@@ -456,7 +456,9 @@
     }
    ],
    "note": "低信号候选的KD按原文只作暂定估计。"
-  }
+  },
+  "quick_look": "针对一个无结构、无既有抗体的DSRCT新靶点，Zhao等从头生成288,000个纳米抗体设计，Pareto过滤后100,000个进入酵母展示；116个SPR候选中46个（39.7%）获可靠动力学，KD 0.66–305 nM，中位31.7 nM。",
+  "author_intro": "通讯作者Xinyun (Nina) Cheng任职Amazon Web Services Applied AI Solutions, Life Sciences。第一作者Yue Zhao。预印本作者列表未在Europe PMC给出分条单位。"
  },
  "images": {
   "mech_raw": "work/r5img/clean/c6-ab-5_mech_raw_r5_clean.png",
@@ -473,5 +475,7 @@
   "card_caption_chars": 15
  },
  "notes": "Frozen must-cover list for c6-ab-5 has 11 items (m9 was dropped as non-verbatim when the list was frozen by gpt-5.5), so coverage is 11/11, not 12/12. Preprint: 预印本 stated in datacard study_type and in background[1]. The first assembly (c6-ab-5_final_r5.json) carries a figure-label entity_en that did not match image_subject_en verbatim; corrected files are *_r5b (nothing overwritten).",
- "text_from": "c6-ab-5_final_r5b.json (text unchanged)"
+ "text_from": "c6-ab-5_final_r5b.json (text unchanged)",
+ "quick_look": "针对一个无结构、无既有抗体的DSRCT新靶点，Zhao等从头生成288,000个纳米抗体设计，Pareto过滤后100,000个进入酵母展示；116个SPR候选中46个（39.7%）获可靠动力学，KD 0.66–305 nM，中位31.7 nM。",
+ "author_intro": "通讯作者Xinyun (Nina) Cheng任职Amazon Web Services Applied AI Solutions, Life Sciences。第一作者Yue Zhao。预印本作者列表未在Europe PMC给出分条单位。"
 }

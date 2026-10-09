@@ -615,7 +615,9 @@
     }
    ],
    "note": "分母为进入BLI的候选数；未绘制百分比，避免自行换算。"
-  }
+  },
+  "quick_look": "Germinal在4个蛋白靶点每抗原只测试43–101个设计：纳米抗体侧为101个PD-L1、46个IL3、43个IL20、52个BHRF1；BLI可检测结合为7/25、2/11、4/11、5/20，scFv/Fab确认3/4个抗PD-L1。",
+  "author_intro": "通讯作者Xiaojing J. Gao任职斯坦福大学化学工程系、Stanford Biophysics、Sarafan ChEM-H与Bio-X。共同通讯Brian L. Hie任职斯坦福与Arc Institute；Luis S. Mille-Fragoso任职斯坦福生物工程系。"
  },
  "images": {
   "mech_raw": "c2-ai-5_mech_raw_r4.jpg",
@@ -624,5 +626,7 @@
   "card_src": "work/r4/clean/c2-ai-5_card_raw_r4_clean.png (cleanup 232/200/12/6)",
   "image_model": "mech: Grok drawing (r4/r4b/r4c, supplied by parent run); card: Grok drawing r4",
   "note": "mech GAP=48; OCR soft gate: 1 label <50%, numbers 15/15; card raw passes under adjusted warm rule (b): off_warm 15.1% raw, 3.4% adjusted"
- }
+ },
+ "quick_look": "Germinal在4个蛋白靶点每抗原只测试43–101个设计：纳米抗体侧为101个PD-L1、46个IL3、43个IL20、52个BHRF1；BLI可检测结合为7/25、2/11、4/11、5/20，scFv/Fab确认3/4个抗PD-L1。",
+ "author_intro": "通讯作者Xiaojing J. Gao任职斯坦福大学化学工程系、Stanford Biophysics、Sarafan ChEM-H与Bio-X。共同通讯Brian L. Hie任职斯坦福与Arc Institute；Luis S. Mille-Fragoso任职斯坦福生物工程系。"
 }

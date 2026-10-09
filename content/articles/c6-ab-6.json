@@ -547,7 +547,9 @@
     }
    ],
    "note": "描述性数据，未做组间检验。"
-  }
+  },
+  "quick_look": "1期试验入组288例，复发/难治小细胞肺癌单药124例中ABBV-706每3周给药确认ORR为52%（65/124）；第2a部分1.8与2.5 mg/kg的ORR为56%与59%，选定1.8 mg/kg为推荐2期剂量。中位随访16.9个月。",
+  "author_intro": "通讯作者Lauren Averett Byers任职德克萨斯大学MD安德森癌症中心。末位作者Sreenivasa Chandana任职START Midwest（Grand Rapids, MI）。"
  },
  "images": {
   "mech_raw": "work/r5img/clean/c6-ab-6_mech_raw_r5_clean.png",
@@ -564,5 +566,7 @@
   "card_caption_chars": 19
  },
  "notes": "≥3级TRAE at 1.8 mg/kg: Abstract 39% vs Results dose list 40%; SEZ6 evaluable n: Fig. 2 legend 38/47, 37/42 vs Results 38/48, 37/44 (flagged in limitations). Discussion calls the study non-randomized although part 2a was randomized; written as the authors state ('总体非随机').",
- "text_from": "c6-ab-6_final_r5.json (text unchanged)"
+ "text_from": "c6-ab-6_final_r5.json (text unchanged)",
+ "quick_look": "1期试验入组288例，复发/难治小细胞肺癌单药124例中ABBV-706每3周给药确认ORR为52%（65/124）；第2a部分1.8与2.5 mg/kg的ORR为56%与59%，选定1.8 mg/kg为推荐2期剂量。中位随访16.9个月。",
+ "author_intro": "通讯作者Lauren Averett Byers任职德克萨斯大学MD安德森癌症中心。末位作者Sreenivasa Chandana任职START Midwest（Grand Rapids, MI）。"
 }

@@ -434,7 +434,9 @@
     }
    ],
    "note": "dN/dS为观察与预期突变数之比，数值越大正选择越强。"
-  }
+  },
+  "quick_look": "14例自身免疫甲状腺病供者的单分子测序中，桥本甲状腺炎供者H1体内有135种不同TNFRSF14突变及59种CD274突变；TNFRSF14与CD274截短突变dN/dS为141和37，显示检查点基因正选择。",
+  "author_intro": "通讯作者Iñigo Martincorena任职Wellcome Sanger Institute体细胞基因组学项目（Hinxton）。第一作者Pantelis A. Nicola同属该项目。"
  },
  "images": {
   "mech_raw": "work/r5img/clean/c4-ai-5_mech_raw_r5_clean.png",
@@ -453,5 +455,7 @@
  "notes": "Must-cover list: mc_c4-ai-5_frozen_v2.json (12 items; v1 file with 13 items superseded, kept on disk). Tools run through mcfix.py so v2 is used. Numbers 6 (datacard.n, design[0]) and 4/7 (results[4]) appear in source as words in the cited quotes; all digits trace to full text.",
  "card_caption_r5": "甲状腺淋巴聚集区中一个赤陶红突变B细胞居中",
  "card_caption_note": "caption changed in r5img per user (subject not centred)",
- "text_from": "c4-ai-5_final_r5.json (text unchanged)"
+ "text_from": "c4-ai-5_final_r5.json (text unchanged)",
+ "quick_look": "14例自身免疫甲状腺病供者的单分子测序中，桥本甲状腺炎供者H1体内有135种不同TNFRSF14突变及59种CD274突变；TNFRSF14与CD274截短突变dN/dS为141和37，显示检查点基因正选择。",
+ "author_intro": "通讯作者Iñigo Martincorena任职Wellcome Sanger Institute体细胞基因组学项目（Hinxton）。第一作者Pantelis A. Nicola同属该项目。"
 }

@@ -513,7 +513,9 @@
     }
    ],
    "note": "HAC采用最大算子；HIC/SMAC为作者选定算子。"
-  }
+  },
+  "quick_look": "在未经同行评审的160个双抗、65个亲本臂库中，Ritter等用亲本组合预测实测开发性；HIC/SMAC/HAC的Spearman ρ达0.95、0.94和0.89，AC-SINS为0.79–0.88，Tm1/Tm2仅–0.06至0.32。",
+  "author_intro": "通讯作者Ammar Arsiwala任职Ginkgo Bioworks（马萨诸塞）。预印本作者列表未在Europe PMC给出分条单位。第一作者Seth Ritter。"
  },
  "images": {
   "mech_raw": "work/r4/clean/c6-ab-4_mech_raw_r4b_clean.png",
@@ -523,5 +525,7 @@
   "image_model": "mech: Grok drawing (r4/r4b/r4c, supplied by parent run); card: Grok drawing r4",
   "note": "mech: larger fonts HS=38 FACT_FS=34 (mech_r4f.py); 3 head/fact labels <50% CJK OCR (亲本筛选, 亲本层可筛, 热稳定性); rendered strings verified identical to final_r3 figure_labels -> pass per user rule (c)"
  },
- "licence_note": "bioRxiv 'no reuse': article text is an original Chinese write-up; no text or figures of the preprint are reused; r4 figures are original drawings (Grok) laid out with original Chinese labels; no preprint figures reused."
+ "licence_note": "bioRxiv 'no reuse': article text is an original Chinese write-up; no text or figures of the preprint are reused; r4 figures are original drawings (Grok) laid out with original Chinese labels; no preprint figures reused.",
+ "quick_look": "在未经同行评审的160个双抗、65个亲本臂库中，Ritter等用亲本组合预测实测开发性；HIC/SMAC/HAC的Spearman ρ达0.95、0.94和0.89，AC-SINS为0.79–0.88，Tm1/Tm2仅–0.06至0.32。",
+ "author_intro": "通讯作者Ammar Arsiwala任职Ginkgo Bioworks（马萨诸塞）。预印本作者列表未在Europe PMC给出分条单位。第一作者Seth Ritter。"
 }

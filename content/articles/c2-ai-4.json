@@ -639,7 +639,9 @@
     }
    ],
    "note": "探索性蛋白质组子研究；原文未说明为方案间组间比较设计效能。"
-  }
+  },
+  "quick_look": "2a期IPF试验的蛋白质组子研究纳入42例（安慰剂11、30 mg QD 11、30 mg BID 11、60 mg QD 9）；口服rentosertib 12周后，54个ΔBioAge比较中21个达Q<0.10，第4周18个比较中11个显著。",
+  "author_intro": "通讯作者Alex Zhavoronkov任职Insilico Medicine（阿布扎比、上海与马萨诸塞Cambridge）。末位作者Vadim N. Gladyshev任职哈佛医学院布莱根妇女医院遗传学分部及Broad研究所。"
  },
  "images": {
   "mech_raw": "c2-ai-4_mech_raw.png",
@@ -689,5 +691,7 @@
   "card": "c2-ai-4_card.png",
   "final_md": "c2-ai-4_final.md",
   "final_json": "c2-ai-4_final.json"
- }
+ },
+ "quick_look": "2a期IPF试验的蛋白质组子研究纳入42例（安慰剂11、30 mg QD 11、30 mg BID 11、60 mg QD 9）；口服rentosertib 12周后，54个ΔBioAge比较中21个达Q<0.10，第4周18个比较中11个显著。",
+ "author_intro": "通讯作者Alex Zhavoronkov任职Insilico Medicine（阿布扎比、上海与马萨诸塞Cambridge）。末位作者Vadim N. Gladyshev任职哈佛医学院布莱根妇女医院遗传学分部及Broad研究所。"
 }

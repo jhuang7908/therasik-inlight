@@ -565,7 +565,9 @@
     }
    ],
    "note": "该图仅展示筛选覆盖度，不代表功能效应大小。"
-  }
+  },
+  "quick_look": "在LCMV与黑色素瘤模型中，靶向ZMYND8使P14细胞偏向效应样耗竭状态；体内scCRISPR筛出19,032个P14细胞，效应样/Tex term验证n=7/组，肿瘤治疗n=5–8/组，并伴随IL-2R–STAT5增强。",
+  "author_intro": "通讯作者Hongbo Chi（迟洪波）任职美国圣裘德儿童研究医院免疫学系（邮箱hongbo.chi@stjude.org）。第一作者Yan Wang同属该系。实验室方向未在本轮核到独立官方页，故省略。"
  },
  "images": {
   "mech_raw": "c3-io-4_mech_raw.png",
@@ -597,5 +599,7 @@
   "card": "c3-io-4_card.png",
   "final_md": "c3-io-4_final.md",
   "final_json": "c3-io-4_final.json"
- }
+ },
+ "quick_look": "在LCMV与黑色素瘤模型中，靶向ZMYND8使P14细胞偏向效应样耗竭状态；体内scCRISPR筛出19,032个P14细胞，效应样/Tex term验证n=7/组，肿瘤治疗n=5–8/组，并伴随IL-2R–STAT5增强。",
+ "author_intro": "通讯作者Hongbo Chi（迟洪波）任职美国圣裘德儿童研究医院免疫学系（邮箱hongbo.chi@stjude.org）。第一作者Yan Wang同属该系。实验室方向未在本轮核到独立官方页，故省略。"
 }
