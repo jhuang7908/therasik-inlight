@@ -1,0 +1,457 @@
+{
+ "id": "c4-ai-5",
+ "round": "r5img",
+ "drafter_model": "grok-bot (self)",
+ "drafter_of_edits": "grok-bot (self)",
+ "verifier_model": "grok-bot (self): scripted audit_rw + verbatim-quote claim check (no external verifier model available)",
+ "mustcover_frozen_by": "grok-bot (self)",
+ "mustcover_file": "work/r5/mc/mc_c4-ai-5_frozen_v2.json",
+ "source_draft": "work/r5/c4-ai-5/rw_c4-ai-5_draft_v4.json",
+ "edits_r5": [
+  "v1 drafted by grok-bot (self) from full text (scripted snippet lookup; frozen must-cover v2, 12 items)",
+  "v2: background trimmed to 180-240 字",
+  "v3: design[1] '221 microscopic areas' wording; mechanism_proven[1] TET2 origin hedged as in source (probably bone marrow stem/progenitor)",
+  "v4: figure_caption shortened to 80-120 字"
+ ],
+ "text_status": "text-pass",
+ "status": "published-ready",
+ "status_reasons": [],
+ "preprint": false,
+ "writer_tags": [
+  "体细胞突变",
+  "桥本甲状腺炎",
+  "B细胞",
+  "免疫检查点",
+  "NanoSeq",
+  "外周耐受"
+ ],
+ "tags_note": "editor related-field tags prepended; writer tags trimmed to 6 (metadata only)",
+ "article": {
+  "tier": "deep",
+  "field": "自身免疫与移植免疫",
+  "tags": [
+   "体细胞突变",
+   "桥本甲状腺炎",
+   "B细胞",
+   "免疫检查点",
+   "NanoSeq",
+   "外周耐受"
+  ],
+  "primary_endpoint_basis": "非临床试验，无预设主要终点。核心读出为AITD淋巴细胞中免疫检查点基因体细胞突变的正选择强度（dNdSshm）与独立突变克隆数量。标题数字135（H1单例不同TNFRSF14突变数）来自Results，与一句话结论和数据卡同一口径。",
+  "comparison_design": "观察性人体组织测序研究：3例桥本发现队列＋11例扩展队列（6例桥本、5例Graves），以非自身免疫外周血记忆B/T细胞、淋巴组织和非AITD甲状腺数据作选择分析对照。无随机或干预；机制证据为突变类型、空间分布、单细胞系统发育和体外抗体结合，均非功能因果实验。",
+  "untested_comparisons": [
+   "桥本与Graves供者之间的突变负担差异（样本小，未正式比较）",
+   "携带与不携带驱动突变的B细胞在自身反应性上的差异",
+   "检查点突变与临床病程或抗体滴度的关系"
+  ],
+  "number_basis_note": "全部数字取自Results与Discussion正文。突变细胞比例为下限估计（at least）；约62%为H1中TNFRSF14突变B细胞比例，由单核数据推算。dN/dS 141和37为扩展数据集截短突变。正文不写各供者按B细胞比例换算的突变B细胞比例。",
+  "must_cover": [
+   {
+    "id": "m1",
+    "item_zh": "3例炎性桥本活检全外显子NanoSeq显示TNFRSF14、CD274、TET2、TNFAIP3四个基因强正选择。",
+    "status": "covered",
+    "covered_by": "TNFRSF14（HVEM）、CD274（编码PD-L1）、TET2和TNFAIP3（编码A20）呈强正选择"
+   },
+   {
+    "id": "m2",
+    "item_zh": "外显子与靶向数据共229个TNFRSF14、125个CD274、84个TET2、48个TNFAIP3非同义突变；H1单例135种TNFRSF14、59种CD274突变。",
+    "status": "covered",
+    "covered_by": "仅供者H1就有135种不同TNFRSF14突变和59种CD274突变"
+   },
+   {
+    "id": "m3",
+    "item_zh": "单个克隆很小（TNFRSF14中位VAF 0.002，CD274中位0.0006），几乎都低于1%细胞。",
+    "status": "covered",
+    "covered_by": "TNFRSF14突变中位VAF 0.002（最高0.024）"
+   },
+   {
+    "id": "m4",
+    "item_zh": "累计突变细胞比例可观：H1至少32.7%细胞带TNFRSF14突变、5.0%带CD274突变。",
+    "status": "covered",
+    "covered_by": "H1至少32.7%的细胞带TNFRSF14突变、5.0%带CD274突变"
+   },
+   {
+    "id": "m5",
+    "item_zh": "扩展队列加入6例桥本和5例Graves供者，14例累计靶向覆盖72,977 dx。",
+    "status": "covered",
+    "covered_by": "扩展队列加入6例桥本（H4–H9）和5例Graves病（G1–G5）供者"
+   },
+   {
+    "id": "m6",
+    "item_zh": "扩展数据中15个基因受正选择，TNFRSF14与CD274截短突变dN/dS为141和37。",
+    "status": "covered",
+    "covered_by": "TNFRSF14与CD274截短突变的dN/dS分别为141和37"
+   },
+   {
+    "id": "m7",
+    "item_zh": "对照数据中TNFRSF14与CD274突变罕见且无显著选择（Q>0.1）。",
+    "status": "covered",
+    "covered_by": "对照数据中这两个基因突变很少且无显著选择（Q>0.1）"
+   },
+   {
+    "id": "m8",
+    "item_zh": "TET2、TNFAIP3等部分驱动基因在正常衰老记忆B细胞中也受选择，可能非疾病特异。",
+    "status": "covered",
+    "covered_by": "TET2、TNFAIP3等部分驱动基因在正常衰老记忆B细胞中也受选择"
+   },
+   {
+    "id": "m9",
+    "item_zh": "H1的112个单核做PTA测序，66个为B细胞、38个为T细胞。",
+    "status": "covered",
+    "covered_by": "H1的112个核里66个为B细胞、38个为T细胞"
+   },
+   {
+    "id": "m10",
+    "item_zh": "驱动突变只见于B细胞：41个细胞31种TNFRSF14突变（约62% B细胞），30个经CN-LOH、8个复合杂合。",
+    "status": "covered",
+    "covered_by": "41个细胞含31种TNFRSF14非同义突变"
+   },
+   {
+    "id": "m11",
+    "item_zh": "32个重建BCR的重组抗体中至少7个克隆自身反应（6个抗TPO、1个抗TG），4个带驱动突变。",
+    "status": "covered",
+    "covered_by": "至少7个克隆识别甲状腺过氧化物酶（6个）或甲状腺球蛋白（1个），其中4个携带驱动突变"
+   },
+   {
+    "id": "m12",
+    "item_zh": "作者称结果并非因果的确定证据，机制是否必要或充分尚不清楚。",
+    "status": "covered",
+    "covered_by": "结果并非因果的确定证据"
+   }
+  ],
+  "title": "甲状腺自身免疫中B细胞多克隆获得检查点突变：单例检出135种TNFRSF14突变",
+  "one_liner": "单分子测序显示，桥本甲状腺炎供者H1体内有135种不同TNFRSF14突变，大量B细胞克隆各自失活免疫检查点基因。",
+  "datacard": {
+   "study_type": "人体组织体细胞突变测序研究（观察性）",
+   "n": "14例AITD供者：发现队列3例桥本甲状腺炎（H1–H3），扩展队列6例桥本、5例Graves病",
+   "control": "非自身免疫对照：20名50岁以上供者的外周血记忆B/T细胞，以及淋巴结、脾、慢性扁桃体炎和非AITD结节性甲状腺肿等数据",
+   "intervention": "方法：全外显子与725基因靶向NanoSeq、激光显微切割、甲基化测序、Xenium空间转录组、单核PTA测序、BCR重组抗体",
+   "followup": "横断面组织研究，不涉及随访",
+   "primary_endpoint": "核心读出：免疫检查点基因体细胞突变的正选择强度（dNdSshm）与独立突变克隆数量",
+   "primary_endpoint_result": "TNFRSF14与CD274截短突变dN/dS为141和37；H1单例检出135种TNFRSF14、59种CD274突变",
+   "statistics": "dNdSshm正选择检验（Q<0.01为显著，Q<0.1为宽松阈值）",
+   "safety": "不适用（组织测序研究）",
+   "evidence_level": "全文",
+   "check_record": "Europe PMC全文XML（PMC13233322）：Abstract、Main、Results各节、Discussion及图注"
+  },
+  "background": [
+   "自身免疫病影响全球5–10%人口。B、T细胞发育中的体细胞重组会产生能识别自身抗原的淋巴细胞，免疫系统靠多重检查点压制它们，但部分细胞如何逃脱仍不清楚。长期假说认为，免疫调控基因的体细胞突变可让自身反应性淋巴细胞绕过耐受检查点，但受技术所限难以检验。",
+   "自身免疫性甲状腺病（AITD）是最常见的自身免疫病之一，包括以甲状腺破坏和甲减为特征的桥本甲状腺炎，以及由刺激性自身抗体导致甲亢的Graves病；桥本甲状腺炎还与MALT淋巴瘤风险升高相关。Nicola等在Nature报告，用单分子测序寻找AITD甲状腺中的体细胞驱动突变。"
+  ],
+  "design": [
+   "研究先取3例广泛淋巴细胞浸润的桥本甲状腺炎患者（H1–H3）活检，做全外显子NanoSeq（准确的单分子测序），累计双链覆盖3,125 dx，得到28,855个编码突变；随后扩展队列加入6例桥本（H4–H9）和5例Graves病（G1–G5）供者，以725个免疫与淋巴瘤相关基因做靶向测序，14例累计覆盖72,977 dx，用dNdSshm检测正选择。",
+   "对照包括20名50岁以上非自身免疫供者的分选外周血记忆B与T细胞，以及淋巴结、脾、慢性扁桃体炎和非AITD结节性甲状腺肿等数据。研究还对3例供者221个淋巴聚集区微区做激光显微切割，并对H1的112个单核做PTA测序（725基因中位314×、86个核全基因组中位18×），重建BCR合成抗体。"
+  ],
+  "results": [
+   {
+    "subhead": "四个基因强正选择",
+    "text": "3例桥本活检的外显子数据中，TNFRSF14（HVEM）、CD274（编码PD-L1）、TET2和TNFAIP3（编码A20）呈强正选择，前两者Q<1×10−15。合并外显子与靶向数据共检出229个TNFRSF14、125个CD274、84个TET2和48个TNFAIP3非同义突变；仅供者H1就有135种不同TNFRSF14突变和59种CD274突变。"
+   },
+   {
+    "subhead": "单个克隆小，累计占比大",
+    "text": "单个克隆很小：TNFRSF14突变中位VAF 0.002（最高0.024），CD274中位0.0006（最高0.019），几乎都不到活检细胞的1%。累加后，H1至少32.7%的细胞带TNFRSF14突变、5.0%带CD274突变；H2与H3的TNFRSF14突变细胞比例为3.0%和5.5%。"
+   },
+   {
+    "subhead": "扩展队列与对照",
+    "text": "扩展数据中15个基因在Q<0.01下受正选择，TNFRSF14与CD274截短突变的dN/dS分别为141和37，远强于其他基因，两者分别在14例中的10例和11例检出。对照数据中这两个基因突变很少且无显著选择（Q>0.1），而TET2、TNFAIP3等部分驱动基因在正常衰老记忆B细胞中也受选择。"
+   },
+   {
+    "subhead": "驱动突变只见于B细胞",
+    "text": "H1的112个核里66个为B细胞、38个为T细胞，驱动突变只见于B细胞：41个细胞含31种TNFRSF14非同义突变（约占H1 B细胞62%），8个细胞含7种CD274突变，6个细胞携带TET2 Q345*。41个TNFRSF14突变B细胞中，30个经CN-LOH、8个经两个独立点突变失去第二个等位基因。"
+   },
+   {
+    "subhead": "部分突变克隆自身反应",
+    "text": "由32个B细胞的完整BCR合成重组抗体后，至少7个克隆识别甲状腺过氧化物酶（6个）或甲状腺球蛋白（1个），其中4个携带驱动突变。激光显微切割还显示，Graves供者G5的一个大淋巴聚集区由两个各自双等位丢失TNFRSF14的大克隆构成。"
+   }
+  ],
+  "mechanism_proven": [
+   "突变类型指向功能丧失：TNFRSF14与CD274都富集无义、必需剪接位点和移码等截短突变及起始密码子突变，也富集破坏二硫键半胱氨酸的错义突变；TNFRSF14错义突变选择主要落在介导抑制性BTLA相互作用的CRD1。免疫组化证实G5该聚集区TNFRSF14表达缺失。",
+   "所有突变B细胞均有体细胞超突变，提示经历过生发中心反应，90%（37/41）TNFRSF14突变B细胞发生类别转换。一个六细胞分支先（可能在骨髓干细胞或祖细胞中）获得TET2 Q345*，再经不同V(D)J重排分出谱系、各自双等位丢失TNFRSF14，说明驱动突变逐步累积，部分克隆多达4–6个驱动突变。"
+  ],
+  "mechanism_inferred": [
+   "作者推测，B细胞上的TNFRSF14与CD274失活可能导致辅助T细胞失调，使B细胞成为不受约束的抗原提呈细胞，持续刺激TPO和TG特异的T细胞。他们提出多克隆级联模型：一个或少数带耐受逃逸突变的自身反应克隆先引发局部弱反应，随后新克隆不断加入而逐步加重。"
+  ],
+  "limitations": [
+   "作者明确表示，结果并非因果的确定证据；尚不清楚这一机制对多数患者的发病是必要还是充分，抑或主要在已形成的疾病中起作用，仍需动物模型中的功能与机制研究。",
+   "样本量小：全队列仅14例供者，单细胞全基因组数据主要来自H1一名供者；少数未检出TNFRSF14或CD274突变的供者淋巴细胞浸润都较低，检出受浸润程度和测序深度限制。",
+   "部分驱动基因并非疾病特异：TET2、DNMT3A、TNFAIP3等在正常衰老记忆B细胞中也受选择。自身反应性只测了TPO和TG两种经典抗原，部分BCR序列也可能重建不准。"
+  ],
+  "significance": [
+   "如经证实，这一模型可解释若干临床现象：大量携带甲状腺MALT淋巴瘤驱动突变的克隆，可能解释AITD患者该淋巴瘤风险升高；多克隆级联也符合长期亚临床阶段和表位扩展。",
+   "结果与胚系CD274突变和AITD相关、PD-1–PD-L1抑制剂常引发甲状腺自身免疫的现象相呼应；若其他自身免疫病中的活化B细胞也频繁携带驱动突变，或有助解释深度B细胞清除疗法为何对部分疾病有效。"
+  ],
+  "citation": "Nicola PA, Lawson ARJ, Tidd A, Imbert J, Ishida Y, Wylie LA, et al. Polyclonal selection of immune checkpoint mutations in thyroid autoimmunity. Nature. 2026 Apr 14. doi: https://doi.org/10.1038/s41586-026-10493-9",
+  "data_points": [
+   {
+    "value": "135；59",
+    "meaning": "H1单例不同TNFRSF14与CD274突变数",
+    "source_quote": "we identified 135 different TNFRSF14 and 59 CD274 mutations in donor H1 alone",
+    "location": "Highly recurrent checkpoint mutations"
+   },
+   {
+    "value": "229；125；84；48",
+    "meaning": "四基因非同义突变总数",
+    "source_quote": "yielding a total of 229 TNFRSF14 , 125 CD274 , 84 TET2 and 48 TNFAIP3 non-synonymous mutations",
+    "location": "Highly recurrent checkpoint mutations"
+   },
+   {
+    "value": "Q<1×10−15",
+    "meaning": "TNFRSF14与CD274选择显著性",
+    "source_quote": "Q < 1 × 10 −15 ), CD274 (which encodes PD-L1) ( Q < 1 × 10 −15 )",
+    "location": "Highly recurrent checkpoint mutations"
+   },
+   {
+    "value": "3,125 dx",
+    "meaning": "发现队列外显子累计双链覆盖",
+    "source_quote": "to an aggregate duplex coverage (dx) of 3,125 dx",
+    "location": "Highly recurrent checkpoint mutations"
+   },
+   {
+    "value": "28,855",
+    "meaning": "编码突变总数",
+    "source_quote": "This yielded a total of 28,855 coding mutations",
+    "location": "Highly recurrent checkpoint mutations"
+   },
+   {
+    "value": "0.002；0.024；0.0006；0.019",
+    "meaning": "TNFRSF14与CD274 VAF中位与最高",
+    "source_quote": "TNFRSF14 (median VAF = 0.002, maximum VAF = 0.024) and CD274 (median VAF = 0.0006, maximum VAF = 0.019)",
+    "location": "Highly recurrent checkpoint mutations"
+   },
+   {
+    "value": "1%",
+    "meaning": "单个克隆细胞占比上限",
+    "source_quote": "Almost all individual clones accounted for less than 1% of cells in the biopsy",
+    "location": "Highly recurrent checkpoint mutations"
+   },
+   {
+    "value": "32.7%；5.0%",
+    "meaning": "H1累计突变细胞比例下限",
+    "source_quote": "For donor H1, at least 32.7% and 5.0% of all cells bear TNFRSF14 and CD274 mutations",
+    "location": "Highly recurrent checkpoint mutations"
+   },
+   {
+    "value": "3.0%；5.5%",
+    "meaning": "H2、H3 TNFRSF14突变细胞比例",
+    "source_quote": "TNFRSF14 (H2 = 3.0%, H3 = 5.5%)",
+    "location": "Highly recurrent checkpoint mutations"
+   },
+   {
+    "value": "72,977 dx；14例",
+    "meaning": "14例累计靶向覆盖",
+    "source_quote": "yielding an aggregate targeted coverage across all 14 donors of 72,977 dx",
+    "location": "Deep driver landscape"
+   },
+   {
+    "value": "725",
+    "meaning": "靶向panel基因数",
+    "source_quote": "composed of 725 genes selected for their role in immune function and lymphomagenesis",
+    "location": "Highly recurrent checkpoint mutations"
+   },
+   {
+    "value": "15个基因；Q<0.01",
+    "meaning": "扩展数据正选择基因",
+    "source_quote": "Using dNdSshm on this extended dataset identified 15 genes under positive selection ( Q < 0.01)",
+    "location": "Deep driver landscape"
+   },
+   {
+    "value": "141；37",
+    "meaning": "截短突变dN/dS",
+    "source_quote": "with d N /d S ratios for truncating mutations of 141 and 37, respectively",
+    "location": "Deep driver landscape"
+   },
+   {
+    "value": "10例；11例；14例",
+    "meaning": "检出TNFRSF14、CD274突变的供者数",
+    "source_quote": "TNFRSF14 and CD274 mutations were detected in 10 and 11 of the 14 donors, respectively.",
+    "location": "Deep driver landscape"
+   },
+   {
+    "value": "Q>0.1",
+    "meaning": "对照数据中无显著选择",
+    "source_quote": "not under significant selection in any of the control datasets above ( Q > 0.1)",
+    "location": "Deep driver landscape"
+   },
+   {
+    "value": "20名；50岁",
+    "meaning": "外周血对照供者",
+    "source_quote": "from non-autoimmune donors over 50 years old ( n = 20 donors",
+    "location": "Deep driver landscape"
+   },
+   {
+    "value": "221",
+    "meaning": "显微切割淋巴聚集区数",
+    "source_quote": "we undertook LCM of 221 microscopic areas of lymphoid aggregates from three donors (H1, H3 and G5)",
+    "location": "Spatial distribution of mutant clones"
+   },
+   {
+    "value": "112；66；38",
+    "meaning": "单核总数、B细胞、T细胞",
+    "source_quote": "Of the 112 nuclei sequenced, 66 were identified as B cells and 38 as T cells",
+    "location": "Single-nucleus whole-genome sequencing"
+   },
+   {
+    "value": "314×；86；18×",
+    "meaning": "单核测序深度",
+    "source_quote": "Deep targeted sequencing on 725 genes was performed on all 112 nuclei (314× median coverage) and whole-genome sequencing was performed on 86 nuclei (18× median coverage",
+    "location": "Single-nucleus whole-genome sequencing"
+   },
+   {
+    "value": "31；41；62%；7；8；6",
+    "meaning": "单核中TNFRSF14、CD274、TET2突变",
+    "source_quote": "including 31 non-synonymous TNFRSF14 mutations in 41 cells (implying that approximately 62% of B cells are TNFRSF14 -mutant in donor H1), 7 CD274 mutations in 8 cells and a TET2 Q345* mutation in 6 cells",
+    "location": "Single-nucleus whole-genome sequencing"
+   },
+   {
+    "value": "30/41；8",
+    "meaning": "TNFRSF14第二等位丢失方式",
+    "source_quote": "Of the 41 B cells carrying TNFRSF14 point mutations or indels, 30 had lost the second allele through CN-LOH and 8 had two independent point mutations",
+    "location": "Single-nucleus whole-genome sequencing"
+   },
+   {
+    "value": "32",
+    "meaning": "重建完整BCR的B细胞数",
+    "source_quote": "we were able to reconstruct complete heavy and light chain BCR sequences from 32 B cells",
+    "location": "Single-nucleus whole-genome sequencing"
+   },
+   {
+    "value": "7；6；1；4",
+    "meaning": "自身反应克隆（抗TPO、抗TG）及带驱动突变者",
+    "source_quote": "This identified at least seven B cell clones as self-reactive against either TPO ( n = 6) or TG ( n = 1). Of these, four carried driver mutations",
+    "location": "Single-nucleus whole-genome sequencing"
+   },
+   {
+    "value": "90%（37/41）",
+    "meaning": "TNFRSF14突变B细胞类别转换比例",
+    "source_quote": "Class switch recombination was detected in 90% (37 of 41) of TNFRSF14 -mutant B cells",
+    "location": "Single-nucleus whole-genome sequencing"
+   },
+   {
+    "value": "4–6",
+    "meaning": "单克隆最多驱动突变数",
+    "source_quote": "clones with as many as 4–6 driver mutations",
+    "location": "Abstract"
+   },
+   {
+    "value": "5–10%",
+    "meaning": "自身免疫病全球患病比例",
+    "source_quote": "Autoimmune diseases affect 5–10% of the global population",
+    "location": "Main"
+   }
+  ],
+  "steps": [
+   "自身反应B细胞聚集于甲状腺",
+   "众多克隆各自获得检查点突变",
+   "TNFRSF14双等位丢失与多重驱动",
+   "作者推测：逃脱耐受、级联放大"
+  ],
+  "figure_caption": "示意图概括研究主线：甲状腺淋巴聚集区内众多B细胞克隆各自获得TNFRSF14与CD274失活突变，单个克隆很小但累计占比可观；部分B细胞经CN-LOH双等位丢失并逐步累积多个驱动突变，作者据此提出多克隆级联模型。示意图由 AI 生成，依据原文结果绘制，非期刊原图，不代表分子比例",
+  "image_story": {
+   "stages": [
+    {
+     "visual_en": "An inflamed thyroid lymphoid aggregate packed with many small, distinct B cell clones, each marked by its own mutation.",
+     "source_quote": "In highly inflamed biopsies, we detected tens to hundreds of independent immune checkpoint mutant clones."
+    },
+    {
+     "visual_en": "One B cell losing both copies of a checkpoint gene and stacking several driver mutations.",
+     "source_quote": "We found widespread TNFRSF14 biallelic loss, and clones with as many as 4–6 driver mutations."
+    },
+    {
+     "visual_en": "A mutant B cell escaping inhibitory signals and engaging helper T cells, recruiting more clones.",
+     "source_quote": "Our results support the hypothesis that somatic mutations in autoimmune lymphocytes may allow them to escape tolerance constraints"
+    }
+   ],
+   "key_element_en": "TNFRSF14-mutant B cell with biallelic loss"
+  },
+  "image_subject_en": "A left-to-right process in three stages, drawn large. Stage 1 shows a rounded lymphoid aggregate inside pale mint thyroid tissue, bordered by light grey-green thyroid follicles and packed with dozens of small B cell clones in mid green and pale mint, each small cluster carrying a tiny deep green mark of its own, showing many independent clones side by side. Stage 2 shows a close-up of one mutant B cell drawn as a very large, solid, boldly filled terracotta #C0492F cell, its deep green nucleus holding two paired chromosome strands in which both copies of the same gene segment are broken, and a short string of three to five deep green driver mutation beads stacked along the chromosome. Stage 3 shows that mutant B cell again, its surface inhibitory receptors drawn as faded light grey-green stubs, presenting antigen to several mid green helper T cells, while new pale mint B cell clones drift in from the edge toward the aggregate. Clean white background, flat scientific illustration. Only the mutant B cell is terracotta.",
+  "card_subject_en": "A compact hero subject: one rounded thyroid lymphoid aggregate in mid green and pale mint, cut open to show its interior and crowded with many small mid green and pale mint B cell clones. At the centre sits one very large, solid, boldly filled terracotta #C0492F mutant B cell whose deep green nucleus shows a broken paired chromosome and a short string of deep green driver mutation beads, with a few mid green helper T cells touching its surface. Clean white background. No text, no numbers, no symbols. Only the mutant B cell is terracotta.",
+  "figure_labels": {
+   "heads": [
+    "多克隆检查点突变",
+    "双等位丢失累积",
+    "多克隆级联假说"
+   ],
+   "callouts": [
+    {
+     "t": "H1检出135种\nTNFRSF14突变",
+     "stage": 1,
+     "entity_en": "lymphoid aggregate"
+    },
+    {
+     "t": "单克隆多<1%细胞\nH1累计≥32.7%",
+     "stage": 1,
+     "entity_en": "small B cell clones"
+    },
+    {
+     "t": "30/41经CN-LOH\n失去第二等位",
+     "stage": 2,
+     "entity_en": "mutant B cell"
+    },
+    {
+     "t": "约62% B细胞\n带TNFRSF14突变",
+     "stage": 2,
+     "entity_en": "driver mutation beads"
+    },
+    {
+     "t": "作者推测\n逃脱外周耐受",
+     "stage": 3,
+     "entity_en": "helper T cells"
+    }
+   ],
+   "facts": [
+    [
+     "TNFRSF14截短dN/dS",
+     "**141**"
+    ],
+    [
+     "CD274截短dN/dS",
+     "**37**"
+    ],
+    [
+     "自身反应克隆",
+     "7个，4个带驱动突变"
+    ]
+   ],
+   "note": "以关联与谱系证据为主，因果未定。示意图由 AI 生成，非期刊原图。"
+  },
+  "chart": {
+   "justified": true,
+   "title_zh": "截短突变dN/dS（扩展数据集）",
+   "unit": "dN/dS",
+   "figure_source": "Results: Deep driver landscape",
+   "values": [
+    {
+     "label_zh": "TNFRSF14",
+     "value": 141,
+     "n": "14例供者",
+     "source_quote": "with d N /d S ratios for truncating mutations of 141 and 37, respectively"
+    },
+    {
+     "label_zh": "CD274",
+     "value": 37,
+     "n": "14例供者",
+     "source_quote": "with d N /d S ratios for truncating mutations of 141 and 37, respectively"
+    }
+   ],
+   "note": "dN/dS为观察与预期突变数之比，数值越大正选择越强。"
+  }
+ },
+ "images": {
+  "mech_raw": "work/r5img/clean/c4-ai-5_mech_raw_r5_clean.png",
+  "mech": "c4-ai-5_mech_r5.png",
+  "card": "c4-ai-5_card_r5.png",
+  "image_model": "mech + card: Grok drawings r5 (supplied by parent run)",
+  "note": "raw backgrounds cleaned (work/r4/clean_r4b.py); QC rules per user decision 2026-10-09"
+ },
+ "card_title": "桥本甲状腺炎：单例供者检出135种TNFRSF14突变",
+ "card_caption": "甲状腺淋巴聚集区里的一个赤陶红突变B细胞",
+ "card_text_meta": {
+  "model": "grok-bot (self)",
+  "card_title_chars": 18,
+  "card_caption_chars": 21
+ },
+ "notes": "Must-cover list: mc_c4-ai-5_frozen_v2.json (12 items; v1 file with 13 items superseded, kept on disk). Tools run through mcfix.py so v2 is used. Numbers 6 (datacard.n, design[0]) and 4/7 (results[4]) appear in source as words in the cited quotes; all digits trace to full text.",
+ "card_caption_r5": "甲状腺淋巴聚集区中一个赤陶红突变B细胞居中",
+ "card_caption_note": "caption changed in r5img per user (subject not centred)",
+ "text_from": "c4-ai-5_final_r5.json (text unchanged)"
+}

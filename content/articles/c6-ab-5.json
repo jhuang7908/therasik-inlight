@@ -1,0 +1,477 @@
+{
+ "id": "c6-ab-5",
+ "round": "r5img",
+ "drafter_model": "grok-bot (self)",
+ "drafter_of_edits": "grok-bot (self)",
+ "verifier_model": "grok-bot (self): scripted audit_rw + verbatim-quote claim check (no external verifier model available)",
+ "mustcover_frozen_by": "gpt-5.5-2026-04-23",
+ "mustcover_file": "work/r5/mc/mc_c6-ab-5_frozen.json",
+ "source_draft": "work/r5/c6-ab-5/rw_c6-ab-5_draft_v6.json",
+ "edits_r5": [
+  "v1 drafted by grok-bot (self) from full text",
+  "v2: one_liner/figure_caption use 288,000 (not 28.8万); m4/m5 covered_by aligned to body; results[0] adds design-parameter combinatorics; mechanism trimmed",
+  "v3: steps 288,000; results[1] adds expression yield; mechanism trimmed further",
+  "v4: m8 covered_by aligned to body; mechanism_inferred trimmed to section range",
+  "v5: callout entity_en matched to image_subject_en wording",
+  "v6: callout entity_en exactly matches image_subject_en phrase (r5b re-assembly; r5 files left untouched)"
+ ],
+ "text_status": "text-pass",
+ "status": "published-ready",
+ "status_reasons": [],
+ "preprint": true,
+ "writer_tags": [
+  "纳米抗体",
+  "从头设计",
+  "酵母表面展示",
+  "表面等离子共振",
+  "表位热点",
+  "促结缔组织增生性小圆细胞瘤"
+ ],
+ "tags_note": "editor related-field tags prepended; writer tags trimmed to 6 (metadata only)",
+ "article": {
+  "tier": "deep",
+  "field": "AI 药物设计",
+  "tags": [
+   "抗体工程",
+   "纳米抗体",
+   "从头设计",
+   "酵母表面展示",
+   "表面等离子共振",
+   "表位热点"
+  ],
+  "primary_endpoint_basis": "这不是临床研究。主要读出取摘要与Results、结论一致的实验终点：116个候选经SPR表征中46个（39.7%）给出可靠动力学拟合（Rmax≥30 RU），KD范围0.66–305 nM、中位31.7 nM。标题数字39.7%与0.66 nM均来自这一口径。",
+  "comparison_design": "预印本的临床前方法学研究，未为任何组间比较设计效能。文中给出检验的对比有：IgGM对mBER的KD（p=0.311）、五种结构预测方法间KD（Kruskal-Wallis p=0.330）、八个热点组间KD（p=0.725），均未达显著；作者自述46个结合体分到五组后分析效能严重不足。",
+  "untested_comparisons": [
+   "框架B占46个高信号结合体中的45个（未做检验）",
+   "IgGM中位28.0 nM对mBER中位43.9 nM（p=0.311，不显著）",
+   "热点G中位10.3 nM对热点B中位43.9 nM（p=0.725，不显著）",
+   "与传统发现方法6–12个月周期的比较为文献引用，非本研究对照"
+  ],
+  "number_basis_note": "摘要、Results与结论对核心数字（288,000、100,000、116、46/116、39.7%、0.66–305 nM、中位31.7 nM）口径一致。低信号（Rmax<30 RU）的29个候选按原文标注为暂定估计，其KD（如0.13 nM）不进标题与主要读出。表达量在Results按mg/L、在Methods按µg/2×1 mL培养给出，正文分别标注来源。",
+  "must_cover": [
+   {
+    "id": "m1",
+    "item_zh": "116个候选中46个（39.7%）给出Rmax≥30 RU的可靠动力学，KD 0.66–305 nM、中位31.7 nM。",
+    "status": "covered",
+    "covered_by": "46个（39.7%）给出Rmax≥30 RU的可靠动力学拟合，KD从0.66 nM到305 nM，中位31.7 nM"
+   },
+   {
+    "id": "m2",
+    "item_zh": "最佳候选PRJ266_044的KD为0.66 nM，次优PRJ266_080为2.3 nM。",
+    "status": "covered",
+    "covered_by": "最佳候选PRJ266_044的KD为0.66 nM，次优PRJ266_080为2.3 nM"
+   },
+   {
+    "id": "m3",
+    "item_zh": "生成288,000个设计，覆盖8个表位区和3种VHH框架，经Pareto过滤出100,000个进入酵母展示筛选。",
+    "status": "covered",
+    "covered_by": "共生成288,000个设计，再由候选选择智能体做多目标Pareto过滤，留下100,000个进入酵母表面展示筛选"
+   },
+   {
+    "id": "m4",
+    "item_zh": "设计针对一个既无实验结构也无既有抗体信息的新癌靶点，仅从序列出发，用四种折叠方法和八个表位区。",
+    "status": "covered",
+    "covered_by": "既无实验解析结构、也无任何公开抗体信息"
+   },
+   {
+    "id": "m5",
+    "item_zh": "设计参数组合包括8个计算热点、3种框架、CDR III长度4–13个氨基酸和三种生成模型。",
+    "status": "covered",
+    "covered_by": "设计参数以组合方式变化：8个计算识别的表位热点、3种纳米抗体框架、4至13个氨基酸的CDR III长度，并在三种生成模型中全部采样"
+   },
+   {
+    "id": "m6",
+    "item_zh": "靶点来自纪念斯隆-凯特琳癌症中心47例DSRCT手术标本的RNA测序。",
+    "status": "covered",
+    "covered_by": "靶点来自纪念斯隆-凯特琳癌症中心47例促结缔组织增生性小圆细胞瘤（DSRCT）手术标本的RNA测序"
+   },
+   {
+    "id": "m7",
+    "item_zh": "10万候选经酵母表面展示筛选，酵母文库VHH表达率90.6%，做2轮FACS富集。",
+    "status": "covered",
+    "covered_by": "酵母文库VHH表达率为90.6%，经2轮FACS富集"
+   },
+   {
+    "id": "m8",
+    "item_zh": "116个候选对无关抗原TfR1均无结合。",
+    "status": "covered",
+    "covered_by": "对无关抗原转铁蛋白受体（TfR1）均无结合"
+   },
+   {
+    "id": "m10",
+    "item_zh": "八个热点条件下都回收到结合体，但真实结合界面未必与条件热点一致。",
+    "status": "covered",
+    "covered_by": "八个热点条件组都回收到经SPR确认的结合体，但作者强调真实结合界面未必与条件热点一致"
+   },
+   {
+    "id": "m11",
+    "item_zh": "作者列出的局限之一：依赖Boltz-2共折叠、MochiBind等计算指标，可能无法反映构象稳定性或动态不稳定。",
+    "status": "covered",
+    "covered_by": "生物物理性质评估有限，目前依赖Boltz-2共折叠和MochiBind亲和力估计等计算指标，可能无法刻画构象稳定性或动态不稳定"
+   },
+   {
+    "id": "m12",
+    "item_zh": "作者列出的局限之二：只用RFantibody、IgGM、mBER三种生成方法，支架多样性受限。",
+    "status": "covered",
+    "covered_by": "支架多样性有限，工作流只用了RFantibody、IgGM和mBER三种生成方法"
+   }
+  ],
+  "title": "智能体引导从头设计纳米抗体：116个候选中46个经SPR确认，最佳KD 0.66 nM",
+  "one_liner": "针对一个无结构、无既有抗体的DSRCT新靶点，Zhao等从头生成288,000个纳米抗体设计，116个候选经SPR表征有46个（39.7%）获可靠动力学，最佳KD为0.66 nM。",
+  "datacard": {
+   "study_type": "预印本（未经同行评审）的计算—实验一体化抗体发现方法学研究（bioRxiv）",
+   "n": "288,000个从头设计；Pareto过滤后100,000个进入酵母展示；116个进入SPR；46个获可靠动力学",
+   "control": "无关抗原TfR1特异性对照；三种生成模型、五种预测结构、三种框架互为参照",
+   "intervention": "热点推荐智能体定表位；RFantibody、IgGM、mBER生成设计；多指标打分与Pareto筛选；酵母表面展示＋FACS＋SPR",
+   "primary_endpoint": "核心实验读出：SPR可靠动力学比例（可测KD且Rmax≥30 RU）及其KD分布",
+   "primary_endpoint_result": "46/116（39.7%）获可靠动力学，KD 0.66–305 nM，中位31.7 nM；另有29个低信号候选仅为暂定估计",
+   "statistics": "Kruskal-Wallis与组间比较：生成模型p=0.311、结构预测方法p=0.330、热点组p=0.725，均不显著",
+   "evidence_level": "全文",
+   "check_record": "bioRxiv JATS XML全文：Abstract、Results、Discussion、Conclusions、Methods及Figure 1–4图注"
+  },
+  "background": [
+   "单抗已是生物药主力，纳米抗体（VHH）因溶解性好、稳定性强、易工程化而扩展了可及形式。但传统发现方式——动物免疫、噬菌体展示、合成文库——对可及序列空间有限制，作者引用的文献显示一轮发现通常需要6–12个月，且几乎无法事先指定表位。",
+   "机器学习带来了结构预测与从头设计工具，但文献报道的实验命中率在0.1%到39%之间，且命中定义不一致、靶点难度不同，难以直接比较。Zhao等在bioRxiv预印本（未经同行评审）中把这些工具串成一条由智能体引导的流水线，并在一个新癌靶点上做首轮验证。"
+  ],
+  "design": [
+   "靶点来自纪念斯隆-凯特琳癌症中心47例促结缔组织增生性小圆细胞瘤（DSRCT）手术标本的RNA测序：与5例健康腹膜组织比较做差异表达，再限定为EWSR1::WT1上调、预测位于细胞表面、且在GTEx正常组织中无明显表达的基因，取其中上调最强者。该靶点既无实验解析结构、也无任何公开抗体信息，设计只能从序列出发。",
+   "工作流分四步：用热点推荐智能体（基于Claude Sonnet 4，整合IEDB、PFAM、表面可及性等工具输出）提出8个表位热点；用RFantibody、IgGM、mBER在四种折叠方法给出的预测结构上生成设计；多指标打分后由候选选择智能体做Pareto筛选；最后用酵母表面展示＋FACS＋SPR验证。研究未为任何组间比较设计效能。"
+  ],
+  "results": [
+   {
+    "subhead": "两轮富集后116个入SPR",
+    "text": "设计参数以组合方式变化：8个计算识别的表位热点、3种纳米抗体框架、4至13个氨基酸的CDR III长度，并在三种生成模型中全部采样，共生成288,000个设计，再由候选选择智能体做多目标Pareto过滤，留下100,000个进入酵母表面展示筛选。酵母文库VHH表达率为90.6%，经2轮FACS富集后按平均荧光强度挑出116个候选进入SPR。"
+   },
+   {
+    "subhead": "46个获可靠动力学",
+    "text": "全部116个候选均成功表达，Results给出中位产量184 mg/L（34.5–200 mg/L），且对无关抗原转铁蛋白受体（TfR1）均无结合。其中46个（39.7%）给出Rmax≥30 RU的可靠动力学拟合，KD从0.66 nM到305 nM，中位31.7 nM；最佳候选PRJ266_044的KD为0.66 nM，次优PRJ266_080为2.3 nM。另有29个候选响应可检出但幅度低（Rmax<30 RU），作者明确其KD只能视为暂定估计。"
+   },
+   {
+    "subhead": "框架决定成败",
+    "text": "在46个高信号结合体中，三种框架只有两种产出，且分布高度偏斜：框架B占45个。IgGM与mBER都有贡献，IgGM数量更多、中位KD更低（n=33，中位28.0 nM对mBER n=13、43.9 nM），但差异不显著（p=0.311）。RFantibody的三个结合体KD为0.13、0.62和5.5 nM，但Rmax仅11.1–16.4 RU，全部低于阈值。"
+   },
+   {
+    "subhead": "热点可回收但不等于表位",
+    "text": "八个热点条件组都回收到经SPR确认的结合体，但作者强调真实结合界面未必与条件热点一致；各组中位KD从热点G的10.3 nM到热点B的43.9 nM，组间无显著差异（p=0.725）。五种预测结构之间中位亲和力为26.5–47.5 nM（p=0.330），作者指出46个结合体分到五组后效能严重不足。"
+   }
+  ],
+  "mechanism_proven": [
+   "可由实验直接支持的是流程环节的可回收性：Boltz-2仅凭序列共折叠，就把设计的CDR接触集中在条件热点附近，说明表位偏好被编码进序列并可被独立结构预测找回；作者同时指出Boltz-2与设计模型共享PDB训练数据，不能排除共同偏倚。五种预测结构两两TM-score均超过0.5，AlphaFold2最分歧（0.62–0.66）。",
+   "热点推荐能力另在SAbDab复合物上单独评估：测试集按70%一致性聚类取n=320，另有n=76的留出集；智能体每个抗原给出5个互不重叠的10氨基酸区域，与任一真实表位残基重叠即记为命中，留出集上top-5准确率约80%。"
+  ],
+  "mechanism_inferred": [
+   "作者推测，热点B与热点F、G可能构成一个不连续表位的组成部分，这可解释几个区域间重叠的接触信号；他们也认为低KD结合体在这三组中的富集只能作为提出假设的线索，因为每组样本量很小。框架B的压倒性占比被解释为框架性质可能决定计算设计能否转化为强结合体。"
+  ],
+  "limitations": [
+   "作者自述两条局限：生物物理性质评估有限，目前依赖Boltz-2共折叠和MochiBind亲和力估计等计算指标，可能无法刻画构象稳定性或动态不稳定；支架多样性有限，工作流只用了RFantibody、IgGM和mBER三种生成方法，可能限制对其他支架类别的探索。",
+   "结论的证据层级有限：SPR只能确认结合，不能判定表位，作者称需要实验表位作图；热带亲和力差异的组间比较（生成模型p=0.311、结构方法p=0.330、热点p=0.725）均不显著且效能不足，不能用于挑选方法。",
+   "这是bioRxiv预印本，未经同行评审，且只完成首轮设计—构建—测试；热稳定性、多反应性等开发性表征和细胞层面验证尚未进行，29个低信号候选的亲和力需正交方法确认。"
+  ],
+  "significance": [
+   "若后续周期与同行评审证实，这条流水线说明在没有实验结构、也没有既有抗体的靶点上，智能体定表位加多模型从头设计可以在首轮就拿到纳摩尔到亚纳摩尔的纳米抗体，把筛选规模从传统文库的生物选择转为可指定表位的计算设计。",
+   "对团队的实际启示是把框架和生成方法当作要刻意多样化的设计变量，并以实验数据回流训练靶点专属模型；作者已规划细胞验证与开发性表征，用于后续设计—构建—测试—学习循环。"
+  ],
+  "citation": "Zhao Y, Yilmaz M, Lee E, Teh C, Guo L, Sonmez K, 等. Agent-Guided De Novo Design of Nanobody Binders Against a Novel Cancer Target. bioRxiv. 2026 Apr 17. doi: https://doi.org/10.64898/2026.04.13.717816",
+  "data_points": [
+   {
+    "value": "288,000",
+    "meaning": "从头生成的纳米抗体设计总数",
+    "source_quote": "We generated 288,000 nanobody designs spanning eight target epitope regions and three variable domains of heavy chain-only antibody (VHH) frameworks.",
+    "location": "Abstract"
+   },
+   {
+    "value": "100,000",
+    "meaning": "Pareto过滤后进入酵母展示的候选数",
+    "source_quote": "Multi-objective Pareto filtering with our candidate selection agent yielded 100,000 candidates for YSD screening",
+    "location": "Abstract"
+   },
+   {
+    "value": "116",
+    "meaning": "进入SPR表征的候选数",
+    "source_quote": "Of 116 enriched candidates advanced to SPR characterization",
+    "location": "Abstract"
+   },
+   {
+    "value": "46/116（39.7%）",
+    "meaning": "获可靠动力学的比例",
+    "source_quote": "46/116 (39.7%) produced reliable kinetic fits with R max ≥ 30 RU",
+    "location": "Abstract"
+   },
+   {
+    "value": "0.66–305 nM；中位31.7 nM",
+    "meaning": "46个结合体的KD范围与中位",
+    "source_quote": "yielding K D values from 0.66 nM to 305 nM (median 31.7 nM)",
+    "location": "Abstract"
+   },
+   {
+    "value": "30 RU",
+    "meaning": "可靠动力学的Rmax阈值",
+    "source_quote": "Candidates with measurable binding responses and R max ≥ 30 RU were considered to have reliable kinetic fits",
+    "location": "Methods: SPR"
+   },
+   {
+    "value": "0.66 nM",
+    "meaning": "最佳候选PRJ266_044的KD",
+    "source_quote": "The top candidate, PRJ266_044, achieved K D = 0.66 nM.",
+    "location": "Results: De novo designed nanobodies"
+   },
+   {
+    "value": "2.3 nM",
+    "meaning": "次优候选PRJ266_080的KD",
+    "source_quote": "The second-ranked candidate, PRJ266_080, measured K D = 2.3 nM",
+    "location": "Results"
+   },
+   {
+    "value": "29",
+    "meaning": "低信号候选数",
+    "source_quote": "An additional 29 candidates shared detectable but low-amplitude SPR responses ( R max < 30 RU)",
+    "location": "Results"
+   },
+   {
+    "value": "90.6%",
+    "meaning": "酵母文库VHH表达率",
+    "source_quote": "with a 90.6% VHH expression rate in yeast library",
+    "location": "Results"
+   },
+   {
+    "value": "2轮",
+    "meaning": "FACS富集轮数",
+    "source_quote": "with 2 rounds of FACS enrichment",
+    "location": "Results"
+   },
+   {
+    "value": "184 mg/L（34.5–200）；97%；100 mg/L",
+    "meaning": "116个候选表达产量（Results口径）",
+    "source_quote": "with a median yield of 184 mg/L (range: 34.5–200 mg/L) at the 2 mL culture scale, with 97% of the library exceeding 100 mg/L",
+    "location": "Results"
+   },
+   {
+    "value": "47例",
+    "meaning": "用于靶点发现的DSRCT标本数",
+    "source_quote": "RNA sequencing was performed on 47 desmoplastic small round cell tumor (DSRCT) specimens collected from patients undergoing surgery at Memorial Sloan Kettering Cancer Center.",
+    "location": "Methods: Target Identification"
+   },
+   {
+    "value": "5例",
+    "meaning": "对照正常腹膜样本数",
+    "source_quote": "compared to five normal tissue samples taken from the peritoneum of healthy donors",
+    "location": "Methods: Target Identification"
+   },
+   {
+    "value": "8个热点；3种框架；4至13",
+    "meaning": "设计参数组合",
+    "source_quote": "eight computationally identified epitope hotspots, three distinct nanobody frameworks, and CDR III loop lengths ranging from 4 to 13 amino acid",
+    "location": "Results: VHH binder generation"
+   },
+   {
+    "value": "四种折叠方法",
+    "meaning": "用于生成抗原构象的结构预测模型数",
+    "source_quote": "we generated predictions using four structure prediction models: AlphaFold2, Boltz-2, Chai-1, and IntelliFold",
+    "location": "Results: VHH binder generation"
+   },
+   {
+    "value": "45/46",
+    "meaning": "框架B在高信号结合体中的占比",
+    "source_quote": "Framework B accounted for 45 of the 46 high-signal binders",
+    "location": "Results"
+   },
+   {
+    "value": "n=33，中位28.0 nM；n=13，43.9 nM；p=0.311",
+    "meaning": "IgGM与mBER结合体数与中位KD",
+    "source_quote": "with IgGM contributing the larger share at a lower median K D (n = 33, median 28.0 nM) compared to mBER (n = 13, median 43.9 nM), though this difference was not statistically significant (p = 0.311)",
+    "location": "Results"
+   },
+   {
+    "value": "0.13、0.62、5.5 nM；11.1–16.4 RU",
+    "meaning": "RFantibody三个结合体的KD与Rmax",
+    "source_quote": "All three RFantibody-designed binders returned fitted K D values in the sub-nanomolar to low-nanomolar range (0.13, 0.62, and 5.5 nM) but with uniformly low R max values (11.1-16.4 RU)",
+    "location": "Results"
+   },
+   {
+    "value": "10.3 nM；43.9 nM；p=0.725",
+    "meaning": "八个热点组中位KD范围与检验",
+    "source_quote": "with median K D values ranging from 10.3 nM (Hotspot G) to 43.9 nM (Hotspot B) ( Figure 3d ), though the small per-group sample sizes preclude meaningful comparison across groups (Kruskal-Wallis p = 0.725)",
+    "location": "Results"
+   },
+   {
+    "value": "26.5–47.5 nM；p=0.330",
+    "meaning": "五种结构预测方法间中位亲和力",
+    "source_quote": "no statistically significant difference in median affinities was detected (26.5-47.5 nM, Kruskal-Wallis p = 0.330, Figure 3c )",
+    "location": "Results"
+   },
+   {
+    "value": "0.5；0.91；0.62–0.66",
+    "meaning": "结构一致性TM-score",
+    "source_quote": "All pairs exceeded a TM-score of 0.5, confirming that every method recovered the same overall fold.",
+    "location": "Results: Target Structure Prediction"
+   },
+   {
+    "value": "0.91",
+    "meaning": "Boltz-2与其势能引导变体的TM-score",
+    "source_quote": "with Boltz-2 and its potential-guided variant showing the highest agreement (TM = 0.91)",
+    "location": "Results: Target Structure Prediction"
+   },
+   {
+    "value": "0.62–0.66",
+    "meaning": "AlphaFold2与其他方法的TM-score",
+    "source_quote": "AlphaFold2 was consistently the most divergent prediction (TM = 0.62-0.66 against all other methods)",
+    "location": "Results: Target Structure Prediction"
+   },
+   {
+    "value": "n=320；n=76；5个；10氨基酸；约80%",
+    "meaning": "热点推荐评估集与top-5准确率",
+    "source_quote": "A test set (n=320) was selected for sequence dissimilarity using clustering at 70% identity, and a curated holdout set (n=76) was constructed",
+    "location": "Results: Hotspot recommendation"
+   },
+   {
+    "value": "约80%",
+    "meaning": "留出集top-5准确率",
+    "source_quote": "On the diverse holdout set, the agent achieved ∼80% top-5 accuracy.",
+    "location": "Results: Hotspot recommendation"
+   },
+   {
+    "value": "5个；10氨基酸",
+    "meaning": "每个抗原提出的区域数与长度",
+    "source_quote": "the agent proposes k=5 non-overlapping 10-amino-acid regions per antigen",
+    "location": "Results: Hotspot recommendation"
+   },
+   {
+    "value": "6–12个月；0.1%到39%",
+    "meaning": "传统发现周期与文献命中率区间",
+    "source_quote": "A typical discovery campaign requires 6–12 months",
+    "location": "Discussion"
+   },
+   {
+    "value": "0.1%到39%",
+    "meaning": "文献报道的从头设计命中率区间",
+    "source_quote": "with reported hit rates ranging from 0.1% to 39%",
+    "location": "Introduction"
+   },
+   {
+    "value": "90%",
+    "meaning": "热点B的表面可及性",
+    "source_quote": "Hotspot B was selected for its high surface accessibility (up to 90%)",
+    "location": "Discussion"
+   },
+   {
+    "value": "Claude Sonnet 4",
+    "meaning": "热点推荐智能体所用大模型",
+    "source_quote": "synthesizes their outputs through the large language model (LLM), Claude Sonnet 4",
+    "location": "Results: Hotspot recommendation"
+   }
+  ],
+  "steps": [
+   "47例肿瘤测序定靶点",
+   "智能体推荐8个表位热点",
+   "三模型生成288,000个设计",
+   "Pareto筛10万做酵母展示",
+   "116个候选SPR表征"
+  ],
+  "figure_caption": "示意图概括工作流：从肿瘤测序选出无结构、无既有抗体的新靶点，智能体在预测结构上标出八个表位热点，三种生成模型产出288,000个纳米抗体设计，经筛选后用酵母展示与SPR验证，46个获可靠动力学。示意图由 AI 生成，依据原文结果绘制，非期刊原图，不代表分子比例",
+  "image_story": {
+   "stages": [
+    {
+     "visual_en": "A predicted multi-domain antigen structure with eight highlighted surface patches.",
+     "source_quote": "the workflow produced predicted target structures using four folding methods, identified eight candidate epitope regions"
+    },
+    {
+     "visual_en": "A large fan of many small nanobody designs generated against those patches and narrowed to a smaller set.",
+     "source_quote": "generated 288,000 nanobody designs across three generative methods (RFantibody, IgGM, mBER)"
+    },
+    {
+     "visual_en": "Yeast cells displaying nanobodies bind the antigen, and one best nanobody sits on an SPR sensor surface.",
+     "source_quote": "The 100,000 candidates were screened by yeast surface display"
+    }
+   ],
+   "key_element_en": "best confirmed nanobody binder"
+  },
+  "image_subject_en": "A left-to-right process in three stages, drawn large. Stage 1 shows a predicted multi-domain antigen protein drawn as a mid green ribbon-and-surface blob with eight small pale mint patches marked on its surface, one of them slightly raised. Stage 2 shows a wide fan of many small light grey-green nanobody shapes spreading out from the antigen, with a narrower inner group of deep green nanobodies drawn larger and sharper to show selection from many to few. Stage 3 shows two round pale mint yeast cells with deep green nanobodies displayed on their surface capturing mid green antigen molecules, and beside them a flat light grey-green sensor chip on which one very large, solid, boldly filled terracotta #C0492F nanobody is docked onto a single antigen molecule, with a smooth binding curve shape implied only by the raised chip surface and no axes. Only the best confirmed nanobody binder is terracotta.",
+  "card_subject_en": "A compact hero subject: one very large, solid, boldly filled terracotta #C0492F single-domain nanobody, drawn as a stout barrel-shaped protein with three looped CDR fingers, docking tightly onto a mid green predicted antigen surface patch that sits on a larger pale mint protein body. A few small light grey-green nanobody silhouettes float behind, out of focus, to suggest the many unselected designs. No text, no numbers, no symbols. Only the nanobody is terracotta.",
+  "figure_labels": {
+   "heads": [
+    "智能体定表位",
+    "三模型生成设计",
+    "展示与SPR验证"
+   ],
+   "callouts": [
+    {
+     "t": "无实验结构\n8个表位热点",
+     "stage": 1,
+     "entity_en": "predicted multi-domain antigen protein"
+    },
+    {
+     "t": "288,000个设计\n3种框架",
+     "stage": 2,
+     "entity_en": "wide fan of many small light grey-green nanobody shapes"
+    },
+    {
+     "t": "Pareto筛选\n留100,000个",
+     "stage": 2,
+     "entity_en": "inner group of deep green nanobodies"
+    },
+    {
+     "t": "酵母表达率90.6%\n2轮FACS",
+     "stage": 3,
+     "entity_en": "yeast cells"
+    },
+    {
+     "t": "46/116可靠动力学\n最佳KD 0.66 nM",
+     "stage": 3,
+     "entity_en": "best confirmed nanobody binder"
+    }
+   ],
+   "facts": [
+    [
+     "SPR可靠动力学",
+     "**39.7%**（46/116）"
+    ],
+    [
+     "KD中位",
+     "31.7 nM（0.66–305）"
+    ],
+    [
+     "对照TfR1",
+     "116个均无结合"
+    ]
+   ],
+   "note": "预印本，未经同行评审；组间差异均不显著。示意图由 AI 生成，非期刊原图。"
+  },
+  "chart": {
+   "justified": true,
+   "title_zh": "SPR表征结果构成",
+   "unit": "候选数",
+   "figure_source": "Results / Figure 2",
+   "values": [
+    {
+     "label_zh": "可靠动力学（Rmax≥30 RU）",
+     "value": 46,
+     "n": "共116个",
+     "source_quote": "46/116 (39.7%) produced reliable kinetic fits with R max ≥ 30 RU"
+    },
+    {
+     "label_zh": "低信号（Rmax<30 RU）",
+     "value": 29,
+     "n": "共116个",
+     "source_quote": "An additional 29 candidates shared detectable but low-amplitude SPR responses ( R max < 30 RU)"
+    }
+   ],
+   "note": "低信号候选的KD按原文只作暂定估计。"
+  }
+ },
+ "images": {
+  "mech_raw": "work/r5img/clean/c6-ab-5_mech_raw_r5_clean.png",
+  "mech": "c6-ab-5_mech_r5.png",
+  "card": "c6-ab-5_card_r5.png",
+  "image_model": "mech + card: Grok drawings r5 (supplied by parent run)",
+  "note": "raw backgrounds cleaned (work/r4/clean_r4b.py); QC rules per user decision 2026-10-09"
+ },
+ "card_title": "智能体从头设计纳米抗体：46/116经SPR确认，最佳KD 0.66 nM",
+ "card_caption": "赤陶红纳米抗体结合绿色抗原表面",
+ "card_text_meta": {
+  "model": "grok-bot (self)",
+  "card_title_chars": 23,
+  "card_caption_chars": 15
+ },
+ "notes": "Frozen must-cover list for c6-ab-5 has 11 items (m9 was dropped as non-verbatim when the list was frozen by gpt-5.5), so coverage is 11/11, not 12/12. Preprint: 预印本 stated in datacard study_type and in background[1]. The first assembly (c6-ab-5_final_r5.json) carries a figure-label entity_en that did not match image_subject_en verbatim; corrected files are *_r5b (nothing overwritten).",
+ "text_from": "c6-ab-5_final_r5b.json (text unchanged)"
+}

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Generate static HTML pages for individual articles with Open Graph meta tags.
+"""Build static article pages, sitemap, and the live catalog overlay.
 
-    python build_pages.py          # reads index.html, writes pages/article/*.html
-    python build_pages.py --dry-run  # only preview, no writes
+    python build_pages.py          # write pages + patch index.html catalog
+    python build_pages.py --dry-run
 
-This enables social sharing with article-specific titles, descriptions, and images.
-Each page uses a meta refresh to redirect to the main site's hash-based article view.
+Curated r8 解读 articles are rendered in the structured format. Hidden
+ids (no_fulltext / excluded) are omitted from public pages and sitemap.
 """
 
 from __future__ import annotations
@@ -13,225 +13,304 @@ from __future__ import annotations
 import argparse
 import html
 import json
-import os
 import re
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent
+import inlight_catalog as cat
+
+ROOT = cat.ROOT
 PAGES_DIR = ROOT / "pages" / "article"
-# HTTPS is now live and enforced
-SITE_URL = "https://inlight.therasik.com"
-
-FIELDS = {
-    "c1": "类器官",
-    "c2": "AI 药物设计",
-    "c3": "肿瘤免疫",
-    "c4": "自身免疫疾病",
-    "c5": "动物模型",
-    "c6": "抗体工程",
-    "c7": "细胞治疗",
-    "c8": "疫苗",
-    "c9": "小核酸与 LNP",
-}
+SITE_URL = cat.SITE_URL
+CATALOG_MARK_BEGIN = "/* @@INLIGHT_CATALOG_BEGIN */"
+CATALOG_MARK_END = "/* @@INLIGHT_CATALOG_END */"
 
 
-def extract_cat_array(index_html: str) -> list[dict]:
-    """Extract article data from CAT array using regex pattern matching."""
-    articles = []
-    
-    pattern = re.compile(
-        r"\{id:'([^']+)',"
-        r"f:'([^']+)',"
-        r"t:'([^']+)',"
-        r"ds:'([^']+)',"
-        r"disp:'([^']+)',"
-        r"j:'([^']+)',"
-        r"url:'([^']+)',"
-        r"au:'([^']+)',"
-        r"tags:\[([^\]]*)\],"
-        r"sum:'([^']*(?:\\'[^']*)*)'",
-        re.DOTALL
-    )
-    
-    for match in pattern.finditer(index_html):
-        article_id, field, title, date_str, disp, journal, url, author, tags_str, summary = match.groups()
-        
-        title = title.replace("\\'", "'")
-        summary = summary.replace("\\'", "'")
-        author = author.replace("\\'", "'")
-        
-        tags = [t.strip().strip("'") for t in tags_str.split(",") if t.strip()]
-        
-        articles.append({
-            "id": article_id,
-            "f": field,
-            "t": title,
-            "ds": date_str,
-            "disp": disp,
-            "j": journal,
-            "url": url,
-            "au": author,
-            "tags": tags,
-            "sum": summary,
-        })
-    
-    if not articles:
-        raise ValueError("Could not find any articles in index.html CAT array")
-    
-    return articles
+def js_str(s: str) -> str:
+    return json.dumps(s, ensure_ascii=False)
 
 
-def generate_article_page(article: dict, dry_run: bool = False) -> str | None:
-    """Generate a static HTML page for one article."""
-    article_id = article.get("id", "")
-    if not article_id:
-        return None
-
-    title = article.get("t", "前沿追踪文章")
-    summary = article.get("sum", "")[:200]
-    field_id = article.get("f", "")
-    field_name = FIELDS.get(field_id, "生物医药")
-    author = article.get("au", "")
-    journal = article.get("j", "")
-    date_str = article.get("ds", "")
-    url = article.get("url", "")
-    
-    # Check for article-specific image
-    img_candidates = [
-        f"img/papers/{article_id}.jpg",
-        f"img/papers/{article_id}.png",
-        f"img/figs/{article_id}.jpg",
-        f"img/{article_id}.webp",
-        f"img/{article_id}.png",
-        f"img/{article_id}.jpg",
+def catalog_js_block(catalog: dict) -> str:
+    fields = cat.load_fields()
+    published = [cat._public_card(a) for a in cat.published_articles(catalog)]
+    fnames = {f["k"]: f["n"] for f in fields}
+    field_list = [
+        {"k": f["k"], "n": f["n"], "d": f["d"], "color": f["color"], "field": f["field"]}
+        for f in fields
     ]
-    og_image = f"{SITE_URL}/img/og-image.png"
-    for img_path in img_candidates:
-        if (ROOT / img_path).exists():
-            og_image = f"{SITE_URL}/{img_path}"
-            break
-    
-    # Canonical is this static page, redirect goes to #p-{id}
-    redirect_url = f"{SITE_URL}/#p-{article_id}"
-    page_url = f"{SITE_URL}/pages/article/{article_id}.html"
-    
+    locked = cat.locked_ids(catalog)
+    hidden = cat.hidden_ids(catalog)
+    lines = [
+        CATALOG_MARK_BEGIN,
+        f"const FNAMES={json.dumps(fnames, ensure_ascii=False)};",
+        f"const FIELDS={json.dumps(field_list, ensure_ascii=False)};",
+        f"const LOCKED=new Set({json.dumps(locked, ensure_ascii=False)});",
+        f"const HIDDEN=new Set({json.dumps(hidden, ensure_ascii=False)});",
+        f"const CAT={json.dumps(published, ensure_ascii=False)};",
+        CATALOG_MARK_END,
+    ]
+    return "\n".join(lines)
+
+
+def write_site_articles_js(catalog: dict, bodies: dict[str, str]) -> Path:
+    payload = {
+        "fields": cat.load_fields(),
+        "locked": cat.locked_ids(catalog),
+        "hidden": cat.hidden_ids(catalog),
+        "published": [a["id"] for a in cat.published_articles(catalog)],
+        "bodies": bodies,
+    }
+    path = ROOT / "content" / "site_articles.js"
+    path.write_text(
+        "window.INLIGHT_SITE=" + json.dumps(payload, ensure_ascii=False) + ";\n",
+        encoding="utf-8",
+    )
+    return path
+
+
+def write_published_json(catalog: dict) -> Path:
+    cards = [cat._public_card(a) for a in cat.published_articles(catalog)]
+    path = ROOT / "content" / "published.json"
+    path.write_text(json.dumps({
+        "generated": "r8-golive",
+        "articles": cards,
+        "locked": cat.locked_ids(catalog),
+        "hidden": cat.hidden_ids(catalog),
+    }, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return path
+
+
+def article_nav(active: str = "") -> str:
+    def item(href: str, label: str, key: str) -> str:
+        on = ' class="on"' if key == active else ""
+        return f'<a href="{href}"{on}>{label}</a>'
+    return f"""<nav><div class="navshell"><div class="nav-in">
+  <a class="brand" href="{SITE_URL}/#home">
+    <span class="bmark-wrap"><img src="../../img/logo.png" alt=""></span>
+    <span class="btext"><span class="bn">前沿追踪</span><span class="bs">FRONTIER DIGEST</span></span>
+  </a>
+  <div class="nav-tabs">
+    {item(SITE_URL + '/#home', '首页', 'home')}
+    {item(SITE_URL + '/#fields', '领域', 'fields')}
+    {item(SITE_URL + '/#deals', '动态', 'deals')}
+    {item(SITE_URL + '/#archive', '存档', 'archive')}
+    {item(SITE_URL + '/#about', '关于', 'about')}
+  </div>
+  <a class="navsub" href="{SITE_URL}/#support">订阅</a>
+</div></div></nav>"""
+
+
+ARTICLE_FOOT = f"""<footer>
+  <div class="footshell"><div class="foot-in">
+    <div class="fbrand">
+      <b>前沿追踪</b>
+      <p>TheraSik · 启曜生科 出品。九个领域的前沿进展与商业化动态，中文整理。</p>
+    </div>
+    <div class="footnav">
+      <a href="{SITE_URL}/#home">首页</a><a href="{SITE_URL}/#fields">领域</a><a href="{SITE_URL}/#deals">商业化动态</a><a href="{SITE_URL}/#archive">存档</a><a href="{SITE_URL}/#about">关于</a><a href="{SITE_URL}/#support">订阅</a>
+    </div>
+    <p class="footmail">广告、赞助、纠错都写 <a href="mailto:contact@therasik.com">contact@therasik.com</a></p>
+  </div></div>
+</footer>"""
+
+
+def rebase_img_paths(body: str, prefix: str) -> str:
+    return body.replace('src="img/', f'src="{prefix}img/')
+
+
+def render_article_main(article: dict) -> str:
+    data, md = cat.load_article_bundle(article["id"])
+    inner = data.get("article") or {}
+    cover = article.get("cover_caption") or ""
+    return cat.render_structured_md(md, article["id"], cover), inner, data
+
+
+def build_article_page(article: dict, body_root: str, inner: dict, data: dict) -> str:
+    aid = article["id"]
+    title = article.get("title") or inner.get("title") or aid
+    rec = cat.field_record(article["field"])
+    chips = cat.chips_html(article, header=True)
+    ds = article.get("ds") or ""
+    date_cn = ""
+    if len(ds) >= 10:
+        date_cn = f"{ds[:4]} 年 {int(ds[5:7])} 月 {int(ds[8:10])} 日"
+    citation = inner.get("citation") or article.get("citation") or ""
+    doi = cat.doi_of(citation, article.get("url") or "")
+    journal = article.get("j") or cat.journal_of(citation, "")
+    one = inner.get("one_liner") or article.get("sum") or ""
+    og_image = f"{SITE_URL}/img/{aid}_card.webp"
+    page_url = f"{SITE_URL}/pages/article/{aid}.html"
+    body = rebase_img_paths(body_root, "../../")
+    preprint_bit = " · 预印本（未经同行评审）" if article.get("preprint") else ""
     og_title = html.escape(f"{title} - 前沿追踪")
-    og_description = html.escape(summary if summary else f"{field_name}领域研究进展")
-    
-    page_html = f"""<!DOCTYPE html>
+    og_desc = html.escape(one[:200] if one else rec["n"])
+    return f"""<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>{html.escape(title)} - 前沿追踪</title>
-<meta name="description" content="{og_description}">
-
-<!-- Open Graph -->
+<meta name="description" content="{og_desc}">
 <meta property="og:title" content="{og_title}">
-<meta property="og:description" content="{og_description}">
+<meta property="og:description" content="{og_desc}">
 <meta property="og:type" content="article">
 <meta property="og:url" content="{html.escape(page_url)}">
 <meta property="og:image" content="{html.escape(og_image)}">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:site_name" content="前沿追踪">
-
-<!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{og_title}">
-<meta name="twitter:description" content="{og_description}">
+<meta name="twitter:description" content="{og_desc}">
 <meta name="twitter:image" content="{html.escape(og_image)}">
-
-<!-- Article metadata -->
-<meta property="article:published_time" content="{html.escape(date_str)}">
-<meta property="article:section" content="{html.escape(field_name)}">
-<meta property="article:tag" content="{html.escape(field_name)}">
-
-<!-- Canonical is this static page for SEO; redirect to SPA view -->
+<meta property="article:published_time" content="{html.escape(ds)}">
+<meta property="article:section" content="{html.escape(rec['n'])}">
 <link rel="canonical" href="{html.escape(page_url)}">
-<meta http-equiv="refresh" content="0;url={html.escape(redirect_url)}">
-
-<style>
-body {{
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  max-width: 600px;
-  margin: 40px auto;
-  padding: 20px;
-  background: #f5f7f6;
-  color: #1d2a27;
-}}
-h1 {{ font-size: 1.5em; line-height: 1.4; }}
-.meta {{ color: #5c6b67; font-size: 0.9em; margin: 1em 0; }}
-.redirect {{ 
-  background: #e8f5f2; 
-  padding: 1em; 
-  border-radius: 8px;
-  margin-top: 2em;
-}}
-a {{ color: #0f6b5c; }}
-</style>
+<link rel="icon" type="image/png" href="../../img/favicon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;800&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../../site.css">
 </head>
 <body>
+{article_nav()}
+<div class="pv-shell pv-art"><div class="wrap">
+<a class="back" href="{SITE_URL}/#home">← 返回首页</a>
 <article>
-<h1>{html.escape(title)}</h1>
-<p class="meta">
-{html.escape(field_name)} · {html.escape(journal)} · {html.escape(date_str)}<br>
-{html.escape(author)}
-</p>
-<p>{html.escape(summary)}...</p>
-<div class="redirect">
-正在跳转至完整文章页面...<br>
-<a href="{html.escape(redirect_url)}">如未自动跳转，请点击此处</a>
-</div>
+ <div class="ahead">
+  <div class="eyebrow">{html.escape(rec['n'])}{preprint_bit}</div>
+  <div class="zh-title">{cat.inline_markup(title)}</div>
+  {chips}
+ </div>
+ <div class="abody">
+  <aside class="meta">
+   <div><span class="k">文献出处</span><p><b>{html.escape(journal)}</b>{('<br>' + html.escape(date_cn)) if date_cn else ''}<br>{f'<a href="{html.escape(doi)}" target="_blank" rel="noopener">原文</a>' if doi else ''}</p></div>
+   <div><span class="k">主领域</span><p>{html.escape(rec['n'])}</p></div>
+  </aside>
+  <div class="amain">
+{body}
+  </div>
+ </div>
 </article>
-<script>
-window.location.replace("{redirect_url}");
-</script>
+</div></div>
+{ARTICLE_FOOT}
 </body>
 </html>
 """
 
-    if not dry_run:
-        page_path = PAGES_DIR / f"{article_id}.html"
-        page_path.parent.mkdir(parents=True, exist_ok=True)
-        page_path.write_text(page_html, encoding="utf-8")
-        return str(page_path)
-    
-    return f"(dry-run) {PAGES_DIR / article_id}.html"
+
+def hidden_stub_page(article: dict) -> str:
+    """Keep a share URL for hidden ids but do not list them publicly."""
+    aid = article["id"]
+    title = article.get("title") or article.get("t") or aid
+    return f"""<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{html.escape(title)} - 前沿追踪</title>
+<link rel="canonical" href="{SITE_URL}/">
+</head>
+<body>
+<p>这篇条目未作为完整解读发布。<a href="{SITE_URL}/">返回首页</a></p>
+</body>
+</html>
+"""
+
+
+def write_sitemap(public_ids: list[str]) -> Path:
+    urls = [f"{SITE_URL}/", f"{SITE_URL}/#fields", f"{SITE_URL}/#deals", f"{SITE_URL}/#archive"]
+    urls.extend(f"{SITE_URL}/pages/article/{aid}.html" for aid in public_ids)
+    parts = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
+    for u in urls:
+        parts.append(f"  <url><loc>{html.escape(u)}</loc></url>")
+    parts.append("</urlset>\n")
+    path = ROOT / "sitemap.xml"
+    path.write_text("\n".join(parts), encoding="utf-8")
+    return path
+
+
+def patch_index_catalog(index_html: str, block: str) -> str:
+    if CATALOG_MARK_BEGIN in index_html and CATALOG_MARK_END in index_html:
+        pattern = re.compile(
+            re.escape(CATALOG_MARK_BEGIN) + r".*?" + re.escape(CATALOG_MARK_END),
+            re.DOTALL,
+        )
+        return pattern.sub(block, index_html, count=1)
+    # First go-live: replace the original FNAMES / FIELDS / CAT declarations.
+    pattern = re.compile(
+        r"const FNAMES=\{.*?\};\nconst FIELDS=\[.*?\];\nconst CAT=\[.*?\];\n",
+        re.DOTALL,
+    )
+    if not pattern.search(index_html):
+        raise ValueError("Could not find FNAMES/FIELDS/CAT block in index.html")
+    return pattern.sub(block + "\n", index_html, count=1)
+
+
+def write_site_css() -> Path:
+    """Emit the live site.css used by standalone article pages (index styles + r8)."""
+    index_html = (ROOT / "index.html").read_text(encoding="utf-8")
+    styles = re.findall(r"<style[^>]*>(.*?)</style>", index_html, re.S)
+    css = "\n".join(styles)
+    path = ROOT / "site.css"
+    path.write_text(css, encoding="utf-8")
+    return path
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Generate static article pages with OG tags")
+    parser = argparse.ArgumentParser(description="Build r8 go-live article pages and catalog")
     parser.add_argument("--dry-run", action="store_true", help="Preview without writing files")
     args = parser.parse_args()
 
-    index_path = ROOT / "index.html"
-    if not index_path.exists():
-        print("Error: index.html not found")
-        return
+    catalog = cat.load_catalog()
+    published = cat.published_articles(catalog)
+    hidden = [a for a in cat.articles(catalog) if a["id"] in set(cat.hidden_ids(catalog))]
 
-    index_html = index_path.read_text(encoding="utf-8")
-    
-    try:
-        articles = extract_cat_array(index_html)
-    except ValueError as e:
-        print(f"Error: {e}")
-        return
+    print(f"Published {len(published)} · hidden {len(hidden)}")
+    if len(published) != 25:
+        raise SystemExit(f"expected 25 published articles, found {len(published)}")
 
-    print(f"Found {len(articles)} articles")
-    
+    bodies: dict[str, str] = {}
     generated = 0
-    for article in articles:
-        result = generate_article_page(article, dry_run=args.dry_run)
-        if result:
-            print(f"  {result}")
-            generated += 1
+    for article in published:
+        body, inner, data = render_article_main(article)
+        bodies[article["id"]] = body
+        page = build_article_page(article, body, inner, data)
+        dest = PAGES_DIR / f"{article['id']}.html"
+        print(f"  {article['id']} -> {dest.relative_to(ROOT)}")
+        if not args.dry_run:
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            dest.write_text(page, encoding="utf-8")
+        generated += 1
+
+    for article in hidden:
+        dest = PAGES_DIR / f"{article['id']}.html"
+        print(f"  hidden stub {article['id']}")
+        if not args.dry_run:
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            dest.write_text(hidden_stub_page(article), encoding="utf-8")
+
+    if args.dry_run:
+        print(f"\nDry-run: would write {generated} article pages")
+        return
+
+    js_path = write_site_articles_js(catalog, bodies)
+    pub_path = write_published_json(catalog)
+    sm_path = write_sitemap([a["id"] for a in published])
+
+    index_path = ROOT / "index.html"
+    index_html = index_path.read_text(encoding="utf-8")
+    deals_before = cat.extract_deals_block(index_html)
+    patched = patch_index_catalog(index_html, catalog_js_block(catalog))
+    deals_after = cat.extract_deals_block(patched)
+    if deals_before != deals_after:
+        raise SystemExit("Refusing to write index.html: DEALS block changed")
+    index_path.write_text(patched, encoding="utf-8")
+    css_path = write_site_css()
 
     print(f"\nGenerated {generated} article pages")
-    
-    if not args.dry_run:
-        print(f"Pages written to: {PAGES_DIR}")
-        print("\nTo enable social sharing, configure your server to serve /pages/article/*.html")
-        print("Social crawlers will see OG tags, users will be redirected to the main site.")
+    print(f"  {js_path.relative_to(ROOT)}")
+    print(f"  {pub_path.relative_to(ROOT)}")
+    print(f"  {sm_path.relative_to(ROOT)}")
+    print(f"  {css_path.relative_to(ROOT)}")
+    print("  index.html catalog patched (DEALS unchanged)")
 
 
 if __name__ == "__main__":

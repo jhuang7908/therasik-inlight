@@ -1,0 +1,628 @@
+{
+ "id": "c2-ai-5",
+ "round": "r4",
+ "text_from": "c2-ai-5_final_r3.json (unchanged in r4; images only)",
+ "drafter_of_edits": "grok-bot (self)",
+ "base_drafter_model": "gpt-5.5-2026-04-23",
+ "source_draft": "work/r3b/c2-ai-5/rw_c2-ai-5_draft_r3fix.json",
+ "edits_r3": [
+  "results[3] + CDR-loop density fit clause; results[4] + assay type (476->505 字)"
+ ],
+ "status": "published-ready",
+ "status_reasons": [],
+ "preprint": false,
+ "writer_tags": [
+  "CDR从头设计",
+  "表位定向抗体",
+  "AlphaFold-Multimer",
+  "IgLM",
+  "BLI验证",
+  "丙氨酸突变"
+ ],
+ "tags_note": "editor related-field tags prepended; writer tags trimmed to 6 (metadata only)",
+ "article": {
+  "tier": "deep",
+  "field": "AI 药物设计",
+  "tags": [
+   "抗体工程",
+   "CDR从头设计",
+   "表位定向抗体",
+   "AlphaFold-Multimer",
+   "IgLM",
+   "BLI验证"
+  ],
+  "primary_endpoint_basis": "本研究不是临床试验；主要终点按临床前/方法学研究处理，选择摘要与Results一致的核心读出：Germinal在四个蛋白靶点和所有测试binder格式中生成经实验验证的功能性抗体，且每抗原只测试43–101个设计。依据为摘要原句“When tested against four diverse protein targets, Germinal designed functional antibodies across all targets and binder formats, testing only 43–101 designs for each antigen.”；正文Results随后给出纳米抗体各靶点筛选分母、BLI命中数，以及scFv/Fab的SPR/BLI确认数。标题数字“43–101”来自摘要和Fig.1D图注的同一口径。",
+  "comparison_design": "这是计算生成加体外验证的临床前方法学研究，非随机、非组间比较效能设计；原文没有为Germinal与其他方法、纳米抗体与scFv、或不同靶点之间的成功率差异设定α、power或正式假设检验。关键验证包括split-luciferase筛选、BLI/SPR亲和力测定、PSR多特异性、cryo-EM结构和丙氨酸突变；成功率相关读出主要为描述性计数，热点突变和对照抗体用于支持表位特异性而非组间优效检验。",
+  "untested_comparisons": [
+   "Discussion中称与Bennett等报道的AF3过滤数据相比，Germinal成功率“several-fold below/above”的再分析比较，未作为本文正式powered比较。",
+   "正文称scFv实验成功率与纳米抗体campaign“remained comparable”，但作者同时说明过滤器可能不能跨格式泛化；该比较未做正式统计检验。",
+   "Discussion中称部分二级结构丰富界面可能结合更强但多特异性更高，并明确因样本量小不能下结论。",
+   "D2 Ser相对原始D2多反应性升高为开发性警示，原文未把它设计为统计效能比较。"
+  ],
+  "number_basis_note": "摘要与正文在核心数字上未见冲突：摘要给出四个靶点、所有格式、每抗原43–101个设计；正文Results和Fig.1D补充各靶点纳米抗体与scFv/Fab分母、BLI/SPR验证计数。正文、机制图和数据图均采用Results/Figure口径，不混用另一个数值体系。",
+  "must_cover": [
+   {
+    "id": "m1",
+    "item_zh": "头条结果中，Germinal在四个不同蛋白靶点和所有测试binder格式中生成功能性抗体，每抗原只测试43–101个设计。",
+    "status": "covered",
+    "covered_by": "Germinal在4个蛋白靶点和所有测试格式均生成功能性抗体，每抗原只测试43–101个设计"
+   },
+   {
+    "id": "m2",
+    "item_zh": "纳米抗体验证队列为计算排名后的top 101个PD-L1、46个IL3、43个IL20和52个BHRF1设计。",
+    "status": "covered",
+    "covered_by": "纳米抗体验证队列是101个PD-L1、46个IL3、43个IL20和52个BHRF1排名靠前设计"
+   },
+   {
+    "id": "m3",
+    "item_zh": "初始纳米抗体筛选使用NanoBiT：HiBiT（K_D=0.7 nM）定量LgBiT-binder表达，抗原–SmBiT检测结合，尽管SmBiT的K_D=190 μM。",
+    "status": "covered",
+    "covered_by": "HiBiT（K_D=0.7 nM）定量LgBiT融合binder表达；抗原–SmBiT检测结合，尽管SmBiT的K_D=190 μM"
+   },
+   {
+    "id": "m4",
+    "item_zh": "BLI在7/25个PD-L1、2/11个IL3、4/11个IL20和5/20个BHRF1纳米抗体候选中发现可检测结合，并为四个抗原均得到纳摩尔binder。",
+    "status": "covered",
+    "covered_by": "BLI随后在PD-L1、IL3、IL20、BHRF1分别检出7/25、2/11、4/11、5/20个结合体，并在4个抗原均得到纳摩尔结合体"
+   },
+   {
+    "id": "m5",
+    "item_zh": "对scFv/Fab设计，BLI确认3/4个SPR验证的抗PD-L1设计以及1个SPR验证的抗IL3设计具有可测结合活性。",
+    "status": "covered",
+    "covered_by": "BLI确认3/4个抗PD-L1和1个抗IL3具有可测结合"
+   },
+   {
+    "id": "m6",
+    "item_zh": "Fig.3代表性验证纳米抗体亲和力为PD-L1 E11 K_D=170 nM、IL3 D2 Ser K_D=280 nM、IL20 H5 K_D=190 nM和BHRF1 A5 K_D=1.2 μM。",
+    "status": "covered",
+    "covered_by": "PD-L1 E11 K_D=170 nM、IL3 D2 Ser K_D=280 nM、IL20 H5 K_D=190 nM、BHRF1 A5 K_D=1.2 μM"
+   },
+   {
+    "id": "m7",
+    "item_zh": "表位特异性由抗PD-L1 scFv H5的3.9 Å cryo-EM结构支持，其与预测模型的全局Cα RMSD为1.25 Å。",
+    "status": "covered",
+    "covered_by": "H5-PD-L1复合物的cryo-EM分辨率为3.9 Å，与预测模型全局Cα RMSD为1.25 Å"
+   },
+   {
+    "id": "m8",
+    "item_zh": "丙氨酸热点突变支持设计表位结合：至少一个突变在17/26个设计中消除可检测结合，且突变相对野生型抗原造成至少两倍亲和力下降。",
+    "status": "covered",
+    "covered_by": "相对野生型至少2倍降低亲和力，17/26个设计至少一个热点突变完全消除可检测结合"
+   },
+   {
+    "id": "m9",
+    "item_zh": "多特异性对照结果有利：Germinal设计低多反应性，低于阳性对照4%，并与阴性对照相当。",
+    "status": "covered",
+    "covered_by": "所有Germinal设计的多反应性低于阳性对照的4%，并接近阴性对照"
+   },
+   {
+    "id": "m10",
+    "item_zh": "一个关键开发性 caveat 是D2 Ser虽恢复单体表达和靶向结合，但相对原始D2设计显示显著升高的多反应性。",
+    "status": "covered",
+    "covered_by": "D2 Ser：它恢复单体表达和靶向结合后，相比原始D2显示明显更高多反应性"
+   },
+   {
+    "id": "m11",
+    "item_zh": "一个明示局限是依赖抗原模型保真度：四个实验测试AF3输入结构已与实验结构验证，Cα RMSD <1 Å。",
+    "status": "covered",
+    "covered_by": "4个实验靶点的AF3输入结构已对照既有实验结构，Cα RMSD均<1 Å"
+   },
+   {
+    "id": "m12",
+    "item_zh": "一个实际局限是计算成本：典型采样需200–500 H100-GPU小时，得到200–400个通过pipeline过滤的设计。",
+    "status": "covered",
+    "covered_by": "典型采样需200–500个H100-GPU小时，才能得到200–400个通过过滤设计"
+   }
+  ],
+  "title": "Germinal低通量验证：43–101个设计覆盖4个抗体靶点生成抗体",
+  "one_liner": "在4个蛋白靶点中，Germinal只测试每抗原43–101个设计，生成纳米抗体和scFv/Fab格式的功能性抗体。",
+  "datacard": {
+   "study_type": "计算生成抗体管线与体外验证研究",
+   "n": "纳米抗体：101个PD-L1、46个IL3、43个IL20、52个BHRF1设计；scFv/Fab：48个PD-L1和48个IL3设计",
+   "control": "同靶点已验证binder为阳性、无关抗原binder为阴性；突变实验设保留折叠的阳性抗体或重叠表位binder",
+   "intervention": "Germinal联合AF-M结构目标与IgLM抗体序列先验，重新设计CDR；NanoBiT初筛，BLI/SPR确认结合",
+   "primary_endpoint": "低n实验测试后，在4个蛋白靶点和所有测试binder格式中获得功能性抗体",
+   "primary_endpoint_result": "每抗原测试43–101个设计；纳米抗体BLI可检测结合为7/25、2/11、4/11、5/20；scFv/Fab中BLI确认3/4个抗PD-L1和1个抗IL3 SPR候选",
+   "statistics": "非临床、非组间效能设计；成功率和格式间比较为描述性读出",
+   "safety": "PSR多特异性：Germinal设计<4%阳性对照；D2 Ser较原始D2多反应性升高",
+   "evidence_level": "全文",
+   "check_record": "来源：PMC13366713作者手稿；核对章节：Abstract、Results、Methods、图注、Discussion、Limitations"
+  },
+  "background": [
+   "抗体能高特异性识别蛋白表位，但传统动物免疫和大型库筛选常耗时、昂贵，且很难预先指定抗体落在抗原的哪一块区域。对药物发现和基础研究来说，真正稀缺的不是再做一次筛选，而是把筛选规模压到低n，同时保留表位可控性和可开发性。",
+   "Mille-Fragoso等在Nature Biotechnology提出Germinal，把结构预测器AF-M与抗体语言模型IgLM合并为同一生成目标。它不从已有弱binder出发，而是在给定抗体框架上从头设计CDR，再用低通量实验验证候选是否表达、结合并命中指定表位。"
+  ],
+  "design": [
+   "研究是计算生成加体外验证。Germinal先以预测抗原结构、指定表位和抗体框架为输入，生成、优化并过滤CDR序列。纳米抗体验证队列是101个PD-L1、46个IL3、43个IL20和52个BHRF1排名靠前设计；scFv/Fab只在PD-L1和IL3扩展，各48个设计。",
+   "纳米抗体初筛采用NanoBiT。HiBiT（K_D=0.7 nM）定量LgBiT融合binder表达；抗原–SmBiT检测结合，尽管SmBiT的K_D=190 μM。候选再经BLI确认；scFv重格式为Fab后先SPR、再BLI。这不是临床或组间效能研究，核心读出是可测结合和表位验证，成功率均为描述性。"
+  ],
+  "results": [
+   {
+    "subhead": "低n覆盖四靶点",
+    "text": "主要读出显示，Germinal在4个蛋白靶点和所有测试格式均生成功能性抗体，每抗原只测试43–101个设计。纳米抗体从101个PD-L1、46个IL3、43个IL20、52个BHRF1中，经NanoBiT筛出25/101、11/46、11/43、20/52进入BLI。"
+   },
+   {
+    "subhead": "BLI确认纳米抗体",
+    "text": "BLI随后在PD-L1、IL3、IL20、BHRF1分别检出7/25、2/11、4/11、5/20个结合体，并在4个抗原均得到纳摩尔结合体。这些数字是各自进入BLI的候选分母，不是靶点间正式比较；BLI最高测试浓度下>0.07 nm位移才定义为命中。"
+   },
+   {
+    "subhead": "格式扩展与亲和力",
+    "text": "scFv设计中，48个PD-L1和48个IL3以Fab格式SPR初筛，得到4个PD-L1和1个IL3候选；BLI确认3/4个抗PD-L1和1个抗IL3具有可测结合。图3纳米抗体示例为PD-L1 E11 K_D=170 nM、IL3 D2 Ser K_D=280 nM、IL20 H5 K_D=190 nM、BHRF1 A5 K_D=1.2 μM。"
+   },
+   {
+    "subhead": "表位被实验证实",
+    "text": "表位层面，H5-PD-L1复合物的cryo-EM分辨率为3.9 Å，与预测模型全局Cα RMSD为1.25 Å，预测模型在全部6个CDR环上也与cryo-EM密度局部吻合。热点丙氨酸突变覆盖PD-L1、IL3、IL20和BHRF1，相对野生型至少2倍降低亲和力，17/26个设计至少一个热点突变完全消除可检测结合。"
+   },
+   {
+    "subhead": "多反应性总体低",
+    "text": "PSR多特异性实验（流式微粒法）显示，所有Germinal设计的多反应性低于阳性对照的4%，并接近阴性对照。例外是D2 Ser：它恢复单体表达和靶向结合后，相比原始D2显示明显更高多反应性，提示开发性评估不能只看K_D。整体结果链条因此包括生成、初筛、亲和力确认、结构定位和多特异性排查。"
+   }
+  ],
+  "mechanism_proven": [
+   "Cryo-EM直接连接了计算表位和真实结合：PD-L1 H5在3.9 Å结构中保留目标热点接触，整体Cα偏差1.25 Å；突变矩阵显示17/26个设计被至少一个热点突变完全阻断。",
+   "实验还把表达、结合与非特异性拆开验证。NanoBiT先用HiBiT K_D=0.7 nM读出表达，再用SmBiT K_D=190 μM读出抗原邻近；BLI确认7/25、2/11、4/11、5/20的靶点级命中，PSR显示总体<4%阳性对照。"
+  ],
+  "mechanism_inferred": [
+   "作者推测，结构目标与IgLM序列先验的联合优化可减少非抗体样CDR和框架接触；D2 Ser的结果提示，单个半胱氨酸替换虽可能改善单体表达，却可能引入非特异性相互作用。作者也认为scFv过滤规则可能不能直接从纳米抗体泛化，需按格式校准。"
+  ],
+  "limitations": [
+   "外推性首先受抗原结构限制。4个实验靶点的AF3输入结构已对照既有实验结构，Cα RMSD均<1 Å；因此，结果证明Germinal可用高质量预测结构做设计，但不能等同于已验证缺少实验结构抗原的成功率。",
+   "终点层级也要克制。每抗原43–101个设计足以显示低n验证的可行性，但研究没有为靶点间或格式间成功率设置效能；scFv/Fab只扩展到2个靶点，因此不应把纳米抗体与scFv或靶点差异写成优效比较。",
+   "工程成本仍高。Methods写明典型采样需200–500个H100-GPU小时，才能得到200–400个通过过滤设计。开发性也不能只看亲和力：D2 Ser恢复单体表达和结合后，多反应性相对原始D2升高。"
+  ],
+  "significance": [
+   "如果研究者已有可信的蛋白抗原结构和明确表位，Germinal给出了一条可复现的路线：先在计算端把候选压到每抗原43–101个，再用表达、结合、结构和突变逐级筛掉假阳性。它的开放代码和实验流程，降低了复现实验的门槛。",
+   "对产业转化的意义在于早期发现效率，而不是患者疗效已被证明。若后续能降低H100计算成本、验证更多困难表面，并把多反应性纳入排序，表位定向抗体设计可能从大规模库筛选转向更小、更可解释的设计—验证循环。"
+  ],
+  "citation": "Mille-Fragoso LS, Driscoll CL, Wang JN, Dai H, Widatalla T, Zhang JL, et al. Efficient generation of epitope-targeted antibodies with Germinal. Nat Biotechnol. 2026-06-23. https://doi.org/10.1038/s41587-026-03187-0",
+  "data_points": [
+   {
+    "value": "4个蛋白靶点",
+    "meaning": "Germinal测试的多样蛋白靶点数量",
+    "source_quote": "When tested against four diverse protein targets, Germinal designed functional antibodies across all targets and binder formats, testing only 43–101 designs for each antigen.",
+    "location": "Abstract"
+   },
+   {
+    "value": "43–101个设计",
+    "meaning": "每个抗原测试的设计数量范围，也是标题数字来源",
+    "source_quote": "testing only 43–101 designs for each antigen.",
+    "location": "Abstract"
+   },
+   {
+    "value": "101个PD-L1",
+    "meaning": "进入下游验证的PD-L1纳米抗体设计数",
+    "source_quote": "ultimately selecting the top 101 nanobody designs for PD-L1, 46 designs for IL3, 43 designs for IL20, and 52 designs for BHRF1 for downstream validation.",
+    "location": "Results, Using Germinal to target diverse antigens"
+   },
+   {
+    "value": "46个IL3",
+    "meaning": "进入下游验证的IL3纳米抗体设计数",
+    "source_quote": "ultimately selecting the top 101 nanobody designs for PD-L1, 46 designs for IL3, 43 designs for IL20, and 52 designs for BHRF1 for downstream validation.",
+    "location": "Results, Using Germinal to target diverse antigens"
+   },
+   {
+    "value": "43个IL20",
+    "meaning": "进入下游验证的IL20纳米抗体设计数",
+    "source_quote": "ultimately selecting the top 101 nanobody designs for PD-L1, 46 designs for IL3, 43 designs for IL20, and 52 designs for BHRF1 for downstream validation.",
+    "location": "Results, Using Germinal to target diverse antigens"
+   },
+   {
+    "value": "52个BHRF1",
+    "meaning": "进入下游验证的BHRF1纳米抗体设计数",
+    "source_quote": "ultimately selecting the top 101 nanobody designs for PD-L1, 46 designs for IL3, 43 designs for IL20, and 52 designs for BHRF1 for downstream validation.",
+    "location": "Results, Using Germinal to target diverse antigens"
+   },
+   {
+    "value": "PD-L1",
+    "meaning": "研究中的免疫检查点靶点名称",
+    "source_quote": "Protein Death Ligand 1 (PD-L1), an immune checkpoint ligand expressed on both tumor and immune cells",
+    "location": "Results, Using Germinal to target diverse antigens"
+   },
+   {
+    "value": "IL3",
+    "meaning": "研究中的细胞因子靶点名称",
+    "source_quote": "interleukin-3 (IL3) and interleukin-20 (IL20), cytokines involved in immune signaling",
+    "location": "Results, Using Germinal to target diverse antigens"
+   },
+   {
+    "value": "IL20",
+    "meaning": "研究中的细胞因子靶点名称",
+    "source_quote": "interleukin-3 (IL3) and interleukin-20 (IL20), cytokines involved in immune signaling",
+    "location": "Results, Using Germinal to target diverse antigens"
+   },
+   {
+    "value": "BHRF1",
+    "meaning": "研究中的病毒蛋白靶点名称",
+    "source_quote": "BHRF1, a viral Bcl-2–like anti-apoptotic protein from the Epstein–Barr virus",
+    "location": "Results, Using Germinal to target diverse antigens"
+   },
+   {
+    "value": "48个PD-L1",
+    "meaning": "进入scFv/Fab实验验证的抗PD-L1设计数",
+    "source_quote": "48 anti-PD-L1 and 48 anti-IL3 scFv designs were reformatted as fragment antibodies (Fabs)",
+    "location": "Results, Binding affinity characterization of generated antibodies"
+   },
+   {
+    "value": "48个IL3",
+    "meaning": "进入scFv/Fab实验验证的抗IL3设计数",
+    "source_quote": "48 anti-PD-L1 and 48 anti-IL3 scFv designs were reformatted as fragment antibodies (Fabs)",
+    "location": "Results, Binding affinity characterization of generated antibodies"
+   },
+   {
+    "value": "0.7 nM",
+    "meaning": "HiBiT与LgBiT互补的亲和力，用于表达读出",
+    "source_quote": "HiBiT, K D = 0.7 nM ) or the very low-affinity peptide (SmBiT, K D = 190 μ M ).",
+    "location": "Results, Binding affinity characterization of generated antibodies"
+   },
+   {
+    "value": "190 μM",
+    "meaning": "SmBiT与LgBiT的低亲和力，用于抗原邻近结合读出",
+    "source_quote": "HiBiT, K D = 0.7 nM ) or the very low-affinity peptide (SmBiT, K D = 190 μ M ).",
+    "location": "Results, Binding affinity characterization of generated antibodies"
+   },
+   {
+    "value": "25/101",
+    "meaning": "PD-L1纳米抗体中进入BLI的候选比例",
+    "source_quote": "we tested 25 of 101 PD-L1 nanobodies, 11 of 46 IL3 nanobodies, 11 of 43 IL20 nanobodies, and 20 of 52 BHRF1 nanobodies for binding to their respective antigens.",
+    "location": "Results, Binding affinity characterization of generated antibodies"
+   },
+   {
+    "value": "11/46",
+    "meaning": "IL3纳米抗体中进入BLI的候选比例",
+    "source_quote": "we tested 25 of 101 PD-L1 nanobodies, 11 of 46 IL3 nanobodies, 11 of 43 IL20 nanobodies, and 20 of 52 BHRF1 nanobodies for binding to their respective antigens.",
+    "location": "Results, Binding affinity characterization of generated antibodies"
+   },
+   {
+    "value": "11/43",
+    "meaning": "IL20纳米抗体中进入BLI的候选比例",
+    "source_quote": "we tested 25 of 101 PD-L1 nanobodies, 11 of 46 IL3 nanobodies, 11 of 43 IL20 nanobodies, and 20 of 52 BHRF1 nanobodies for binding to their respective antigens.",
+    "location": "Results, Binding affinity characterization of generated antibodies"
+   },
+   {
+    "value": "20/52",
+    "meaning": "BHRF1纳米抗体中进入BLI的候选比例",
+    "source_quote": "we tested 25 of 101 PD-L1 nanobodies, 11 of 46 IL3 nanobodies, 11 of 43 IL20 nanobodies, and 20 of 52 BHRF1 nanobodies for binding to their respective antigens.",
+    "location": "Results, Binding affinity characterization of generated antibodies"
+   },
+   {
+    "value": ">0.07 nm",
+    "meaning": "BLI命中的最高测试浓度位移判定阈值",
+    "source_quote": "BLI hits were identified if the design displayed clear association kinetics (BLI shift > 0.07 nm for the highest tested concentration).",
+    "location": "Methods, Bio-layer interferometry"
+   },
+   {
+    "value": "7/25",
+    "meaning": "PD-L1纳米抗体BLI可检测结合数",
+    "source_quote": "We observed detectable binding for 7 of 25 PD-L1 designs, 2 of 11 IL3 designs, 4 of 11 IL20 designs, and 5 of 20 BHRF1 designs",
+    "location": "Results, Binding affinity characterization of generated antibodies"
+   },
+   {
+    "value": "2/11",
+    "meaning": "IL3纳米抗体BLI可检测结合数",
+    "source_quote": "We observed detectable binding for 7 of 25 PD-L1 designs, 2 of 11 IL3 designs, 4 of 11 IL20 designs, and 5 of 20 BHRF1 designs",
+    "location": "Results, Binding affinity characterization of generated antibodies"
+   },
+   {
+    "value": "4/11",
+    "meaning": "IL20纳米抗体BLI可检测结合数",
+    "source_quote": "We observed detectable binding for 7 of 25 PD-L1 designs, 2 of 11 IL3 designs, 4 of 11 IL20 designs, and 5 of 20 BHRF1 designs",
+    "location": "Results, Binding affinity characterization of generated antibodies"
+   },
+   {
+    "value": "5/20",
+    "meaning": "BHRF1纳米抗体BLI可检测结合数",
+    "source_quote": "We observed detectable binding for 7 of 25 PD-L1 designs, 2 of 11 IL3 designs, 4 of 11 IL20 designs, and 5 of 20 BHRF1 designs",
+    "location": "Results, Binding affinity characterization of generated antibodies"
+   },
+   {
+    "value": "4个PD-L1",
+    "meaning": "SPR筛出的潜在PD-L1 Fab binder数量",
+    "source_quote": "From this screen, we identified 4 potential PD-L1 binders and 1 IL3 binder.",
+    "location": "Results, Binding affinity characterization of generated antibodies"
+   },
+   {
+    "value": "1个IL3",
+    "meaning": "SPR筛出的潜在IL3 Fab binder数量",
+    "source_quote": "From this screen, we identified 4 potential PD-L1 binders and 1 IL3 binder.",
+    "location": "Results, Binding affinity characterization of generated antibodies"
+   },
+   {
+    "value": "3/4",
+    "meaning": "SPR验证的PD-L1 Fab中BLI确认可测结合的数量",
+    "source_quote": "Of the SPR-validated designs, 3 of 4 anti-PD-L1 designs and the 1 anti-IL3 design had measurable binding activity by BLI",
+    "location": "Results, Binding affinity characterization of generated antibodies"
+   },
+   {
+    "value": "1个抗IL3",
+    "meaning": "SPR验证的IL3 Fab中BLI确认可测结合的数量",
+    "source_quote": "Of the SPR-validated designs, 3 of 4 anti-PD-L1 designs and the 1 anti-IL3 design had measurable binding activity by BLI",
+    "location": "Results, Binding affinity characterization of generated antibodies"
+   },
+   {
+    "value": "E11",
+    "meaning": "Fig.3中代表性PD-L1纳米抗体编号",
+    "source_quote": "PD-L1 ( A , E11, K D = 170 nM ); IL3 ( B , D2 Ser , K D = 280 nM )",
+    "location": "Fig. 3 legend"
+   },
+   {
+    "value": "170 nM",
+    "meaning": "PD-L1 E11代表性BLI亲和力",
+    "source_quote": "PD-L1 ( A , E11, K D = 170 nM ); IL3 ( B , D2 Ser , K D = 280 nM )",
+    "location": "Fig. 3 legend"
+   },
+   {
+    "value": "D2 Ser",
+    "meaning": "Fig.3中代表性IL3纳米抗体编号",
+    "source_quote": "IL3 ( B , D2 Ser , K D = 280 nM ); IL20 ( C , H5, K D = 190 nM )",
+    "location": "Fig. 3 legend"
+   },
+   {
+    "value": "D2 Ser",
+    "meaning": "较原始D2显示明显升高多反应性的设计编号",
+    "source_quote": "D2 Ser showed markedly elevated polyreactivity relative to the original D2 design",
+    "location": "Results, Polyreactivity"
+   },
+   {
+    "value": "280 nM",
+    "meaning": "IL3 D2 Ser代表性BLI亲和力",
+    "source_quote": "IL3 ( B , D2 Ser , K D = 280 nM ); IL20 ( C , H5, K D = 190 nM )",
+    "location": "Fig. 3 legend"
+   },
+   {
+    "value": "H5",
+    "meaning": "Fig.3中代表性IL20纳米抗体编号",
+    "source_quote": "IL20 ( C , H5, K D = 190 nM ); BHRF1 ( D , A5, K D = 1.2 μ M ).",
+    "location": "Fig. 3 legend"
+   },
+   {
+    "value": "H5",
+    "meaning": "用于cryo-EM表位验证的抗PD-L1 scFv编号",
+    "source_quote": "we determined the structure of a representative anti-PD-L1 scFv (H5) in complex with PD-L1 at 3.9 Å resolution via cryoEM.",
+    "location": "Results, Epitope specificity of generated antibodies"
+   },
+   {
+    "value": "190 nM",
+    "meaning": "IL20 H5代表性BLI亲和力",
+    "source_quote": "IL20 ( C , H5, K D = 190 nM ); BHRF1 ( D , A5, K D = 1.2 μ M ).",
+    "location": "Fig. 3 legend"
+   },
+   {
+    "value": "A5",
+    "meaning": "Fig.3中代表性BHRF1纳米抗体编号",
+    "source_quote": "BHRF1 ( D , A5, K D = 1.2 μ M ).",
+    "location": "Fig. 3 legend"
+   },
+   {
+    "value": "1.2 μM",
+    "meaning": "BHRF1 A5代表性BLI亲和力",
+    "source_quote": "BHRF1 ( D , A5, K D = 1.2 μ M ).",
+    "location": "Fig. 3 legend"
+   },
+   {
+    "value": "3.9 Å",
+    "meaning": "抗PD-L1 scFv H5复合物cryo-EM分辨率",
+    "source_quote": "we determined the structure of a representative anti-PD-L1 scFv (H5) in complex with PD-L1 at 3.9 Å resolution via cryoEM.",
+    "location": "Results, Epitope specificity of generated antibodies"
+   },
+   {
+    "value": "1.25 Å",
+    "meaning": "H5实验结构与Germinal预测模型的全局Cα RMSD",
+    "source_quote": "with a global C α RMSD of 1.25 Å ( Figure 4A ).",
+    "location": "Results, Epitope specificity of generated antibodies"
+   },
+   {
+    "value": "至少2倍",
+    "meaning": "热点突变导致的相对野生型亲和力下降阈值",
+    "source_quote": "Substitution of one or more hotspot residues reduced binding affinity by at least two-fold relative to wild-type antigen",
+    "location": "Results, Epitope specificity of generated antibodies"
+   },
+   {
+    "value": "17/26",
+    "meaning": "至少一个热点突变完全消除可检测结合的设计数",
+    "source_quote": "with at least one substitution abrogating detectable binding entirely in 17 out of 26 designs",
+    "location": "Results, Epitope specificity of generated antibodies"
+   },
+   {
+    "value": "<4%",
+    "meaning": "Germinal设计相对多反应性阳性对照的PSR信号上限",
+    "source_quote": "all Germinal-generated designs exhibited low polyreactivity (<4% of the polyreactive positive control), comparable to the negative control samples",
+    "location": "Results, Polyreactivity"
+   },
+   {
+    "value": "D2",
+    "meaning": "D2 Ser相对比较的原始设计编号",
+    "source_quote": "D2 Ser showed markedly elevated polyreactivity relative to the original D2 design",
+    "location": "Results, Polyreactivity"
+   },
+   {
+    "value": "AF3",
+    "meaning": "抗原输入结构使用的预测模型",
+    "source_quote": "all input antigen structures to the pipeline are AF3 predictions rather than experimentally determined structures.",
+    "location": "Results, Using Germinal to target diverse antigens"
+   },
+   {
+    "value": "<1 Å",
+    "meaning": "四个实验测试AF3输入结构对已知实验结构的验证精度",
+    "source_quote": "the AF3 predictions used as input were themselves validated against known experimental structures ( C α RMSD < 1 Å )",
+    "location": "Results, Using Germinal to target diverse antigens"
+   },
+   {
+    "value": "2个靶点",
+    "meaning": "scFv设计扩展到PD-L1和IL3两个靶点",
+    "source_quote": "We also used Germinal to design scFvs against two of these targets, PD-L1 and IL3.",
+    "location": "Results, Using Germinal to target diverse antigens"
+   },
+   {
+    "value": "200–500个H100-GPU小时",
+    "meaning": "典型采样运行的计算成本",
+    "source_quote": "typical sampling runs require 200–500 H100-GPU hours to yield 200–400 designs that pass pipeline filters.",
+    "location": "Methods, Computational resources"
+   },
+   {
+    "value": "200–400个通过过滤设计",
+    "meaning": "典型采样运行产出的通过pipeline过滤设计数",
+    "source_quote": "typical sampling runs require 200–500 H100-GPU hours to yield 200–400 designs that pass pipeline filters.",
+    "location": "Methods, Computational resources"
+   },
+   {
+    "value": "PMC13366713",
+    "meaning": "全文核对来源编号",
+    "source_quote": "FULL-TEXT SOURCE: PMC author manuscript HTML https://pmc.ncbi.nlm.nih.gov/articles/PMC13366713/",
+    "location": "Metadata"
+   },
+   {
+    "value": "2026-06-23",
+    "meaning": "论文发布日期",
+    "source_quote": "PUBLICATION DATE: 2026-06-23",
+    "location": "Metadata"
+   },
+   {
+    "value": "10.1038/s41587-026-03187-0",
+    "meaning": "论文DOI",
+    "source_quote": "DOI: https://doi.org/10.1038/s41587-026-03187-0",
+    "location": "Metadata"
+   },
+   {
+    "value": "7",
+    "meaning": "数据图中PD-L1纳米抗体BLI可检测结合个数",
+    "source_quote": "We observed detectable binding for 7 of 25 PD-L1 designs, 2 of 11 IL3 designs, 4 of 11 IL20 designs, and 5 of 20 BHRF1 designs",
+    "location": "Results, Binding affinity characterization of generated antibodies"
+   },
+   {
+    "value": "2",
+    "meaning": "数据图中IL3纳米抗体BLI可检测结合个数",
+    "source_quote": "We observed detectable binding for 7 of 25 PD-L1 designs, 2 of 11 IL3 designs, 4 of 11 IL20 designs, and 5 of 20 BHRF1 designs",
+    "location": "Results, Binding affinity characterization of generated antibodies"
+   },
+   {
+    "value": "4",
+    "meaning": "数据图中IL20纳米抗体BLI可检测结合个数",
+    "source_quote": "We observed detectable binding for 7 of 25 PD-L1 designs, 2 of 11 IL3 designs, 4 of 11 IL20 designs, and 5 of 20 BHRF1 designs",
+    "location": "Results, Binding affinity characterization of generated antibodies"
+   },
+   {
+    "value": "5",
+    "meaning": "数据图中BHRF1纳米抗体BLI可检测结合个数",
+    "source_quote": "We observed detectable binding for 7 of 25 PD-L1 designs, 2 of 11 IL3 designs, 4 of 11 IL20 designs, and 5 of 20 BHRF1 designs",
+    "location": "Results, Binding affinity characterization of generated antibodies"
+   }
+  ],
+  "steps": [
+   "指定抗原表位和框架",
+   "生成并过滤CDR序列",
+   "低通量筛选候选",
+   "BLI确认结合",
+   "突变验证表位"
+  ],
+  "figure_caption": "图示Germinal从AF-M/IgLM共优化到筛选验证，43–101个为摘要/Fig.1D每抗原/每设计库口径；BLI确认结合，一个PD-L1 H5代表性复合物经cryo-EM，热点突变支持多靶点表位。示意图由 AI 生成，依据原文结果绘制，非期刊原图，不代表分子比例",
+  "image_story": {
+   "stages": [
+    {
+     "visual_en": "A predicted protein antigen surface and an antibody framework, with flexible CDR loops being generated toward a chosen epitope.",
+     "source_quote": "A target and antibody framework are provided as structural templates and sequence inputs, while CDRs are freely designed."
+    },
+    {
+     "visual_en": "Small antibody candidates moving through a compact screening funnel into binding sensors.",
+     "source_quote": "testing only 43–101 designs for each antigen."
+    },
+    {
+     "visual_en": "A bound antibody-antigen complex with a magnified epitope contact patch and mutation-marked surface.",
+     "source_quote": "Together, these results demonstrate that Germinal-designed binders engage their computationally specified epitopes with the predicted contacts."
+    }
+   ],
+   "key_element_en": "CDR loop cluster"
+  },
+  "image_subject_en": "A left-to-right process in three stages, drawn large. Stage 1 shows a pale mint protein antigen surface facing a deep green antibody framework, with flexible loop regions extending toward a shallow epitope pocket. Stage 2 shows a compact funnel of small antibody candidates in light grey-green passing into a biosensor-like binding setup, with successful candidates emerging as mid green antibody fragments. Stage 3 shows a close antibody-antigen complex, the antigen as a rounded pale mint surface and the antibody as deep green ribbons, with a magnified epitope contact area indicated by aligned loop contacts and small alanine-like mutation marks. The unique highlighted element is drawn as one very large, solid, boldly filled terracotta #C0492F CDR loop cluster on the antibody at the binding interface. Use a clean semi-realistic scientific three-dimensional style, soft shadows, no labels, no letters, no numbers, no axes, no legends. Only the CDR loop cluster is terracotta.",
+  "card_subject_en": "A single antibody fragment clasping a rounded protein antigen surface, shown as a compact hero object on a pale mint background. The antigen is a smooth light grey-green molecular surface, the antibody framework is deep green with subtle mid green shading, and the binding interface is prominent. Draw one very large, solid, boldly filled terracotta #C0492F CDR loop cluster pressing into the antigen epitope. Use a clean semi-realistic scientific three-dimensional style with soft shadows and high contrast. No text, no numbers, no symbols, no graph elements. Only the CDR loop cluster is terracotta.",
+  "figure_labels": {
+   "heads": [
+    "计算生成",
+    "筛选验证",
+    "表位确认"
+   ],
+   "callouts": [
+    {
+     "t": "AF-M+IgLM\n设计CDR",
+     "stage": 1,
+     "entity_en": "antibody framework"
+    },
+    {
+     "t": "每抗原/库\n43–101个设计",
+     "stage": 2,
+     "entity_en": "small antibody candidates"
+    },
+    {
+     "t": "4个靶点\n均有功能抗体",
+     "stage": 2,
+     "entity_en": "binding sensors"
+    },
+    {
+     "t": "PD-L1 H5\n3.9 Å结构",
+     "stage": 3,
+     "entity_en": "antibody-antigen complex"
+    },
+    {
+     "t": "17/26设计中\n热点突变阻断",
+     "stage": 3,
+     "entity_en": "epitope contact area"
+    }
+   ],
+   "facts": [
+    [
+     "每抗原/库",
+     "**43–101**设计"
+    ],
+    [
+     "纳米抗体4靶点",
+     "均有BLI命中"
+    ],
+    [
+     "**17/26**设计中",
+     "热点突变阻断"
+    ]
+   ],
+   "note": "图用Results/图注口径；17/26指至少一个热点突变消除可检测结合。示意图由 AI 生成，非期刊原图。"
+  },
+  "chart": {
+   "justified": true,
+   "title_zh": "各靶点纳米抗体BLI可检测结合数",
+   "unit": "个设计",
+   "figure_source": "Results: Binding affinity characterization of generated antibodies",
+   "values": [
+    {
+     "label_zh": "PD-L1",
+     "value": 7,
+     "n": "25个BLI候选",
+     "source_quote": "We observed detectable binding for 7 of 25 PD-L1 designs, 2 of 11 IL3 designs, 4 of 11 IL20 designs, and 5 of 20 BHRF1 designs"
+    },
+    {
+     "label_zh": "IL3",
+     "value": 2,
+     "n": "11个BLI候选",
+     "source_quote": "We observed detectable binding for 7 of 25 PD-L1 designs, 2 of 11 IL3 designs, 4 of 11 IL20 designs, and 5 of 20 BHRF1 designs"
+    },
+    {
+     "label_zh": "IL20",
+     "value": 4,
+     "n": "11个BLI候选",
+     "source_quote": "We observed detectable binding for 7 of 25 PD-L1 designs, 2 of 11 IL3 designs, 4 of 11 IL20 designs, and 5 of 20 BHRF1 designs"
+    },
+    {
+     "label_zh": "BHRF1",
+     "value": 5,
+     "n": "20个BLI候选",
+     "source_quote": "We observed detectable binding for 7 of 25 PD-L1 designs, 2 of 11 IL3 designs, 4 of 11 IL20 designs, and 5 of 20 BHRF1 designs"
+    }
+   ],
+   "note": "分母为进入BLI的候选数；未绘制百分比，避免自行换算。"
+  }
+ },
+ "images": {
+  "mech_raw": "c2-ai-5_mech_raw_r4.jpg",
+  "mech": "c2-ai-5_mech_r4.png",
+  "card": "c2-ai-5_card_r4.png",
+  "card_src": "work/r4/clean/c2-ai-5_card_raw_r4_clean.png (cleanup 232/200/12/6)",
+  "image_model": "mech: Grok drawing (r4/r4b/r4c, supplied by parent run); card: Grok drawing r4",
+  "note": "mech GAP=48; OCR soft gate: 1 label <50%, numbers 15/15; card raw passes under adjusted warm rule (b): off_warm 15.1% raw, 3.4% adjusted"
+ }
+}

@@ -1,0 +1,654 @@
+{
+ "id": "c8-vac-2",
+ "round": "r4",
+ "text_from": "c8-vac-2_final_r3.json (unchanged in r4; images only)",
+ "drafter_of_edits": "grok-bot (self)",
+ "base_drafter_model": "gpt-5.5-2026-04-23",
+ "source_draft": "work/r3b/c8-vac-2/rw_c8-vac-2_draft_r3fix.json",
+ "edits_r3": [
+  "one_liner 39->42 字",
+  "facts: '相对BG18平均广度41%'",
+  "callout: '最佳动物 几何均数ID50 481'",
+  "mech re-laid out (1 callout dropped to fit one row: 第12周Bmem P值)",
+  "card recomposed with card_b22d (v-axis fallback)"
+ ],
+ "status": "published-ready",
+ "status_reasons": [],
+ "preprint": false,
+ "writer_tags": [
+  "HIV Env",
+  "广谱中和抗体",
+  "生发系靶向",
+  "序贯免疫",
+  "恒河猴"
+ ],
+ "tags_note": "editor related-field tags prepended; writer tags trimmed to 6 (metadata only)",
+ "article": {
+  "tier": "deep",
+  "field": "疫苗与感染免疫",
+  "tags": [
+   "抗体工程",
+   "动物模型",
+   "HIV Env",
+   "广谱中和抗体",
+   "生发系靶向",
+   "序贯免疫"
+  ],
+  "primary_endpoint_basis": "原文为非临床恒河猴免疫实验，Methods 将目标写为评估生发系靶向序贯疫苗诱导 BG18-class bnAbs 的能力；Discussion 又称“HIV vaccination”的主要目标是诱导血清 bnAbs。标题采用摘要与正文一致的核心血清读出：Abstract 称“serum bnAb activity developed in 44% of animals”，Results 在 8 只最佳动物血清面板给出“Mean neutralization breadth ... 41%”与“overall geometric mean ID50 of 107”，并在 boost 7 后 7/18 哨兵病毒中和及 8/18 详细面板中对应约 44%。原文未定义正式主要终点，未把未正式检验的组间优劣作为标题卖点。",
+  "comparison_design": "这是24只恒河猴、4组各6只的探索性非临床比较；Methods 明确动物按体重、年龄、性别匹配分组，研究者不盲法，未声明按组间主要终点做效能设计。B细胞频率、SHM、亲和力和部分时间点比较使用Mann–Whitney U、Wilcoxon signed-rank或rank-sum检验；图注说明 pooled-test 星号为未校正P值，未做多重比较校正。mAb和血清中和广度主要为描述性读出，未作为正式组间效能比较。",
+  "untested_comparisons": [
+   "13个type I mAb中和中位数15/63与6个type III mAb中和中位数26/63未作为type间正式优劣检验。",
+   "血清bnAb活性44%与对照组或其他方案之间未报告正式组间检验。",
+   "最佳动物84%相对BG18广度、ID50 481及预期75–90%保护来自文献推断，未在本研究做HIV/SHIV攻击验证。",
+   "boost 7后血清增强相对boost 6有时间点统计，但不能外推为纳米颗粒平台相对可溶三聚体的正式效能优效。",
+   "摘要中up to 67% relative to BG18为单个mAb描述性上限，不代表方案间比较。"
+  ],
+  "number_basis_note": "未见摘要与正文核心数字冲突。标题和正文采用Results/Discussion口径：血清bnAb活性44%、8只动物面板平均广度41%、总体几何均数ID50为107；图标签同用正文口径。摘要的“up to 67%”与正文type III mAb最大相对BG18广度一致，作为mAb结果而非血清标题数字。",
+  "must_cover": [
+   {
+    "id": "m1",
+    "item_zh": "疫苗在至少50%的动物中生成bnAb谱系，并达到相对参考bnAb最高67%的中和广度。",
+    "status": "covered",
+    "covered_by": "按摘要口径，bnAb谱系见于至少50%的动物，单个mAb相对参考BG18的中和广度最高67%"
+   },
+   {
+    "id": "m2",
+    "item_zh": "血清bnAb活性在44%的动物中出现，其中1例达到预期可保护多样HIV分离株的滴度。",
+    "status": "covered",
+    "covered_by": "血清层面，摘要称bnAb活性出现在44%的动物中"
+   },
+   {
+    "id": "m3",
+    "item_zh": "研究使用24只按体重、年龄和性别匹配的恒河猴，分为4组各6只，研究者不盲法。",
+    "status": "covered",
+    "covered_by": "研究纳入24只按体重、年龄和性别匹配的恒河猴，分为4组、每组6只；研究者不盲法"
+   },
+   {
+    "id": "m4",
+    "item_zh": "第1组为同源N332-GT5对照至第5次加强，第2、3、4组分别以B46、B54或B50作为不同异源第1次加强免疫原。",
+    "status": "covered",
+    "covered_by": "第1组作为同源对照，N332-GT5一直加强至boost 5；第2、3、4组在boost 1分别用B46、B54或B50"
+   },
+   {
+    "id": "m5",
+    "item_zh": "核心B细胞读出将Bmem定义为PBMC流式中N332-GT5双阳性且表位敲除探针阴性。",
+    "status": "covered",
+    "covered_by": "核心B细胞读出用PBMC流式：表位特异Bmem定义为N332-GT5双阳性且表位敲除探针阴性"
+   },
+   {
+    "id": "m6",
+    "item_zh": "13个恒河猴BG18 type I mAb中和63个伪病毒中的中位15个，几何均数IC50为1.4–10.8 µg ml−1，相对BG18广度最高57%。",
+    "status": "covered",
+    "covered_by": "13个type I mAb中位中和15个，几何均数IC50为1.4–10.8 µg ml−1，相对BG18广度最高57%"
+   },
+   {
+    "id": "m7",
+    "item_zh": "6个BG18 type III mAb中和中位26个伪病毒，几何均数IC50为0.7–7.3 µg ml−1，单体相对BG18广度最高67%。",
+    "status": "covered",
+    "covered_by": "6个type III mAb中位中和26个，几何均数IC50为0.7–7.3 µg ml−1，单体相对BG18广度最高67%"
+   },
+   {
+    "id": "m8",
+    "item_zh": "8只动物血清面板平均中和广度为相对BG18的41%，几何均数ID50范围52–481，总体几何均数ID50为107。",
+    "status": "covered",
+    "covered_by": "8只动物的平均中和广度为相对BG18的41%；几何均数ID50范围52–481，总体几何均数ID50为107"
+   },
+   {
+    "id": "m9",
+    "item_zh": "最佳动物血清广度为相对成熟BG18的84%、约等于整体52%，ID50滴度481预计提供75–90%保护。",
+    "status": "covered",
+    "covered_by": "最佳动物血清相对成熟BG18的广度为84%，约对应标准全球面板整体52%；其几何均数ID50为481"
+   },
+   {
+    "id": "m10",
+    "item_zh": "Asn332糖基特异性对照显示84个N332结合BG18-class type I抗体中，无一结合缺失N332糖基的N332T BG505-MD39变体。",
+    "status": "covered",
+    "covered_by": "Asn332糖基对照显示，84个可结合含N332 BG505-MD39的type I抗体中，0/84可检测结合缺失N332糖基的N332T变体"
+   },
+   {
+    "id": "m11",
+    "item_zh": "图注 caveat：pooled-test显著性星号使用未校正P值，未做多重比较调整。",
+    "status": "covered",
+    "covered_by": "统计上，图中pooled-test星号使用未校正P值，未做多重比较调整"
+   },
+   {
+    "id": "m12",
+    "item_zh": "作者指出所测方案需要7次加强，未来应以更少免疫次数获得广谱应答。",
+    "status": "covered",
+    "covered_by": "作者也指出，所测方案需要7次加强，未来应以更少免疫次数获得最广应答"
+   }
+  ],
+  "title": "序贯HIV疫苗完整方案后44%恒河猴出现血清bnAb活性",
+  "one_liner": "在接受完整异源序贯方案的恒河猴中，N332-GT5起始免疫后，按摘要口径有44%的动物出现血清bnAb活性。",
+  "datacard": {
+   "study_type": "开放标签非临床恒河猴免疫研究",
+   "n": "24只恒河猴，4组各6只；第1组至boost 5，第2–4组至boost 7",
+   "control": "第1组同源N332-GT5加强对照；组间比较未按正式效能设计声明",
+   "intervention": "N332-GT5+SMNP递增剂量起始；第2–4组依次接受B46/B54/B50、B20、DU156、ABCG、ABCG、AMP、trimer–NP加强",
+   "followup": "BG18-class BCR在第2–4组boost 6和boost 7后仍可检测；正文称超过2年",
+   "primary_endpoint": "原文未定义正式主要终点；重要/核心血清读出为boost 7后是否产生针对BG18敏感HIV伪病毒的血清bnAb活性，并用63个BG18敏感伪病毒面板量化广度和ID50",
+   "primary_endpoint_result": "摘要称血清bnAb活性出现在44%动物中；8只最佳动物boost 7后平均相对BG18广度41%，几何均数ID50范围52–481，总体几何均数ID50为107",
+   "statistics": "Mann–Whitney U、Wilcoxon signed-rank/rank-sum；多重比较未校正；中和广度主要为描述性报告",
+   "evidence_level": "全文",
+   "check_record": "Europe PMC fullTextXML PMC13489963；核对章节：Abstract、Results、Methods、Figure legends、Discussion和Limitations"
+  },
+  "background": [
+   "HIV Env三聚体在不同分离株间抗原变异很高，传统Env免疫难以从初始抗体库中启动bnAb前体。被动输入bnAb可在非人灵长类和人体提供保护，因此疫苗设计的关键，不只是诱导抗Env抗体，而是按预定表位启动稀有前体并推动亲和力成熟。",
+   "生发系靶向方案已在人I期试验中稳定诱导VRC01类前体，但成熟bnAb此前只在高许可性小鼠模型中由序贯免疫产生。Steichen等在Nature测试完整BG18类V3糖基表位序贯方案，目标是在内源恒河猴B细胞库中产生Bmem与血清bnAb。"
+  ],
+  "design": [
+   "研究纳入24只按体重、年龄和性别匹配的恒河猴，分为4组、每组6只；研究者不盲法。全部动物先接受N332-GT5+SMNP递增剂量起始，N332-GT5总量100 µg、SMNP总量750 µg，分7次隔日给药。所有加强免疫为SMNP佐剂化蛋白推注，未声明按组间中和终点做效能设计。",
+   "第1组作为同源对照，N332-GT5一直加强至boost 5；第2、3、4组在boost 1分别用B46、B54或B50，随后共同接受B20、DU156、ABCG cocktail两次、AMP cocktail和trimer–NP cocktail至boost 7。核心B细胞读出用PBMC流式：表位特异Bmem定义为N332-GT5双阳性且表位敲除探针阴性。"
+  ],
+  "results": [
+   {
+    "subhead": "异源加强召回前体",
+    "text": "boost 1后，第2–4组合并动物在第12周均有较高的boost结合表位特异Bmem，而第1组较低，组间P<0.0001。测序显示22只受检动物均可检出HCDR3至少20个氨基酸的BG18 type I BCR；第2–4组频率高于第1组，P=0.01。"
+   },
+   {
+    "subhead": "走向野生型Env",
+    "text": "boost 2后，第2–4组有10–20%的表位特异Bmem结合B20，而第1组约5%，P=0.015；BG18-class细胞中有30–100%结合B20，第1组为0，P<0.01。boost 3改用WT DU156后，第2–4组14/18动物出现WT Env结合BG18-class细胞，P=0.003。"
+   },
+   {
+    "subhead": "成熟与糖基特异",
+    "text": "多价Env进一步推动成熟。boost 5后，第2–4组12/18动物仍有BG18-class type I BCR；超过50%的这些BCR结合至少3种ABCG Env。重链SHM在boost 5后三个异源组中位均超过14%，最突变BCR接近30%。Asn332糖基对照显示，84个可结合含N332 BG505-MD39的type I抗体中，0/84可检测结合缺失N332糖基的N332T变体。"
+   },
+   {
+    "subhead": "mAb中和广度",
+    "text": "按摘要口径，bnAb谱系见于至少50%的动物，单个mAb相对参考BG18的中和广度最高67%。在63个BG18敏感伪病毒大面板上，13个type I mAb中位中和15个，几何均数IC50为1.4–10.8 µg ml−1，相对BG18广度最高57%；6个type III mAb中位中和26个，几何均数IC50为0.7–7.3 µg ml−1，单体相对BG18广度最高67%。"
+   },
+   {
+    "subhead": "血清bnAb读出",
+    "text": "血清层面，摘要称bnAb活性出现在44%的动物中。boost 7后，7/18动物中和哨兵tier 2伪病毒；8只最佳动物在63病毒面板中均有bnAb活性，8只动物的平均中和广度为相对BG18的41%；几何均数ID50范围52–481，总体几何均数ID50为107。最佳动物血清相对成熟BG18的广度为84%，约对应标准全球面板整体52%；其几何均数ID50为481，作者称预期可带来75–90%保护。"
+   }
+  ],
+  "mechanism_proven": [
+   "实验直接证明的链条从表位特异召回开始：异源boost 1使第2–4组BG18 type I Bmem和BGC获得boost结合能力，随后B20与WT DU156选择出能结合野生型Env的细胞。克隆树显示谱系跨多个时间点存在，且在6次序贯免疫中扩增并积累SHM。",
+   "结构与特异性证据支持“按设计表位成熟”。cryo-EM解析2个type I抗体和1个type III Fab，它们以接近人BG18的角度接近Env，HCDR3接触GDIR，并与Asn332糖基形成相互作用。N332T阴性对照和血清Asn332依赖性下降，说明主要中和指向V3糖基表位。"
+  ],
+  "mechanism_inferred": [
+   "作者推测，逐步减少生发系靶向突变的“shepherding”、尽早引入WT Env以及多分支cocktail“polishing”，共同把稀有BG18前体推向广谱中和。作者还推测trimer–NP在boost 7可能因更强亲合效应、B细胞激活和淋巴结运输而增强浆细胞反应；该环节未与可溶三聚体做正式同阶段效能对照。"
+  ],
+  "limitations": [
+   "第一，外推性受限。实验对象是24只成年印度恒河猴，不是人体；虽作者指出该模型BG18前体频率低于人，但人类能否经同样序列获得44%血清bnAb活性仍未验证。",
+   "第二，方案负担很重。作者也指出，所测方案需要7次加强，未来应以更少免疫次数获得最广应答；boost 1到boost 2间隔34周因后勤原因形成。耐久性也未探索，boost 7后2至6周稳定不能说明长期维持。",
+   "第三，统计与方法限制需要保留。研究者不盲法，未声明按血清中和或保护终点做组间效能设计；统计上，图中pooled-test星号使用未校正P值，未做多重比较调整。最佳动物ID50 481对应75–90%保护是基于既往研究预期，本研究未进行HIV或SHIV攻击。"
+  ],
+  "significance": [
+   "如果后续在人群中能以更少免疫次数复现这种从稀有前体到血清bnAb的路径，BG18类V3糖基表位将为HIV疫苗提供一个可操作的精密免疫模板。本文的价值在于把生发系靶向从“可启动前体”推进到非人灵长类中可检测血清bnAb活性。",
+   "产业转化仍取决于简化和制造形式。材料中提到可测试mRNA平台以支持规模化制造，并探索膜锚定三聚体递送；但本文只验证蛋白+SMNP及trimer–NP组合，尚不能判断哪一平台适合临床开发。"
+  ],
+  "citation": "Steichen JM, Madden PJ, Flynn CT, Phulera S, Shil M, Kalyuzhniy O, et al. Vaccination elicits HIV broadly neutralizing antibodies in primates. Nature. 2026. https://doi.org/10.1038/s41586-026-10837-5",
+  "data_points": [
+   {
+    "value": "44%",
+    "meaning": "标题与导语采用的血清bnAb活性发生比例",
+    "source_quote": "serum bnAb activity developed in 44% of animals",
+    "location": "Abstract"
+   },
+   {
+    "value": "24只",
+    "meaning": "研究纳入恒河猴数量",
+    "source_quote": "Twenty-four rhesus macaques were weight-, age- and sex-matched",
+    "location": "Methods: Study design"
+   },
+   {
+    "value": "4组",
+    "meaning": "实验分组数",
+    "source_quote": "assigned to one of four experimental groups—each group comprised six animals",
+    "location": "Methods: Study design"
+   },
+   {
+    "value": "6只",
+    "meaning": "每组动物数",
+    "source_quote": "each group comprised six animals",
+    "location": "Methods: Study design"
+   },
+   {
+    "value": "100 µg",
+    "meaning": "N332-GT5起始免疫总剂量",
+    "source_quote": "N332-GT5 was dosed 50 μg per injection site (100 μg total)",
+    "location": "Methods: Study design"
+   },
+   {
+    "value": "750 µg",
+    "meaning": "SMNP起始免疫总剂量",
+    "source_quote": "SMNP was dosed at 375 μg per injection site (750 μg total)",
+    "location": "Methods: Study design"
+   },
+   {
+    "value": "7次",
+    "meaning": "起始免疫递增给药次数",
+    "source_quote": "the total dose of N332-GT5 and SMNP was split over seven administrations",
+    "location": "Methods: Study design"
+   },
+   {
+    "value": "boost 5",
+    "meaning": "第1组同源N332-GT5对照持续至第5次加强",
+    "source_quote": "Group 1 (control) received homologous boosts with N332-GT5 until boost 5.",
+    "location": "Results: A complete germline-targeting vaccine"
+   },
+   {
+    "value": "boost 1",
+    "meaning": "第2–4组接受不同异源第一次加强",
+    "source_quote": "Groups 2, 3 and 4 each received a different heterologous boost 1 (B46, B54 or B50, respectively).",
+    "location": "Results: A complete germline-targeting vaccine"
+   },
+   {
+    "value": "G1 vs G2–4",
+    "meaning": "figure_labels中第12周boost结合表位特异Bmem的比较对象",
+    "source_quote": "group 1 versus groups 2–4 combined, P < 0.0001",
+    "location": "Results: Sequential boosting of bnAb precursors"
+   },
+   {
+    "value": "P < 0.0001",
+    "meaning": "boost 1后第12周boost结合表位特异Bmem，第1组与第2–4组合并比较",
+    "source_quote": "group 1 versus groups 2–4 combined, P < 0.0001",
+    "location": "Results: Sequential boosting of bnAb precursors"
+   },
+   {
+    "value": "第12周",
+    "meaning": "boost 1后观察boost结合Bmem的时间点",
+    "source_quote": "boost-immunogen-binding (hereafter, boost binding) B mem cells at week 12",
+    "location": "Results: Sequential boosting of bnAb precursors"
+   },
+   {
+    "value": "22只",
+    "meaning": "boost 1后受检动物均检出BG18 type I BCR",
+    "source_quote": "After boost 1, all 22 animals tested had detectable BG18 type I BCRs",
+    "location": "Results: Sequential boosting of bnAb precursors"
+   },
+   {
+    "value": "20个氨基酸",
+    "meaning": "BG18 type I BCR HCDR3长度阈值",
+    "source_quote": "with heavy-chain complementarity determining region 3 (HCDR3) lengths of at least 20 amino acids",
+    "location": "Results: Sequential boosting of bnAb precursors"
+   },
+   {
+    "value": "P = 0.01",
+    "meaning": "boost 1后第2–4组BG18 type I BCR频率高于第1组",
+    "source_quote": "Groups 2–4 had higher BG18 type I BCR frequencies than group 1 ( P = 0.01; Fig. 2c ).",
+    "location": "Results: Sequential boosting of bnAb precursors"
+   },
+   {
+    "value": "10–20%",
+    "meaning": "boost 2后第2–4组表位特异Bmem结合B20比例",
+    "source_quote": "After boost 2 (B20), 10–20% of epitope-specific B mem cells across groups 2–4 bound to boost 2",
+    "location": "Results: Sequential boosting of bnAb precursors"
+   },
+   {
+    "value": "5%",
+    "meaning": "boost 2后第1组表位特异Bmem结合B20比例",
+    "source_quote": "compared with around 5% in group 1 ( P = 0.015; Fig. 2a,b ).",
+    "location": "Results: Sequential boosting of bnAb precursors"
+   },
+   {
+    "value": "P = 0.015",
+    "meaning": "boost 2后表位特异Bmem结合B20组间比较",
+    "source_quote": "compared with around 5% in group 1 ( P = 0.015; Fig. 2a,b ).",
+    "location": "Results: Sequential boosting of bnAb precursors"
+   },
+   {
+    "value": "30–100%",
+    "meaning": "第2–4组BG18-class细胞结合boost 2 Env trimer比例",
+    "source_quote": "In total, 30–100% of BG18-class cells from groups 2–4 bound to the boost 2 Env trimer",
+    "location": "Results: Sequential boosting of bnAb precursors"
+   },
+   {
+    "value": "P < 0.01",
+    "meaning": "boost 2 Env trimer结合的组间比较",
+    "source_quote": "in contrast to none from group 1 ( P < 0.01; Fig. 2d )",
+    "location": "Results: Sequential boosting of bnAb precursors"
+   },
+   {
+    "value": "14/18",
+    "meaning": "boost 3后第2–4组出现WT Env结合BG18-class细胞的动物数",
+    "source_quote": "the majority of animals in groups 2–4 had WT Env trimer-binding BG18-class cells (14 out of 18; Fig. 2d ).",
+    "location": "Results: WT Env trimer recognition"
+   },
+   {
+    "value": "P = 0.003",
+    "meaning": "boost 3后WT Env结合bnAb-class细胞组间比较",
+    "source_quote": "groups 2–4 had significantly higher WT Env trimer-binding bnAb-class cells compared with group 1 ( P = 0.003; Fig. 2d )",
+    "location": "Results: WT Env trimer recognition"
+   },
+   {
+    "value": "12/18",
+    "meaning": "boost 5后第2–4组检测到BG18-class type I BCR的动物数",
+    "source_quote": "A total of 12 out of 18 animals from groups 2–4 had detectable BG18-class type I BCRs after boost 5",
+    "location": "Results: Broad HIV Env trimer binding"
+   },
+   {
+    "value": "超过50%",
+    "meaning": "boost 5后BG18-class type I BCR结合至少3种ABCG Env的比例",
+    "source_quote": "over 50% of the BG18-class type I BCRs from groups 2–4 bound to at least 3 ABCG cocktail Env trimer proteins",
+    "location": "Results: Broad HIV Env trimer binding"
+   },
+   {
+    "value": "3种",
+    "meaning": "ABCG Env结合阈值",
+    "source_quote": "bound to at least 3 ABCG cocktail Env trimer proteins",
+    "location": "Results: Broad HIV Env trimer binding"
+   },
+   {
+    "value": "超过2年",
+    "meaning": "BG18 type I BCR检测持续时间",
+    "source_quote": "detected for over 2 years in these animals",
+    "location": "Results: Broad HIV Env trimer binding"
+   },
+   {
+    "value": "14%",
+    "meaning": "boost 5后异源组重链SHM中位数下限",
+    "source_quote": "The median V H SHM percentage was over 14% in all three heterologous boosting groups after boost 5",
+    "location": "Results: Maturation of bnAb-class lineages"
+   },
+   {
+    "value": "30%",
+    "meaning": "最突变BCR接近的突变比例",
+    "source_quote": "the most mutated BCRs were nearly 30% mutated",
+    "location": "Results: Maturation of bnAb-class lineages"
+   },
+   {
+    "value": "84个",
+    "meaning": "N332结合BG18-class type I抗体数量",
+    "source_quote": "Among 84 BG18-class type I antibodies with detectable affinity for N332-containing BG505-MD39",
+    "location": "Results: Maturation of bnAb-class lineages"
+   },
+   {
+    "value": "0/84",
+    "meaning": "可检测结合N332T变体的抗体数",
+    "source_quote": "none (0 of 84) had detectable affinity for the N332T variant of BG505-MD39 lacking the N332 glycan",
+    "location": "Results: Maturation of bnAb-class lineages"
+   },
+   {
+    "value": "至少50%",
+    "meaning": "摘要中产生bnAb谱系的动物比例下限",
+    "source_quote": "bnAb lineages were generated in at least 50% of animals",
+    "location": "Abstract"
+   },
+   {
+    "value": "67%",
+    "meaning": "摘要和type III mAb相对BG18最高中和广度",
+    "source_quote": "achieving up to 67% neutralization breadth compared with the reference bnAb",
+    "location": "Abstract"
+   },
+   {
+    "value": "63个",
+    "meaning": "BG18敏感伪病毒大面板规模",
+    "source_quote": "tested on a larger panel of pseudoviruses ( n = 63) representing all BG18-sensitive pseudoviruses",
+    "location": "Results: Vaccine-elicited B mem cell bnAbs"
+   },
+   {
+    "value": "118",
+    "meaning": "全球临床HIV分离株面板规模",
+    "source_quote": "in a widely used global panel of n = 118 clinical HIV isolates",
+    "location": "Results: Vaccine-elicited B mem cell bnAbs"
+   },
+   {
+    "value": "13个",
+    "meaning": "恒河猴BG18 type I mAb数量",
+    "source_quote": "The 13 rhesus macaque BG18 type I mAbs neutralized a median of 15 of the 63 pseudoviruses",
+    "location": "Results: Vaccine-elicited B mem cell bnAbs"
+   },
+   {
+    "value": "15个",
+    "meaning": "type I mAb中位中和伪病毒数",
+    "source_quote": "neutralized a median of 15 of the 63 pseudoviruses",
+    "location": "Results: Vaccine-elicited B mem cell bnAbs"
+   },
+   {
+    "value": "1.4–10.8 µg ml−1",
+    "meaning": "type I mAb几何均数IC50范围",
+    "source_quote": "geometric mean half-maximum inhibitory concentration (IC 50 ) values of 1.4 to 10.8 µg ml −1",
+    "location": "Results: Vaccine-elicited B mem cell bnAbs"
+   },
+   {
+    "value": "57%",
+    "meaning": "type I mAb相对BG18最高广度",
+    "source_quote": "achieving neutralization breadth up to 57% relative to BG18",
+    "location": "Results: Vaccine-elicited B mem cell bnAbs"
+   },
+   {
+    "value": "6个",
+    "meaning": "BG18 type III mAb数量",
+    "source_quote": "The six BG18 type III mAbs neutralized a median of 26 pseudoviruses",
+    "location": "Results: Vaccine-elicited B mem cell bnAbs"
+   },
+   {
+    "value": "26个",
+    "meaning": "type III mAb中位中和伪病毒数",
+    "source_quote": "neutralized a median of 26 pseudoviruses",
+    "location": "Results: Vaccine-elicited B mem cell bnAbs"
+   },
+   {
+    "value": "0.7–7.3 µg ml−1",
+    "meaning": "type III mAb几何均数IC50范围",
+    "source_quote": "geometric mean IC 50 values of 0.7 to 7.3 µg ml −1",
+    "location": "Results: Vaccine-elicited B mem cell bnAbs"
+   },
+   {
+    "value": "7/18",
+    "meaning": "boost 7后哨兵tier 2伪病毒血清中和阳性动物数",
+    "source_quote": "After the boost 7 trimer–NP immunization, 7 out of 18 animals in groups 2–4 exhibited serum neutralization of the sentinel pseudovirus",
+    "location": "Results: Vaccine-elicited serum bnAbs"
+   },
+   {
+    "value": "8只",
+    "meaning": "进入63伪病毒血清面板的最佳动物数",
+    "source_quote": "For the eight animals producing the best BG18 bnAbs in the memory compartment after boost 4 or 5",
+    "location": "Results: Vaccine-elicited serum bnAbs"
+   },
+   {
+    "value": "41%",
+    "meaning": "8只动物boost 7后平均相对BG18中和广度",
+    "source_quote": "Mean neutralization breadth of the 8 animals was 41% relative to BG18.",
+    "location": "Results: Vaccine-elicited serum bnAbs"
+   },
+   {
+    "value": "52–481",
+    "meaning": "8只动物几何均数ID50范围",
+    "source_quote": "The geometric mean ID 50 titres ranged from 52 to 481",
+    "location": "Results: Vaccine-elicited serum bnAbs"
+   },
+   {
+    "value": "107",
+    "meaning": "8只动物总体几何均数ID50",
+    "source_quote": "with an overall geometric mean ID 50 of 107",
+    "location": "Results: Vaccine-elicited serum bnAbs"
+   },
+   {
+    "value": "6/8",
+    "meaning": "血清Asn332糖基变体特异性证据中中和显著下降的动物数",
+    "source_quote": "Serum neutralization from 6 of 8 animals was substantially reduced in the absence of the Asn332 glycan",
+    "location": "Results: Vaccine-elicited serum bnAbs"
+   },
+   {
+    "value": "84%",
+    "meaning": "最佳动物血清相对成熟BG18中和广度",
+    "source_quote": "The serum of this animal had 84% neutralization breadth relative to mature BG18",
+    "location": "Discussion"
+   },
+   {
+    "value": "52%",
+    "meaning": "最佳动物在标准全球面板上的约总体广度",
+    "source_quote": "which corresponds to approximately 52% breadth overall on standard HIV global neutralization panels",
+    "location": "Discussion"
+   },
+   {
+    "value": "481",
+    "meaning": "最佳动物几何均数ID50滴度",
+    "source_quote": "a geometric mean ID 50 neutralization titre of 481",
+    "location": "Discussion"
+   },
+   {
+    "value": "75–90%",
+    "meaning": "作者根据既往研究预期的保护比例",
+    "source_quote": "is expected to confer 75 to 90% protection against HIV (or SHIV) for diverse global isolates",
+    "location": "Discussion"
+   },
+   {
+    "value": "P < 0.05",
+    "meaning": "图注显著性星号阈值之一",
+    "source_quote": "P values from the pooled tests are indicated by asterisks; * P < 0.05",
+    "location": "Fig. 2 legend"
+   },
+   {
+    "value": "P < 0.01",
+    "meaning": "图注显著性星号阈值之一",
+    "source_quote": "** P < 0.01, *** P < 0.001, **** P < 0.0001.",
+    "location": "Fig. 2 legend"
+   },
+   {
+    "value": "P < 0.001",
+    "meaning": "图注显著性星号阈值之一",
+    "source_quote": "** P < 0.01, *** P < 0.001, **** P < 0.0001.",
+    "location": "Fig. 2 legend"
+   },
+   {
+    "value": "P < 0.0001",
+    "meaning": "图注显著性星号阈值之一",
+    "source_quote": "** P < 0.01, *** P < 0.001, **** P < 0.0001.",
+    "location": "Fig. 2 legend"
+   },
+   {
+    "value": "7次加强",
+    "meaning": "作者指出所测方案加强次数",
+    "source_quote": "The boosting regimens had 7 boosters",
+    "location": "Discussion: Limitations"
+   },
+   {
+    "value": "34周",
+    "meaning": "boost 1和boost 2间隔",
+    "source_quote": "The 34-week interval between boosts 1 and 2 was due to logistical reasons",
+    "location": "Discussion: Limitations"
+   },
+   {
+    "value": "2至6周",
+    "meaning": "boost 7后血清中和相对稳定的时间窗口",
+    "source_quote": "serum neutralization breadth and potency were largely stable from 2 to 6 weeks after boost 7",
+    "location": "Results: Vaccine-elicited serum bnAbs"
+   },
+   {
+    "value": "2个",
+    "meaning": "cryo-EM解析的type I抗体数",
+    "source_quote": "cryo-electron microscopy (cryo-EM) structures were determined for two BG18-class type I antibodies",
+    "location": "Results: Elicited mAbs have bnAb-like structures"
+   },
+   {
+    "value": "1个",
+    "meaning": "cryo-EM解析的type III Fab数量",
+    "source_quote": "determined a cryo-EM structure of a post-boost 4, putative BG18 type III Fab",
+    "location": "Results: BG18-class type III responses"
+   }
+  ],
+  "steps": [
+   "N332-GT5启动稀有前体",
+   "异源Env逐步召回成熟",
+   "WT与cocktail扩展识别",
+   "boost 7 trimer–NP后观察血清bnAb"
+  ],
+  "figure_caption": "图示N332-GT5起始后，B46/B54/B50、B20、WT Env与cocktail逐步选择BG18-class B细胞；boost 7 trimer–NP后，部分动物出现血清bnAb活性，主要为V3糖基/Asn332依赖，血清证据为6/8动物下降。示意图由 AI 生成，依据原文结果绘制，非期刊原图，不代表分子比例",
+  "image_story": {
+   "stages": [
+    {
+     "visual_en": "A rare naive BG18-class B cell engaging an N332-GT5 HIV Env trimer in a lymph node-like pale mint environment.",
+     "source_quote": "rare bnAb-precursor naive B cells sharing key genetic features of a particular bnAb must be primed by an engineered germline-targeting immunogen"
+    },
+    {
+     "visual_en": "A chain of mature memory B cells interacting with heterologous Env trimers and WT Env trimers, showing clonal expansion.",
+     "source_quote": "Heterologous boost 1 was therefore highly successful at recalling and shepherding BG18-class B cells."
+    },
+    {
+     "visual_en": "Plasma cells secreting antibodies toward HIV pseudoviruses decorated with Env trimers, with one large terracotta antibody bound to an N332 glycan region.",
+     "source_quote": "the AMP trimer cocktail and trimer–NP cocktail immunizations induced substantial serum bnAb activity in multiple animals receiving a germline-targeting sequential vaccination regimen"
+    }
+   ],
+   "key_element_en": "one BG18-class broadly neutralizing antibody"
+  },
+  "image_subject_en": "A left-to-right process in three stages, drawn large. Stage 1 shows a pale mint lymph node microenvironment with one deep green rare naive BG18-class B cell touching a mid green N332-GT5 HIV Env trimer, with surrounding light grey-green stromal texture and no text. Stage 2 shows several mid green memory B cells expanding in a curved chain, each contacting different HIV Env trimers in deep green, mid green, and pale mint, suggesting sequential heterologous boosting and maturation; include native-like trimer shapes and subtle germinal center background. Stage 3 shows a compact group of light grey-green plasma cells releasing many green antibodies toward deep green HIV pseudoviruses bearing Env spikes. Drawn as one very large, solid, boldly filled terracotta #C0492F BG18-class broadly neutralizing antibody bound to the glycan-rich V3 region of a virus at Stage 3. Use semi-realistic 3D scientific illustration, green palette, soft lighting, clean background, no writing, no numbers, no symbols, no axes. Only the BG18-class broadly neutralizing antibody is terracotta.",
+  "card_subject_en": "A compact semi-realistic 3D scientific scene of a deep green HIV Env trimer on a light grey-green viral membrane, surrounded by a few pale mint and mid green antibodies approaching the glycan-rich surface. One very large, solid, boldly filled terracotta #C0492F BG18-class broadly neutralizing antibody is bound at the V3-glycan region, dominating the composition. Use the website green palette, soft shadows, clean pale background, no text, no numbers, no symbols, no diagrams. Only the bound BG18-class antibody is terracotta.",
+  "figure_labels": {
+   "heads": [
+    "启动前体",
+    "序贯成熟",
+    "血清中和"
+   ],
+   "callouts": [
+    {
+     "t": "24只恒河猴\n4组各6只",
+     "stage": 1,
+     "entity_en": "pale mint lymph node microenvironment"
+    },
+    {
+     "t": "N332-GT5\n启动稀有B细胞",
+     "stage": 1,
+     "entity_en": "mid green N332-GT5 HIV Env trimer"
+    },
+    {
+     "t": "第12周boost结合表位特异Bmem\nG1 vs G2–4，P<0.0001（未校正）",
+     "stage": 2,
+     "entity_en": "several mid green memory B cells"
+    },
+    {
+     "t": "N332依赖\n0/84结合N332T",
+     "stage": 2,
+     "entity_en": "different HIV Env trimers"
+    },
+    {
+     "t": "血清bnAb活性\n44%动物摘要口径",
+     "stage": 3,
+     "entity_en": "light grey-green plasma cells"
+    },
+    {
+     "t": "最佳动物\n几何均数ID50 481",
+     "stage": 3,
+     "entity_en": "one BG18-class broadly neutralizing antibody"
+    }
+   ],
+   "facts": [
+    [
+     "mAb广度最高**67%**",
+     "相对参考BG18"
+    ],
+    [
+     "8只最佳动物",
+     "相对BG18平均广度**41%**"
+    ],
+    [
+     "7次加强方案",
+     "未做攻击实验"
+    ]
+   ],
+   "note": "血清44%为摘要口径；Bmem P值为未校正组间比较。示意图由 AI 生成，非期刊原图。"
+  },
+  "chart": {
+   "justified": true,
+   "title_zh": "boost 7后8只最佳动物血清中和读出",
+   "unit": "相对BG18广度% / ID50",
+   "figure_source": "Fig. 5c,d,f; Results: Vaccine-elicited serum bnAbs",
+   "values": [
+    {
+     "label_zh": "平均相对BG18广度",
+     "value": 41,
+     "n": "8只动物",
+     "source_quote": "Mean neutralization breadth of the 8 animals was 41% relative to BG18."
+    },
+    {
+     "label_zh": "总体几何均数ID50",
+     "value": 107,
+     "n": "8只动物",
+     "source_quote": "with an overall geometric mean ID 50 of 107"
+    }
+   ],
+   "note": "两项单位不同，若绘图需分面或双轴；不用于比较优劣。"
+  }
+ },
+ "images": {
+  "mech_raw": "work/r4/clean/c8-vac-2_mech_raw_r4c_clean.png",
+  "mech": "c8-vac-2_mech_r4c.png",
+  "card": "c8-vac-2_card_r3.png",
+  "card_src": "r3 card (passed)",
+  "image_model": "mech: Grok drawing (r4/r4b/r4c, supplied by parent run); card: gpt-image-2 (earlier rounds)",
+  "note": "mech: 1 callout dropped to fit one row (第12周boost结合表位特异Bmem / G1 vs G2–4 P<0.0001), same as r3; all 6 only fit in 2 rows"
+ }
+}

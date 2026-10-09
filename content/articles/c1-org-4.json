@@ -1,0 +1,516 @@
+{
+ "id": "c1-org-4",
+ "round": "r4",
+ "text_from": "c1-org-4_final_r3.json (unchanged in r4; images only)",
+ "drafter_of_edits": "grok-bot (self)",
+ "base_drafter_model": "gpt-5.5-2026-04-23",
+ "source_draft": "work/r3b/c1-org-4/rw_c1-org-4_draft_r3fix.json",
+ "edits_r3": [],
+ "status": "published-ready",
+ "status_reasons": [],
+ "preprint": false,
+ "writer_tags": [
+  "TSC2",
+  "mTORC1",
+  "单细胞转录组",
+  "4i循环染色",
+  "反应性星形胶质细胞"
+ ],
+ "tags_note": "editor related-field tags prepended; writer tags trimmed to 6 (metadata only)",
+ "article": {
+  "tier": "deep",
+  "field": "类器官",
+  "tags": [
+   "TSC2",
+   "mTORC1",
+   "单细胞转录组",
+   "4i循环染色",
+   "反应性星形胶质细胞"
+  ],
+  "primary_endpoint_basis": "原文为临床前机制研究，没有方案预设临床主要终点。本文认定的核心读出是马赛克WIBR3类器官中TSC2−/− GLC相对同一类器官内TSC2 c/− GLC的反应性星形胶质模块评分，因为摘要把“loss of TSC2 biases neural progenitors to differentiate into enlarged, pro-inflammatory reactive astrocytes in a cell autonomous manner”作为主结论，正文Fig.1i写明“significantly higher expression of this module at all time points”。标题中的“3个时点”来自正文测序设计day 50、day 120、day 220，和“all time points”同一口径。",
+  "comparison_design": "这不是临床组间效能设计。Methods写明样本量依据预实验和既有文献，Randomization is not relevant；实验者未按基因型盲法，但图像分析自动化并同一设置用于所有条件。关键基因型比较中，scRNA-seq差异表达使用MAST，图1/2模块评分、图3/4蛋白或形态、图5结节高低p-S6细胞比较均在图注中给出显著性或说明统计方法；细胞因子阵列和若干UMAP状态转移主要按描述性读出呈现。",
+  "untested_comparisons": [
+   "培养基中105种因子的分泌谱以TSC2−/−相对TSC2+/+的增多描述，主文摘录未给出每个因子的正式P值；本文不把它放入标题。",
+   "高mTORC1细胞少于1%却影响更广泛细胞群，是作者基于EAAT1下降和细胞因子分泌提出的非细胞自主机制，不是直接功能因果检验。",
+   "rapamycin和Torin-1使TSC2−/−星形胶质细胞转向中间状态，不等同于正式证明长期疗效或完全逆转。"
+  ],
+  "number_basis_note": "摘要未给出与正文冲突的定量数字；正文、图注和机制图均采用Results/Methods口径，不混用摘要数字。",
+  "must_cover": [
+   {
+    "id": "m1",
+    "item_zh": "在人脑类器官和切除的患者结节组织中，TSC2缺失使神经祖细胞以细胞自主方式偏向分化为体积增大的促炎反应性星形胶质细胞。",
+    "status": "covered",
+    "covered_by": "TSC2缺失使祖细胞偏向形成体积增大的促炎反应性星形胶质细胞"
+   },
+   {
+    "id": "m2",
+    "item_zh": "在马赛克WIBR3 TSC2 c/−;LSL-TdTom类器官中，第8天Cre慢病毒删除部分祖细胞的另一个TSC2等位基因，使同一类器官内TSC2−/−和TSC2 c/−细胞可比较；scRNA-seq在50、120和220天进行。",
+    "status": "covered",
+    "covered_by": "第8天用Cre慢病毒删除部分神经祖细胞的另一个TSC2等位基因"
+   },
+   {
+    "id": "m3",
+    "item_zh": "与TSC2 c/−细胞相比，TSC2−/−细胞更偏向生成胶质谱系细胞；这种偏倚从第50天可见，并随时间增强。",
+    "status": "covered",
+    "covered_by": "TSC2−/−细胞较TSC2 c/−更偏向GLC命运，GLC偏倚第50天已可见"
+   },
+   {
+    "id": "m4",
+    "item_zh": "TSC2−/− GLC在同一类器官内所有时点的反应性星形胶质模块评分均显著高于TSC2 c/−细胞，提示细胞自主反应性签名。",
+    "status": "covered",
+    "covered_by": "TSC2−/− GLC在50、120、220天均显著高于同一类器官内TSC2 c/−细胞"
+   },
+   {
+    "id": "m5",
+    "item_zh": "单击TSC2 c/+;LSL-TdTom类器官在50和120天scRNA-seq仅显示温和变化，反应性弱于TSC2−/−，说明形成结节样细胞需要双等位缺失。",
+    "status": "covered",
+    "covered_by": "TSC2 c/+单击类器官在50和120天仅有温和比例和表达改变，反应性弱于TSC2−/−"
+   },
+   {
+    "id": "m6",
+    "item_zh": "研究在雄性BJ hiPS细胞系中复现：类器官5批，第8天Cre，第140天scRNA-seq，显示相同GLC偏倚和反应性星形胶质细胞。",
+    "status": "covered",
+    "covered_by": "BJ雄性hiPS类器官经5批、第8天Cre、第140天测序，显示同样GLC偏倚和反应性星形胶质细胞"
+   },
+   {
+    "id": "m7",
+    "item_zh": "尽管GFAP、S100β、clusterin、CRYAB、Cx43、Kir4.1等反应性蛋白升高，TSC2−/−类器官中的谷氨酸转运体EAAT1强烈降低，并在免疫淘选星形胶质细胞中确认。",
+    "status": "covered",
+    "covered_by": "GFAP、S100β、clusterin、CRYAB、Cx43、Kir4.1升高，EAAT1强烈降低；这一EAAT1下降在HepaCAM纯化星形胶质细胞中再次确认"
+   },
+   {
+    "id": "m8",
+    "item_zh": "在2条hiPS系约第280天类器官培养基中测量105种因子，TSC2−/−类器官分泌更多疾病相关星形胶质因子，如GDF15、CHI3L1、CCL2、SERPINE1、HGF、CSF1、MIF、IGFBP2。",
+    "status": "covered",
+    "covered_by": "第280天、2条hiPS系培养基测量105种因子，TSC2−/−类器官分泌更多GDF15、CHI3L1、CCL2、SERPINE1、HGF、CSF1、MIF和IGFBP2"
+   },
+   {
+    "id": "m9",
+    "item_zh": "免疫淘选星形胶质细胞中，50 nM rapamycin或100 nM Torin-1处理7天只把TSC2−/−细胞推向中间状态；clusterin、APOE、p62和p-S6下降，但野生型状态未完全恢复。",
+    "status": "covered",
+    "covered_by": "经7天50 nM rapamycin或100 nM Torin-1处理，仅转向中间状态，p-S6、clusterin、APOE、p62下降但未回到野生型"
+   },
+   {
+    "id": "m10",
+    "item_zh": "10个结节、8例患者的4i循环染色中，117,901个细胞的图像UMAP发现来自9/10结节的385个离群细胞；该簇p-S6最高、反应性星形胶质蛋白更高、神经元标志更低。",
+    "status": "covered",
+    "covered_by": "4i图像UMAP在117,901个细胞中找到来自9/10结节的385个p-S6最高离群细胞，反应蛋白更高、神经元标志更低"
+   },
+   {
+    "id": "m11",
+    "item_zh": "类器官模型缺少小胶质细胞、血管细胞和外周免疫细胞，其缺席可能影响星形胶质发育，虽然也支持细胞自主性。",
+    "status": "covered",
+    "covered_by": "模型缺少小胶质细胞、血管细胞和外周免疫细胞"
+   },
+   {
+    "id": "m12",
+    "item_zh": "结节组织中高度mTORC1激活细胞少于1%，其更广泛影响依赖作者提出的非细胞自主机制。",
+    "status": "covered",
+    "covered_by": "高mTORC1激活细胞在结节中不到1%，其广泛影响依赖作者提出的非细胞自主机制"
+   }
+  ],
+  "title": "TSC2缺失使类器官3个时点均出现星形胶质反应",
+  "one_liner": "在人脑类器官中，Cre诱导TSC2双等位缺失后，GLC在50、120、220天均显著提高反应性星形胶质模块评分。",
+  "datacard": {
+   "study_type": "公开全文机制研究；人脑类器官、纯化星形胶质细胞与患者结节组织验证",
+   "n": "WIBR3马赛克类器官39,539个细胞；BJ hiPS类器官5批；患者10个结节/8例，图像UMAP 117,901个细胞",
+   "control": "同一类器官内TSC2 c/−细胞、TSC2+/+同基因背景类器官、TSC2 c/+单击模型、结节内低p-S6细胞",
+   "intervention": "第8天Cre慢病毒诱导TSC2双等位缺失；纯化星形胶质细胞接受50 nM rapamycin或100 nM Torin-1",
+   "followup": "scRNA-seq为50、120、220天和第140天；药物处理7天",
+   "primary_endpoint": "核心读出（临床前研究，非预设主要终点）：TSC2−/− GLC相对同一类器官内TSC2 c/− GLC的反应性星形胶质模块评分",
+   "primary_endpoint_result": "TSC2−/− GLC在50、120、220天均显著高于TSC2 c/−细胞；标题数字来自这3个测序时点",
+   "statistics": "差异表达使用MAST；4i差异强度使用Wilcoxon秩和检验并Bonferroni校正；该研究不是临床组间效能设计",
+   "evidence_level": "全文",
+   "check_record": "Nature开放全文HTML；覆盖Abstract、Results、Methods、Discussion与全部图注"
+  },
+  "background": [
+   "TSC以TSC1或TSC2突变、皮质结节和难治性早发癫痫为特征。结节切除组织常见畸形神经元、胶质增生星形胶质细胞、活化小胶质细胞和巨细胞，但长期癫痫本身也能诱发胶质反应，因而难分清胶质改变是病因还是后果。",
+   "本文切口是把双等位TSC2缺失放进无癫痫发作的人脑类器官。作者让突变祖细胞和同一类器官内的TSC2 c/−细胞并列发育，再用患者结节组织验证，从而追问mTORC1是否足以把细胞推向反应性星形胶质状态。"
+  ],
+  "design": [
+   "核心模型是WIBR3 TSC2 c/−;LSL-TdTom人胚胎干细胞类器官。第8天用Cre慢病毒删除部分神经祖细胞的另一个TSC2等位基因，tdTomato阳性即TSC2−/−，tdTomato阴性TSC2 c/−作为同一类器官内对照；单细胞RNA测序分别在50、120、220天进行。",
+   "研究不是临床组间效能设计，也不是随机分配动物实验；Methods说明样本量按预实验和文献，实验者未按基因型盲法，图像分析自动化。验证包括TSC2 c/+单击模型、BJ hiPS细胞5批第140天测序、TSC2或TSC1全敲除类器官、纯化星形胶质细胞和患者结节4i染色。"
+  ],
+  "results": [
+   {
+    "subhead": "主读出成立",
+    "text": "贯穿类器官与患者结节，TSC2缺失使祖细胞偏向形成体积增大的促炎反应性星形胶质细胞。主要读出是GLC反应性星形胶质模块评分；TSC2−/− GLC在50、120、220天均显著高于同一类器官内TSC2 c/−细胞。该模块由反应性星形胶质上调基因计算，原文据此把反应性签名归为TSC2丢失的细胞自主后果。"
+   },
+   {
+    "subhead": "命运偏倚出现",
+    "text": "WIBR3模型在第8天Cre后，处理后39,539个细胞映射到胎脑图谱。TSC2−/−细胞较TSC2 c/−更偏向GLC命运，GLC偏倚第50天已可见，并随时间增强。这里的GLC覆盖胶质中间祖细胞、少突胶质祖细胞和分化星形胶质细胞。"
+   },
+   {
+    "subhead": "对照与复现",
+    "text": "同一类器官内对照排除了培养条件差异。TSC2 c/+单击类器官在50和120天仅有温和比例和表达改变，反应性弱于TSC2−/−；BJ雄性hiPS类器官经5批、第8天Cre、第140天测序，显示同样GLC偏倚和反应性星形胶质细胞。"
+   },
+   {
+    "subhead": "功能蛋白改变",
+    "text": "蛋白层面，TSC2−/−类器官中GFAP、S100β、clusterin、CRYAB、Cx43、Kir4.1升高，EAAT1强烈降低；这一EAAT1下降在HepaCAM纯化星形胶质细胞中再次确认。第280天、2条hiPS系培养基测量105种因子，TSC2−/−类器官分泌更多GDF15、CHI3L1、CCL2、SERPINE1、HGF、CSF1、MIF和IGFBP2，其中6种mRNA也上调。"
+   },
+   {
+    "subhead": "病灶组织对应",
+    "text": "第315–355天纯化细胞经7天50 nM rapamycin或100 nM Torin-1处理，仅转向中间状态，p-S6、clusterin、APOE、p62下降但未回到野生型。10个结节、8例患者的4i图像UMAP在117,901个细胞中找到来自9/10结节的385个p-S6最高离群细胞，反应蛋白更高、神经元标志更低。"
+   }
+  ],
+  "mechanism_proven": [
+   "在同一类器官中，TSC2−/−与TSC2 c/−细胞共享培养环境；双等位TSC2缺失细胞出现更强GLC偏倚和反应模块升高。TSC2 c/+单击模型仅有温和改变、反应性较弱，支持细胞自主性，并支持形成结节样细胞需要双等位缺失。",
+   "作者还把转录状态接到蛋白、分泌与病灶：EAAT1降低、疾病相关细胞因子分泌增多，4i显示高p-S6结节细胞富集S100β、vimentin、APOE、clusterin等，并减少HuC/D、MAP2。"
+  ],
+  "mechanism_inferred": [
+   "作者推测，这群高mTORC1星形胶质细胞虽占比很低，仍可能通过谷氨酸清除不足和炎症性分泌物影响周围神经元网络；细胞外基质重塑基因升高也可能参与结节质地改变。这些是由表达和分泌数据提示，未在类器官中直接证明癫痫发作。"
+  ],
+  "limitations": [
+   "类器官外推受限：原文明确模型缺少小胶质细胞、血管细胞和外周免疫细胞，这些细胞都能驱动损伤或疾病中的星形胶质增生；其缺席支持细胞自主性，但也可能改变发育轨迹。",
+   "患者结节验证是切除样本，来自10个结节、8例难治性癫痫手术患者；高mTORC1激活细胞在结节中不到1%，其广泛影响依赖作者提出的非细胞自主机制，而非直接功能记录。",
+   "终点多为模块评分、蛋白强度、细胞命运和分泌谱，未在类器官内记录癫痫样网络活动。mTOR抑制只观察7天，且未完全恢复野生型，不能推断长期逆转。",
+   "方法上，Methods写明实验者未按基因型盲法；人结节高/低p-S6阈值按样本手动设定，可能影响少量离群细胞的边界。"
+  ],
+  "significance": [
+   "如果TSC2双等位缺失先把祖细胞推向反应性星形胶质，而不只是癫痫后的疤痕反应，TSC研究的靶点就需要从神经元扩大到胶质发育、谷氨酸转运和炎症性分泌。类器官提供了可在发作之外追踪病程的体系。",
+   "但这仍是人源模型和切除组织证据，不能等同于患者中已证明抑制星形胶质反应会改善癫痫。mTOR抑制只把细胞推向中间状态，提示单纯压低mTORC1可能不足以完全重置病灶细胞状态。"
+  ],
+  "citation": "Li TL, Blair JD, Yoo T, Grant GA, Hockemeyer D, Porter BE, 等. mTORC1 drives cell-autonomous astrocyte reactivity in tuberous sclerosis. Nature. 2026. https://doi.org/10.1038/s41586-026-11054-w",
+  "data_points": [
+   {
+    "value": "TSC2",
+    "meaning": "TSC相关基因；本文操纵和比较的核心基因",
+    "source_quote": "Tuberous sclerosis complex (TSC) is a multisystem developmental disorder caused by mutations in TSC1 or TSC2",
+    "location": "Main"
+   },
+   {
+    "value": "TSC1",
+    "meaning": "TSC相关基因；设计中用于全敲除类器官参照",
+    "source_quote": "Tuberous sclerosis complex (TSC) is a multisystem developmental disorder caused by mutations in TSC1 or TSC2",
+    "location": "Main"
+   },
+   {
+    "value": "mTORC1",
+    "meaning": "TSC1–TSC2复合体缺失后过度激活的信号节点",
+    "source_quote": "Loss of the TSC1–TSC2 protein complex leads to hyperactivation of mTOR complex 1 (mTORC1)",
+    "location": "Main"
+   },
+   {
+    "value": "3个时点",
+    "meaning": "标题所指的WIBR3马赛克类器官scRNA-seq时间点数",
+    "source_quote": "at day 50 (neurogenesis), day 120 (early gliogenesis) and day 220 (cell maturation)",
+    "location": "Results: TSC2−/− cells preferentially generate astrocytes"
+   },
+   {
+    "value": "50、120、220天",
+    "meaning": "WIBR3马赛克类器官的scRNA-seq采样时间",
+    "source_quote": "at day 50 (neurogenesis), day 120 (early gliogenesis) and day 220 (cell maturation)",
+    "location": "Results: TSC2−/− cells preferentially generate astrocytes"
+   },
+   {
+    "value": "第8天",
+    "meaning": "Cre慢病毒诱导TSC2缺失的时间",
+    "source_quote": "Cre recombinase was delivered by means of lentiviral transduction at day 8",
+    "location": "Results: TSC2−/− cells preferentially generate astrocytes"
+   },
+   {
+    "value": "39,539个细胞",
+    "meaning": "WIBR3马赛克类器官scRNA-seq处理后映射到胎脑图谱的细胞数",
+    "source_quote": "After processing, 39,539 cells were mapped to a fetal brain tissue atlas",
+    "location": "Results: TSC2−/− cells preferentially generate astrocytes"
+   },
+   {
+    "value": "第50天",
+    "meaning": "GLC偏倚最早可观察到的时间",
+    "source_quote": "The GLC bias of TSC2 − / − cells was observable as early as day 50 and grew more prominent over time",
+    "location": "Results: TSC2−/− cells preferentially generate astrocytes"
+   },
+   {
+    "value": "50和120天",
+    "meaning": "TSC2 c/+单击模型scRNA-seq采样时间",
+    "source_quote": "TSC2 c/+;LSL-TdTom organoids at day 50 and 120 and observed modest changes",
+    "location": "Results: TSC2−/− astrocytes express reactivity genes"
+   },
+   {
+    "value": "5批",
+    "meaning": "BJ hiPS细胞类器官独立分化批次数",
+    "source_quote": "These stem cells were differentiated into cortical organoids in five batches",
+    "location": "Results: Astrocyte bias is robust across backgrounds"
+   },
+   {
+    "value": "第140天",
+    "meaning": "BJ hiPS细胞类器官scRNA-seq时间点",
+    "source_quote": "exposed to Cre at day 8 and subject to the scRNA-seq workflow on day 140",
+    "location": "Results: Astrocyte bias is robust across backgrounds"
+   },
+   {
+    "value": "S100β",
+    "meaning": "反应性/星形胶质相关蛋白之一",
+    "source_quote": "increased expression of glial fibrillary acidic protein (GFAP), S100β, clusterin and p62",
+    "location": "Results: Altered protein expression in TSC2−/− astrocytes"
+   },
+   {
+    "value": "Cx43",
+    "meaning": "TSC2−/−类器官中升高的间隙连接蛋白",
+    "source_quote": "increased expression of the gap junction protein Cx43 and the potassium channel Kir4.1",
+    "location": "Results: Altered protein expression in TSC2−/− astrocytes"
+   },
+   {
+    "value": "Kir4.1",
+    "meaning": "TSC2−/−类器官中升高的钾通道蛋白",
+    "source_quote": "increased expression of the gap junction protein Cx43 and the potassium channel Kir4.1",
+    "location": "Results: Altered protein expression in TSC2−/− astrocytes"
+   },
+   {
+    "value": "EAAT1",
+    "meaning": "在TSC2−/−类器官中降低的谷氨酸转运体",
+    "source_quote": "excitatory amino acid transporter 1 (EAAT1), was strongly decreased",
+    "location": "Results: Altered protein expression in TSC2−/− astrocytes"
+   },
+   {
+    "value": "EAAT1",
+    "meaning": "在免疫淘选TSC2−/−星形胶质细胞中再次观察到降低的谷氨酸转运相关蛋白",
+    "source_quote": "We again observed decreased expression of EAAT1 (Fig. 4d,e ), confirming that decreased glutamate transport by TSC2 − / − astrocytes could be a pathophysiological mechanism",
+    "location": "Results: Altered properties of purified TSC2−/− astrocytes"
+   },
+   {
+    "value": "第280天",
+    "meaning": "细胞因子释放检测所用类器官时间点",
+    "source_quote": "we measured 105 factors from the media of day 280 TSC2 +/+ and TSC2 − / − cortical organoids",
+    "location": "Results: Altered secretion profile of TSC2−/− organoids"
+   },
+   {
+    "value": "105种因子",
+    "meaning": "培养基中测量的细胞因子/分泌因子数量",
+    "source_quote": "we measured 105 factors from the media of day 280 TSC2 +/+ and TSC2 − / − cortical organoids",
+    "location": "Results: Altered secretion profile of TSC2−/− organoids"
+   },
+   {
+    "value": "2条hiPS系",
+    "meaning": "细胞因子释放实验使用的hiPS细胞系数量",
+    "source_quote": "we measured 105 factors from the media of day 280 TSC2 +/+ and TSC2 − / − cortical organoids from 2 hiPS cell lines",
+    "location": "Results: Altered secretion profile of TSC2−/− organoids"
+   },
+   {
+    "value": "GDF15",
+    "meaning": "TSC2−/−类器官分泌增多的疾病相关星形胶质因子示例",
+    "source_quote": "These include growth/differentiation factor 15 ( GDF15 ), chitinase-3-like protein 1 ( CHI3L1 ), C-C motif chemokine 2 (MCP-1; CCL2 )",
+    "location": "Results: Altered secretion profile of TSC2−/− organoids"
+   },
+   {
+    "value": "CHI3L1",
+    "meaning": "TSC2−/−类器官分泌增多的疾病相关星形胶质因子示例",
+    "source_quote": "These include growth/differentiation factor 15 ( GDF15 ), chitinase-3-like protein 1 ( CHI3L1 ), C-C motif chemokine 2 (MCP-1; CCL2 )",
+    "location": "Results: Altered secretion profile of TSC2−/− organoids"
+   },
+   {
+    "value": "CCL2",
+    "meaning": "TSC2−/−类器官分泌增多的疾病相关星形胶质因子示例",
+    "source_quote": "These include growth/differentiation factor 15 ( GDF15 ), chitinase-3-like protein 1 ( CHI3L1 ), C-C motif chemokine 2 (MCP-1; CCL2 )",
+    "location": "Results: Altered secretion profile of TSC2−/− organoids"
+   },
+   {
+    "value": "SERPINE1",
+    "meaning": "TSC2−/−类器官分泌增多的疾病相关星形胶质因子示例",
+    "source_quote": "plasminogen activator inhibitor 1 (PAI-1; SERPINE1 ), hepatocyte growth factor ( HGF ), macrophage colony-stimulating factor 1 (M-CSF; CSF1 )",
+    "location": "Results: Altered secretion profile of TSC2−/− organoids"
+   },
+   {
+    "value": "CSF1",
+    "meaning": "TSC2−/−类器官分泌增多的疾病相关星形胶质因子示例",
+    "source_quote": "plasminogen activator inhibitor 1 (PAI-1; SERPINE1 ), hepatocyte growth factor ( HGF ), macrophage colony-stimulating factor 1 (M-CSF; CSF1 )",
+    "location": "Results: Altered secretion profile of TSC2−/− organoids"
+   },
+   {
+    "value": "IGFBP2",
+    "meaning": "TSC2−/−类器官分泌增多的因子",
+    "source_quote": "TSC2 − / − organoids also released higher levels of insulin-like growth factor-binding protein 2 ( IGFBP2 )",
+    "location": "Results: Altered secretion profile of TSC2−/− organoids"
+   },
+   {
+    "value": "6种",
+    "meaning": "在单细胞mRNA层面也差异表达的分泌因子数量",
+    "source_quote": "Six of these factors were also differentially expressed at the mRNA level",
+    "location": "Results: Altered secretion profile of TSC2−/− organoids"
+   },
+   {
+    "value": "第315–355天",
+    "meaning": "mTOR抑制实验中免疫淘选星形胶质细胞的类器官年龄",
+    "source_quote": "immunopanned astrocytes from day 315–355 TSC2 +/+ and TSC2 − / − organoids",
+    "location": "Results: mTOR inhibition in TSC2−/− astrocytes"
+   },
+   {
+    "value": "7天",
+    "meaning": "rapamycin或Torin-1处理持续时间",
+    "source_quote": "After exposure to mTOR inhibitors or vehicle for 7 days",
+    "location": "Results: mTOR inhibition in TSC2−/− astrocytes"
+   },
+   {
+    "value": "50 nM",
+    "meaning": "rapamycin处理浓度",
+    "source_quote": "rapamycin (Cayman Chemicals, 13346) at a concentration of 50 nM",
+    "location": "Methods: Rapamycin and Torin experiments"
+   },
+   {
+    "value": "100 nM",
+    "meaning": "Torin-1处理浓度",
+    "source_quote": "Torin-1 (Tocris, 4247) at a concentration of 100 nM",
+    "location": "Methods: Rapamycin and Torin experiments"
+   },
+   {
+    "value": "Torin-1",
+    "meaning": "mTOR抑制实验所用抑制剂",
+    "source_quote": "Torin-1 (Tocris, 4247) at a concentration of 100 nM",
+    "location": "Methods: Rapamycin and Torin experiments"
+   },
+   {
+    "value": "p-S6",
+    "meaning": "mTORC1活性读出；患者结节高p-S6细胞用于比较",
+    "source_quote": "cells with high p-S6 in tubers had increased expression of several top differentially expressed proteins",
+    "location": "Results: Tuber cells show a reactive astrocyte signature"
+   },
+   {
+    "value": "p62",
+    "meaning": "TSC2−/−星形胶质细胞mTOR抑制后下降的蛋白",
+    "source_quote": "the mTOR inhibitors reduced p-S6 in TSC2 − / − astrocytes as well as clusterin, APOE and p62 expression compared with vehicle",
+    "location": "Results: mTOR inhibition in TSC2−/− astrocytes"
+   },
+   {
+    "value": "p62",
+    "meaning": "结节高p-S6细胞中表达更高的蛋白",
+    "source_quote": "Accordingly, high p-S6 cells had higher expression levels of APOE, clusterin, CRYAB and p62",
+    "location": "Results: Tuber cells show a reactive astrocyte signature"
+   },
+   {
+    "value": "4i",
+    "meaning": "用于细胞多轮免疫染色和图像UMAP的循环染色方法",
+    "source_quote": "using 4i, a multiplexed cyclic immunostaining approach, to probe the same cells with many rounds of immunostaining",
+    "location": "Results: mTOR inhibition in TSC2−/− astrocytes"
+   },
+   {
+    "value": "10个结节/8例",
+    "meaning": "4i循环染色分析的患者结节样本量",
+    "source_quote": "Cyclic staining of ten tubers from eight different patients with TSC",
+    "location": "Results: Tuber cells show a reactive astrocyte signature"
+   },
+   {
+    "value": "117,901个细胞",
+    "meaning": "患者结节图像UMAP纳入的细胞数",
+    "source_quote": "we generated an image UMAP from 117,901 cells spanning all tubers",
+    "location": "Results: Tuber cells show a reactive astrocyte signature"
+   },
+   {
+    "value": "385个细胞",
+    "meaning": "患者结节图像UMAP识别的离群高p-S6细胞簇大小",
+    "source_quote": "unbiased clustering identified a unified outlying cluster of 385 cells from 9 of the 10 tubers",
+    "location": "Results: Tuber cells show a reactive astrocyte signature"
+   },
+   {
+    "value": "9/10结节",
+    "meaning": "离群高p-S6细胞簇所覆盖的患者结节比例",
+    "source_quote": "unbiased clustering identified a unified outlying cluster of 385 cells from 9 of the 10 tubers",
+    "location": "Results: Tuber cells show a reactive astrocyte signature"
+   },
+   {
+    "value": "MAP2",
+    "meaning": "高p-S6结节离群细胞中降低的神经元蛋白之一",
+    "source_quote": "reduced expression of neuronal proteins including HuC/D and MAP2",
+    "location": "Results: Tuber cells show a reactive astrocyte signature"
+   },
+   {
+    "value": "不到1%",
+    "meaning": "高度mTORC1激活细胞在结节组织中的占比上限",
+    "source_quote": "represent less than 1% of cells in the tuber",
+    "location": "Discussion"
+   },
+   {
+    "value": "2026",
+    "meaning": "论文发表年份",
+    "source_quote": "PUBLICATION DATE: 2026-09-23",
+    "location": "Metadata"
+   },
+   {
+    "value": "10.1038/s41586-026-11054-w",
+    "meaning": "论文DOI",
+    "source_quote": "DOI: https://doi.org/10.1038/s41586-026-11054-w",
+    "location": "Metadata"
+   }
+  ],
+  "steps": [
+   "构建马赛克脑类器官",
+   "追踪突变细胞命运",
+   "检测反应性蛋白与分泌",
+   "用患者结节组织验证"
+  ],
+  "figure_caption": "图示TSC2双等位缺失的祖细胞在类器官内偏向胶质谱系，并出现反应性星形胶质特征；分泌谱、谷氨酸转运体下降和患者结节高p-S6离群细胞共同支撑这一路径。示意图由 AI 生成，依据原文结果绘制，非期刊原图，不代表分子比例",
+  "image_story": {
+   "stages": [
+    {
+     "visual_en": "Mosaic cortical brain organoid with a small subset of mutant neural progenitor cells glowing terracotta inside pale mint tissue.",
+     "source_quote": "Cre recombinase was delivered by means of lentiviral transduction at day 8 to delete TSC2 in a subset of neural progenitor cells in the organoid"
+    },
+    {
+     "visual_en": "Large dysmorphic reactive astrocytes with thick processes emerging from the mutant progenitor lineage, surrounded by deep green glial cells.",
+     "source_quote": "loss of TSC2 biases neural progenitors to differentiate into enlarged, pro-inflammatory reactive astrocytes in a cell autonomous manner"
+    },
+    {
+     "visual_en": "Patient cortical tuber tissue slice with a small cluster of cells carrying intense terracotta mTORC1 glow among muted green cells.",
+     "source_quote": "unbiased clustering identified a unified outlying cluster of 385 cells from 9 of the 10 tubers"
+    }
+   ],
+   "key_element_en": "hyperactive mTORC1 glow"
+  },
+  "image_subject_en": "A left-to-right process in three stages, drawn large. Stage 1 shows a rounded human cortical brain organoid in pale mint and light grey-green, with many neural progenitor cells as small deep green spheres and one small lineage carrying a very large, solid, boldly filled terracotta #C0492F hyperactive mTORC1 glow inside the organoid. Stage 2 shows the mutant lineage differentiating into enlarged reactive astrocytes, with oversized cell bodies, thick branching processes, deep green membranes, and pale mint surrounding cells; a few muted green secreted cytokine particles leave the astrocytes, while a small glutamate transporter icon on the membrane appears faded green, not highlighted. Stage 3 shows a patient cortical tuber tissue slice in light grey-green, containing many ordinary cells and a compact outlying cluster of reactive astrocyte-like cells with the same terracotta hyperactive mTORC1 glow. Use semi-realistic 3D scientific illustration, soft shadows, no text, no numbers, no symbols, no charts, no axes. Only the hyperactive mTORC1 glow is terracotta.",
+  "card_subject_en": "A compact hero subject showing one enlarged reactive astrocyte derived from a human brain organoid, filling most of the frame. The astrocyte has a pale mint soma, deep green thick processes, and light grey-green surrounding neural cells blurred behind it. On the astrocyte surface, glutamate transporter shapes are faint and diminished in muted green, while several small cytokine particles drift nearby. Draw one very large, solid, boldly filled terracotta #C0492F hyperactive mTORC1 glow inside the astrocyte as the only accent. Semi-realistic 3D scientific style, no text, no numbers, no symbols. Only the hyperactive mTORC1 glow is terracotta.",
+  "figure_labels": {
+   "heads": [
+    "祖细胞突变",
+    "星形反应",
+    "结节验证"
+   ],
+   "callouts": [
+    {
+     "t": "第8天Cre\n诱导TSC2缺失",
+     "stage": 1,
+     "entity_en": "mutant neural progenitor cells"
+    },
+    {
+     "t": "50/120/220天\n模块均升高",
+     "stage": 2,
+     "entity_en": "enlarged reactive astrocytes"
+    },
+    {
+     "t": "105种分泌因子\n疾病相关因子增多",
+     "stage": 2,
+     "entity_en": "secreted cytokine particles"
+    },
+    {
+     "t": "385个离群细胞\np-S6最高",
+     "stage": 3,
+     "entity_en": "compact outlying cluster"
+    }
+   ],
+   "facts": [
+    [
+     "**3个时点**",
+     "反应模块均升高"
+    ],
+    [
+     "10个结节/8例",
+     "4i组织验证"
+    ],
+    [
+     "**117,901**个细胞",
+     "识别离群簇"
+    ]
+   ],
+   "note": "模块评分用正文图口径；非组间效能设计。示意图由 AI 生成，非期刊原图。"
+  },
+  "chart": {
+   "justified": false
+  }
+ },
+ "images": {
+  "mech_raw": "work/r4/clean/c1-org-4_mech_raw_r4c_clean.png",
+  "mech": "c1-org-4_mech_r4c.png",
+  "card": "c1-org-4_card.png",
+  "card_src": "r3 card (passed)",
+  "image_model": "mech: Grok drawing (r4/r4b/r4c, supplied by parent run); card: gpt-image-2 (earlier rounds)",
+  "note": "mech strict pass"
+ }
+}

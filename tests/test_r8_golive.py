@@ -1,0 +1,187 @@
+#!/usr/bin/env python3
+"""Guards for the r8 go-live catalog: curated lock, hidden ids, deals."""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import re
+import sys
+import unittest
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+import inlight_catalog as cat  # noqa: E402
+
+
+HIDDEN_SAMPLE = ["c7-cell-5", "c5-am-6", "c4-ai-4", "a-invivocar", "c8-vac-5"]
+PREPRINT_IDS = {"c6-ab-4", "c6-ab-5"}
+
+
+def _webp_size(path: Path):
+    import struct
+    data = path.read_bytes()
+    if data[0:4] != b"RIFF" or data[8:12] != b"WEBP":
+        return None
+    i = 12
+    while i + 8 <= len(data):
+        chunk = data[i:i + 4]
+        size = struct.unpack_from("<I", data, i + 4)[0]
+        payload = data[i + 8:i + 8 + size]
+        if chunk == b"VP8X" and len(payload) >= 10:
+            w = 1 + int.from_bytes(payload[4:7], "little")
+            h = 1 + int.from_bytes(payload[7:10], "little")
+            return w, h
+        if chunk == b"VP8 " and len(payload) >= 10:
+            w = struct.unpack_from("<H", payload, 6)[0] & 0x3FFF
+            h = struct.unpack_from("<H", payload, 8)[0] & 0x3FFF
+            return w, h
+        if chunk == b"VP8L" and len(payload) >= 5:
+            bits = struct.unpack_from("<I", payload, 1)[0]
+            w = (bits & 0x3FFF) + 1
+            h = ((bits >> 14) & 0x3FFF) + 1
+            return w, h
+        i += 8 + size + (size & 1)
+    return None
+
+
+class R8GoLiveTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.catalog = cat.load_catalog()
+        cls.index = (ROOT / "index.html").read_text(encoding="utf-8")
+        cls.manifest = json.loads((ROOT / "content" / "r8_manifest.json").read_text(encoding="utf-8"))
+        cls.sitemap = (ROOT / "sitemap.xml").read_text(encoding="utf-8") if (ROOT / "sitemap.xml").exists() else ""
+
+    def test_twenty_five_published(self):
+        ids = cat.published_ids(self.catalog)
+        self.assertEqual(len(ids), 25)
+        self.assertEqual(ids, [a["id"] for a in self.manifest["articles"]])
+
+    def test_card_titles_at_most_30(self):
+        for a in cat.published_articles(self.catalog):
+            self.assertLessEqual(len(a["card_title"]), 30, a["id"])
+
+    def test_preprint_chips(self):
+        for a in cat.published_articles(self.catalog):
+            if a["id"] in PREPRINT_IDS:
+                self.assertTrue(a["preprint"], a["id"])
+            else:
+                self.assertFalse(a["preprint"], a["id"])
+
+    def test_images_keep_pixel_dimensions(self):
+        for row in self.manifest["articles"]:
+            for key, pxkey in (("card_image", "card_px"), ("mech_image", "mech_px")):
+                path = ROOT / "img" / Path(row[key]).name
+                self.assertTrue(path.exists(), path)
+                self.assertEqual(_webp_size(path), tuple(row[pxkey]), (row["id"], key))
+
+    def test_hidden_ids_absent_from_public_surfaces(self):
+        hidden = set(cat.hidden_ids(self.catalog))
+        self.assertTrue({"c7-cell-5", "c5-am-6"} <= hidden)
+        cat_ids = {a["id"] for a in cat.extract_cat_array(self.index)}
+        self.assertEqual(len(cat_ids), 25)
+        for hid in HIDDEN_SAMPLE:
+            self.assertIn(hid, hidden)
+            self.assertNotIn(hid, cat_ids)
+            self.assertNotIn(f"/pages/article/{hid}.html", self.sitemap)
+
+    def test_hidden_data_kept_in_catalog(self):
+        lookup = cat.by_id(self.catalog)
+        self.assertEqual(lookup["c7-cell-5"]["status"], "excluded")
+        self.assertEqual(lookup["c5-am-6"]["status"], "excluded")
+        self.assertEqual(lookup["a-invivocar"]["status"], "no_fulltext")
+        self.assertTrue(lookup["c7-cell-5"].get("legacy"))
+        self.assertTrue((ROOT / "img" / "papers" / "c7-cell-5.jpg").exists())
+
+    def test_deals_byte_identical_and_count_22(self):
+        block = cat.extract_deals_block(self.index)
+        self.assertEqual(cat.count_deals(block), 22)
+        digest = hashlib.sha256(block.encode("utf-8")).hexdigest()
+        # Seed 22-deal block from main; this PR must not touch it.
+        self.assertEqual(digest, "bf29e0b21cb5fa50e1f25d41c23f4d5a804012d266b6fa06d43712c9ecb454a6")
+        self.assertEqual(len(block), 11513)
+
+    def test_weekly_cannot_overwrite_or_unhide(self):
+        curated = cat.published_articles(self.catalog)[0]
+        incoming = {
+            "generated": "2099-01-01",
+            "articles": [
+                {
+                    "id": curated["id"],
+                    "t": "HACKED TITLE",
+                    "url": "https://evil.example/overwrite",
+                    "f": "c2",
+                    "status": "weekly",
+                },
+                {
+                    "id": "c7-cell-5",
+                    "t": "should stay hidden",
+                    "url": "https://evil.example/unhide",
+                    "f": "c7",
+                    "status": "weekly",
+                },
+                {
+                    "id": "c4-ai-4",
+                    "t": "no_fulltext must stay hidden",
+                    "url": "https://evil.example/brief",
+                    "f": "c4",
+                },
+                {
+                    "id": "w-20990101-newitem",
+                    "t": "brand new weekly piece",
+                    "url": "https://example.com/new",
+                    "f": "c2",
+                    "status": "weekly",
+                },
+            ],
+            "deals": [{"url": "https://example.com/deal", "t": "x", "kinds": ["lic"]}],
+        }
+        previous = {"articles": [], "deals": []}
+        merged = cat.protect_latest_payload(previous, incoming, self.catalog)
+        ids = [a["id"] for a in merged["articles"]]
+        self.assertIn(curated["id"], ids)
+        kept = next(a for a in merged["articles"] if a["id"] == curated["id"])
+        self.assertNotEqual(kept.get("t") or kept.get("title"), "HACKED TITLE")
+        self.assertEqual(kept.get("status"), "published")
+        self.assertNotIn("c7-cell-5", ids)
+        self.assertNotIn("c4-ai-4", ids)
+        self.assertIn("w-20990101-newitem", ids)
+        self.assertEqual(merged["deals"], incoming["deals"])
+
+    def test_article_pages_and_images_resolve(self):
+        for a in cat.published_articles(self.catalog):
+            page = ROOT / "pages" / "article" / f"{a['id']}.html"
+            self.assertTrue(page.exists(), page)
+            html = page.read_text(encoding="utf-8")
+            self.assertIn(a["title"][:12], html)
+            self.assertIn(f"{a['id']}_card.webp", html)
+            self.assertIn(f"{a['id']}_mech.webp", html)
+            self.assertNotIn("noindex", html)
+            self.assertTrue((ROOT / "img" / f"{a['id']}_card.webp").exists())
+            self.assertTrue((ROOT / "img" / f"{a['id']}_mech.webp").exists())
+
+    def test_primary_field_only_in_catalog_cards(self):
+        for a in cat.published_articles(self.catalog):
+            card = cat._public_card(a)
+            self.assertEqual(card["tags"], [card["f"]])
+            self.assertTrue(card["field_color"].startswith("#"))
+
+    def test_ai_note_once_under_hero(self):
+        for a in cat.published_articles(self.catalog):
+            html = (ROOT / "pages" / "article" / f"{a['id']}.html").read_text(encoding="utf-8")
+            hero = re.search(r'<div class="pv-hero">.*?</div>', html, re.S)
+            self.assertIsNotNone(hero, a["id"])
+            self.assertIn("AI 生成", hero.group(0), a["id"])
+            self.assertNotIn("配图由 AI 生成，依据论文流程绘制", html, a["id"])
+
+    def test_structured_files_untouched_source(self):
+        for a in cat.published_articles(self.catalog):
+            self.assertTrue(cat.article_json_path(a["id"]).exists())
+            self.assertTrue(cat.article_md_path(a["id"]).exists())
+
+
+if __name__ == "__main__":
+    unittest.main()

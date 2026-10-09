@@ -1,0 +1,592 @@
+{
+ "id": "c1-org-1",
+ "final_version": 1,
+ "drafter_model": "claude-sonnet-5-5",
+ "drafter_models_per_version": {
+  "1": "claude-sonnet-5-5"
+ },
+ "verifier_model": "claude-opus-5-5",
+ "mustcover_frozen_by": "claude-opus-5-5",
+ "selected_from_versions": [
+  1
+ ],
+ "remaining_failures_n": 0,
+ "remaining_failures": [],
+ "status": "published-ready",
+ "status_reasons": [],
+ "preprint": false,
+ "tags_note": "editor related-field tags prepended; writer tags trimmed to 6 (metadata only)",
+ "writer_tags": [
+  "长期培养",
+  "DNA甲基化时钟",
+  "单细胞转录组",
+  "嵌合类器官",
+  "活动许可培养基",
+  "3D多电极阵列"
+ ],
+ "article": {
+  "tier": "deep",
+  "field": "类器官",
+  "tags": [
+   "长期培养",
+   "DNA甲基化时钟",
+   "单细胞转录组",
+   "嵌合类器官",
+   "活动许可培养基",
+   "3D多电极阵列"
+  ],
+  "primary_endpoint_basis": "这是临床前研究，无方案预设主要终点。核心读出取摘要与正文一致的表观遗传时钟结果：Horvath泛组织时钟与皮层特异时钟预测的DNAm年龄与培养时间相关，r = 0.88–0.90，中位绝对误差7.25和20.04个月（Results第一节，Fig. 1j,k）。标题与一句话结论均用此数字。该相关系数未附P值；胎脑时钟r = 0.54、P = 0.056。",
+  "comparison_design": "临床前研究，无预设主要终点，样本量未预先计算，未设盲。APM对CDM4的多项比较做了统计检验（LMM、Wilcoxon、Fisher、ANOVA、F检验、似然比检验）。异时嵌合体中CPN比例49.0%对老单时与标准类器官的比较没有统计检验。1年网络爆发（8个对9个）也没有单独给出检验。",
+  "untested_comparisons": [
+   "异时嵌合老源后代CPN 49.0%对老单时0.55%、0.50%、0.02%及9个月标准类器官1.1%（未做统计检验，异时为单个样本）",
+   "1年网络爆发：CDM4 8个均无，APM 9个全部有（未单独报告检验）",
+   "MCP1–5与培养时间的Pearson r（未给出P值）",
+   "时钟r = 0.88–0.90（未给出P值）"
+  ],
+  "number_basis_note": "摘要未给出具体数值，与正文无冲突。Fig. 2d图注将SATB2+FOS+细胞的P写为9.9×10−5，正文为9.0×10−4，本文未采用该数字。Fig. 3k图注称9个月时成熟评分显著更高，但所给P为5.88×10−2，本文按Results给出的P值写并在局限中注明。",
+  "must_cover": [
+   {
+    "id": "m1",
+    "item_zh": "Horvath与皮层时钟预测DNAm年龄与培养时间相关r = 0.88–0.90，中位绝对误差7.25和20.04个月",
+    "status": "covered",
+    "covered_by": "中位绝对误差分别为7.25和20.04个月"
+   },
+   {
+    "id": "m2",
+    "item_zh": "异时嵌合体中老祖细胞后代CPN占49.0%，对照0.55%、0.50%、0.02%与1.1%，约2周内产生",
+    "status": "covered",
+    "covered_by": "老祖细胞的后代中CPN占49.0%"
+   },
+   {
+    "id": "m3",
+    "item_zh": "scRNA-seq时间序列15天至5年，110个类器官（34新、76既往），424,720个细胞，标签转移映射",
+    "status": "covered",
+    "covered_by": "含110个单个类器官（34个新数据、76个既往数据）、424,720个细胞"
+   },
+   {
+    "id": "m4",
+    "item_zh": "DIALOGUE模块MCP1–5的Pearson r为−0.08、0.78、0.35、0.78、−0.72，MCP4作成熟评分",
+    "status": "covered",
+    "covered_by": "Pearson r依次为−0.08、0.78、0.35、0.78和−0.72"
+   },
+   {
+    "id": "m5",
+    "item_zh": "干预臂为自DIV70起的APM（BrainPhys加GlutaMax），对照为CDM4",
+    "status": "covered",
+    "covered_by": "自DIV70起改用活动许可培养基（APM，BrainPhys加GlutaMax）"
+   },
+   {
+    "id": "m6",
+    "item_zh": "1年时8个CDM4类器官均无网络爆发，9个APM全部有；APM在2年仍有爆发",
+    "status": "covered",
+    "covered_by": "1年时8个CDM4类器官无一出现网络爆发"
+   },
+   {
+    "id": "m7",
+    "item_zh": "电镜突触密度6个月无差异（P = 0.7），1年APM更高（P = 0.002）",
+    "status": "covered",
+    "covered_by": "6个月时突触密度无差异（P = 0.7）"
+   },
+   {
+    "id": "m8",
+    "item_zh": "兴奋性神经元成熟评分APM总体更高（P = 4.03×10−2），6个月不显著（P = 9.77×10−1），4个月P = 1.56×10−3",
+    "status": "covered",
+    "covered_by": "兴奋性神经元成熟评分在APM中总体更高（单侧F检验，P = 4.03×10−2）"
+   },
+   {
+    "id": "m9",
+    "item_zh": "胎脑时钟r = 0.54、P = 0.056未达显著；solo-WCGW稳定提示不由增殖驱动",
+    "status": "covered",
+    "covered_by": "胎儿脑时钟仅呈正向但未达显著的相关（r = 0.54，P = 0.056）"
+   },
+   {
+    "id": "m10",
+    "item_zh": "CDM4下神经元比例下降，5年仅余101个细胞的混合神经元簇",
+    "status": "covered",
+    "covered_by": "5年样本仅余101个细胞的小型混合神经元簇"
+   },
+   {
+    "id": "m11",
+    "item_zh": "三组SATB2免疫染色Kruskal–Wallis P = 0.0519，未达显著",
+    "status": "covered",
+    "covered_by": "Kruskal–Wallis P = 0.0519，未达显著"
+   },
+   {
+    "id": "m12",
+    "item_zh": "1年后免疫染色特异性下降，2–3年样本改用新鲜冷冻；异时嵌合成功率很低",
+    "status": "covered",
+    "covered_by": "1年后染色特异性下降，抗体解读受限"
+   }
+  ],
+  "title": "人脑皮层类器官体外培养5年，甲基化时钟预测年龄与培养时间相关（r = 0.88–0.90）",
+  "one_liner": "人脑皮层类器官培养至5年，Horvath与皮层甲基化时钟预测年龄与培养时间相关（r = 0.88–0.90，中位绝对误差7.25与20.04个月）。",
+  "datacard": {
+   "study_type": "临床前体外研究（人多能干细胞来源皮层类器官与嵌合类器官，Nature）",
+   "n": "scRNA-seq 110个单个类器官（34个新数据、76个既往数据），424,720个细胞；APM对CDM4：9个月SATB2各9个类器官，1年MEA为APM 9个、CDM4 8个；异时嵌合样本3,969个细胞，老单时嵌合3个重复，三组SATB2染色各n = 3",
+   "primary_endpoint": "无方案预设主要终点；核心读出为甲基化时钟预测的DNAm年龄与培养时间的Pearson相关及中位绝对误差",
+   "primary_endpoint_result": "Horvath泛组织时钟与皮层特异时钟：r = 0.88–0.90，中位绝对误差7.25和20.04个月；胎脑时钟r = 0.54，P = 0.056",
+   "control": "常规CDM4培养基；嵌合实验以老单时嵌合与9个月标准类器官为对照",
+   "intervention": "自DIV70起改用APM（BrainPhys加GlutaMax）；异时嵌合：9–12个月老祖细胞与DIV15年轻细胞共聚集",
+   "followup": "培养至5年（NeuN免疫染色见于5.8年）",
+   "statistics": "LMM、NBME、Wilcoxon秩和、Fisher精确检验、ANOVA、单侧F检验、似然比检验、Kruskal–Wallis；样本量未预先计算，未设盲",
+   "evidence_level": "全文",
+   "check_record": "读了Europe PMC全文PMC13581598的Abstract、Main、Results各小节、Discussion、Fig. 1–5图注与Methods"
+  },
+  "background": [
+   "人脑发育与成熟历时近二十年，出生后阶段的人类特异过程难以在动物模型中研究。人脑类器官提供了体外模型，但既有类器官大多只重现早期发育；此前一项研究将类器官培养至694天，仅用整体类器官的bulk RNA-seq和甲基化芯片分析。",
+   "不同细胞类型的长期存活能力差异明显，神经元尤其如此；除细胞存在外，还需确认神经元结构与环路活动能否在多年培养中保留。本研究将皮层类器官培养超过5年，整合单细胞转录组、全基因组甲基化、结构和功能数据，并用嵌合类器官检验祖细胞是否保留所经历时间的“记忆”。"
+  ],
+  "design": [
+   "这是一项临床前类器官研究，无预设主要终点，也没有按组间比较设计效能或预先计算样本量，亦未设盲。皮层类器官由多株人多能干细胞（如H1、11a、PGP1）按作者既往方案生成。WGBS覆盖3个月至5年的9个时间点。嵌合实验混合9–12个月老祖细胞与DIV15年轻细胞。",
+   "scRNA-seq时间序列自15天至5年，含110个单个类器官（34个新数据、76个既往数据）、424,720个细胞，经标签转移映射到人胎儿与出生后皮层参考数据。自DIV70起改用活动许可培养基（APM，BrainPhys加GlutaMax），对照为常规CDM4，读出含电镜与3D多电极阵列（MEA）。"
+  ],
+  "results": [
+   {
+    "subhead": "转录组对应人脑发育阶段",
+    "text": "转录层面，15天至2个月的类器官对应第一孕期胎脑，3至6个月主要对应第二孕期，9个月至5年逐步偏向晚期产前和出生后，出生后样特征在12个月后出现。DIALOGUE成熟模块MCP1–5与培养时间的Pearson r依次为−0.08、0.78、0.35、0.78和−0.72，其中MCP4被用作成熟评分。"
+   },
+   {
+    "subhead": "甲基化时钟与培养时间相关",
+    "text": "在表观遗传层面，WGBS覆盖3个月至5年的9个时间点。Horvath泛组织时钟与皮层特异时钟预测的DNAm年龄与培养时间密切相关（r = 0.88–0.90），中位绝对误差分别为7.25和20.04个月；胎儿脑时钟仅呈正向但未达显著的相关（r = 0.54，P = 0.056）。solo-WCGW位点甲基化保持稳定，提示这些变化不主要由细胞增殖驱动。"
+   },
+   {
+    "subhead": "APM保留神经元与突触",
+    "text": "常规CDM4下神经元比例随培养下降，5年样本仅余101个细胞的小型混合神经元簇。自DIV70改用APM后，9个月时SATB2+细胞增多（各9个类器官，LMM P = 2.4×10−5）。电镜显示6个月时突触密度无差异（P = 0.7），1年时APM更高（P = 0.002）；位于棘突上的突触占比为25%（CDM4）对52%（APM）（Fisher P = 9.5×10−8）。"
+   },
+   {
+    "subhead": "成熟评分与网络活动",
+    "text": "兴奋性神经元成熟评分在APM中总体更高（单侧F检验，P = 4.03×10−2）；分时间点，4个月P = 1.56×10−3，6个月P = 9.77×10−1，1年P = 3.86×10−6。3D MEA记录显示，1年时8个CDM4类器官无一出现网络爆发，9个APM类器官全部出现；2年的APM类器官仍有爆发，并可识别至少两个神经元亚群。"
+   },
+   {
+    "subhead": "老祖细胞跳过早期命运",
+    "text": "在人异时嵌合类器官中，9–12个月老祖细胞的后代中CPN占49.0%，而老单时嵌合的三个重复为0.55%、0.50%和0.02%（第3个为11个月），9个月标准类器官为1.1%；重新聚集后约2周内即产生。SATB2免疫染色比较三组（各n = 3），Kruskal–Wallis P = 0.0519，未达显著。"
+   }
+  ],
+  "mechanism_proven": [
+   "转录成熟评分、甲基化时钟年龄与培养时间的相关性由实验直接测得，属相关性证据。APM组在9个月时SATB2+细胞增多，1年时突触密度与棘突突触占比升高，并保留网络爆发；活动是否为因果中介，本研究未用干预实验检验。",
+   "异时嵌合实验直接显示：老祖细胞与年轻细胞共聚集后，其成熟评分低于老单时培养的祖细胞，后代CPN占49.0%，而同一嵌合体内年轻来源细胞只产生早期细胞类型。这提示老祖细胞可响应年轻细胞的诱导信号。"
+  ],
+  "mechanism_inferred": [
+   "作者推测，老祖细胞保留了对已完成发育步骤的“记忆”，接触早期诱导信号时仍跳过早期后代，直接产生通常需培养数月的兴奋性神经元。作者还推测，促进自发活动有利于神经元存活与成熟，加入感觉诱发活动和非神经组织等体内因素可能进一步改善类器官。"
+  ],
+  "limitations": [
+   "CDM4下5年样本仅余101个细胞的小型混合神经元簇，未能细分；1年后染色特异性下降，抗体解读受限，2至3年样本需改用新鲜冷冻方案；异时嵌合成功率很低。",
+   "1.5年每组仅n = 2，60个月scRNA-seq仅n = 2，样本量未预先计算；MEA中CDM4类器官在记录前2周才换入APM，两组培养史并不一致。",
+   "9个月成熟评分差异P = 5.88×10−2，正文却称除6个月外均显著；SATB2三组比较P = 0.0519；胎脑时钟P = 0.056；皮层时钟中位绝对误差20.04个月；49.0%与对照间未做检验。",
+   "结果均来自体外类器官，未与出生后人脑组织做直接功能比对，外推到体内成熟需谨慎。"
+  ],
+  "significance": [
+   "若这些结果能在更多供体和更大样本中重复，长期培养的类器官可能成为研究人类出生后皮层成熟的体外平台，并用于检验时间记录机制。APM作为培养条件，可能为需要保持兴奋性神经元的长期实验提供参考。",
+   "祖细胞时间记忆的结果提示，类器官可借异时嵌合设计探测命运潜能，但目前这只是体外观察。作者还提到，进一步整合感觉诱发活动与非神经组织，是改进类器官的方向。目前没有涉及患者或治疗终点的数据。"
+  ],
+  "citation": "Faravelli I, Antón-Bolaños N, Wei A, Faits T, Kumar AS, Andreadis S, et al. Human brain organoids record the passage of time over multiple years. Nature. 2026. https://doi.org/10.1038/s41586-026-10877-x",
+  "data_points": [
+   {
+    "value": "r = 0.88–0.90",
+    "meaning": "Horvath与皮层时钟预测DNAm年龄与培养时间的相关",
+    "source_quote": "predicted DNA methylation age (DNAm age) tracked closely with culture time ( r = 0.88–0.90; median absolute error: 7.25 and 20.04 months, respectively)",
+    "location": "Results: Cortical organoids age appropriately in culture; Fig. 1j,k"
+   },
+   {
+    "value": "7.25和20.04个月",
+    "meaning": "两个时钟的中位绝对误差",
+    "source_quote": "median absolute error: 7.25 and 20.04 months, respectively",
+    "location": "Results: Cortical organoids age appropriately in culture"
+   },
+   {
+    "value": "r = 0.54，P = 0.056",
+    "meaning": "胎儿脑时钟与培养时间的相关",
+    "source_quote": "showed positive relationship with culture duration ( r = 0.54, P = 0.056; Extended Data Fig. 2h )",
+    "location": "Results: Cortical organoids age appropriately in culture"
+   },
+   {
+    "value": "110",
+    "meaning": "scRNA-seq类器官总数",
+    "source_quote": "n = 110 organoids in total, from 34 new datasets and 76 previously generated datasets; n = 424,720 cells",
+    "location": "Results: Cortical organoids age appropriately in culture"
+   },
+   {
+    "value": "34个新数据、76个既往数据",
+    "meaning": "新生成与既往数据集数量",
+    "source_quote": "from 34 new datasets and 76 previously generated datasets",
+    "location": "Results: Cortical organoids age appropriately in culture"
+   },
+   {
+    "value": "424,720",
+    "meaning": "scRNA-seq细胞总数",
+    "source_quote": "n = 424,720 cells",
+    "location": "Results: Cortical organoids age appropriately in culture"
+   },
+   {
+    "value": "5年",
+    "meaning": "类器官培养时长",
+    "source_quote": "Here we develop human brain organoids for 5 years in culture",
+    "location": "Abstract"
+   },
+   {
+    "value": "15天至2个月",
+    "meaning": "早期类器官对应第一孕期胎脑",
+    "source_quote": "early organoids (15 days to 2 months) mapped to first-trimester human fetal brains",
+    "location": "Results: Cortical organoids age appropriately in culture"
+   },
+   {
+    "value": "3至6个月",
+    "meaning": "主要对应第二孕期",
+    "source_quote": "3 to 6 month organoids predominantly mapped to the second trimester",
+    "location": "Results: Cortical organoids age appropriately in culture"
+   },
+   {
+    "value": "9个月至5年",
+    "meaning": "逐步偏向晚期产前和出生后",
+    "source_quote": "the later stages (9 months to 5 years) progressively shifted towards mapping to late prenatal and postnatal ages",
+    "location": "Results: Cortical organoids age appropriately in culture"
+   },
+   {
+    "value": "12个月后",
+    "meaning": "出生后样特征出现时间",
+    "source_quote": "postnatal-like signatures emerging in organoids after 12 months in culture",
+    "location": "Results: Cortical organoids age appropriately in culture"
+   },
+   {
+    "value": "−0.08、0.78、0.35、0.78和−0.72",
+    "meaning": "MCP1–5模块得分与培养时间的Pearson r",
+    "source_quote": "Pearson’s r = −0.08, 0.78, 0.35, 0.78 and −0.72 for multicellular programs (MCPs) 1–5, respectively",
+    "location": "Results: Cortical organoids age appropriately in culture"
+   },
+   {
+    "value": "9个时间点，3个月至5年",
+    "meaning": "WGBS覆盖范围",
+    "source_quote": "Whole-genome bisulfite sequencing (WGBS) of single organoids at nine timepoints from 3 months to 5 years in culture",
+    "location": "Results: Cortical organoids age appropriately in culture"
+   },
+   {
+    "value": "DIV70",
+    "meaning": "改用APM的起始时间",
+    "source_quote": "cultured organoids in APM starting from day in vitro 70 (DIV70",
+    "location": "Results: APM medium maintains excitatory neurons"
+   },
+   {
+    "value": "9个月；各9个类器官；P = 2.4×10−5",
+    "meaning": "9个月SATB2+细胞APM对CDM4",
+    "source_quote": "linear mixed model (LMM), P = 2.4 × 10 −5",
+    "location": "Results: APM medium maintains excitatory neurons"
+   },
+   {
+    "value": "101个细胞",
+    "meaning": "5年样本中混合神经元簇大小",
+    "source_quote": "due to the small size of this cluster (101 cells), we did not attempt further subclustering",
+    "location": "Methods: Cluster annotation and data integration"
+   },
+   {
+    "value": "P = 0.7；P = 0.002；6个月；1年",
+    "meaning": "电镜突触密度APM对CDM4",
+    "source_quote": "while no statistically significant differences in synaptic density were observed at 6 months (Wilcoxon rank-sum test, P = 0.7), at 1 year, APM organoids exhibited higher synaptic densities ( P = 0.002)",
+    "location": "Results: APM medium maintains excitatory neurons"
+   },
+   {
+    "value": "25%对52%",
+    "meaning": "1年时棘突上突触占比，CDM4对APM",
+    "source_quote": "25% versus 52% in CDM4 and APM, respectively",
+    "location": "Results: APM medium maintains excitatory neurons"
+   },
+   {
+    "value": "P = 9.5×10−8",
+    "meaning": "1年棘突突触占比Fisher检验",
+    "source_quote": "P = 9.5 × 10 −8 , OR = 4.67",
+    "location": "Results: APM medium maintains excitatory neurons"
+   },
+   {
+    "value": "P = 4.03×10−2",
+    "meaning": "兴奋性神经元成熟评分APM总体更高的单侧F检验",
+    "source_quote": "one-sided F test, P = 4.03× 10 −2",
+    "location": "Results: APM medium maintains excitatory neurons"
+   },
+   {
+    "value": "4个月P = 1.56×10−3；6个月P = 9.77×10−1",
+    "meaning": "分时间点似然比检验",
+    "source_quote": "4 months, 1.56 × 10 −3 ; 6 months, 9.77 × 10 −1",
+    "location": "Results: APM medium maintains excitatory neurons"
+   },
+   {
+    "value": "1年P = 3.86×10−6",
+    "meaning": "12个月时间点成熟评分差异",
+    "source_quote": "12 months, 3.86 × 10 −6",
+    "location": "Results: APM medium maintains excitatory neurons"
+   },
+   {
+    "value": "P = 5.88×10−2",
+    "meaning": "9个月成熟评分差异的似然比检验",
+    "source_quote": "9 months, 5.88 × 10 −2",
+    "location": "Results: APM medium maintains excitatory neurons"
+   },
+   {
+    "value": "8个中0个；9个中9个",
+    "meaning": "1年网络爆发：CDM4与APM",
+    "source_quote": "organoids cultured in CDM4 for 1 year consistently failed to exhibit any network bursts (8 out of 8), whereas all APM organoids at 1 year exhibited robust network bursts (9 out of 9)",
+    "location": "Results: APM medium maintains excitatory neurons"
+   },
+   {
+    "value": "2年",
+    "meaning": "APM类器官仍有爆发活动",
+    "source_quote": "recordings from APM organoids that had been maintained in culture for 2 years still showed active bursting",
+    "location": "Results: APM medium maintains excitatory neurons"
+   },
+   {
+    "value": "至少两个",
+    "meaning": "2年APM类器官爆发中的神经元亚群数",
+    "source_quote": "at least two distinct neuronal subgroups could be identified during bursts",
+    "location": "Results: APM medium maintains excitatory neurons"
+   },
+   {
+    "value": "49.0%；0.55%、0.50%、0.02%；11个月",
+    "meaning": "异时嵌合老源后代CPN比例及老单时三个重复",
+    "source_quote": "derivatives of the old cells in heterochronic organoids showed a substantially higher proportion of CPNs (49.0%) compared with both the monochronic (old) group (replicate 1 = 0.55%, replicate 2 = 0.50%, replicate 3 (11 months) = 0.02%)",
+    "location": "Results: Progenitors record and recall developmental time; Fig. 5i"
+   },
+   {
+    "value": "1.1%",
+    "meaning": "9个月标准类器官CPN比例",
+    "source_quote": "and 9-month standard organoids (CPNs; 1.1%)",
+    "location": "Results: Progenitors record and recall developmental time"
+   },
+   {
+    "value": "约2周",
+    "meaning": "老祖细胞重新聚集后产生CPN的时间",
+    "source_quote": "in only 2 weeks after reaggregation, the old progenitors can generate late-stage neurons (CPNs)",
+    "location": "Results: Progenitors record and recall developmental time"
+   },
+   {
+    "value": "9–12个月；DIV15",
+    "meaning": "老祖细胞与年轻细胞来源",
+    "source_quote": "old cells (from organoids collected at 9–12 months), or a combination of old and young (from organoids at DIV15) cells",
+    "location": "Results: Progenitors record and recall developmental time"
+   },
+   {
+    "value": "P = 0.0519；各n = 3",
+    "meaning": "三组SATB2免疫染色Kruskal–Wallis",
+    "source_quote": "Kruskal–Wallis rank-sum tests were used to compare the differences between the groups; P = 0.0519",
+    "location": "Fig. 5 legend"
+   },
+   {
+    "value": "3,969个细胞",
+    "meaning": "异时样本细胞数",
+    "source_quote": "UMAP plot showing cells from a heterochronic sample ( n = 3,969 cells)",
+    "location": "Fig. 5 legend"
+   },
+   {
+    "value": "694天",
+    "meaning": "此前研究的最长培养时间",
+    "source_quote": "One report cultured organoids for up to 694 days",
+    "location": "Main"
+   },
+   {
+    "value": "近二十年",
+    "meaning": "人脑发育成熟时长",
+    "source_quote": "spans nearly two decades of life",
+    "location": "Abstract"
+   },
+   {
+    "value": "5.8年",
+    "meaning": "NeuN染色检出的最长培养时间",
+    "source_quote": "Cells expressing the neuronal marker NeuN were detected by immunohistochemistry at 2, 3, 4 and 5.8 years in culture",
+    "location": "Results: APM medium maintains excitatory neurons"
+   },
+   {
+    "value": "1年后；2至3年",
+    "meaning": "染色特异性下降与新鲜冷冻方案适用年龄",
+    "source_quote": "At later timepoints (>1 year), we consistently observed a reduction in staining specificity",
+    "location": "Methods: Immunohistochemistry"
+   },
+   {
+    "value": "2至3年样本改用新鲜冷冻",
+    "meaning": "免疫染色方案变更",
+    "source_quote": "For the 2–3 year organoid immunohistochemistry, we used the fresh-frozen protocol described below.",
+    "location": "Methods: Immunohistochemistry"
+   },
+   {
+    "value": "n = 2；18个月",
+    "meaning": "1.5年每组类器官数",
+    "source_quote": "and 18 months ( n = 2 per treatment)",
+    "location": "Fig. 3 legend"
+   },
+   {
+    "value": "60个月 n = 2",
+    "meaning": "5年scRNA-seq类器官数",
+    "source_quote": "60 months ( n = 2; 2,054 cells)",
+    "location": "Methods: Cluster annotation and data integration"
+   },
+   {
+    "value": "记录前2周",
+    "meaning": "MEA对照CDM4类器官换入APM的时间",
+    "source_quote": "cultured in conventional medium (CDM4) and transferred to APM 2 weeks before recording",
+    "location": "Results: APM medium maintains excitatory neurons"
+   },
+   {
+    "value": "H1、11a、PGP1",
+    "meaning": "1年电镜所用遗传背景",
+    "source_quote": "(H1, 11a and PGP1)",
+    "location": "Results: APM medium maintains excitatory neurons"
+   }
+  ],
+  "steps": [
+   "培养皮层类器官至5年，转录组与甲基化定年",
+   "自DIV70改用APM，1年时仍有网络爆发",
+   "老祖细胞与DIV15年轻细胞共聚集",
+   "老源后代中CPN占49.0%"
+  ],
+  "figure_caption": "人脑皮层类器官培养至5年，以转录组与甲基化时钟定年；自DIV70改用APM后，1年时类器官仍保留网络爆发；老祖细胞与年轻细胞共聚集后产生晚期CPN。示意图由 AI 生成，依据原文结果绘制，非期刊原图，不代表分子比例",
+  "image_story": {
+   "stages": [
+    {
+     "visual_en": "A row of cortical organoid spheres of increasing size and age, with a methylation helix strand beside them.",
+     "source_quote": "Whole-genome bisulfite sequencing (WGBS) of single organoids at nine timepoints from 3 months to 5 years in culture"
+    },
+    {
+     "visual_en": "A mid-green organoid pierced by a fine needle electrode array, with bursts of synchronized neuron firing rendered as glowing green rings.",
+     "source_quote": "organoids cultured in CDM4 for 1 year consistently failed to exhibit any network bursts (8 out of 8), whereas all APM organoids at 1 year exhibited robust network bursts (9 out of 9)"
+    },
+    {
+     "visual_en": "A chimeric sphere in which pale grey-green old progenitor cells mix with small light young cells, and a large terracotta cluster of late neurons emerges from the old cells.",
+     "source_quote": "Thus, in only 2 weeks after reaggregation, the old progenitors can generate late-stage neurons (CPNs), while their young progenitor counterparts produce much earlier cell fates within the same chimeric organoid."
+    }
+   ],
+   "key_element_en": "a large solid terracotta cluster of late-born callosal projection neurons emerging from the old progenitor cells in the chimeric organoid"
+  },
+  "image_subject_en": "A left-to-right process in three stages, drawn large. Stage 1 (left): a row of four semi-realistic 3D cortical organoid spheres in pale mint and mid green, growing progressively larger from left to right, with a deep green double-helix DNA strand carrying small light-grey methyl bead markers curling beside them. Stage 2 (centre): one mid-green organoid sphere, cut open to show a layered interior of deep green and pale mint cells, pierced by a grid of thin light grey-green needle electrodes; faint concentric rings of pale mint light pulse outward from clustered neurons to suggest synchronized network bursts. Stage 3 (right): a chimeric sphere built from two cell populations, larger light grey-green old progenitor cells and small pale mint young cells, mixed together; from the old progenitor cells a single cluster of rounded neurons emerges, drawn as one very large, solid, boldly filled terracotta #C0492F mass that dominates the right third of the frame. Soft studio lighting, clean pale background #EEF2F0, journal-quality semi-realistic 3D scientific illustration, subject filling about 72% of the frame. Only the neuron cluster is terracotta.",
+  "card_subject_en": "A single compact subject: a large human cortical organoid drawn as a smooth mid-green sphere cut open to reveal a layered interior of deep green and pale mint cells, resting beside a smaller light grey-green sphere of immature cells. From the cut face of the large organoid emerges one very large, solid, boldly filled terracotta #C0492F cluster of rounded neurons, the only terracotta element. Semi-realistic 3D scientific illustration, soft studio lighting, clean pale #EEF2F0 background, subject large and centred on a golden-ratio line, no text, no numbers, no symbols, no charts.",
+  "figure_labels": {
+   "heads": [
+    "多年培养与定年",
+    "APM 维持神经元",
+    "老祖细胞跳过早期"
+   ],
+   "callouts": [
+    {
+     "t": "皮层类器官\n培养至5年",
+     "stage": 1,
+     "entity_en": "row of cortical organoid spheres of increasing size"
+    },
+    {
+     "t": "时钟年龄随培养时间\nr = 0.88–0.90",
+     "stage": 1,
+     "entity_en": "methylation helix strand"
+    },
+    {
+     "t": "自DIV70改用APM\n对照CDM4",
+     "stage": 2,
+     "entity_en": "organoid pierced by needle electrode array"
+    },
+    {
+     "t": "1年网络爆发\nAPM 9个全部有",
+     "stage": 2,
+     "entity_en": "rings of synchronized network bursts"
+    },
+    {
+     "t": "9–12个月老祖细胞\n+DIV15年轻细胞",
+     "stage": 3,
+     "entity_en": "old progenitor cells mixed with young cells in chimeric sphere"
+    },
+    {
+     "t": "老源后代CPN 49.0%",
+     "stage": 3,
+     "entity_en": "terracotta cluster of late neurons"
+    },
+    {
+     "t": "祖细胞时间记忆\n（作者推测）",
+     "stage": 3,
+     "entity_en": "old progenitor cells"
+    }
+   ],
+   "facts": [
+    [
+     "**5年** 培养时间",
+     "110个类器官 scRNA-seq"
+    ],
+    [
+     "1年网络爆发",
+     "CDM4 8个均无",
+     "APM 9个全部有"
+    ],
+    [
+     "异时嵌合 CPN **49.0%**",
+     "老单时 0.55/0.50/0.02%"
+    ]
+   ],
+   "note": "CPN比例为描述性，未做统计检验。示意图由 AI 生成，非期刊原图。"
+  },
+  "chart": {
+   "justified": true,
+   "title_zh": "嵌合与标准类器官中CPN占比（描述性）",
+   "unit": "%",
+   "figure_source": "Fig. 5i",
+   "note": "描述性比较，未做统计检验；异时组为单个样本（3,969个细胞）；老单时第3个重复为11个月样本。",
+   "values": [
+    {
+     "label_zh": "异时嵌合（老源部分）",
+     "value": 49.0,
+     "n": "1个样本，3,969个细胞",
+     "source_quote": "derivatives of the old cells in heterochronic organoids showed a substantially higher proportion of CPNs (49.0%)"
+    },
+    {
+     "label_zh": "老单时嵌合 重复1",
+     "value": 0.55,
+     "n": "1个重复",
+     "source_quote": "replicate 1 = 0.55%"
+    },
+    {
+     "label_zh": "老单时嵌合 重复2",
+     "value": 0.5,
+     "n": "1个重复",
+     "source_quote": "replicate 2 = 0.50%"
+    },
+    {
+     "label_zh": "老单时嵌合 重复3（11个月）",
+     "value": 0.02,
+     "n": "1个重复",
+     "source_quote": "replicate 3 (11 months) = 0.02%"
+    },
+    {
+     "label_zh": "9个月标准类器官",
+     "value": 1.1,
+     "n": "标准9个月类器官",
+     "source_quote": "and 9-month standard organoids (CPNs; 1.1%)"
+    }
+   ]
+  }
+ },
+ "images": {
+  "mech_raw": "c1-org-1_mech_raw_r2.png",
+  "mech": "c1-org-1_mech_r2.png",
+  "card": "c1-org-1_card_r2.png",
+  "mech_raw_source": "c1-org-1_mech.png",
+  "card_source": "c1-org-1_cardsrc.png",
+  "card_placement": {
+   "axis": "v",
+   "line": 0.382
+  },
+  "generator": "gpt-image-2 (gen3.py), text-free, house green palette + terracotta"
+ },
+ "card_title": "皮层类器官培养5年，甲基化时钟与时间相关(r=0.88–0.90)",
+ "card_caption": "剖开的绿色类器官，切面浮现砖红色神经元。",
+ "mech_dropped_callouts": [
+  "时钟年龄随培养时间\nr = 0.88–0.90",
+  "老源后代CPN 49.0%"
+ ],
+ "card_text_meta": {
+  "model": "gemini-3.1-pro-preview (OpenAI out of credits, Claude at usage limit)",
+  "gemini_caption_check": {
+   "match": true,
+   "problem": ""
+  },
+  "caption_v1": null
+ },
+ "files": {
+  "checks": "c1-org-1_checks_r2.json",
+  "mech_raw": "c1-org-1_mech_raw_r2.png",
+  "mech": "c1-org-1_mech_r2.png",
+  "card": "c1-org-1_card_r2.png",
+  "final_md": "c1-org-1_final_r2.md",
+  "final_json": "c1-org-1_final_r2.json"
+ },
+ "superseded_early_files": "c1-org-1_final.json/.md, c1-org-1_checks.json, c1-org-1_mech_raw.png, c1-org-1_card.png (first assembly, superseded by the _r2 files)"
+}

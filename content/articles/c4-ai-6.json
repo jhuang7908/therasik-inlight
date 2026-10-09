@@ -1,0 +1,542 @@
+{
+ "id": "c4-ai-6",
+ "round": "r4",
+ "text_from": "c4-ai-6_final_r3.json (unchanged in r4; images only)",
+ "drafter_of_edits": "grok-bot (self)",
+ "base_drafter_model": "gpt-5.5-2026-04-23",
+ "source_draft": "work/r3b/c4-ai-6/rw_c4-ai-6_draft_r3fix2.json",
+ "edits_r3": [
+  "callout 'F4/80+巨噬'->'巨噬细胞积累' (marker number 80 parsed as unregistered label number)",
+  "mechanism_proven[1]: '证明了各环节'->'实验支持各环节…整体表述为提示性模型；死亡受体机制主要由体外阻断支持'"
+ ],
+ "status": "published-ready",
+ "status_reasons": [],
+ "preprint": false,
+ "writer_tags": [
+  "GPR15-GPR15L",
+  "CD8+调节性T细胞",
+  "炎症性肠病",
+  "DSS结肠炎",
+  "FasL-TWEAK"
+ ],
+ "tags_note": "editor related-field tags prepended; writer tags trimmed to 6 (metadata only)",
+ "article": {
+  "tier": "deep",
+  "field": "自身免疫与移植免疫",
+  "tags": [
+   "GPR15-GPR15L",
+   "CD8+调节性T细胞",
+   "炎症性肠病",
+   "DSS结肠炎",
+   "FasL-TWEAK"
+  ],
+  "primary_endpoint_basis": "本文不是预设主要终点的临床试验。作为临床前与人类遗传机制研究，核心读出按摘要与正文一致、且有统计检验的主线确定为：GPR15缺陷导致肠黏膜CD8+ TIGR/CD8+ T细胞归巢缺陷，并在2.5% DSS结肠炎中加重炎症，同时CD8+ TIGR可经FasL/TWEAK杀伤巨噬细胞。标题数字42%来自Results“Potential wider role of CD8+ TIGR in IBD”中散发性UC数据集：CD8+ TIGR cells were reduced by 42% among CD8+ T cells；正文和图注说明该图采用two-sided Mann–Whitney U-test。",
+  "comparison_design": "非临床比较研究；Methods明示小鼠实验“Sample sizes were not predetermined by statistical calculation”，随机分组但非按组间效能设计，研究者未按基因型盲法，组织学图像分析对基因型盲法。关键对比在图注中给出统计检验：Fig.2c用two-sided Mann–Whitney U-test，Fig.4用two-way ANOVA、Tukey、Mann–Whitney或t-test，Fig.5用Kruskal–Wallis、t-test、two-way ANOVA或ANOVA。遗传关联队列使用logistic regression、Wald tests和FDR校正。",
+  "untested_comparisons": [
+   "讨论中“most of the patients in our study have responded to anti-TNF therapy”未给患者数和正式比较，不进入标题。",
+   "DSS体重、炎症、结肠缩短等文字结果未在正文给出具体点估计，标题不写成定量优劣。",
+   "FasL与TWEAK联合阻断“comparable with anti-FasL alone”来自体外抑制实验，不写成疗法比较。",
+   "散发性Crohn’s disease终末回肠CD8+ TIGR显著减少未给百分比，不进入标题数字。"
+  ],
+  "number_basis_note": "未发现摘要与正文核心数字冲突。正文、机制图和数据图候选均采用Results/Methods与图注口径；42%仅用于散发性UC scRNA-seq数据集，DSS剂量与流程采用Methods口径2.5%、6天后换普通水6–7天。",
+  "must_cover": [
+   {
+    "id": "m1",
+    "item_zh": "人类发现队列为4个无关家系中7名已诊断IBD个体，多数病例幼年起病。",
+    "status": "covered",
+    "covered_by": "人类发现部分从4个无关家系的7名IBD个体开始"
+   },
+   {
+    "id": "m2",
+    "item_zh": "一个遗传学 caveat 是Y132S过于常见，不符合完全外显单基因等位基因（MAF=0.0012，1,916名杂合子、20名纯合子），作者解释为低功能且外显不全。",
+    "status": "covered",
+    "covered_by": "Y132S的群体频率限制单基因解释"
+   },
+   {
+    "id": "m3",
+    "item_zh": "土耳其/卡塔尔家系队列和伊朗队列中，在647人（74例IBD）与1,692人（109例IBD）里，18个罕见单等位GPR15变异（MAF<0.001）与IBD显著相关。",
+    "status": "covered",
+    "covered_by": "土耳其/卡塔尔家系队列有647人，其中74例IBD"
+   },
+   {
+    "id": "m4",
+    "item_zh": "散发性IBD中，溃疡性结肠炎结肠活检CD8+ TIGR在CD8+ T细胞中减少42%，Crohn病终末回肠活检也显著减少。",
+    "status": "covered",
+    "covered_by": "散发性UC中CD8+ TIGR减少42%，Crohn病终末回肠也显著减少"
+   },
+   {
+    "id": "m5",
+    "item_zh": "患者T细胞对GPR15L呈基因剂量依赖的迁移缺陷；在Pt 1.1中重构WT GPR15恢复表面表达和迁移，D306N和Q281X不能恢复或仅极少恢复。",
+    "status": "covered",
+    "covered_by": "功能实验把变异与归巢缺陷连接起来"
+   },
+   {
+    "id": "m6",
+    "item_zh": "患者活检中的中心归巢缺陷是上皮和固有层CD8+ T细胞丢失，表明GPR15–GPR15L轴引导的是CD8+而非CD4+ Treg区室。",
+    "status": "covered",
+    "covered_by": "组织层面的核心读出不是CD4+ Treg缺口"
+   },
+   {
+    "id": "m7",
+    "item_zh": "人类双等位GPR15患者没有预期的CD4+ Treg归巢缺陷；十二指肠和结肠活检中FOXP3+ CD4+ Treg比例较高。",
+    "status": "covered",
+    "covered_by": "相反，3名患者十二指肠和结肠活检中"
+   },
+   {
+    "id": "m8",
+    "item_zh": "DSS结肠炎模型采用饮水2.5% DSS 6天，随后普通水6–7天。",
+    "status": "covered",
+    "covered_by": "DSS模型按Methods给2.5% DSS饮水6天"
+   },
+   {
+    "id": "m9",
+    "item_zh": "2.5% DSS后，Gpr15−/−小鼠体重下降更快、炎症更重、结肠缩短更明显，Gpr15+/−小鼠呈中间改变。",
+    "status": "covered",
+    "covered_by": "在2.5% DSS后，Gpr15−/−小鼠体重下降更快"
+   },
+   {
+    "id": "m10",
+    "item_zh": "条件性删除将保护作用定位到CD8+ T细胞而非FOXP3+ Treg：Gpr15fl/fl Cd8cre加重DSS结肠炎，而Gpr15fl/fl Foxp3cre没有加重。",
+    "status": "covered",
+    "covered_by": "条件敲除进一步定位到CD8+ T细胞"
+   },
+   {
+    "id": "m11",
+    "item_zh": "CD8+ TIGR丢失与炎性巨噬细胞积累而非树突细胞扩增相关：F4/80+巨噬细胞增加，CD103+树突细胞未增加，NOS2/CD206激活强。",
+    "status": "covered",
+    "covered_by": "免疫细胞读出指向巨噬细胞，而不是树突细胞扩增"
+   },
+   {
+    "id": "m12",
+    "item_zh": "活化CD8+ TIGR通过死亡受体通路杀伤巨噬细胞：阻断FasL或TWEAK降低杀伤，联合阻断与单用抗FasL相当，提示FasL占主导。",
+    "status": "covered",
+    "covered_by": "体外共培养显示：阻断FasL或TWEAK降低杀伤"
+   }
+  ],
+  "title": "GPR15归巢轴定位肠道CD8调节T细胞，散发性UC减少42%",
+  "one_liner": "人类遗传、活检和小鼠DSS模型显示，GPR15引导CD8+TIGR结肠归巢并限制肠炎；散发性UC结肠活检中该群体减少42%。",
+  "datacard": {
+   "study_type": "人类遗传学、队列关联、单细胞组学与小鼠机制研究",
+   "n": "发现队列4个无关家系7名IBD个体；关联队列647人（74例IBD）和1,692人（109例IBD）；主要小鼠实验多为n=11/组",
+   "control": "健康对照、无IBD对照、WT或Gpr15fl/fl小鼠、CD8+脾T细胞、PBS脂质体等",
+   "intervention": "GPR15变异功能重构、GPR15L迁移实验、2.5% DSS结肠炎、CD8或Foxp3条件性Gpr15删除、FasL/TWEAK阻断",
+   "followup": "DSS饮水6天后普通水6–7天；部分病理读出第9天或第10天；过继转移2周",
+   "primary_endpoint": "GPR15缺陷是否造成肠黏膜CD8+ TIGR/CD8+ T细胞归巢缺陷并削弱对DSS结肠炎和巨噬细胞炎症的控制",
+   "primary_endpoint_result": "UC结肠活检中CD8+ TIGR在CD8+ T细胞内减少42%（HC n=8，UC n=7，two-sided Mann–Whitney U-test）；2.5% DSS后Gpr15−/−小鼠较WT体重下降、炎症和结肠缩短加重，Gpr15+/−居中",
+   "statistics": "小鼠样本量未按统计学预设；图注报告two-way ANOVA、one-way ANOVA、Kruskal–Wallis、Mann–Whitney U-test、t-test、Wald tests和FDR校正等",
+   "safety": "小鼠>25%初始体重下降即按预设人道终点处死；患者治疗反应为讨论信息，非干预安全性试验",
+   "evidence_level": "全文",
+   "check_record": "全文来源为Europe PMC fullTextXML PMC13518229；材料包含Abstract、Results、Methods、Figure captions、Discussion与Limitations"
+  },
+  "background": [
+   "炎症性肠病可由遗传与环境共同驱动，早发病例尤其适合寻找单基因线索。已有超过90个基因与早发IBD相关，但GPR15在人肠道免疫稳态中的具体作用仍不清楚；它既被认为参与小鼠CD4+ Treg或效应T细胞归巢，也被描述为GPR15L响应受体。",
+   "本文的切口是把早发IBD家系、患者变异功能、小鼠归巢和结肠炎模型串联起来。关键问题不是泛泛证明GPR15“抗炎”，而是确认它把哪一类T细胞带到结肠黏膜，以及这些细胞如何限制损伤后的髓系炎症。"
+  ],
+  "design": [
+   "人类发现部分从4个无关家系的7名IBD个体开始，结合WES寻找罕见蛋白改变变异；多数患者幼年起病。研究随后在土耳其/卡塔尔家系队列、伊朗队列及AoU等资料中做GPR15变异关联，并用293T、HeLa、CHO-K1、Jurkat和患者T细胞检测表面表达、Ca2+通量与GPR15L迁移。",
+   "机制部分用患者活检、公开和自建scRNA-seq、Gpr15−/−与条件敲除小鼠、过继转移和肠类器官共培养验证归巢。DSS模型按Methods给2.5% DSS饮水6天，再给普通水6–7天；样本量未按统计学计算预设，关键组间差异按图注统计检验。"
+  ],
+  "results": [
+   {
+    "subhead": "变异关联IBD",
+    "text": "土耳其/卡塔尔家系队列有647人，其中74例IBD；伊朗队列有1,692人，其中109例IBD。与无IBD对照比较，作者找到18个罕见单等位GPR15变异，MAF<0.001，且与IBD显著相关。发现队列还显示双等位携带者3/4、单等位携带者4/10出现临床表现，提示外显不全。"
+   },
+   {
+    "subhead": "变异损伤归巢",
+    "text": "功能实验把变异与归巢缺陷连接起来。WT和F159I在CHO-K1中表面表达最高，D306N、Y132S和Y132S/F159I下降，Q281X和Y215X缺失；GPR15L诱导的Ca2+内流总体随表面表达降低，但F159I是例外。患者T细胞向GPR15L迁移呈WT/M降低、M/M进一步降低；Pt 1.1中WT GPR15可恢复表面表达和迁移，D306N、Q281X最少或不能救回。"
+   },
+   {
+    "subhead": "缺口指向CD8",
+    "text": "组织层面的核心读出不是CD4+ Treg缺口。相反，3名患者十二指肠和结肠活检中FOXP3+ Treg/CD4+ T细胞比例较高；结肠活检显示CD8+ T细胞在上皮和固有层均明显减少。因此，GPR15–GPR15L轴在人类主要引导一类结肠CD8+ T细胞，而非CD4+ Treg区室。"
+   },
+   {
+    "subhead": "DSS定位保护细胞",
+    "text": "在2.5% DSS后，Gpr15−/−小鼠体重下降更快、炎症更重、结肠缩短更明显，Gpr15+/−表现为中间改变。条件敲除进一步定位到CD8+ T细胞：Gpr15fl/fl Cd8cre加重DSS结肠炎，而Gpr15fl/fl Foxp3cre未加重。图4主要小鼠组为n=11/组，并按ANOVA或Mann–Whitney等检验。"
+   },
+   {
+    "subhead": "巨噬细胞被杀伤",
+    "text": "免疫细胞读出指向巨噬细胞，而不是树突细胞扩增。DSS第3天，Gpr15−/−结肠F4/80+巨噬细胞增加，CD103+树突细胞未增加；第5天巨噬细胞NOS2和CD206染色强。体外共培养显示：阻断FasL或TWEAK降低杀伤，联合阻断与单用抗FasL相当，提示FasL占主导。散发性UC中CD8+ TIGR减少42%，Crohn病终末回肠也显著减少。"
+   }
+  ],
+  "mechanism_proven": [
+   "原文直接证明了多种有害GPR15变异降低受体表面表达、Ca2+信号和GPR15L趋化，但F159I在表面表达和迁移上是例外；患者T细胞与Jurkat、CHO-K1结果一致，Pt 1.1的WT GPR15重构可救回迁移，而D306N和Q281X不能。患者活检和Gpr15−/−小鼠共同显示结肠CD8+ T细胞缺失，CD4+ FOXP3+ Treg未显示同向缺陷。",
+   "实验支持各环节，但原文把“CD8+ TIGR经FasL/TWEAK杀伤炎性巨噬细胞以防结肠炎”整体表述为提示性模型：2.5% DSS后Gpr15−/−结肠炎加重，CD8特异性而非Foxp3特异性删除复制该表型；F4/80+巨噬细胞积累且NOS2/CD206强阳性。体外活化CD8+ TIGR直接杀伤LPS激活巨噬细胞，阻断FasL或TWEAK降低杀伤，死亡受体机制主要由体外阻断支持。"
+  ],
+  "mechanism_inferred": [
+   "作者推测，CD8+ TIGR减少可能在散发性UC和Crohn病中削弱局部对巨噬细胞驱动炎症的约束；CD8+ TIGR的TCR可能识别自身、饮食或微生物来源抗原，但这些抗原未被本文确定。作者还提出，增强GPR15通路或控制致病性巨噬细胞活性，可能成为IBD治疗方向。"
+  ],
+  "limitations": [
+   "第一，遗传外推受外显不全限制。Y132S的群体频率限制单基因解释：MAF=0.0012，在gnomAD v.4.1.1中有1,916名杂合子和20名纯合子，作者因此把它解释为低功能等位基因，而不是完全外显致病变异。",
+   "第二，发现队列仅4个无关家系7名IBD个体；变异携带者临床异质性大，双等位外显率为3/4，单等位为4/10。散发性UC分析为HC n=8、UC n=7，Crohn病为HC n=8、CD n=20，能提示相关，但不能替代前瞻性风险估计。",
+   "第三，小鼠样本量未按统计学计算预设，研究者因基因型分组未盲法；DSS模型用2.5% DSS造成急性上皮损伤，随访到第9天或第10天，不能覆盖慢性复发或长期修复。第四，本文未确定CD8+ TIGR的抗原特异性，也未给出靶向GPR15治疗的剂量和安全窗。"
+  ],
+  "significance": [
+   "如果后续队列能确认GPR15变异、CD8+ TIGR缺口与临床分型的关系，这一工作可把一部分IBD从“广义黏膜炎症”推进到“归巢受损—巨噬细胞失控”的机制分层。GPR15也因膜受体属性，可能成为诊断或干预节点。",
+   "但这些结论仍应限定在本文证据范围内：患者材料支持遗传关联和组织缺口，小鼠与体外实验支持因果机制；散发性UC和Crohn病中的42%及显著减少仍是单细胞数据集关联，尚不能说明增强CD8+ TIGR已在患者中验证获益。"
+  ],
+  "citation": "Cui J, Chen Z, Cheng YH, Nie J, Zhu MH, Xiang C, et al. GPR15-guided CD8+ T regulatory cells control intestinal inflammation. Nature. 2026. https://doi.org/10.1038/s41586-026-10749-4",
+  "data_points": [
+   {
+    "value": "42%",
+    "meaning": "标题、导语、数据卡、结果、图标签：散发性UC结肠活检中CD8+ TIGR在CD8+ T细胞内减少幅度",
+    "source_quote": "CD8 + T IGR cells were reduced by 42% among CD8 + T cells in colonic biopsies",
+    "location": "Results: Potential wider role of CD8 + T IGR in IBD"
+   },
+   {
+    "value": "4个",
+    "meaning": "发现队列的无关家系数量",
+    "source_quote": "We investigated seven individuals from four unrelated families who had been diagnosed with IBD",
+    "location": "Results: GPR15 variants in early-onset IBD"
+   },
+   {
+    "value": "7名",
+    "meaning": "发现队列IBD个体数量",
+    "source_quote": "We investigated seven individuals from four unrelated families who had been diagnosed with IBD",
+    "location": "Results: GPR15 variants in early-onset IBD"
+   },
+   {
+    "value": "超过90个",
+    "meaning": "背景：已与早发IBD相关的基因数量",
+    "source_quote": "Variants in more than 90 genes have been associated with early-onset IBD",
+    "location": "Main"
+   },
+   {
+    "value": "647人",
+    "meaning": "土耳其/卡塔尔家系队列人数",
+    "source_quote": "The family cohorts included 647 people (74 with IBD), and the Iranian cohort included 1,692 people (109 with IBD).",
+    "location": "Results: Deleterious GPR15 alleles linked to IBD"
+   },
+   {
+    "value": "74例IBD",
+    "meaning": "土耳其/卡塔尔家系队列IBD人数",
+    "source_quote": "The family cohorts included 647 people (74 with IBD), and the Iranian cohort included 1,692 people (109 with IBD).",
+    "location": "Results: Deleterious GPR15 alleles linked to IBD"
+   },
+   {
+    "value": "1,692人",
+    "meaning": "伊朗队列人数",
+    "source_quote": "The family cohorts included 647 people (74 with IBD), and the Iranian cohort included 1,692 people (109 with IBD).",
+    "location": "Results: Deleterious GPR15 alleles linked to IBD"
+   },
+   {
+    "value": "109例IBD",
+    "meaning": "伊朗队列IBD人数",
+    "source_quote": "The family cohorts included 647 people (74 with IBD), and the Iranian cohort included 1,692 people (109 with IBD).",
+    "location": "Results: Deleterious GPR15 alleles linked to IBD"
+   },
+   {
+    "value": "18个",
+    "meaning": "与IBD显著相关的罕见单等位GPR15变异数量",
+    "source_quote": "identified 18 unique rare monoallelic GPR15 variants (MAF < 0.001) that were associated significantly with IBD",
+    "location": "Results: Deleterious GPR15 alleles linked to IBD"
+   },
+   {
+    "value": "MAF<0.001",
+    "meaning": "罕见单等位GPR15变异的频率阈值",
+    "source_quote": "identified 18 unique rare monoallelic GPR15 variants (MAF < 0.001) that were associated significantly with IBD",
+    "location": "Results: Deleterious GPR15 alleles linked to IBD"
+   },
+   {
+    "value": "3/4",
+    "meaning": "发现队列双等位携带者外显率",
+    "source_quote": "penetrance was partial in both biallelic (three of four; 75%) and monoallelic (four of ten; 40%) heterozygous carriers",
+    "location": "Results: GPR15 variants in early-onset IBD"
+   },
+   {
+    "value": "4/10",
+    "meaning": "发现队列单等位携带者外显率",
+    "source_quote": "penetrance was partial in both biallelic (three of four; 75%) and monoallelic (four of ten; 40%) heterozygous carriers",
+    "location": "Results: GPR15 variants in early-onset IBD"
+   },
+   {
+    "value": "75%",
+    "meaning": "双等位携带者临床表现外显率",
+    "source_quote": "penetrance was partial in both biallelic (three of four; 75%) and monoallelic (four of ten; 40%) heterozygous carriers",
+    "location": "Results: GPR15 variants in early-onset IBD"
+   },
+   {
+    "value": "40%",
+    "meaning": "单等位携带者临床表现外显率",
+    "source_quote": "penetrance was partial in both biallelic (three of four; 75%) and monoallelic (four of ten; 40%) heterozygous carriers",
+    "location": "Results: GPR15 variants in early-onset IBD"
+   },
+   {
+    "value": "MAF=0.0012",
+    "meaning": "Y132S在gnomAD中的频率",
+    "source_quote": "The Y132S variant is present in gnomAD databases at a non-negligible frequency (MAF = 0.0012, 1,916 heterozygotes and 20 homozygotes in v.4.1.1)",
+    "location": "Results: GPR15 variants in early-onset IBD"
+   },
+   {
+    "value": "1,916名",
+    "meaning": "gnomAD中Y132S杂合子数量",
+    "source_quote": "The Y132S variant is present in gnomAD databases at a non-negligible frequency (MAF = 0.0012, 1,916 heterozygotes and 20 homozygotes in v.4.1.1)",
+    "location": "Results: GPR15 variants in early-onset IBD"
+   },
+   {
+    "value": "20名",
+    "meaning": "gnomAD中Y132S纯合子数量",
+    "source_quote": "The Y132S variant is present in gnomAD databases at a non-negligible frequency (MAF = 0.0012, 1,916 heterozygotes and 20 homozygotes in v.4.1.1)",
+    "location": "Results: GPR15 variants in early-onset IBD"
+   },
+   {
+    "value": "v.4.1.1",
+    "meaning": "Y132S群体频率引用的gnomAD版本",
+    "source_quote": "The Y132S variant is present in gnomAD databases at a non-negligible frequency (MAF = 0.0012, 1,916 heterozygotes and 20 homozygotes in v.4.1.1)",
+    "location": "Results: GPR15 variants in early-onset IBD"
+   },
+   {
+    "value": "3名",
+    "meaning": "患者活检中用于归巢分析的GPR15双等位突变患者数量",
+    "source_quote": "we analysed intestinal biopsies from three patients with GPR15 biallelic mutations",
+    "location": "Results: GPR15 guides CD8 + T cells to the colon"
+   },
+   {
+    "value": "2.5%",
+    "meaning": "DSS结肠炎模型DSS浓度",
+    "source_quote": "Following 2.5% DSS, Gpr15 −/− mice showed accelerated weight loss",
+    "location": "Results: GPR15 loss in CD8 + T cells causes colitis"
+   },
+   {
+    "value": "6天",
+    "meaning": "DSS饮水持续时间",
+    "source_quote": "administering 2.5% DSS (36,000–50,000 molecular weight, MP Biomedicals, catalogue no. 160110) in drinking water for 6 days",
+    "location": "Methods: Mouse colitis model"
+   },
+   {
+    "value": "6–7天",
+    "meaning": "DSS后普通水持续时间",
+    "source_quote": "followed by normal water for another 6–7 days",
+    "location": "Methods: Mouse colitis model"
+   },
+   {
+    "value": "n=11/组",
+    "meaning": "图4 DSS主要小鼠实验每组样本量",
+    "source_quote": "n = 11 per group ( a – i )",
+    "location": "Fig. 4 caption"
+   },
+   {
+    "value": "第3天",
+    "meaning": "DSS后早期免疫细胞读出的时间点",
+    "source_quote": "we first examined LI-LP lymphocytes and monocytes in Gpr15 −/− mice 3 days after DSS",
+    "location": "Results: CD8 + T IGR s kill macrophages through FasL and TWEAK"
+   },
+   {
+    "value": "第5天",
+    "meaning": "NOS2/CD206染色读出时间点",
+    "source_quote": "mouse colonic sections 5 days after DSS treatment",
+    "location": "Fig. 5 caption"
+   },
+   {
+    "value": "第9天",
+    "meaning": "氯膦酸脂质体DSS病理读出时间点",
+    "source_quote": "H&E-stained colonic sections 9 days after DSS treatment",
+    "location": "Fig. 5 caption"
+   },
+   {
+    "value": "第10天",
+    "meaning": "DSS模型结肠长度和组织学评分读出时间点",
+    "source_quote": "Colon length (left) and histological scores (right) on day 10",
+    "location": "Fig. 4 caption"
+   },
+   {
+    "value": "2周",
+    "meaning": "过继转移后分析时间",
+    "source_quote": "Recipient spleens, small intestines and large intestines were collected 2 weeks after transfer",
+    "location": "Methods: Adoptive transfer studies"
+   },
+   {
+    "value": "1:1",
+    "meaning": "过继转移tester与competitor混合比例",
+    "source_quote": "Before transfer, CD45.1 + CD45.2 + cells from WT or Gpr15 −/− donor mice were mixed 1:1 with WT CD45.1 + cells",
+    "location": "Methods: Adoptive transfer studies"
+   },
+   {
+    "value": "25%",
+    "meaning": "小鼠人道终点体重下降阈值",
+    "source_quote": "mice that lost more than 25% of initial body weight were euthanized according to a predetermined humane endpoint",
+    "location": "Methods: Mouse colitis model"
+   },
+   {
+    "value": "HC n=8",
+    "meaning": "散发性UC scRNA-seq对照人数",
+    "source_quote": "HC, n = 8; UC, n = 7",
+    "location": "Extended Data Fig. 10 caption"
+   },
+   {
+    "value": "UC n=7",
+    "meaning": "散发性UC scRNA-seq患者人数",
+    "source_quote": "HC, n = 8; UC, n = 7",
+    "location": "Extended Data Fig. 10 caption"
+   },
+   {
+    "value": "CD n=20",
+    "meaning": "Crohn病终末回肠scRNA-seq患者人数",
+    "source_quote": "HC, n = 8; CD, n = 20",
+    "location": "Extended Data Fig. 10 caption"
+   },
+   {
+    "value": "2.17",
+    "meaning": "AoU队列pLOF与溃疡性结肠炎关联β值",
+    "source_quote": "the aggregated burden of pLOF variants was associated significantly with ulcerative colitis ( β = 2.17; SKAT-O P = 0.03)",
+    "location": "Results: Deleterious GPR15 alleles linked to IBD"
+   },
+   {
+    "value": "0.03",
+    "meaning": "AoU队列pLOF与溃疡性结肠炎关联SKAT-O P值",
+    "source_quote": "the aggregated burden of pLOF variants was associated significantly with ulcerative colitis ( β = 2.17; SKAT-O P = 0.03)",
+    "location": "Results: Deleterious GPR15 alleles linked to IBD"
+   },
+   {
+    "value": "1:2.5",
+    "meaning": "图5f中CD8+ TIGR或脾CD8+ T细胞与巨噬细胞共培养比例",
+    "source_quote": "after co-culture with anti-CD3/CD28 bead-activated CD8 + T IGR or CD8 + T Sp cells (1:2.5)",
+    "location": "Fig. 5 caption"
+   },
+   {
+    "value": "1:1",
+    "meaning": "巨噬细胞共培养的CD8 T细胞添加比例之一",
+    "source_quote": "CD8 + T cells were added to macrophages at ratios of 1:1, 1:2.5, 1:5, 1:10 and 1:20",
+    "location": "Methods: Mouse macrophage and CD8 + T cell co-culture"
+   },
+   {
+    "value": "1:5",
+    "meaning": "巨噬细胞共培养的CD8 T细胞添加比例之一",
+    "source_quote": "CD8 + T cells were added to macrophages at ratios of 1:1, 1:2.5, 1:5, 1:10 and 1:20",
+    "location": "Methods: Mouse macrophage and CD8 + T cell co-culture"
+   },
+   {
+    "value": "1:10",
+    "meaning": "巨噬细胞共培养的CD8 T细胞添加比例之一",
+    "source_quote": "CD8 + T cells were added to macrophages at ratios of 1:1, 1:2.5, 1:5, 1:10 and 1:20",
+    "location": "Methods: Mouse macrophage and CD8 + T cell co-culture"
+   },
+   {
+    "value": "1:20",
+    "meaning": "巨噬细胞共培养的CD8 T细胞添加比例之一",
+    "source_quote": "CD8 + T cells were added to macrophages at ratios of 1:1, 1:2.5, 1:5, 1:10 and 1:20",
+    "location": "Methods: Mouse macrophage and CD8 + T cell co-culture"
+   }
+  ],
+  "steps": [
+   "有害GPR15变异削弱GPR15L趋化",
+   "CD8+TIGR难以归巢结肠",
+   "DSS后巨噬细胞积累激活",
+   "FasL/TWEAK介导接触性杀伤"
+  ],
+  "figure_caption": "机制图概括作者用人类遗传、患者活检和小鼠DSS模型支持的模型：GPR15–GPR15L引导CD8+TIGR进入结肠黏膜，缺失后CD8+TIGR减少，F4/80+巨噬细胞积累；体外实验显示FasL/TWEAK介导杀伤，散发性UC中该群体减少42%。示意图由 AI 生成，依据原文结果绘制，非期刊原图，不代表分子比例",
+  "image_story": {
+   "stages": [
+    {
+     "visual_en": "Left stage: colonic epithelial surface and GPR15L gradient attracting GPR15-positive CD8 regulatory T cells into mucosa.",
+     "source_quote": "the GPR15–GPR15L axis governs colonic migration of a class of CD8 + T cells"
+    },
+    {
+     "visual_en": "Middle stage: GPR15-deficient CD8 regulatory T cells failing to enter colonic epithelium and lamina propria, with inflamed mucosa.",
+     "source_quote": "CD8 + T cells were markedly reduced in both the epithelium (EPI) and lamina propria (LP) of colonic biopsies"
+    },
+    {
+     "visual_en": "Right stage: activated CD8 regulatory T cell touching an inflammatory macrophage through death receptor ligands.",
+     "source_quote": "blocking Fas ligand (FasL) or TNF-related weak inducer of apoptosis (TWEAK) reduced macrophage killing"
+    }
+   ],
+   "key_element_en": "one inflammatory macrophage"
+  },
+  "image_subject_en": "A left-to-right process in three stages, drawn large. Stage 1 shows a curved colonic epithelial wall in pale mint and light grey-green, with a soft deep green GPR15L-like chemokine haze rising from epithelial cells and several rounded deep green CD8 regulatory T cells carrying small membrane receptors moving toward the mucosa. Stage 2 shows the same colon mucosa with fewer CD8 regulatory T cells inside the epithelial and lamina propria spaces, pale inflammatory swelling, and misplaced muted green T cells outside the tissue. Stage 3 shows a close cell-contact scene: one deep green CD8 regulatory T cell presses against one macrophage, with simple death-receptor contact points between them; surrounding tissue is light grey-green with subdued inflammation. The single macrophage in Stage 3 is drawn as one very large, solid, boldly filled terracotta #C0492F cell with irregular surface folds. Use semi-realistic 3D scientific illustration, soft lighting, no text, no numbers, no symbols, no axes. Only the macrophage is terracotta.",
+  "card_subject_en": "A compact semi-realistic 3D scientific subject: one deep green CD8 regulatory T cell tightly contacting one inflammatory macrophage on a pale mint colonic mucosal surface. The T cell has small receptor bumps and a controlled, rounded shape; the mucosa is light grey-green with subtle epithelial texture. The macrophage is the only terracotta element, drawn very large, solid, boldly filled #C0492F with irregular folds, emphasizing the target cell. No text, no numbers, no symbols, no charts.",
+  "figure_labels": {
+   "heads": [
+    "归巢信号",
+    "缺失后炎症",
+    "接触性杀伤"
+   ],
+   "callouts": [
+    {
+     "t": "GPR15–GPR15L\n引导CD8+T",
+     "stage": 1,
+     "entity_en": "GPR15-positive CD8 regulatory T cells"
+    },
+    {
+     "t": "患者活检\n3名双等位",
+     "stage": 2,
+     "entity_en": "GPR15-deficient CD8 regulatory T cells"
+    },
+    {
+     "t": "2.5% DSS\n炎症加重",
+     "stage": 2,
+     "entity_en": "inflamed mucosa"
+    },
+    {
+     "t": "巨噬细胞积累\nNOS2/CD206强",
+     "stage": 3,
+     "entity_en": "one inflammatory macrophage"
+    },
+    {
+     "t": "阻断FasL/TWEAK\n降低杀伤",
+     "stage": 3,
+     "entity_en": "death-receptor contact points"
+    },
+    {
+     "t": "散发性UC\n观察少42%",
+     "stage": 2,
+     "entity_en": "CD8+ TIGR cells in sporadic UC"
+    }
+   ],
+   "facts": [
+    [
+     "发现队列",
+     "**4个**家系、**7名**IBD"
+    ],
+    [
+     "DSS模型",
+     "**2.5%**，6天"
+    ],
+    [
+     "UC数据集",
+     "CD8+TIGR少**42%**"
+    ]
+   ],
+   "note": "数字用Results/Methods口径；治疗效应未检验。示意图由 AI 生成，非期刊原图。"
+  },
+  "chart": {
+   "justified": true,
+   "title_zh": "散发性IBD数据集样本量",
+   "unit": "人数",
+   "figure_source": "Extended Data Fig. 10a,b",
+   "values": [
+    {
+     "label_zh": "UC对照",
+     "value": 8,
+     "n": "HC n=8",
+     "source_quote": "HC, n = 8; UC, n = 7"
+    },
+    {
+     "label_zh": "UC患者",
+     "value": 7,
+     "n": "UC n=7",
+     "source_quote": "HC, n = 8; UC, n = 7"
+    },
+    {
+     "label_zh": "Crohn对照",
+     "value": 8,
+     "n": "HC n=8",
+     "source_quote": "HC, n = 8; CD, n = 20"
+    },
+    {
+     "label_zh": "Crohn患者",
+     "value": 20,
+     "n": "CD n=20",
+     "source_quote": "HC, n = 8; CD, n = 20"
+    }
+   ],
+   "note": "仅展示样本量；42%为UC中CD8+TIGR相对减少，Crohn病原文仅写显著减少。"
+  }
+ },
+ "images": {
+  "mech_raw": "c4-ai-6_mech_raw_r4.jpg",
+  "mech": "c4-ai-6_mech_r4.png",
+  "card": "c4-ai-6_card_r4.png",
+  "card_src": "work/r4/clean/c4-ai-6_card_raw_r4_clean_t215.png (cleanup T1=215,T2=200,S=20,G=6)",
+  "image_model": "mech: Grok drawing (r4/r4b/r4c, supplied by parent run); card: Grok drawing r4",
+  "note": "mech OCR soft gate: 1 label <50% (head 归巢信号), numbers 14/14"
+ }
+}

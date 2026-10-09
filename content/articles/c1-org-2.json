@@ -1,0 +1,569 @@
+{
+ "id": "c1-org-2",
+ "final_version": 1,
+ "drafter_model": "claude-sonnet-5-5",
+ "drafter_note": "claude-opus-5-5 refused (stop_reason=refusal, stop_details.category=bio); identical request re-sent on claude-sonnet-5-5",
+ "selected_from_versions": [
+  1,
+  2,
+  3,
+  4
+ ],
+ "remaining_failures_n": 1,
+ "remaining_failures": [
+  "图标签数字 6236 不在 data_points 中"
+ ],
+ "tags_note": "editor tags prepended; writer tags trimmed to 6 (metadata only)",
+ "writer_tags": [
+  "肿瘤类器官生物样本库",
+  "全基因组 CRISPR 筛选",
+  "基因依赖图谱",
+  "KRAS 变异等位基因",
+  "配对治疗前后模型",
+  "WRN 与 MSI"
+ ],
+ "article": {
+  "tier": "deep",
+  "field": "精准肿瘤与临床转化",
+  "tags": [
+   "类器官",
+   "肿瘤类器官生物样本库",
+   "全基因组 CRISPR 筛选",
+   "基因依赖图谱",
+   "KRAS 变异等位基因",
+   "配对治疗前后模型"
+  ],
+  "primary_endpoint_basis": "这是资源型研究，没有方案预设的主要终点。核心读出取自摘要与正文一致的两项：类器官衍生效率（907 份样本中建立 256 例，28%）和全基因组 CRISPR–Cas9 筛选的质控通过数（162 例，成功率 85%）。标题数字来自 Results 的 Renewable patient organoid biobank 与 Mapping cancer dependencies in organoids 两节。两项均为描述性读出，没有组间统计推断。",
+  "comparison_design": "资源型研究，不是临床试验，没有面向组间比较的效能设计。类器官与肿瘤的一致性用 Pearson 相关描述；差异依赖用 Fisher 精确检验；生物标志物用线性回归（似然比检验、多重校正）；部分药敏比较用双侧 Wilcoxon 秩和检验。类器官与细胞系的筛选质量对比、治疗前后配对对比均没有给出正式统计检验。",
+  "untested_comparisons": [
+   "类器官筛选 AUROC 0.97、AUPR 0.973 对细胞系 0.92、0.9",
+   "类器官适应性基因中位数 1,440 对细胞系 2,507",
+   "85 例 COAD/READ 类器官对 DepMap 的 63 株细胞系",
+   "治疗前后配对 ESCA 类器官的依赖与药敏差异（仅一对样本，无统计检验）",
+   "RMC-6236、RMC-7977 与 BI-2865、ACBI3 的 IC50 高低对比"
+  ],
+  "number_basis_note": "摘要只给出 256 例类器官和 162 例筛选，与正文一致，无冲突。衍生效率有两套口径：28%（严格标准，256/907）与 65%（计入短期培养、排除低细胞量样本）。正文并列写明，标题与图只用 28%。",
+  "must_cover": [
+   {
+    "id": "m1",
+    "item_zh": "256/907 份样本（878 名供者）建立类器官，效率 28%；65% 口径；93% 通过冻融质控",
+    "status": "covered",
+    "covered_by": "入库后 93% 通过冻融质控"
+   },
+   {
+    "id": "m2",
+    "item_zh": "成功标准：扩增至超过 25 million 细胞、冻存 25 支、冻融质控、SNP 匹配；五种癌症",
+    "status": "covered",
+    "covered_by": "成功标准为扩增至超过 25 million 个细胞并冻存 25 支"
+   },
+   {
+    "id": "m3",
+    "item_zh": "171 对配对：SCNA 中位 PCC 0.78，142 对（83%）PCC≥0.5；突变负荷 PCC 0.786，SV PCC 0.823",
+    "status": "covered",
+    "covered_by": "142 对（83%）PCC 至少 0.5"
+   },
+   {
+    "id": "m4",
+    "item_zh": "仅 76 对（44%）共享≥75% 体细胞突变；纯度低时可能低估；MSI 结直肠 SCNA 相关性较低",
+    "status": "covered",
+    "covered_by": "仅 76 对（44%）共享至少 75% 的体细胞突变"
+   },
+   {
+    "id": "m5",
+    "item_zh": "162 例类器官筛选通过质控（85/59/11/4/3），成功率 85%，以 MinLibCas9 和 5% BME-2 悬浮为主",
+    "status": "covered",
+    "covered_by": "（85 例 COAD/READ、59 例 ESCA、11 例 OV、4 例 PAAD、3 例 STAD），成功率 85%"
+   },
+   {
+    "id": "m6",
+    "item_zh": "AUROC 0.97/AUPR 0.973 对细胞系 0.92/0.9；适应性基因中位 1,440（297–2,160）低于细胞系 2,507（930 株）",
+    "status": "covered",
+    "covered_by": "低于 930 株细胞系的 2,507"
+   },
+   {
+    "id": "m7",
+    "item_zh": "654 个共享核心适应性基因、97 个类器官特有，富集类固醇生物合成（P = 1.38 × 10−6）",
+    "status": "covered",
+    "covered_by": "后者富集于类固醇生物合成"
+   },
+   {
+    "id": "m8",
+    "item_zh": "1,841 个显著基因–标志物关联；WRN 依赖与 RNF43 突变相关（−0.747，校正 P = 0.01）；4 例 MSI 类器官不依赖 WRN",
+    "status": "covered",
+    "covered_by": "但 4 例 MSI 类器官不依赖 WRN"
+   },
+   {
+    "id": "m9",
+    "item_zh": "85 例 COAD/READ 中 G12X 的 KRAS 依赖最强、EGFR/PTPN11 依赖更高；17 例 KRAS 突变与 4 例野生型药敏；Q61H 无反应",
+    "status": "covered",
+    "covered_by": "Q61H 类器官无反应"
+   },
+   {
+    "id": "m10",
+    "item_zh": "RMC-6236（0.042 μM）与 RMC-7977（0.023 μM）高度敏感；BI-2865、ACBI3 平均 IC50≥10 μM",
+    "status": "covered",
+    "covered_by": "BI-2865 与 ACBI3 的平均 IC50 均不低于 10 μM"
+   },
+   {
+    "id": "m11",
+    "item_zh": "配对 ESCA 类器官：治疗后对两种泛 RAS、两种 DNMT1 抑制剂敏感性降低，对两种蛋白酶体抑制剂更敏感；依托泊苷对照无差异",
+    "status": "covered",
+    "covered_by": "对两种蛋白酶体抑制剂更敏感"
+   },
+   {
+    "id": "m12",
+    "item_zh": "核心适应性基因集仅三种癌症（排除 PAAD、STAD），非泛癌；标准化培养可能改变依赖性；很少有配对正常细胞",
+    "status": "covered",
+    "covered_by": "核心适应性基因集仅含三种癌症类型"
+   }
+  ],
+  "title": "256 例肿瘤类器官生物样本库建成，162 例完成全基因组 CRISPR 筛选并绘制基因依赖图谱",
+  "one_liner": "英国多中心团队从 907 份样本中建立 256 例肿瘤类器官（效率 28%），162 例完成通过质控的全基因组 CRISPR–Cas9 筛选（成功率 85%）。",
+  "datacard": {
+   "study_type": "资源型研究：患者来源肿瘤类器官生物样本库，含全基因组测序、全基因组 CRISPR–Cas9 筛选与药敏验证（非临床试验）",
+   "n": "907 份样本（878 名供者）→ 256 例类器官；171 对类器官–肿瘤 WGS 配对；162 例通过质控的 CRISPR 筛选；21 例结直肠类器官药敏（17 例 KRAS 突变 + 4 例野生型）",
+   "primary_endpoint": "无方案预设主要终点；核心读出为类器官衍生效率与 CRISPR 筛选质控通过率",
+   "primary_endpoint_result": "256/907 份样本建立类器官，效率 28%（65% 为计入短期培养、排除低细胞量样本的口径）；162 例筛选通过质控，成功率 85%。两项均为描述性读出，无组间比较",
+   "control": "细胞系参照（文献数据）：AUROC 0.92、AUPR 0.9；适应性基因中位 2,507（930 株）",
+   "intervention": "CRISPR–Cas9 全基因组敲除（MinLibCas9 为主，部分同时用 Yusa v1.1），5% BME-2 悬浮培养，共 21 天；泛 RAS、KRAS 特异、EGFR 等抑制剂药敏",
+   "statistics": "Pearson 相关；Fisher 精确检验；线性回归（似然比检验、多重校正）；Wilcoxon 秩和检验",
+   "evidence_level": "全文",
+   "check_record": "读了 Europe PMC fullTextXML（PMC13581617）的摘要、Main、各 Results 小节、Discussion、Methods 与 Fig.1–5、Extended Data Fig.1–10 图注；Supplementary 材料未读。"
+  },
+  "background": [
+   "癌细胞系是肿瘤研究与药物发现的基础，但约 1,000 株常用人癌细胞系对部分亚型代表性偏倚或缺失，缺少患者配对的种系数据以准确识别体细胞变异，也缺少患者临床信息，且多数在体外培养中发生机制不明的适应性改变。",
+   "肿瘤类器官是源自患者组织的三维培养，但现有最大的两个学术库仅含 115 和 96 个模型，不少缺乏全面的基因组注释。此外，培养更复杂的大型异质类器官库能否支撑系统的癌症依赖性图谱，此前并不清楚。本研究与人类癌症模型计划（HCMI）合作，尝试回答这一问题。"
+  ],
+  "design": [
+   "这是资源型研究，非临床试验，原文未报告面向组间比较的效能设计。五个临床中心提供手术或活检肿瘤及种系正常样本，2016 年 5 月至 2023 年 11 月送至 Sanger 研究所集中衍生。涵盖 COAD/READ、ESCA、OV、PAAD、STAD 五种癌症。成功标准为扩增至超过 25 million 个细胞并冻存 25 支，通过冻融质控，且 SNP 与原肿瘤一致。",
+   "每个类器官均做全基因组测序，其中 171 例有配对肿瘤组织可比较；类器官另做 RNA 测序。CRISPR–Cas9 筛选在 5% BME-2 悬浮培养中进行，以 MinLibCas9 为主，共 21 天、三个重复。药敏实验在 17 例 KRAS 突变和 4 例野生型结直肠类器官中进行，涵盖泛 RAS、KRAS 特异、变异特异抑制剂及 EGFR 抑制剂。"
+  ],
+  "results": [
+   {
+    "subhead": "衍生效率与基因组保真",
+    "text": "256 例类器官来自 907 份样本、878 名供者，总体效率 28%；计入短期培养并排除低细胞量样本后为 65%，与既往研究相当；入库后 93% 通过冻融质控。171 对类器官—肿瘤配对中，突变负荷 PCC 为 0.786，结构变异 PCC 为 0.823，全基因组 SCNA 中位 PCC 为 0.78，142 对（83%）PCC 至少 0.5，提示基因组保真度较高。"
+   },
+   {
+    "subhead": "CRISPR 筛选规模与质量",
+    "text": "平台以 5% BME-2 悬浮培养和 MinLibCas9 文库为主，16 例同时用 Yusa v1.1。CRISPR–Cas9 筛选在 162 例类器官中通过质控（85 例 COAD/READ、59 例 ESCA、11 例 OV、4 例 PAAD、3 例 STAD），成功率 85%。区分参考必需与非必需基因的 AUROC 为 0.97、AUPR 为 0.973，细胞系分别为 0.92 和 0.9；但每例类器官适应性基因中位数为 1,440（范围 297–2,160），低于 930 株细胞系的 2,507。"
+   },
+   {
+    "subhead": "核心适应性基因与生物标志物",
+    "text": "ADaM 分析得到 654 个与细胞系共有的核心适应性基因，以及 97 个类器官特有的核心适应性基因，后者富集于类固醇生物合成（P = 1.38 × 10−6）。线性回归得到 1,841 个显著的基因—生物标志物关联；COAD/READ 中 WRN 依赖与 RNF43 突变相关（效应量 −0.747，校正 P = 0.01），但 4 例 MSI 类器官不依赖 WRN，也缺少扩增的 TA 二核苷酸重复。"
+   },
+   {
+    "subhead": "KRAS 等位基因与 EGFR 依赖",
+    "text": "85 例 COAD/READ 类器官中，G12X 的 KRAS 依赖最强，EGFR 与 PTPN11 依赖也更高。17 例 KRAS 突变和 4 例野生型的药敏中，野生型与 G12X 对 EGFR 抑制剂更敏感，Q61H 类器官无反应；G12C 特异抑制剂 sotorasib 选择性作用于 G12C 类器官（P = 0.044）。全部类器官对 RMC-6236（平均 IC50 0.042 μM）和 RMC-7977（0.023 μM）高度敏感；BI-2865 与 ACBI3 的平均 IC50 均不低于 10 μM。"
+   },
+   {
+    "subhead": "治疗前后配对类器官",
+    "text": "一名 69 岁男性化疗前后的配对 ESCA 类器官中，治疗后类器官丢失 MYC 扩增，MYC 依赖降低；CRISPR 还提示 KRAS 与 DNMT1 依赖降低、PSMB5 依赖升高。药敏与之一致：治疗后类器官对两种泛 RAS 抑制剂和两种 DNMT1 抑制剂敏感性降低，对两种蛋白酶体抑制剂更敏感。TOP2A 依赖及依托泊苷（TOP2A 抑制剂）敏感性均无差异，作对照。"
+   }
+  ],
+  "mechanism_proven": [
+   "回归分析显示，COAD/READ 中 WRN 依赖与 SBS44 特征相关（效应量 −0.823，校正 P = 0.0009），CCNE1 扩增与 ESCA 类器官的 CCNE1 依赖相关（效应量 −0.645，校正 P = 3.65 × 10−5）。这些是基因—特征的统计关联，并非对每个基因的逐一干预验证。",
+   "EGFR 依赖与药敏相互印证：CRISPR 中 EGFR 依赖高的类器官属于对 afatinib 和 gefitinib 最敏感者；撤除 EGF 后，Q61H 类器官活力未下降，而 G12X 或野生型类器官活力下降。配对 ESCA 类器官中，CRISPR 预测的依赖差异经药敏实验验证。"
+  ],
+  "mechanism_inferred": [
+   "作者推测，G12X 肿瘤对上游受体激活仍有反应，而不依赖信号输入的 Q61X 变异则不然，这可能解释 Q61X 突变在结直肠癌 EGFR 抑制剂继发耐药中的富集。作者还推测，类器官特有核心基因富集类固醇合成可能与胆固醇调控肠干细胞有关；治疗后 MYC 扩增丢失则被解读为化疗压力下的克隆演化。"
+  ],
+  "limitations": [
+   "类器官与肿瘤的体细胞突变一致性有限：171 对中仅 76 对（44%）共享至少 75% 的体细胞突变；一致性随肿瘤纯度升高而增加，纯度低时可能被低估，MSI 结直肠肿瘤的 SCNA 相关性也较低。",
+   "核心适应性基因集仅含三种癌症类型（PAAD 与 STAD 被排除），不代表泛癌；作者提到标准化培养条件可能改变依赖性，且配对正常细胞很少，难以评估治疗窗口。",
+   "筛选的癌种样本量悬殊（OV 11 例、PAAD 4 例、STAD 3 例），KRAS 药敏仅 21 例；治疗前后分析仅来自一对类器官，没有统计检验，也无体内验证，只能作为假设。",
+   "类器官适应性基因数中位 1,440，低于细胞系的 2,507，两者之间没有正式统计比较。"
+  ],
+  "significance": [
+   "若后续研究证实，这一公开的类器官资源可补充细胞系在癌种代表性（如 ESCA、OV）、种系配对数据和临床注释方面的不足，为按 KRAS 等位基因、MSI 状态等基因型选择模型提供依据。模型已通过 ATCC（HCMI 集合）和 EMD Millipore 分发，数据可经 Cell Model Passports 与 DepMap Miner 获取。",
+   "就药物研发而言，如果 RAS 抑制剂的等位基因选择性和 EGFR 联合策略在更多模型与体内得到验证，类器官依赖图谱可能用于筛选获益人群；但目前结论均来自体外模型，尚未在患者中验证。"
+  ],
+  "citation": "Herranz-Ors C, Bhosle SG, Beck AE, Gilbert JGR, Picco G, Espejo Valle-Inclan J, et al. A tumour-derived organoid biobank maps cancer gene dependencies. Nature. 2026. https://doi.org/10.1038/s41586-026-10830-y",
+  "data_points": [
+   {
+    "value": "256",
+    "meaning": "成功建立的类器官数",
+    "source_quote": "organoid cultures were successfully established for 256 out of 907 samples from 878 unique donors",
+    "location": "Results: Renewable patient organoid biobank"
+   },
+   {
+    "value": "907",
+    "meaning": "尝试衍生的样本数",
+    "source_quote": "organoid cultures were successfully established for 256 out of 907 samples from 878 unique donors",
+    "location": "Results: Renewable patient organoid biobank"
+   },
+   {
+    "value": "878",
+    "meaning": "独立供者数",
+    "source_quote": "organoid cultures were successfully established for 256 out of 907 samples from 878 unique donors",
+    "location": "Results: Renewable patient organoid biobank"
+   },
+   {
+    "value": "28%",
+    "meaning": "总体衍生效率",
+    "source_quote": "yielding an overall efficiency rate of 28%",
+    "location": "Results: Renewable patient organoid biobank"
+   },
+   {
+    "value": "65%",
+    "meaning": "计入短期培养、排除低细胞量样本后的成功率",
+    "source_quote": "our success rate was 65%, comparable to previous studies",
+    "location": "Results: Renewable patient organoid biobank"
+   },
+   {
+    "value": "93%",
+    "meaning": "入库培养通过冻融质控的比例",
+    "source_quote": "Once banked, 93% of cultures passed a freeze–thaw quality control step",
+    "location": "Results: Renewable patient organoid biobank"
+   },
+   {
+    "value": "25 million",
+    "meaning": "成功标准：扩增细胞数",
+    "source_quote": "requiring expansion to more than 25 million cells to create a bank of 25 cryovials",
+    "location": "Results: Renewable patient organoid biobank"
+   },
+   {
+    "value": "25 支",
+    "meaning": "成功标准：冻存管数",
+    "source_quote": "requiring expansion to more than 25 million cells to create a bank of 25 cryovials",
+    "location": "Results: Renewable patient organoid biobank"
+   },
+   {
+    "value": "2016 年 5 月至 2023 年 11 月",
+    "meaning": "样本送至 Sanger 研究所衍生的时间",
+    "source_quote": "Wellcome Sanger Institute (May 2016 to November 2023) for organoid derivation",
+    "location": "Results: Renewable patient organoid biobank"
+   },
+   {
+    "value": "五个临床中心",
+    "meaning": "样本来源中心数",
+    "source_quote": "we established a network of five clinical sites in Birmingham",
+    "location": "Results: Renewable patient organoid biobank"
+   },
+   {
+    "value": "171",
+    "meaning": "有肿瘤组织可与类器官比较的数量",
+    "source_quote": "For 171 organoids, sufficient tumour tissue was available for sequencing",
+    "location": "Results: Organoids preserve tumour genomics"
+   },
+   {
+    "value": "0.786",
+    "meaning": "突变负荷的类器官–肿瘤 PCC",
+    "source_quote": "The correlation for mutational load was high (Pearson correlation coefficient (PCC) = 0.786",
+    "location": "Results: Organoids preserve tumour genomics"
+   },
+   {
+    "value": "0.823",
+    "meaning": "结构变异数的类器官–肿瘤 PCC",
+    "source_quote": "as was the correlation for SVs (PCC = 0.823",
+    "location": "Results: Organoids preserve tumour genomics"
+   },
+   {
+    "value": "0.78 / 142 对 / 83% / 0.5",
+    "meaning": "SCNA 中位 PCC、PCC≥0.5 的配对数与比例",
+    "source_quote": "Genome-wide SCNA profiles also showed high correlation (median PCC = 0.78), with 142 pairs (83%) achieving a PCC of at least 0.5.",
+    "location": "Results: Organoids preserve tumour genomics"
+   },
+   {
+    "value": "76 对 / 44% / 75%",
+    "meaning": "共享至少 75% 体细胞突变的配对",
+    "source_quote": "with 76 pairs (44%) sharing at least 75% of somatic mutations",
+    "location": "Results: Organoids preserve tumour genomics"
+   },
+   {
+    "value": "162",
+    "meaning": "通过质控的 CRISPR 筛选类器官数",
+    "source_quote": "We completed quality-control-passed CRISPR–Cas9 screens on 162 unique organoid cultures from 5 tumour types",
+    "location": "Results: Mapping cancer dependencies in organoids"
+   },
+   {
+    "value": "85 / 59 / 11 / 4 / 3 / 85%",
+    "meaning": "各癌种筛选数与总成功率",
+    "source_quote": "(85 COAD/READ (exceeding the 63 cell lines screened in DepMap), 59 ESCA, 11 OV, 4 PAAD and 3 STAD; overall 85% success rate)",
+    "location": "Results: Mapping cancer dependencies in organoids"
+   },
+   {
+    "value": "5% BME-2",
+    "meaning": "筛选用悬浮培养基质浓度",
+    "source_quote": "Organoids were screened using a 5% basement membrane extract-2 (BME-2) suspension culture",
+    "location": "Results: Mapping cancer dependencies in organoids"
+   },
+   {
+    "value": "21 天",
+    "meaning": "筛选总时长",
+    "source_quote": "21 days in screen in total",
+    "location": "Methods: CRISPR–Cas9 screening"
+   },
+   {
+    "value": "三个重复",
+    "meaning": "文库转导重复数",
+    "source_quote": "were transduced in triplicate using the same batch of Cas9-transduced organoids",
+    "location": "Methods: CRISPR–Cas9 screening"
+   },
+   {
+    "value": "1,440（297–2,160）",
+    "meaning": "每例类器官适应性基因中位数及范围",
+    "source_quote": "we identified a median of 1,440 fitness genes in each organoid (range 297–2,160",
+    "location": "Results: Mapping cancer dependencies in organoids"
+   },
+   {
+    "value": "2,507 / 930",
+    "meaning": "细胞系适应性基因中位数及细胞系数",
+    "source_quote": "fewer than reported in cell lines (median = 2,507 for 930 cell lines",
+    "location": "Results: Mapping cancer dependencies in organoids"
+   },
+   {
+    "value": "0.97 / 0.973",
+    "meaning": "类器官筛选 AUROC 与 AUPR",
+    "source_quote": "(AUROC) = 0.97 and area under precision-recall curve (AUPR) = 0.973",
+    "location": "Results: Mapping cancer dependencies in organoids"
+   },
+   {
+    "value": "0.92 / 0.9",
+    "meaning": "细胞系 AUROC 与 AUPR",
+    "source_quote": "(AUROC = 0.92 and AUPR = 0.9)",
+    "location": "Results: Mapping cancer dependencies in organoids"
+   },
+   {
+    "value": "654 / 97",
+    "meaning": "与细胞系共有及类器官特有的核心适应性基因",
+    "source_quote": "This identified 654 shared core fitness genes and 97 that were unique to organoids",
+    "location": "Results: Organoid core fitness genes"
+   },
+   {
+    "value": "1.38 × 10−6",
+    "meaning": "类固醇生物合成富集 P 值",
+    "source_quote": "steroid biosynthetic process, P value = 1.38 × 10 −6",
+    "location": "Results: Organoid core fitness genes"
+   },
+   {
+    "value": "1,841",
+    "meaning": "显著基因–生物标志物关联数",
+    "source_quote": "we identified 1,841 significant gene–biomarker associations",
+    "location": "Results: Genomic and clinical dependencies"
+   },
+   {
+    "value": "−0.747 / 0.01",
+    "meaning": "WRN 依赖与 RNF43 突变的效应量与校正 P",
+    "source_quote": "WRN associated with a RNF43 mutation (effect size = −0.747, adjusted P value = 0.01)",
+    "location": "Results: Genomic and clinical dependencies"
+   },
+   {
+    "value": "−0.823 / 0.0009",
+    "meaning": "WRN 依赖与 SBS44 的效应量与校正 P",
+    "source_quote": "mutational signature SBS44 (effect size = −0.823, adjusted P value = 0.0009)",
+    "location": "Results: Genomic and clinical dependencies"
+   },
+   {
+    "value": "4 例 MSI",
+    "meaning": "不依赖 WRN 的 MSI 类器官数",
+    "source_quote": "four MSI organoids were not WRN",
+    "location": "Results: Genomic and clinical dependencies"
+   },
+   {
+    "value": "−0.645 / 3.65 × 10−5",
+    "meaning": "CCNE1 扩增与 CCNE1 依赖的效应量与校正 P",
+    "source_quote": "was associated with dependency on CCNE1 (effect size = −0.645, adjusted P value = 3.65 × 10 −5",
+    "location": "Results: Genomic and clinical dependencies"
+   },
+   {
+    "value": "85 例",
+    "meaning": "有 CRISPR 数据的 COAD/READ 类器官",
+    "source_quote": "In our cohort of 85 COAD/READ organoids with CRISPR data",
+    "location": "Results: EGFR dependency varies by KRAS allele"
+   },
+   {
+    "value": "17 / 4",
+    "meaning": "药敏的 KRAS 突变与野生型类器官数",
+    "source_quote": "KRAS -mutant ( n = 17) and KRAS wild-type ( n = 4) colorectal organoids",
+    "location": "Results: EGFR dependency varies by KRAS allele"
+   },
+   {
+    "value": "21",
+    "meaning": "EGFR 抑制剂药敏的 COAD/READ 类器官数",
+    "source_quote": "IC 50 values for afatinib and gefitinib in COAD/READ organoids ( n = 21)",
+    "location": "Fig. 5b"
+   },
+   {
+    "value": "0.042 μM",
+    "meaning": "RMC-6236 平均 IC50",
+    "source_quote": "RMC-6236 (mean half-maximal inhibitory concentration (IC 50 ) = 0.042 μM)",
+    "location": "Results: EGFR dependency varies by KRAS allele"
+   },
+   {
+    "value": "0.023 μM",
+    "meaning": "RMC-7977 平均 IC50",
+    "source_quote": "RMC-7977 (mean IC 50 = 0.023 μM)",
+    "location": "Results: EGFR dependency varies by KRAS allele"
+   },
+   {
+    "value": "≥10 μM",
+    "meaning": "BI-2865 与 ACBI3 平均 IC50",
+    "source_quote": "(mean IC 50 ≥ 10 μM for both",
+    "location": "Results: EGFR dependency varies by KRAS allele"
+   },
+   {
+    "value": "BI-2865",
+    "meaning": "泛 KRAS(OFF) 抑制剂名称",
+    "source_quote": "pan-KRAS(OFF) inhibitor BI-2865 and the KRAS degrader ACBI3",
+    "location": "Results: EGFR dependency varies by KRAS allele"
+   },
+   {
+    "value": "P = 0.044",
+    "meaning": "sotorasib 对 KRAS G12C 类器官选择性",
+    "source_quote": "selectively targeted KRAS G12C organoids ( P value = 0.044",
+    "location": "Results: EGFR dependency varies by KRAS allele"
+   },
+   {
+    "value": "69 岁",
+    "meaning": "配对 ESCA 类器官供者年龄",
+    "source_quote": "from a 69-year-old man with stage III disease",
+    "location": "Results: Dependencies in patient-matched organoids"
+   },
+   {
+    "value": "两种泛 RAS、两种 DNMT1 抑制剂",
+    "meaning": "治疗后类器官敏感性降低的药物数",
+    "source_quote": "reduced sensitivity to two pan-RAS inhibitors (RMC-6236 and RMC-7977) and two DNMT1 inhibitors (5-azacytidine and decitabine)",
+    "location": "Results: Dependencies in patient-matched organoids"
+   },
+   {
+    "value": "两种蛋白酶体抑制剂",
+    "meaning": "治疗后类器官敏感性升高的药物数",
+    "source_quote": "increased sensitivity to two proteosome inhibitors (bortezomib and ixazomib)",
+    "location": "Results: Dependencies in patient-matched organoids"
+   },
+   {
+    "value": "三种癌症类型",
+    "meaning": "核心适应性基因分析纳入的癌种数",
+    "source_quote": "only three cancer types were included (PAAD and STAD organoids were excluded)",
+    "location": "Methods: Analysis of organoid core fitness genes"
+   },
+   {
+    "value": "115 和 96",
+    "meaning": "现有最大两个学术库的模型数",
+    "source_quote": "the two largest academic collections include 115 and 96 models",
+    "location": "Main"
+   },
+   {
+    "value": "约 1,000 株",
+    "meaning": "常用人癌细胞系数量",
+    "source_quote": "the widely available set of around 1,000 human cancer cell lines",
+    "location": "Main"
+   },
+   {
+    "value": "11（OV）/ 4（PAAD）/ 3（STAD）",
+    "meaning": "局限中各癌种筛选样本量",
+    "source_quote": "59 ESCA, 11 OV, 4 PAAD and 3 STAD",
+    "location": "Results: Mapping cancer dependencies in organoids"
+   }
+  ],
+  "steps": [
+   "五中心取样，集中衍生 256 例类器官",
+   "171 对配对：142 对 SCNA PCC≥0.5",
+   "162 例类器官完成 CRISPR 筛选",
+   "G12X 与 Q61H 的 EGFR 依赖不同",
+   "配对 ESCA 的依赖差异经药敏验证"
+  ],
+  "figure_caption": "左：多中心样本经集中衍生形成类器官库，并与配对肿瘤做基因组比对；中：类器官经全基因组 CRISPR 筛选；右：KRAS 变异类器官对 EGFR 抑制的反应不同，Q61H 类器官无反应（赤陶色）。示意图由 AI 生成，依据原文结果绘制，非期刊原图，不代表分子比例。",
+  "image_story": {
+   "stages": [
+    {
+     "visual_en": "A cluster of translucent organoid spheres grown from patient tissue in a culture dish, with a rack of cryovials beside it representing the banked collection.",
+     "source_quote": "organoid cultures were successfully established for 256 out of 907 samples from 878 unique donors"
+    },
+    {
+     "visual_en": "A pooled genome-wide CRISPR screen: suspension organoids in a flask, with a paired tumour tissue fragment linked to an organoid by matching DNA helices.",
+     "source_quote": "We completed quality-control-passed CRISPR–Cas9 screens on 162 unique organoid cultures from 5 tumour types"
+    },
+    {
+     "visual_en": "A row of green organoids exposed to drug droplets and shrinking, next to one large organoid that stays intact and unresponsive to an EGFR inhibitor.",
+     "source_quote": "a KRAS Q61H variant organoid was unresponsive to EGFR inhibition by either CRISPR or small molecules"
+    }
+   ],
+   "key_element_en": "one large solid organoid sphere (the KRAS Q61H organoid unresponsive to EGFR inhibition)"
+  },
+  "image_subject_en": "A left-to-right process in three stages, drawn large. Stage 1 (left): a tight cluster of translucent organoid spheres in deep green and pale mint sitting in a shallow round culture dish, with a small rack of light grey-green cryovials beside it representing a banked collection. Stage 2 (centre): a paired arrangement of a small pale mint tumour tissue fragment and a matching deep green organoid sphere joined by two mid green intertwined DNA helices, next to a rounded suspension flask holding many tiny mid green organoids and a few pale mint guide-RNA capsule shapes drifting inside. Stage 3 (right): a row of mid green organoid spheres, each touched by a tiny pale droplet and visibly shrunken and fragmented, and next to them one organoid that stays intact, drawn as one very large, solid, boldly filled terracotta #C0492F sphere with a smooth glossy surface, unaffected by the droplets around it. Soft semi-realistic 3D scientific illustration, light grey-green background, gentle depth of field, no text, no numbers, no symbols, no charts, no axes. Only the large intact sphere in Stage 3 is terracotta.",
+  "card_subject_en": "A compact single subject made of two entities: one very large, solid, boldly filled terracotta #C0492F organoid sphere with a smooth glossy surface sitting in front, and behind it a small tight cluster of translucent organoid spheres in deep green, mid green and pale mint, some of them shrunken and fragmented while the terracotta sphere stays whole. Semi-realistic 3D scientific illustration, soft studio lighting, light grey-green background, shallow depth of field, the subject large enough to fill the card. No text, no numbers, no symbols. Only the large sphere is terracotta.",
+  "figure_labels": {
+   "heads": [
+    "衍生与保真",
+    "全基因组 CRISPR 筛选",
+    "KRAS 变异与药敏"
+   ],
+   "callouts": [
+    {
+     "t": "256 例类器官\n效率 28%",
+     "stage": 1,
+     "entity_en": "cluster of translucent organoid spheres in a culture dish"
+    },
+    {
+     "t": "93% 通过\n冻融质控",
+     "stage": 1,
+     "entity_en": "rack of cryovials"
+    },
+    {
+     "t": "142 对 SCNA\nPCC≥0.5（83%）",
+     "stage": 2,
+     "entity_en": "paired tumour tissue fragment and organoid joined by DNA helices"
+    },
+    {
+     "t": "162 例筛选\n成功率 85%",
+     "stage": 2,
+     "entity_en": "suspension flask holding organoids"
+    },
+    {
+     "t": "Q61H 类器官\n对 EGFR 抑制无反应",
+     "stage": 3,
+     "entity_en": "large intact terracotta organoid sphere"
+    },
+    {
+     "t": "RMC-6236\n平均 IC50 0.042 μM",
+     "stage": 3,
+     "entity_en": "row of shrunken green organoids touched by drug droplets"
+    }
+   ],
+   "facts": [
+    [
+     "**256** 例类器官",
+     "907 份样本，效率 28%"
+    ],
+    [
+     "**162** 例通过筛选质控",
+     "成功率 85%"
+    ],
+    [
+     "配对 ESCA：治疗前后",
+     "依赖差异经药敏验证"
+    ]
+   ],
+   "note": "口径：描述性读出，未做组间检验；配对分析仅一对样本。示意图由 AI 生成，非期刊原图。"
+  },
+  "chart": {
+   "justified": true,
+   "title_zh": "每例模型适应性基因数中位数：类器官 vs 细胞系",
+   "unit": "个基因（中位数）",
+   "figure_source": "Results: Mapping cancer dependencies in organoids；Fig. 4a",
+   "note": "两组方法与文库不同，原文没有对该对比做统计检验；仅作描述性对照。",
+   "values": [
+    {
+     "label_zh": "类器官（本研究）",
+     "value": 1440,
+     "n": "162 例类器官",
+     "source_quote": "we identified a median of 1,440 fitness genes in each organoid"
+    },
+    {
+     "label_zh": "细胞系（文献）",
+     "value": 2507,
+     "n": "930 株细胞系",
+     "source_quote": "fewer than reported in cell lines (median = 2,507 for 930 cell lines"
+    }
+   ]
+  }
+ },
+ "images": {
+  "mech_raw": "c1-org-2_mech_raw.png",
+  "mech_labeled": "c1-org-2_mech_labeled.png",
+  "card": "c1-org-2_card.png",
+  "mech_raw_source": "c1-org-2_mech_r1.png",
+  "card_source": "c1-org-2_cardsrc.png"
+ }
+}

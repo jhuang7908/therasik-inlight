@@ -1,0 +1,464 @@
+{
+ "id": "c8-vac-3",
+ "final_version": 2,
+ "drafter_model": "claude-sonnet-5-5",
+ "drafter_note": "claude-opus-5-5 refused (stop_reason=refusal, stop_details.category=bio); identical request re-sent on claude-sonnet-5-5",
+ "selected_from_versions": [
+  1,
+  2
+ ],
+ "remaining_failures_n": 0,
+ "remaining_failures": [],
+ "tags_note": "editor tags prepended; writer tags trimmed to 6 (metadata only)",
+ "writer_tags": [
+  "mRNA流感疫苗",
+  "生发中心",
+  "淋巴结细针穿刺",
+  "血清IgG蛋白质组学（Ig-seq）",
+  "记忆B细胞",
+  "抗体结合广度"
+ ],
+ "article": {
+  "tier": "deep",
+  "field": "疫苗与感染免疫",
+  "tags": [
+   "抗体工程",
+   "核酸与基因治疗",
+   "mRNA流感疫苗",
+   "生发中心",
+   "淋巴结细针穿刺",
+   "血清IgG蛋白质组学（Ig-seq）"
+  ],
+  "primary_endpoint_basis": "WU397为观察性研究，无方案预设主要终点。核心读出取摘要与正文一致者：HA特异性记忆B细胞相对基线增幅（两侧Mann–Whitney U检验，原文称显著）与接种后26周HA特异性GC反应检出（mRNA-1010组5/13，Fluarix组未检出；原文未给检验）。标题数字5/13与26周来自Results“Sustained GC response”及摘要，记忆B细胞增幅来自Fig.1e与Results首节。",
+  "comparison_design": "观察性、非随机研究；Methods明确“No statistical methods were used to predetermine sample size”，未为组间比较设计效能。组间比较多用两侧Mann–Whitney U检验（部分用线性混合效应模型、BASELINe检验、FDR校正q<0.05），GC持续性5/13对0、87%对20%等计数/比例未见统计检验。",
+  "untested_comparisons": [
+   "GC持续性：mRNA-1010组5/13对Fluarix组0（未见统计检验）",
+   "第4周预存克隆型占比：mRNA-1010组83.9%对Fluarix组86.2%",
+   "HA特异性GC B细胞克隆与第1周浆母细胞的重叠：mRNA-1010组中位87%对1名Fluarix接种者中位20%",
+   "符合谱系分析条件的血清克隆型：mRNA-1010组3个对Fluarix组0个"
+  ],
+  "number_basis_note": "摘要与正文数字无冲突（均为5/13）。Fig.1与Fig.5中2022–2023季血样队列为mRNA-1010 n=14、Fluarix n=15，而FNA亚组为mRNA-1010 n=13、Fluarix n=15，属不同子集；正文仅在微珠结合检测处使用n=14/15，GC相关处使用13。图标签中的“1010”为疫苗名称mRNA-1010的编号，已登记。",
+  "must_cover": [
+   {
+    "id": "m1",
+    "item_zh": "WU397观察性研究：75名20–50岁健康成人，38人mRNA-1010、37人Fluarix，血样至26周，FNA亚组13人与15人",
+    "status": "covered",
+    "covered_by": "38人接种mRNA-1010，37人接种四价裂解疫苗Fluarix"
+   },
+   {
+    "id": "m2",
+    "item_zh": "mRNA-1010浆母细胞、血浆IgG滴度增幅及记忆B细胞增幅更高",
+    "status": "covered",
+    "covered_by": "HA特异性记忆B细胞增幅在第4周及17/26周显著更高"
+   },
+   {
+    "id": "m3",
+    "item_zh": "HAI增幅无显著组间差异，IgM+浆母细胞Fluarix组更高，B型无差异",
+    "status": "covered",
+    "covered_by": "HAI滴度增幅两组在第4周及17/26周均无显著差异"
+   },
+   {
+    "id": "m4",
+    "item_zh": "26周GC反应仅见于mRNA-1010组5/13（约38%），Fluarix组从未检出",
+    "status": "covered",
+    "covered_by": "仅mRNA-1010接种者5/13（约38%）在接种后26周（约6个月）仍检出HA特异性GC反应"
+   },
+   {
+    "id": "m5",
+    "item_zh": "21对同源克隆GC细胞SHM显著升高但亲和力未显著提高",
+    "status": "covered",
+    "covered_by": "后者IGHV与IGLV突变频率显著升高，但BLI与ELISA未见亲和力显著提高"
+   },
+   {
+    "id": "m6",
+    "item_zh": "Ig-seq纳入16人（各8人），第0、4、17/26周，预存与疫苗诱导克隆型定义",
+    "status": "covered",
+    "covered_by": "Ig-seq纳入2022–2023季16人（mRNA-1010与Fluarix各8人）"
+   },
+   {
+    "id": "m7",
+    "item_zh": "第4周疫苗诱导克隆型数显著更多，预存克隆型占比83.9%对86.2%，增幅后减弱为略高",
+    "status": "covered",
+    "covered_by": "第4周预存克隆型占mRNA-1010组83.9%、Fluarix组86.2%"
+   },
+   {
+    "id": "m8",
+    "item_zh": "预存克隆型克隆内CDRH3扩增频率约为Fluarix的3倍，且贡献更大并持续至17/26周",
+    "status": "covered",
+    "covered_by": "mRNA-1010组平均约为Fluarix组的3倍，其血清占比亦更高并持续至第17/26周"
+   },
+   {
+    "id": "m9",
+    "item_zh": "谱系分析：3个血清克隆型（仅mRNA-1010组）与GC B细胞同源，GC序列（第8–26周）位于接种后变体亚分支",
+    "status": "covered",
+    "covered_by": "GC B细胞序列（第8–26周）位于与接种后CDRH3肽变体对应的亚分支"
+   },
+   {
+    "id": "m10",
+    "item_zh": "第4周对9个A/H1与12个A/H3毒株结合增幅更高，A/H3优势持续至26周而A/H1不再；ρ=0.694",
+    "status": "covered",
+    "covered_by": "对9个A/H1和12个A/H3毒株的结合增幅显著更高"
+   },
+   {
+    "id": "m11",
+    "item_zh": "微量中和无组间差异；测序法中和13株A/H1N1中11株显著，83株A/H3N2未达显著",
+    "status": "covered",
+    "covered_by": "对13株A/H1N1中的11株增幅显著更高"
+   },
+   {
+    "id": "m12",
+    "item_zh": "作者承认A/H3N2中和广度未显著可能因样本量有限，持续GC机制尚未阐明",
+    "status": "covered",
+    "covered_by": "作者认为可能因样本量有限"
+   }
+  ],
+  "title": "观察性研究：mRNA-1010接种者记忆B细胞增幅更高，5/13人生发中心持续至26周",
+  "one_liner": "75名健康成人观察性队列中，mRNA-1010接种者的HA特异性记忆B细胞增幅在第4及17/26周高于Fluarix接种者；13人中5人26周仍检出生发中心反应。",
+  "datacard": {
+   "study_type": "观察性队列研究（WU397，人体，非随机分配）",
+   "n": "75名健康成人：mRNA-1010组38人、Fluarix组37人；FNA亚组13人对15人；Ig-seq 16人（各8人）",
+   "control": "四价裂解病毒疫苗Fluarix（非随机的平行队列）",
+   "intervention": "四价mRNA季节性流感疫苗mRNA-1010（Moderna提供）；2022–2023与2023–2024两个北半球流感季",
+   "followup": "接种后至26周（血样第1、2、4、8、17、26周）",
+   "primary_endpoint": "无方案预设主要终点；核心读出为HA特异性GC反应持续性（FNA）与HA特异性记忆B细胞相对基线增幅",
+   "primary_endpoint_result": "26周仍检出HA特异性GC反应：mRNA-1010组5/13（约38%），Fluarix组两季均未检出（未见统计检验）；记忆B细胞增幅在第4周及17/26周mRNA-1010组显著更高（两侧Mann–Whitney U检验）",
+   "statistics": "两侧Mann–Whitney U检验；线性混合效应模型（捐献者为随机效应）；BASELINe检验；Spearman相关；两阶段step-up FDR校正（q<0.05）",
+   "evidence_level": "全文",
+   "check_record": "Europe PMC fullTextXML PMC13414572：读了摘要、前言、Results全部小节、Discussion、Methods及全部图注"
+  },
+  "background": [
+   "季节性流感病毒持续抗原漂移，疫苗需逐年更新；既往暴露还可通过抗原印记使回忆应答对流行株的效力下降。生发中心（GC）可促进高亲和力B细胞克隆的选择，并产生浆细胞和记忆B细胞，因此被视为提升疫苗广谱性与持久性的靶点。",
+   "此前小鼠及新冠研究显示mRNA疫苗可诱导较强GC反应；但流感疫苗引发继发回忆应答，mRNA流感疫苗在人体能否产生更强GC应答、持续GC如何重塑分泌型IgG库，尚不清楚。本研究以超声引导淋巴结细针穿刺直接取样GC，并结合血清IgG蛋白质组学（Ig-seq）回答这一问题。"
+  ],
+  "design": [
+   "WU397为观察性队列研究，非随机分配、非盲法，未做样本量预设，亦非为组间比较设计效能。2022–2024年北半球流感季共纳入75名20–50岁健康成人：38人接种mRNA-1010，37人接种四价裂解疫苗Fluarix，两者所含HA毒株略有不同。血样采集至接种后26周；mRNA-1010组13人、Fluarix组15人另接受超声引导淋巴结细针穿刺（FNA）。",
+   "Ig-seq纳入2022–2023季16人（mRNA-1010与Fluarix各8人），分析第0、4、17/26周亲和纯化的A/H3（A/Darwin/9/2021）特异性血清IgG；第0周已存在的克隆型记为“预存”，未检出者记为“疫苗诱导”。无方案预设主要终点，核心读出为GC持续性、记忆B细胞增幅及血清克隆型变化，组间比较用两侧Mann–Whitney U检验等。"
+  ],
+  "results": [
+   {
+    "subhead": "外周抗体与记忆B细胞",
+    "text": "2022–2023季ELISpot显示HA特异性浆母细胞于接种后1周达峰；mRNA-1010组A/H1与A/H3特异性IgG+、IgA+浆母细胞频率显著高于Fluarix组，IgM+则Fluarix组更高，流感B型无显著差异。2022–2024季，mRNA-1010组血浆IgG对A/H1、A/H3的滴度增幅在第4周显著更高并维持至末次时点；HA特异性记忆B细胞增幅在第4周及17/26周显著更高。HAI滴度增幅两组在第4周及17/26周均无显著差异。"
+   },
+   {
+    "subhead": "生发中心持续性与体细胞突变",
+    "text": "FNA取样显示，两个流感季合计，仅mRNA-1010接种者5/13（约38%）在接种后26周（约6个月）仍检出HA特异性GC反应，Fluarix组两季均未见持续GC。3名mRNA-1010接种者共21对第1周浆母细胞/第26周GC B细胞同源克隆，后者IGHV与IGLV突变频率显著升高，但BLI与ELISA未见亲和力显著提高。"
+   },
+   {
+    "subhead": "血清克隆型与克隆内扩增",
+    "text": "Ig-seq每人检出67–186个A/H3特异性血清IgG克隆型；第4周预存克隆型占mRNA-1010组83.9%、Fluarix组86.2%。mRNA-1010组第4周疫苗诱导克隆型数显著更多，预存克隆型数相当，该差异到第17/26周减弱为略高。预存克隆型发生克隆内CDRH3扩增（第4周独特CDRH3肽数多于第0周）的比例，mRNA-1010组平均约为Fluarix组的3倍，其血清占比亦更高并持续至第17/26周。"
+   },
+   {
+    "subhead": "结合广度与滴度关联",
+    "text": "在2022–2023季队列（mRNA-1010 n=14，Fluarix n=15）中，微珠检测显示第4周mRNA-1010组血浆对9个A/H1和12个A/H3毒株的结合增幅显著更高（FDR校正q<0.05）；第26周（部分为17周样本）A/H1不再显著，A/H3仍显著。Ig-seq所见新增CDRH3肽变体比例与第4周抗A/H3滴度变化正相关（Spearman ρ=0.694）。"
+   },
+   {
+    "subhead": "中和广度",
+    "text": "微量中和试验中，针对同源（A/Darwin/9/2021）与异源（A/Thailand/8/2022）A/H3N2，两组中和滴度均上升，但增幅组间无显著差异。测序法中和检测中，mRNA-1010组第4周对13株A/H1N1中的11株增幅显著更高；对83株A/H3N2，多数毒株增幅较高但未达统计学显著。"
+   }
+  ],
+  "mechanism_proven": [
+   "流式与单细胞测序直接显示，mRNA-1010组GC反应可持续至26周，HA特异性GC B细胞中IgG+与IgA+均可检出，而Fluarix组以IgG+为主。HA特异性GC B细胞克隆与第1周浆母细胞重叠的中位比例，mRNA-1010组为87%，Fluarix组仅1人有重叠（20%）。",
+   "谱系树分析找到3个与GC B细胞同源、且CDRH3多样性扩增的A/H3血清IgG克隆型，均来自mRNA-1010组，Fluarix组为0；GC B细胞序列（第8–26周）位于与接种后CDRH3肽变体对应的亚分支。新增CDRH3肽变体比例与第4周滴度变化正相关（ρ=0.694），为相关性证据。"
+  ],
+  "mechanism_inferred": [
+   "作者推测，mRNA-1010可能向引流淋巴结递送更多抗原、延长抗原持续时间，并通过脂质纳米颗粒的自佐剂作用、膜结合抗原的更高价态及人源细胞糖基化模式，激活低频记忆B细胞；持续GC中的重复突变轮次可能为克隆多样化和结合广度提供“预见性突变”，重复接种是否拓宽记忆库仍属推测。"
+  ],
+  "limitations": [
+   "研究为观察性、非随机，样本量未预设，仅限20–50岁健康成人，两疫苗所含HA毒株略有不同，平台效应与毒株差异无法分开；全部组间差异应视为关联性观察。",
+   "FNA亚组仅mRNA-1010组13人、Fluarix组15人，GC持续性为5/13对0的计数比较，原文未报告其统计检验；最长随访26周，无保护效力或临床终点数据。",
+   "单细胞与谱系分析规模很小：scRNA-seq为4名mRNA-1010与3名Fluarix接种者，21对同源克隆来自3人，符合谱系条件的血清克隆型仅3个；Ig-seq仅涉及A/H3、每组8人。",
+   "功能证据有限：HAI与A/H3N2微量中和无显著组间差异，83株A/H3N2中和增幅未达显著，作者认为可能因样本量有限；持续GC的成因（作者称尚未阐明）及其与广度的因果联系均未被直接检验。"
+  ],
+  "significance": [
+   "若这些关联在更大、随机化的研究中得到重复，mRNA-1010这类mRNA流感疫苗可能通过延长GC活动来拓宽血清IgG库的结合谱，这与普适流感疫苗所需的广谱结合方向一致。",
+   "目前证据限于免疫学读出：HAI与A/H3N2微量中和均无组间差异，尚不能据此推断临床保护。FNA联合Ig-seq可作为比较疫苗平台对GC持续性与血清IgG库影响的方法框架；两疫苗的HA毒株不同，比较结论需谨慎解读。"
+  ],
+  "citation": "Matz HC, Yu TG, Dixit K, Kikawa C, Zhou JQ, Pena Alzua G, et al. mRNA-based influenza vaccine expands the B cell response breadth in humans. Nat Immunol. 2026. https://doi.org/10.1038/s41590-026-02569-5",
+  "data_points": [
+   {
+    "value": "75名健康成人",
+    "meaning": "WU397观察性研究纳入人数",
+    "source_quote": "We conducted an observational study (WU397) of 75 healthy adults (ages 20–50, median age 30)",
+    "location": "Results: mRNA-based seasonal influenza virus vaccination induces a robust humoral response"
+   },
+   {
+    "value": "20–50岁",
+    "meaning": "参与者年龄范围",
+    "source_quote": "75 healthy adults (ages 20–50, median age 30)",
+    "location": "Results 首节"
+   },
+   {
+    "value": "2022–2024年",
+    "meaning": "观察的北半球流感季",
+    "source_quote": "over the 2022–2024 Northern Hemisphere influenza virus seasons",
+    "location": "Results 首节"
+   },
+   {
+    "value": "38人",
+    "meaning": "mRNA-1010组人数",
+    "source_quote": "with 38 participants receiving mRNA-1010 encoding the HA glycoproteins and 37 participants receiving split-virion quadrivalent influenza virus vaccine (Fluarix)",
+    "location": "Results 首节"
+   },
+   {
+    "value": "37人",
+    "meaning": "Fluarix组人数",
+    "source_quote": "with 38 participants receiving mRNA-1010 encoding the HA glycoproteins and 37 participants receiving split-virion quadrivalent influenza virus vaccine (Fluarix)",
+    "location": "Results 首节"
+   },
+   {
+    "value": "1010",
+    "meaning": "疫苗名称mRNA-1010中的编号（名称而非数量）",
+    "source_quote": "investigational mRNA-based quadrivalent seasonal influenza virus vaccine (mRNA-1010)",
+    "location": "Main"
+   },
+   {
+    "value": "13人/15人",
+    "meaning": "FNA亚组人数（mRNA-1010/Fluarix）",
+    "source_quote": "A subset of these participants (mRNA-1010, n = 13; Fluarix, n = 15) enrolled for FNA specimens",
+    "location": "Results 首节"
+   },
+   {
+    "value": "第1、2、4、8、17、26周",
+    "meaning": "血样采集时点",
+    "source_quote": "Blood samples were collected at baseline and at 1, 2, 4, 8, 17 and 26 weeks after vaccination.",
+    "location": "Results 首节"
+   },
+   {
+    "value": "1周",
+    "meaning": "HA特异性浆母细胞达峰时间",
+    "source_quote": "peaked in both vaccine cohorts at 1 week after vaccination",
+    "location": "Results 首节 / Fig.1b"
+   },
+   {
+    "value": "2022–2023季",
+    "meaning": "Ig-seq所用队列",
+    "source_quote": "from the 2022–2023 cohort",
+    "location": "Results: Higher number of vaccine-elicited clonotypes in serum following mRNA vaccination"
+   },
+   {
+    "value": "第4周及17/26周",
+    "meaning": "记忆B细胞增幅显著更高的时点",
+    "source_quote": "in the 2022–2024 mRNA-1010 cohort at 4 and 17/26 weeks after vaccination over baseline",
+    "location": "Results 首节 / Fig.1e"
+   },
+   {
+    "value": "5/13",
+    "meaning": "mRNA-1010组26周仍检出HA特异性GC反应的人数",
+    "source_quote": "only in participants who received mRNA-1010 (5/13) did we detect HA-specific GC responses at 26 weeks (approximately 6 months) after vaccination",
+    "location": "Results: Sustained GC response to mRNA vaccination"
+   },
+   {
+    "value": "26周（约6个月）",
+    "meaning": "GC持续检出时点",
+    "source_quote": "HA-specific GC responses at 26 weeks (approximately 6 months) after vaccination",
+    "location": "Results: Sustained GC response to mRNA vaccination"
+   },
+   {
+    "value": "约38%",
+    "meaning": "mRNA-1010组持续GC比例",
+    "source_quote": "the high frequency of persistent GCs detected in participants receiving mRNA-1010 (~38%)",
+    "location": "Results: Sustained GC response to mRNA vaccination"
+   },
+   {
+    "value": "4名与3名",
+    "meaning": "scRNA-seq的mRNA-1010与Fluarix接种者数",
+    "source_quote": "for four participants receiving mRNA-1010 (06, 17, 28 and 29) and three participants receiving Fluarix (05, 09 and 22)",
+    "location": "Results: Sustained GC response to mRNA vaccination"
+   },
+   {
+    "value": "87%/20%",
+    "meaning": "GC B细胞克隆与第1周浆母细胞重叠的中位比例（mRNA-1010组/1名Fluarix接种者）",
+    "source_quote": "(median = 87%) and one participant receiving Fluarix (median = 20%)",
+    "location": "Results: Sustained GC response to mRNA vaccination / Fig.3a"
+   },
+   {
+    "value": "21对",
+    "meaning": "第1周浆母细胞与第26周GC B细胞同源克隆对数",
+    "source_quote": "we identified 21 pairs of clonally related BCRs present as week 1 PBs and week 26 GC B cells across three of the four participants receiving mRNA-1010",
+    "location": "Results: Sustained GC response to mRNA vaccination / Fig.3b"
+   },
+   {
+    "value": "16人（各8人）",
+    "meaning": "Ig-seq分析人数",
+    "source_quote": "We analyzed 16 participants by Ig-seq, including 8 who received mRNA-1010",
+    "location": "Results: Higher number of vaccine-elicited clonotypes in serum following mRNA vaccination"
+   },
+   {
+    "value": "8人（Fluarix）",
+    "meaning": "Ig-seq中Fluarix组人数",
+    "source_quote": "and 8 who received Fluarix (05, 09, 19, 20, 22, 24, 27 and 32)",
+    "location": "Results: Higher number of vaccine-elicited clonotypes in serum following mRNA vaccination"
+   },
+   {
+    "value": "第0、4、17/26周",
+    "meaning": "Ig-seq血清采样时点",
+    "source_quote": "A/H3-specific serum IgG was affinity purified from sera collected at weeks 0, 4 and 17/26",
+    "location": "Results: Higher number of vaccine-elicited clonotypes in serum following mRNA vaccination"
+   },
+   {
+    "value": "83.9%/86.2%",
+    "meaning": "第4周预存克隆型占A/H3特异性血清IgG库的比例（mRNA-1010/Fluarix）",
+    "source_quote": "Pre-existing clonotypes comprised most of the week 4 A/H3-specific serum IgG repertoire in both cohorts (83.9% in mRNA-1010 and 86.2% in Fluarix",
+    "location": "Results: Higher number of vaccine-elicited clonotypes in serum following mRNA vaccination"
+   },
+   {
+    "value": "67–186个",
+    "meaning": "每人A/H3特异性血清IgG克隆型数范围",
+    "source_quote": "we identified between 67 and 186 total A/H3-specific serum IgG clonotypes per individual",
+    "location": "Results: Higher number of vaccine-elicited clonotypes in serum following mRNA vaccination"
+   },
+   {
+    "value": "约3倍",
+    "meaning": "克隆内扩增的预存克隆型频率，mRNA-1010组平均约为Fluarix组的倍数",
+    "source_quote": "with an approximately threefold higher frequency, on average, than Fluarix",
+    "location": "Results: Intraclonal expansion of pre-existing serum IgG clonotypes after mRNA vaccination / Fig.4h"
+   },
+   {
+    "value": "3个克隆型",
+    "meaning": "与GC B细胞同源且CDRH3多样性扩增的血清克隆型（mRNA-1010组3个，Fluarix组0）",
+    "source_quote": "we identified three IgG clonotypes from participants who received mRNA-1010 and none from participants who received Fluarix",
+    "location": "Results: GC-linked lineage structure underlies intraclonal expansion"
+   },
+   {
+    "value": "第8–26周",
+    "meaning": "谱系树中GC B细胞序列所跨时点",
+    "source_quote": "spanning weeks 8 to 26 after vaccination",
+    "location": "Results: GC-linked lineage structure underlies intraclonal expansion / Fig.4j"
+   },
+   {
+    "value": "ρ=0.694",
+    "meaning": "新增CDRH3肽变体比例与第4周抗A/H3滴度变化的Spearman相关",
+    "source_quote": "Spearman’s ρ = 0.694",
+    "location": "Results: Increased antibody binding and neutralization breadth as a result of mRNA vaccination / Fig.5a"
+   },
+   {
+    "value": "n=14/n=15",
+    "meaning": "微珠结合检测中2022–2023季mRNA-1010与Fluarix人数",
+    "source_quote": "mRNA-1010 (red, n = 14) or Fluarix (black, n = 15)",
+    "location": "Fig.5 caption"
+   },
+   {
+    "value": "9个A/H1和12个A/H3",
+    "meaning": "第4周mRNA-1010组血浆结合增幅显著更高的毒株数",
+    "source_quote": "against 9 A/H1 and 12 A/H3 strains tested",
+    "location": "Results: Increased antibody binding and neutralization breadth as a result of mRNA vaccination / Fig.5b,c"
+   },
+   {
+    "value": "q<0.05",
+    "meaning": "微珠与测序中和检测的FDR校正显著性阈值",
+    "source_quote": "false discovery rate correction was applied to the P values; * q < 0.05",
+    "location": "Fig.5 caption"
+   },
+   {
+    "value": "第26周",
+    "meaning": "A/H1结合优势消失而A/H3优势仍在的时点",
+    "source_quote": "At 26 weeks after vaccination, significantly higher antibody binding was not observed for the A/H1 strains",
+    "location": "Results: Increased antibody binding and neutralization breadth as a result of mRNA vaccination"
+   },
+   {
+    "value": "13株中的11株",
+    "meaning": "测序法中和检测中第4周mRNA-1010组增幅显著更高的A/H1N1病毒数",
+    "source_quote": "against 11 of 13 A/H1N1 viruses tested",
+    "location": "Results: Increased antibody binding and neutralization breadth as a result of mRNA vaccination / Fig.5d"
+   },
+   {
+    "value": "83株",
+    "meaning": "测序法中和检测所用A/H3N2病毒数（增幅未达显著）",
+    "source_quote": "We also tested plasma neutralization against 83 different A/H3N2 viruses.",
+    "location": "Results: Increased antibody binding and neutralization breadth as a result of mRNA vaccination / Fig.5e"
+   }
+  ],
+  "steps": [
+   "接种mRNA-1010或Fluarix，采血与淋巴结FNA",
+   "第1周浆母细胞达峰；第4周记忆B细胞增幅更高",
+   "GC B细胞5/13人持续至第26周",
+   "血清IgG疫苗诱导克隆型增多，预存克隆型扩增",
+   "对9株A/H1、12株A/H3结合增幅更高"
+  ],
+  "figure_caption": "示意图展示mRNA-1010接种后外周浆母细胞与记忆B细胞应答、腋窝淋巴结中持续至26周的生发中心（赤陶色），以及血清IgG克隆型多样化和对多株A/H1、A/H3的结合增幅。示意图由 AI 生成，依据原文结果绘制，非期刊原图，不代表分子比例。",
+  "image_story": {
+   "stages": [
+    {
+     "visual_en": "Mid green lipid nanoparticle spheres beside a deep green muscle block, with pale mint plasmablasts and memory B cells drifting through a light grey-green blood vessel",
+     "source_quote": "peaked in both vaccine cohorts at 1 week after vaccination"
+    },
+    {
+     "visual_en": "A cut-open axillary lymph node entered by a thin fine aspiration needle, with one very large solid terracotta germinal center sphere inside",
+     "source_quote": "only in participants who received mRNA-1010 (5/13) did we detect HA-specific GC responses at 26 weeks"
+    },
+    {
+     "visual_en": "A branching mid green lineage tree with many deep green tips beside a rack of pale mint beads and Y-shaped antibodies reaching toward them",
+     "source_quote": "mRNA-1010 induced a significantly greater number of vaccine-elicited clonotypes at week 4"
+    }
+   ],
+   "key_element_en": "a persistent germinal center inside the axillary lymph node"
+  },
+  "image_subject_en": "A left-to-right process in three stages, drawn large. Stage 1 (left): a small cluster of mid green lipid nanoparticle spheres beside a deep green rounded upper-arm muscle block, with a stream of pale mint plasmablast cells and round memory B cells drifting through a light grey-green blood vessel. Stage 2 (centre): a large cut-open axillary lymph node in deep green and light grey-green, a thin deep green fine aspiration needle entering it, and inside the node one germinal center sphere with a pale mint crescent of surrounding follicle cells; the germinal center is drawn as one very large, solid, boldly filled terracotta #C0492F sphere. Stage 3 (right): a branching lineage tree in mid green with many fine deep green tips at the ends of its branches, next to a rack of small pale mint beads of different sizes representing a binding panel, and a few Y-shaped pale mint antibody shapes reaching toward the beads. Soft studio lighting, semi-realistic 3D scientific illustration, light background #EEF2F0, subject filling about 72 percent of the frame, visual weight on the 0.382 line. No text, no numbers, no symbols, no charts, no axes. Only the germinal center is terracotta.",
+  "card_subject_en": "A single compact hero object: a glossy, semi-realistic 3D axillary lymph node cut in half, its outer capsule in deep green and mid green with pale mint inner tissue, resting beside a thin deep green fine-needle aspiration needle. On the cut face sits one very large, solid, boldly filled terracotta #C0492F sphere representing a persistent germinal center. Soft studio lighting, subtle shadows, light background #EEF2F0, calm scientific style, generous empty space around the subject. No text, no numbers, no symbols, no charts. Only the germinal center sphere is terracotta.",
+  "figure_labels": {
+   "heads": [
+    "接种后外周应答",
+    "淋巴结GC持续",
+    "血清库多样化"
+   ],
+   "callouts": [
+    {
+     "t": "mRNA-1010 38人\nFluarix 37人",
+     "stage": 1,
+     "entity_en": "cluster of mid green lipid nanoparticle spheres"
+    },
+    {
+     "t": "记忆B细胞增幅\n第4、17/26周更高",
+     "stage": 1,
+     "entity_en": "pale mint plasmablast cells and round memory B cells"
+    },
+    {
+     "t": "GC持续至26周\nmRNA-1010 5/13",
+     "stage": 2,
+     "entity_en": "germinal center sphere"
+    },
+    {
+     "t": "FNA取样\n13人对15人",
+     "stage": 2,
+     "entity_en": "thin deep green fine aspiration needle"
+    },
+    {
+     "t": "预存克隆型扩增\n频率约3倍",
+     "stage": 3,
+     "entity_en": "branching lineage tree in mid green"
+    },
+    {
+     "t": "结合广度\n9株A/H1·12株A/H3",
+     "stage": 3,
+     "entity_en": "rack of small pale mint beads"
+    }
+   ],
+   "facts": [
+    [
+     "**75**名健康成人观察性队列",
+     "38人mRNA-1010／37人Fluarix"
+    ],
+    [
+     "**5/13**人26周仍有GC",
+     "Fluarix组未检出"
+    ],
+    [
+     "**ρ=0.694**",
+     "新增CDRH3变体比例×滴度变化"
+    ]
+   ],
+   "note": "5/13对0未见统计检验；示意图由 AI 生成，非期刊原图。"
+  },
+  "chart": {
+   "justified": false,
+   "note": "关键组间读出（记忆B细胞增幅、克隆内扩增频率）在正文中未给出可逐字核对的数值，仅有显著性或“约3倍”表述；GC持续性5/13对0缺少Fluarix分母的同口径检验。不满足≥2个同口径可核对数值，不绘数据图。"
+  }
+ },
+ "images": {
+  "mech_raw": "c8-vac-3_mech_raw.png",
+  "mech_labeled": "c8-vac-3_mech_labeled.png",
+  "card": "c8-vac-3_card.png",
+  "mech_raw_source": "c8-vac-3_mech.png",
+  "card_source": "c8-vac-3_cardsrc.png"
+ }
+}

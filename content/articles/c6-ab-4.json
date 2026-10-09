@@ -1,0 +1,527 @@
+{
+ "id": "c6-ab-4",
+ "round": "r4",
+ "text_from": "c6-ab-4_final_r3.json (unchanged in r4; images only)",
+ "drafter_of_edits": "grok-bot (self)",
+ "base_drafter_model": "gpt-5.5-2026-04-23",
+ "source_draft": "work/r3b/c6-ab-4/rw_c6-ab-4_draft_r3fix.json",
+ "edits_r3": [
+  "results[0] '早筛依据'->'早期筛选依据' (499->501 字)"
+ ],
+ "status": "published-ready",
+ "status_reasons": [],
+ "preprint": true,
+ "writer_tags": [
+  "双特异性抗体",
+  "开发性预测",
+  "AC-SINS",
+  "HIC-HAC",
+  "CrossMab",
+  "Spearman相关"
+ ],
+ "tags_note": "editor related-field tags prepended; writer tags trimmed to 6 (metadata only)",
+ "article": {
+  "tier": "deep",
+  "field": "抗体工程",
+  "tags": [
+   "AI 药物设计",
+   "双特异性抗体",
+   "开发性预测",
+   "AC-SINS",
+   "HIC-HAC",
+   "CrossMab"
+  ],
+  "primary_endpoint_basis": "这不是临床疗效试验。主要终点按临床前/方法学研究处理，选取摘要与Results一致、且有统计推断的核心读出：实测双抗开发性值与亲本组合预测值之间的Spearman ρ。标题中的160来自Abstract样本量，ρ至0.95来自Results中HIC的亲本继承相关性。",
+  "comparison_design": "非临床开发性数据集，不是为治疗效应组间比较设计效能。关键对比均按原文统计：亲本组合预测与实测双抗值用Spearman ρ；自缔合增强子/抑制子与电荷变换用Mann-Whitney-U p值；取向互换对照用Spearman ρ；监督模型用parent-disjoint leave-one-out下的Spearman ρ。",
+  "untested_comparisons": [
+   "brazikumab/gantenerumab、abrilumab/landogrozumab、ligelizumab/romosozumab三个缓冲液翻转例子是实例性结果，原文未给总体翻转率的正式检验，未进标题。",
+   "具体亲本如ligelizumab、gantenerumab等在多项测定中的反复格式效应用于提示需额外审查，未作为标题结论。",
+   "高HIC×高HAC配对的概率性风险主要以frontier距离AUC和图示富集呈现，本文不把它写成已证明的普遍因果规则。"
+  ],
+  "number_basis_note": "摘要给出近似范围（如ρ≈0.85–0.95、ρ≈0.60–0.88、ρ<0.4），Results给出逐项精确值。正文、图标签和数据图均使用Results/Methods口径；未将摘要近似值与正文精确值在同一图中混用。",
+  "must_cover": [
+   {
+    "id": "m1",
+    "item_zh": "研究在统一knobs-into-holes CrossMab IgG1支架上，用10项PROPHET-Ab测定表征160个双特异性抗体和65个亲本臂。",
+    "status": "covered",
+    "covered_by": "构建160个双特异性抗体和65个亲本臂，全部置于统一knobs-into-holes CrossMab IgG1支架，并在PROPHET-Ab上完成10项开发性测定"
+   },
+   {
+    "id": "m2",
+    "item_zh": "核心继承读出为实测双抗值与亲本组合预测值之间的Spearman ρ，跨每项测定n=125至160，并使用三种简单算子。",
+    "status": "covered",
+    "covered_by": "核心继承读出是实测双抗值与亲本组合预测值的Spearman ρ；作者对每项测定用mean、min、max三种简单算子，覆盖n=125–160"
+   },
+   {
+    "id": "m3",
+    "item_zh": "Class I表面疏水性和正电荷强亲本继承：HIC、SMAC、HAC的ρ为0.95、0.94和0.89，且HAC由最大值比均值预测更好（ρ 0.89 vs. 0.67）。",
+    "status": "covered",
+    "covered_by": "HIC、SMAC和HAC的亲本组合预测与实测双抗值Spearman ρ分别为0.95、0.94和0.89；其中HAC由亲本最大值预测更好，ρ 0.89对mean算子的0.67"
+   },
+   {
+    "id": "m4",
+    "item_zh": "Class II自缔合显著但不完全亲本继承，并且受缓冲液影响：AC-SINS在PBS pH 7.4的ρ为0.88，在His/Arg pH 6.0的ρ为0.79。",
+    "status": "covered",
+    "covered_by": "AC-SINS在PBS pH 7.4的ρ为0.88，在His/Arg pH 6.0降至0.79"
+   },
+   {
+    "id": "m5",
+    "item_zh": "多反应性仅部分继承：PR-BVP达到ρ 0.80，另外两个多反应性测定较低，为ρ 0.67和0.60。",
+    "status": "covered",
+    "covered_by": "PR-BVP的ρ达到0.80，另两个多反应性测定仅为0.67和0.60"
+   },
+   {
+    "id": "m6",
+    "item_zh": "电荷指标支持自缔合增强子和抑制子的机制分裂：绝对电荷和最佳跟踪增强子（p=0.01），带符号几何均值最佳跟踪抑制子（p=0.02）。",
+    "status": "covered",
+    "covered_by": "绝对电荷总和最能跟踪增强子，p=0.01；带符号几何均值最能跟踪抑制子，p=0.02"
+   },
+   {
+    "id": "m7",
+    "item_zh": "缓冲液情境的限制是，三个示例双抗从PBS pH 7.4中的抑制子翻转为His/NaCl pH 6中的强增强子。",
+    "status": "covered",
+    "covered_by": "这3个例子在PBS pH 7.4为抑制子，到His/NaCl pH 6均转为强增强子"
+   },
+   {
+    "id": "m8",
+    "item_zh": "高HIC×高HAC表面负担帮助标记升高的多反应性：到HIC×HAC前沿的距离用于分类最高20%，AUC为0.69至0.80，取决于测定。",
+    "status": "covered",
+    "covered_by": "最高20%多反应性，AUC为0.69–0.80"
+   },
+   {
+    "id": "m9",
+    "item_zh": "Class III热稳定性难以由亲本预测，minimum算子的ρ从Tm1的–0.06到Tm2的0.32。",
+    "status": "covered",
+    "covered_by": "用minimum算子时，Tm1到Tm2的ρ仅为–0.06至0.32"
+   },
+   {
+    "id": "m10",
+    "item_zh": "取向互换对照显示多数非热稳定性性质不受取向明显影响，21对互换双抗ρ为0.78至0.95，而Tm1/Tm2相关较弱。",
+    "status": "covered",
+    "covered_by": "21对双抗的大多数非热稳定性读出ρ为0.78–0.95，而Tm1/Tm2相关较弱"
+   },
+   {
+    "id": "m11",
+    "item_zh": "更复杂的监督模型是预测增益的负控：SMAC、HIC和HAC达到ρ=0.94、0.94和0.87，没有超过简单基线0.95、0.94和0.89。",
+    "status": "covered",
+    "covered_by": "SMAC、HIC、HAC最佳ρ为0.94、0.94和0.87，低于或持平于简单基线0.95、0.94和0.89"
+   },
+   {
+    "id": "m12",
+    "item_zh": "作者限制外推，因为160个双抗是65个亲本可形成2,080种配对的非随机8%样本，且全部使用单一工程化支架。",
+    "status": "covered",
+    "covered_by": "160个双抗只是65个亲本可形成2,080种配对中的非随机8%样本，作者也说明结论适用于已采样子集；所有分子又都使用单一多工程化IgG1支架"
+   }
+  ],
+  "title": "160个双抗库揭示表面性质可由亲本预测ρ至0.95",
+  "one_liner": "在未经同行评审的160个双抗库研究中，Ritter等用亲本组合预测实测值，HIC/SMAC/HAC的Spearman ρ达0.95、0.94和0.89。",
+  "datacard": {
+   "study_type": "预印本（未经同行评审）的抗体开发性全库表征与预测建模研究",
+   "n": "160个双特异性抗体、65个亲本臂；取向对照21对",
+   "control": "亲本组合基线、取向互换双抗、复杂监督模型",
+   "intervention": "统一knobs-into-holes CrossMab IgG1支架；PROPHET-Ab 10项开发性测定",
+   "primary_endpoint": "实测双抗开发性值与亲本按mean/min/max组合预测值的Spearman ρ；每项测定n=125–160",
+   "primary_endpoint_result": "HIC、SMAC、HAC为0.95、0.94、0.89；AC-SINS为0.79–0.88；Tm1/Tm2为–0.06至0.32",
+   "statistics": "Spearman ρ；Mann-Whitney-U用于电荷分布；监督模型采用parent-disjoint leave-one-out",
+   "evidence_level": "全文",
+   "check_record": "bioRxiv JATS XML全文；核对Abstract、Results、Methods、Discussion及图注"
+  },
+  "background": [
+   "双特异性抗体把不同结合臂放进同一分子，可带来单抗难以完成的双靶点或桥接功能；但开发性并不会自动相加。即使亲本单抗具有有利的开发性概况，组合成双抗后仍可能出现自缔合、多反应性、聚集以及热稳定性受损，这些新生属性过去多来自个案描述。",
+   "这篇bioRxiv预印本（未经同行评审）的切口，是把“父本决定”与“格式新生”分开测量。Ritter等没有从个案解释某个失败分子，而是在同一生产、纯化和PROPHET-Ab测定体系下，比较亲本属性怎样转移到双特异性格式，并由此提炼可筛选的设计规则。"
+  ],
+  "design": [
+   "Ritter等构建160个双特异性抗体和65个亲本臂，全部置于统一knobs-into-holes CrossMab IgG1支架，并在PROPHET-Ab上完成10项开发性测定。亲本抗体构建为标准IgG1。所有抗体经CHO瞬时表达、Protein A捕获和抛光纯化；21对双抗还制作了互换取向，用作支架方向性的对照。",
+   "这是非临床开发性数据集，不是为治疗效应组间比较设计效能。核心继承读出是实测双抗值与亲本组合预测值的Spearman ρ；作者对每项测定用mean、min、max三种简单算子，覆盖n=125–160，并把复杂监督模型作为能否超过简单基线的负控。"
+  ],
+  "results": [
+   {
+    "subhead": "表面性质最可预测",
+    "text": "主要读出显示，Class I表面性质最像亲本。HIC、SMAC和HAC的亲本组合预测与实测双抗值Spearman ρ分别为0.95、0.94和0.89；其中HAC由亲本最大值预测更好，ρ 0.89对mean算子的0.67，提示强正电表面斑块可主导肝素结合读出，可作为早期筛选依据。"
+   },
+   {
+    "subhead": "自缔合受缓冲液影响",
+    "text": "Class II自缔合保留亲本信号但受环境影响。AC-SINS在PBS pH 7.4的ρ为0.88，在His/Arg pH 6.0降至0.79。按噪声包络划分的增强子和抑制子还与电荷指标相关：绝对电荷总和最能跟踪增强子，p=0.01；带符号几何均值最能跟踪抑制子，p=0.02。"
+   },
+   {
+    "subhead": "取向与缓冲液对照",
+    "text": "缓冲液转换给出关键控制：brazikumab/gantenerumab、abrilumab/landogrozumab、ligelizumab/romosozumab这3个例子在PBS pH 7.4为抑制子，到His/NaCl pH 6均转为强增强子。取向互换对照中，21对双抗的大多数非热稳定性读出ρ为0.78–0.95，而Tm1/Tm2相关较弱。"
+   },
+   {
+    "subhead": "多反应性部分继承",
+    "text": "多反应性介于可预测和新生之间。PR-BVP的ρ达到0.80，另两个多反应性测定仅为0.67和0.60。作者进一步把亲本HIC×HAC平面上的前沿距离用于识别最高20%多反应性，AUC为0.69–0.80；高HIC臂与高HAC伙伴组合时，表面负担可在双抗中叠加。因此HIC×HAC更像风险标记，而非确定命运。"
+   },
+   {
+    "subhead": "热稳定性需实测",
+    "text": "Class III热稳定性则不服从亲本继承。用minimum算子时，Tm1到Tm2的ρ仅为–0.06至0.32。复杂监督模型也没有带来预测增益：SMAC、HIC、HAC最佳ρ为0.94、0.94和0.87，低于或持平于简单基线0.95、0.94和0.89。这使三类分层分别指向亲本筛选、缓冲液复核和双抗实测，形成设计规则。"
+   }
+  ],
+  "mechanism_proven": [
+   "结果直接建立了一个分层框架：HIC、SMAC、HAC与亲本组合值高度相关，AC-SINS和多反应性保留中等相关但存在离群，Tm1/Tm2相关最低。取向互换实验把大多数非热稳定性读出的支架方向效应限制在较小范围，同时突出热稳定性受格式影响。",
+   "电荷分析直接支持自缔合离群与Fv电荷分布相关；增强子由绝对电荷总和区分，抑制子由带符号几何均值区分。缓冲液从PBS pH 7.4换到His/NaCl pH 6可使若干抑制子变为增强子，说明这种相关性依赖制剂环境。"
+  ],
+  "mechanism_inferred": [
+   "作者推测，同号Fv电荷会强化整体电荷单极并促进分子间接近，异号电荷则可能在分子内相互抵消而降低自缔合；热稳定性难预测可能来自CrossMab结构域互换、异源Fc界面和Fv近邻改变了展开转变。这些解释由相关和对照支持，但不是逐个分子层面的因果证明。"
+  ],
+  "limitations": [
+   "外推性首先受抽样限制：160个双抗只是65个亲本可形成2,080种配对中的非随机8%样本，作者也说明结论适用于已采样子集；所有分子又都使用单一多工程化IgG1支架，不能直接外推到DVD-Ig、BiTE或通用轻链平台。",
+   "建模局限来自特征与配对图。原文说明，计算特征来自单抗亲本序列，没有尝试双抗异源二聚体的结构预测；格式效应分解也限于加性per-Fv项，因为当前配对图密度不足以识别成对上位效应。",
+   "方法上，除21对取向互换分子外，每个亲本配对只选择单一排列；所有亲本被重格式化为IgG1，消除了同种型混杂，也牺牲了原始同种型背景。当前配对图密度还不足以可靠识别成对上位效应。"
+  ],
+  "significance": [
+   "若在原文测定体系内使用这些规则，双抗发现可先在亲本层筛查疏水性和电荷，避免两个高HIC且高HAC的mAb配对；自缔合需在配方缓冲液中复验，热稳定性则在双抗层面实测。",
+   "对计算流程而言，这项预印本提示简单亲本组合基线是必要参照，复杂监督模型未明显改善。作者提出级联思路：先把单抗序列转成臂层经验值，再结合格式感知特征预测双抗开发性，并提到FAITE、Lilly TuneLab和Ginkgo-Apheris等数据计划。"
+  ],
+  "citation": "Ritter S, Rand L, Karthick S, Bloomingdale T, Smith A, Ao X, 等. Decoding Bispecific Antibody Developability: Design Rules and Predictive Models from a 160-Member Library. bioRxiv. 2026 Jun 15. doi: https://doi.org/10.64898/2026.06.15.732449",
+  "data_points": [
+   {
+    "value": "160个双抗",
+    "meaning": "研究表征的双特异性抗体数量；标题和导语样本量",
+    "source_quote": "We characterized 160 bispecific antibodies and their 65 parental arms on a uniform knobs-into-holes CrossMab IgG1 scaffold across 10 assays",
+    "location": "Abstract"
+   },
+   {
+    "value": "65个亲本臂",
+    "meaning": "研究表征的亲本抗体臂数量",
+    "source_quote": "We characterized 160 bispecific antibodies and their 65 parental arms on a uniform knobs-into-holes CrossMab IgG1 scaffold across 10 assays",
+    "location": "Abstract"
+   },
+   {
+    "value": "10项",
+    "meaning": "PROPHET-Ab开发性测定数量",
+    "source_quote": "across 10 assays on the PROPHET-Ab high-throughput platform",
+    "location": "Abstract"
+   },
+   {
+    "value": "IgG1",
+    "meaning": "统一双抗支架和亲本重格式化所用抗体同种型",
+    "source_quote": "uniform knobs-into-holes CrossMab IgG1 scaffold",
+    "location": "Abstract"
+   },
+   {
+    "value": "标准IgG1",
+    "meaning": "亲本抗体构建所用标准支架",
+    "source_quote": "Parental antibodies were constructed using a standard IgG1 scaffold",
+    "location": "Results, Assaying the developability"
+   },
+   {
+    "value": "21对",
+    "meaning": "取向互换对照的双抗配对数",
+    "source_quote": "we produced 21 bispecific antibodies in both possible orientations and compared pairwise the properties of these 42 antibodies",
+    "location": "Results, asymmetric scaffold"
+   },
+   {
+    "value": "ρ 0.78–0.95",
+    "meaning": "取向互换对照中多数非热稳定性读出的相关范围",
+    "source_quote": "Spearman correlation coefficients, ⍴, ranging from 0.78 to 0.95; n = 21",
+    "location": "Results, asymmetric scaffold"
+   },
+   {
+    "value": "n=125–160",
+    "meaning": "每项亲本继承相关分析的测定覆盖范围",
+    "source_quote": "For each assay (n = 125 to 160), we report the Spearman ρ of the three combining operators",
+    "location": "Results, predictably inherit"
+   },
+   {
+    "value": "三种简单算子",
+    "meaning": "亲本值组合规则数量和名称",
+    "source_quote": "Three combining rules—mean, min, and max—yield predictive models with the least prior assumptions",
+    "location": "Results, predictably inherit"
+   },
+   {
+    "value": "HIC ρ 0.95",
+    "meaning": "HIC亲本组合预测与实测双抗值的Spearman相关",
+    "source_quote": "HIC, SMAC, and HAC (ρ 0.95, 0.94, 0.89).",
+    "location": "Results, predictably inherit"
+   },
+   {
+    "value": "SMAC ρ 0.94",
+    "meaning": "SMAC亲本组合预测与实测双抗值的Spearman相关",
+    "source_quote": "HIC, SMAC, and HAC (ρ 0.95, 0.94, 0.89).",
+    "location": "Results, predictably inherit"
+   },
+   {
+    "value": "HAC ρ 0.89",
+    "meaning": "HAC亲本组合预测与实测双抗值的Spearman相关",
+    "source_quote": "HIC, SMAC, and HAC (ρ 0.95, 0.94, 0.89).",
+    "location": "Results, predictably inherit"
+   },
+   {
+    "value": "ρ 0.89对0.67",
+    "meaning": "HAC最大值算子相对均值算子的预测相关",
+    "source_quote": "HAC is the one property for which the maximum provides a (much) better prediction than mean (ρ 0.89 vs. 0.67).",
+    "location": "Results, predictably inherit"
+   },
+   {
+    "value": "AC-SINS ρ 0.88",
+    "meaning": "PBS pH 7.4条件下AC-SINS亲本继承相关",
+    "source_quote": "PBS pH 7.4, ρ 0.88",
+    "location": "Results, predictably inherit"
+   },
+   {
+    "value": "AC-SINS ρ 0.79",
+    "meaning": "His/Arg pH 6.0条件下AC-SINS亲本继承相关",
+    "source_quote": "His/Arg pH 6.0, ρ 0.79",
+    "location": "Results, predictably inherit"
+   },
+   {
+    "value": "0.79–0.88",
+    "meaning": "三个AC-SINS缓冲条件下自缔合继承相关范围",
+    "source_quote": "Spearman ρ 0.79–0.88",
+    "location": "Results, Class II self-association"
+   },
+   {
+    "value": "PBS pH 7.4",
+    "meaning": "自缔合测定与缓冲液翻转的参考缓冲条件",
+    "source_quote": "PBS pH 7.4 (brazikumab/gantenerumab a super suppressor)",
+    "location": "Results, Suppressors convert"
+   },
+   {
+    "value": "His/Arg pH 6.0",
+    "meaning": "AC-SINS配方缓冲条件之一",
+    "source_quote": "His/Arg pH 6.0, ρ 0.79",
+    "location": "Results, predictably inherit"
+   },
+   {
+    "value": "His/NaCl pH 6",
+    "meaning": "抑制子转为增强子的缓冲条件",
+    "source_quote": "all become strong enhancers in His/NaCl pH 6",
+    "location": "Results, Suppressors convert"
+   },
+   {
+    "value": "3个例子",
+    "meaning": "从PBS抑制子转为His/NaCl强增强子的示例双抗数量",
+    "source_quote": "All three are suppressors in PBS pH 7.4 (brazikumab/gantenerumab a super suppressor), but all become strong enhancers in His/NaCl pH 6",
+    "location": "Results, Suppressors convert"
+   },
+   {
+    "value": "p=0.01",
+    "meaning": "绝对电荷总和区分自缔合增强子的Mann-Whitney-U检验",
+    "source_quote": "absolute sum of charge to be the most performant for enhancers (Mann-Whitney-U p = 0.01)",
+    "location": "Results, Charge imbalance"
+   },
+   {
+    "value": "p=0.02",
+    "meaning": "带符号几何均值区分自缔合抑制子的检验",
+    "source_quote": "signed geometric mean to be the most predictive for suppressors (p = 0.02)",
+    "location": "Results, Charge imbalance"
+   },
+   {
+    "value": "PR-BVP ρ 0.80",
+    "meaning": "BVP多反应性亲本继承相关",
+    "source_quote": "Polyreactivity is also reasonably predictable for PR-BVP (ρ 0.80)",
+    "location": "Results, predictably inherit"
+   },
+   {
+    "value": "0.67和0.60",
+    "meaning": "另外两个多反应性测定的亲本继承相关",
+    "source_quote": "the other two proved less so (ρ 0.67, 0.60)",
+    "location": "Results, predictably inherit"
+   },
+   {
+    "value": "最高20%",
+    "meaning": "HIC×HAC前沿距离分类的多反应性高值定义",
+    "source_quote": "The distance to this boundary when used as a classifier of the top-20% achieves AUC values between 0.69 and 0.80",
+    "location": "Results, Class II polyreactivity"
+   },
+   {
+    "value": "AUC 0.69–0.80",
+    "meaning": "HIC×HAC前沿距离分类最高多反应性抗体的AUC范围",
+    "source_quote": "achieves AUC values between 0.69 and 0.80 depending on the polyreactivity assay",
+    "location": "Results, Class II polyreactivity"
+   },
+   {
+    "value": "Tm1/Tm2",
+    "meaning": "nanoDSF热稳定性转变读出",
+    "source_quote": "Thermostability (Tm1, Tm2), by contrast, correlates weakly",
+    "location": "Results, asymmetric scaffold"
+   },
+   {
+    "value": "ρ –0.06至0.32",
+    "meaning": "minimum算子预测热稳定性Tm1到Tm2的相关范围",
+    "source_quote": "ρ ranging from –0.06 (Tm1) to 0.32 (Tm2) using the minimum combining function",
+    "location": "Results, Class III thermostability"
+   },
+   {
+    "value": "ρ 0.94、0.94和0.87",
+    "meaning": "复杂监督模型对SMAC、HIC和HAC的最佳预测相关",
+    "source_quote": "the best-performing models achieved ρ = 0.94 for SMAC, 0.94 for HIC, and 0.87 for HAC",
+    "location": "Results, supervised models"
+   },
+   {
+    "value": "0.95、0.94和0.89",
+    "meaning": "SMAC、HIC和HAC对应简单组合基线相关",
+    "source_quote": "no improvement over the simple combining functions (0.95, 0.94, and 0.89, respectively)",
+    "location": "Results, supervised models"
+   },
+   {
+    "value": "8%",
+    "meaning": "160个双抗覆盖65个亲本所有可能配对的比例",
+    "source_quote": "The 160 bispecifics sample 8% of 2,080 possible pairings of the 65 parents",
+    "location": "Discussion, limitations"
+   },
+   {
+    "value": "2,080",
+    "meaning": "65个亲本可形成的可能配对数",
+    "source_quote": "The 160 bispecifics sample 8% of 2,080 possible pairings of the 65 parents",
+    "location": "Discussion, limitations"
+   },
+   {
+    "value": "65个亲本",
+    "meaning": "局限中可能配对计算所依据的亲本数量",
+    "source_quote": "2,080 possible pairings of the 65 parents",
+    "location": "Discussion, limitations"
+   },
+   {
+    "value": "Class I",
+    "meaning": "高度可预测的继承类别",
+    "source_quote": "Class I properties are highly predictable, transferring cleanly from parent to bispecific.",
+    "location": "Discussion"
+   },
+   {
+    "value": "Class II",
+    "meaning": "中等可预测且上下文依赖的继承类别",
+    "source_quote": "Class II properties exhibit moderate predictability but with some context-dependent behavior.",
+    "location": "Discussion"
+   },
+   {
+    "value": "Class III",
+    "meaning": "不可预测且受格式驱动的继承类别",
+    "source_quote": "Class III properties are not predictable and appear to be driven, at least in part, by the particular bispecific antibody scaffold",
+    "location": "Discussion"
+   },
+   {
+    "value": "2026 Jun 15",
+    "meaning": "预印本发布日期",
+    "source_quote": "PUBLICATION DATE: 2026-06-15",
+    "location": "Metadata"
+   },
+   {
+    "value": "10.64898/2026.06.15.732449",
+    "meaning": "预印本DOI",
+    "source_quote": "DOI: https://doi.org/10.64898/2026.06.15.732449",
+    "location": "Metadata"
+   }
+  ],
+  "steps": [
+   "亲本标准IgG1重格式化",
+   "双抗KiH/CrossMab组装",
+   "按亲本算子预测双抗读出",
+   "分层识别继承与风险",
+   "热稳定性回到双抗实测"
+  ],
+  "figure_caption": "示意图概括亲本开发性如何在双特异性格式中分层继承：表面性质多可由亲本预测，自缔合与电荷和缓冲液相关，HIC×HAC前沿距离提示多反应性风险，热稳定性需双抗层面验证。示意图由 AI 生成，依据原文结果绘制，非期刊原图，不代表分子比例",
+  "image_story": {
+   "stages": [
+    {
+     "visual_en": "Two separate parental antibody arms measured on a green assay platform before assembly.",
+     "source_quote": "We profiled 160 bispecific and the corresponding 65 monospecific parental antibodies on the PROPHET-Ab developability platform"
+    },
+    {
+     "visual_en": "A CrossMab-like bispecific antibody assembled from two arms, beside a single terracotta HIC-HAC frontier risk-marker cloud indicating associated polyreactivity risk.",
+     "source_quote": "The distance to this boundary when used as a classifier of the top-20% achieves AUC values between 0.69 and 0.80 depending on the polyreactivity assay"
+    },
+    {
+     "visual_en": "A bispecific antibody entering a thermal testing chamber, with separated unfolding domains shown in muted green.",
+     "source_quote": "The thermal transition temperatures of bispecific antibodies exhibit poor predictability, with ρ ranging from –0.06 (Tm1) to 0.32 (Tm2) using the minimum combining function"
+    }
+   ],
+   "key_element_en": "HIC-HAC frontier risk-marker cloud"
+  },
+  "image_subject_en": "A left-to-right process in three stages, drawn large. Stage 1 shows paired parental antibody arms as two separate Y-shaped molecules in deep green and mid green, resting beside a pale mint assay surface with small light grey-green assay droplets. Stage 2 shows an assembled bispecific antibody on an IgG scaffold, with one arm deep green and the other mid green, near green self-association particles and a HIC-HAC frontier risk-marker cloud drawn as one very large, solid, boldly filled terracotta #C0492F amorphous cloud beside the antibody, clearly symbolic rather than deterministic. Stage 3 shows the same bispecific moving into a thermal testing chamber, with a fragile thermostability domain cluster in pale mint and light grey-green, slightly separated to imply unfolding. Use semi-realistic BioRender-like scientific illustration, soft shadows, clean background in #EEF2F0, no text, no numbers, no symbols, no charts, no axes. Only the HIC-HAC frontier risk-marker cloud is terracotta.",
+  "card_subject_en": "A compact single subject: one large semi-realistic bispecific antibody on an IgG scaffold, with its two parental arms colored deep green and mid green, floating above a pale mint assay platform. A green self-association cluster sits close to one arm, while one very large, solid, boldly filled terracotta #C0492F HIC-HAC frontier risk-marker cloud sits beside the other side as a symbolic associated-risk region, not a deterministic mechanism. Use light grey-green highlights, soft shadows, clean background, no text, no numbers, no symbols. Only the HIC-HAC frontier risk-marker cloud is terracotta.",
+  "figure_labels": {
+   "heads": [
+    "亲本筛选",
+    "格式组装",
+    "验证风险"
+   ],
+   "callouts": [
+    {
+     "t": "160个双抗\n65个亲本臂",
+     "stage": 1,
+     "entity_en": "paired parental antibody arms"
+    },
+    {
+     "t": "HIC/SMAC/HAC\nρ 0.95/0.94/0.89",
+     "stage": 1,
+     "entity_en": "paired parental antibody arms"
+    },
+    {
+     "t": "AC-SINS\nρ 0.79–0.88",
+     "stage": 2,
+     "entity_en": "green self-association particles"
+    },
+    {
+     "t": "电荷分组\np=0.01/0.02",
+     "stage": 2,
+     "entity_en": "assembled bispecific antibody on IgG scaffold"
+    },
+    {
+     "t": "多反应性top 20%\nAUC 0.69–0.80",
+     "stage": 2,
+     "entity_en": "HIC-HAC frontier risk-marker cloud"
+    },
+    {
+     "t": "Tm1/Tm2\nρ –0.06至0.32",
+     "stage": 3,
+     "entity_en": "fragile thermostability domain cluster"
+    }
+   ],
+   "facts": [
+    [
+     "表面性质",
+     "**ρ 0.95**最高",
+     "亲本层可筛"
+    ],
+    [
+     "自缔合",
+     "PBS ρ 0.88",
+     "His/Arg ρ 0.79"
+    ],
+    [
+     "热稳定性",
+     "Tm1至Tm2",
+     "ρ –0.06至0.32"
+    ]
+   ],
+   "note": "ρ为Spearman；监督模型未改善。示意图由 AI 生成，非期刊原图。"
+  },
+  "chart": {
+   "justified": true,
+   "title_zh": "表面性质的亲本继承相关性",
+   "unit": "Spearman ρ",
+   "figure_source": "Results/Figure 3",
+   "values": [
+    {
+     "label_zh": "HIC",
+     "value": 0.95,
+     "n": "n=125–160",
+     "source_quote": "HIC, SMAC, and HAC (ρ 0.95, 0.94, 0.89)."
+    },
+    {
+     "label_zh": "SMAC",
+     "value": 0.94,
+     "n": "n=125–160",
+     "source_quote": "HIC, SMAC, and HAC (ρ 0.95, 0.94, 0.89)."
+    },
+    {
+     "label_zh": "HAC",
+     "value": 0.89,
+     "n": "n=125–160",
+     "source_quote": "HIC, SMAC, and HAC (ρ 0.95, 0.94, 0.89)."
+    }
+   ],
+   "note": "HAC采用最大算子；HIC/SMAC为作者选定算子。"
+  }
+ },
+ "images": {
+  "mech_raw": "work/r4/clean/c6-ab-4_mech_raw_r4b_clean.png",
+  "mech": "c6-ab-4_mech_r4b.png",
+  "card": "c6-ab-4_card_r4.png",
+  "card_src": "work/r4/clean/c6-ab-4_card_raw_r4_clean.png (cleanup 232/200/12/6)",
+  "image_model": "mech: Grok drawing (r4/r4b/r4c, supplied by parent run); card: Grok drawing r4",
+  "note": "mech: larger fonts HS=38 FACT_FS=34 (mech_r4f.py); 3 head/fact labels <50% CJK OCR (亲本筛选, 亲本层可筛, 热稳定性); rendered strings verified identical to final_r3 figure_labels -> pass per user rule (c)"
+ },
+ "licence_note": "bioRxiv 'no reuse': article text is an original Chinese write-up; no text or figures of the preprint are reused; r4 figures are original drawings (Grok) laid out with original Chinese labels; no preprint figures reused."
+}
