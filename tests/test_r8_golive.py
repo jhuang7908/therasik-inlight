@@ -55,10 +55,23 @@ class R8GoLiveTests(unittest.TestCase):
         cls.manifest = json.loads((ROOT / "content" / "r8_manifest.json").read_text(encoding="utf-8"))
         cls.sitemap = (ROOT / "sitemap.xml").read_text(encoding="utf-8") if (ROOT / "sitemap.xml").exists() else ""
 
-    def test_twenty_five_published(self):
+    def test_thirty_six_published(self):
         ids = cat.published_ids(self.catalog)
-        self.assertEqual(len(ids), 25)
+        self.assertEqual(len(ids), 36)
         self.assertEqual(ids, [a["id"] for a in self.manifest["articles"]])
+        labels = [a.get("field_label") or a.get("field") for a in cat.published_articles(self.catalog)]
+        from collections import Counter
+        counts = Counter(labels)
+        self.assertEqual(counts["类器官"], 4)
+        self.assertEqual(counts["疾病模型"], 3)
+        self.assertEqual(counts["AI药物设计"], 5)
+        self.assertEqual(counts["肿瘤免疫与细胞治疗"], 5)
+        self.assertEqual(counts["自身免疫与移植"], 4)
+        self.assertEqual(counts["疫苗与感染免疫"], 4)
+        self.assertEqual(counts["抗体工程"], 4)
+        self.assertEqual(counts["核酸与基因治疗"], 4)
+        self.assertEqual(counts["精准肿瘤与临床转化"], 3)
+        self.assertNotIn("动物模型", labels)
 
     def test_card_titles_at_most_30(self):
         for a in cat.published_articles(self.catalog):
@@ -82,7 +95,7 @@ class R8GoLiveTests(unittest.TestCase):
         hidden = set(cat.hidden_ids(self.catalog))
         self.assertTrue({"c7-cell-5", "c5-am-6"} <= hidden)
         cat_ids = {a["id"] for a in cat.extract_cat_array(self.index)}
-        self.assertEqual(len(cat_ids), 25)
+        self.assertEqual(len(cat_ids), 36)
         for hid in HIDDEN_SAMPLE:
             self.assertIn(hid, hidden)
             self.assertNotIn(hid, cat_ids)
@@ -219,6 +232,16 @@ class R8GoLiveTests(unittest.TestCase):
         for a in cat.published_articles(self.catalog):
             self.assertTrue(cat.article_json_path(a["id"]).exists())
             self.assertTrue(cat.article_md_path(a["id"]).exists())
+
+    def test_disease_model_label_shown_animal_id_stable(self):
+        self.assertIn('"animal": "疾病模型"', self.index)
+        self.assertNotIn('"animal": "动物模型"', self.index)
+        fields = cat.load_fields()
+        animal = next(f for f in fields if f["k"] == "animal")
+        self.assertEqual(animal["n"], "疾病模型")
+        self.assertEqual(animal["field"], "疾病模型")
+        self.assertEqual(cat.FIELD_KEYS["疾病模型"], "animal")
+        self.assertEqual(cat.FIELD_KEYS["动物模型"], "animal")
 
 
 if __name__ == "__main__":

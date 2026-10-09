@@ -2,6 +2,362 @@
   "generated": "r8-golive",
   "articles": [
     {
+      "id": "c6-ab-9",
+      "f": "antibody",
+      "field": "抗体工程",
+      "field_label": "抗体工程",
+      "field_color": "#3A6489",
+      "t": "pIgR双抗在食蟹猴BAL中暴露提高5.5倍",
+      "card_title": "pIgR双抗使食蟹猴BAL暴露提高5.5倍",
+      "card_caption": "赤陶红双抗经pIgR转入肺黏膜",
+      "cover_caption": "封面示意：赤陶红双抗经上皮pIgR从血液转入肺黏膜腔。图片由 AI 生成，非原文图片。",
+      "ds": "2026-10-03",
+      "disp": "2026.10",
+      "j": "mAbs",
+      "url": "https://doi.org/10.1080/19420862.2026.2743413",
+      "au": "Marks 等（Cheung / Zwolak）",
+      "tags": [
+        "antibody"
+      ],
+      "related": [
+        {
+          "field": "疾病模型",
+          "label": "疾病模型",
+          "color": "#5E6624"
+        }
+      ],
+      "preprint": false,
+      "sum": "Marks等在人、食蟹猴、小鼠组织中比对多聚免疫球蛋白受体（pIgR）后，把抗pIgR VHH接到抗血凝素IgG上；食蟹猴单次静脉5 mg/kg后，双抗血清半衰期约1.6天，支气管肺泡灌洗液（BAL）总暴露为对照IgG的5.5倍。",
+      "card_img": "img/c6-ab-9_card.webp",
+      "mech_img": "img/c6-ab-9_mech.webp",
+      "curated": true,
+      "locked": true,
+      "status": "published",
+      "deep": "c6-ab-9"
+    },
+    {
+      "id": "c5-am-8",
+      "f": "animal",
+      "field": "疾病模型",
+      "field_label": "疾病模型",
+      "field_color": "#5E6624",
+      "t": "人源化小鼠中敲除DPP9经CARD8焦亡导致造血干细胞耗竭与全血细胞减少",
+      "card_title": "人DPP9缺失经CARD8焦亡致HSPC耗竭",
+      "card_caption": "赤陶色CARD8在绿色HSPC中激活焦亡",
+      "cover_caption": "封面示意：绿色人造血干细胞内，赤陶色CARD8炎性体被激活并导向焦亡，寓意DPP9缺失后门控失效。图片由 AI 生成，非原文图片。",
+      "ds": "2026-09-15",
+      "disp": "2026.09",
+      "j": "J Clin Invest",
+      "url": "https://doi.org/10.1172/jci207530",
+      "au": "Richard A. Flavell / Diane S. Krause, Yale School of Medicine",
+      "tags": [
+        "animal"
+      ],
+      "related": [
+        {
+          "field": "自身免疫与移植免疫",
+          "label": "自身免疫与移植",
+          "color": "#8E4F5A"
+        }
+      ],
+      "preprint": false,
+      "sum": "在MISTRG6小鼠中CRISPR敲除人CD34+ HSPC的DPP9，可重现外周与骨髓血细胞减少；丢失由CARD8介导的焦亡驱动，敲除CARD8或CASP1可挽救，敲除NLRP1不能。",
+      "card_img": "img/c5-am-8_card.webp",
+      "mech_img": "img/c5-am-8_mech.webp",
+      "curated": true,
+      "locked": true,
+      "status": "published",
+      "deep": "c5-am-8"
+    },
+    {
+      "id": "c9-rna-9",
+      "f": "nucleic",
+      "field": "核酸与基因治疗（含 LNP 递送）",
+      "field_label": "核酸与基因治疗",
+      "field_color": "#8A6212",
+      "t": "吸入ARO-RAGE在健康人与哮喘患者中可耐受，184 mg单剂BALF sRAGE降90.2%",
+      "card_title": "吸入ARO-RAGE单剂使BALF sRAGE降90.2%",
+      "card_caption": "赤陶红吸入siRNA贴在绿色肺泡上皮",
+      "cover_caption": "封面示意：雾化的赤陶红色siRNA贴在绿色肺泡上皮表面，远处是淡绿支气管树，寓意吸入递送到肺。图片由 AI 生成，非原文图片。",
+      "ds": "2026-09-09",
+      "disp": "2026.09",
+      "j": "Nature Medicine",
+      "url": "https://doi.org/10.1038/s41591-026-04607-z",
+      "au": "Mark O’Carroll 等（通讯 Nicholas J. Leeper、Matthias Salathe），Arrowhead Pharmaceuticals / 堪萨斯大学医学中心",
+      "tags": [
+        "nucleic"
+      ],
+      "related": [],
+      "preprint": false,
+      "sum": "随机双盲试验中，吸入靶向肺上皮RAGE的siRNA达到可耐受安全；健康志愿者单剂184 mg后支气管肺泡灌洗可溶性RAGE平均最多下降90.2%。",
+      "card_img": "img/c9-rna-9_card.webp",
+      "mech_img": "img/c9-rna-9_mech.webp",
+      "curated": true,
+      "locked": true,
+      "status": "published",
+      "deep": "c9-rna-9"
+    },
+    {
+      "id": "c5-am-9",
+      "f": "animal",
+      "field": "疾病模型",
+      "field_label": "疾病模型",
+      "field_color": "#5E6624",
+      "t": "4个人源化DMD小鼠模型携带外显子44、45、51或53缺失，侧翼外显子跳跃可恢复抗肌萎缩蛋白",
+      "card_title": "4株人源化DMD小鼠：缺外显子44、45、51或53",
+      "card_caption": "绿色肌纤维上赤陶色抗肌萎缩蛋白缺口",
+      "cover_caption": "封面示意：绿色肌纤维膜上的赤陶色抗肌萎缩蛋白出现缺口，寓意人DMD外显子缺失后的蛋白中断。图片由 AI 生成，非原文图片。",
+      "ds": "2026-08-28",
+      "disp": "2026.08",
+      "j": "Dis Model Mech",
+      "url": "https://doi.org/10.1242/dmm.052875",
+      "au": "Annemieke Aartsma-Rus / Peter Hohenstein, Leiden University Medical Center",
+      "tags": [
+        "animal"
+      ],
+      "related": [
+        {
+          "field": "核酸与基因治疗（含 LNP 递送）",
+          "label": "核酸与基因治疗",
+          "color": "#8A6212"
+        }
+      ],
+      "preprint": false,
+      "sum": "在mdx背景下构建人DMD外显子44、45、51或53缺失的4个小鼠模型；8周龄雄鼠腓肠肌缺乏或仅有痕量抗肌萎缩蛋白，肌内注射vivo-morpholino跳跃侧翼外显子可恢复蛋白。",
+      "card_img": "img/c5-am-9_card.webp",
+      "mech_img": "img/c5-am-9_mech.webp",
+      "curated": true,
+      "locked": true,
+      "status": "published",
+      "deep": "c5-am-9"
+    },
+    {
+      "id": "c4-ai-8",
+      "f": "autoimm",
+      "field": "自身免疫与移植免疫",
+      "field_label": "自身免疫与移植",
+      "field_color": "#8E4F5A",
+      "t": "难治性重症肌无力抗CD19 CAR-T个案随访：3例均维持停药临床缓解至少19个月",
+      "card_title": "难治MG抗CD19 CAR-T：3例停药缓解至少19个月",
+      "card_caption": "深绿CAR-T细胞贴近赤陶红自身反应B细胞",
+      "cover_caption": "封面示意：深绿CAR-T细胞贴近赤陶红自身反应B细胞。图片由 AI 生成，非原文图片。",
+      "ds": "2026-08-21",
+      "disp": "2026.08",
+      "j": "Cell Reports Medicine",
+      "url": "https://doi.org/10.1016/j.xcrm.2026.103000",
+      "au": "Aiden Haghikia（通讯/lead contact），Tobias Hegelmaier、Jeremias Motte 等，Hannover Medical School / Ruhr-University Bochum",
+      "tags": [
+        "autoimm"
+      ],
+      "related": [
+        {
+          "field": "肿瘤免疫与细胞治疗",
+          "label": "肿瘤免疫与细胞治疗",
+          "color": "#6E3F7A"
+        }
+      ],
+      "preprint": false,
+      "sum": "3例AChR阳性难治全身型重症肌无力接受KYV-101（1×10^8细胞）后，随访24、19、19个月均维持停用MG特异性免疫治疗的临床缓解；抗AChR抗体未完全转阴，不良事件短暂可处理。",
+      "card_img": "img/c4-ai-8_card.webp",
+      "mech_img": "img/c4-ai-8_mech.webp",
+      "curated": true,
+      "locked": true,
+      "status": "published",
+      "deep": "c4-ai-8"
+    },
+    {
+      "id": "c6-ab-7",
+      "f": "antibody",
+      "field": "抗体工程",
+      "field_label": "抗体工程",
+      "field_color": "#3A6489",
+      "t": "156个巨噬激活双抗筛出WTa2d1xCD38，IC50低至18.0 pM",
+      "card_title": "156个双抗筛出低亲和SIRPα×CD38",
+      "card_caption": "赤陶红双抗桥接巨噬与淋巴瘤细胞",
+      "cover_caption": "封面示意：赤陶红双抗同时抓住巨噬细胞与淋巴瘤细胞，寓意低亲和SIRPα诱饵与CD38臂的桥接杀伤。图片由 AI 生成，非原文图片。",
+      "ds": "2026-08-01",
+      "disp": "2026.08",
+      "j": "Nature Communications",
+      "url": "https://doi.org/10.1038/s41467-026-76180-5",
+      "au": "Pagès-Geli 等（Crespo / Weiskopf）",
+      "tags": [
+        "antibody"
+      ],
+      "related": [
+        {
+          "field": "肿瘤免疫与细胞治疗",
+          "label": "肿瘤免疫与细胞治疗",
+          "color": "#6E3F7A"
+        }
+      ],
+      "preprint": false,
+      "sum": "Pagès-Geli等用功能优先的表面组筛选加156个异源scFv-Fc双抗，选出低亲和SIRPα诱饵×CD38分子WTa2d1xCD38；在10条淋巴瘤细胞系上IC50为18.0 pM至3.08 nM，体内可延长生存并与利妥昔单抗联用出现完全治愈。",
+      "card_img": "img/c6-ab-7_card.webp",
+      "mech_img": "img/c6-ab-7_mech.webp",
+      "curated": true,
+      "locked": true,
+      "status": "published",
+      "deep": "c6-ab-7"
+    },
+    {
+      "id": "c9-rna-7",
+      "f": "nucleic",
+      "field": "核酸与基因治疗（含 LNP 递送）",
+      "field_label": "核酸与基因治疗",
+      "field_color": "#8A6212",
+      "t": "鞘内RAG-17在6例SOD1-ALS中达可接受安全，队列1第240天脑脊液SOD1降69%",
+      "card_title": "RAG-17一期6例：脑脊液SOD1降69%与56%",
+      "card_caption": "赤陶红siRNA双链连着绿色辅助寡核苷酸",
+      "cover_caption": "封面示意：赤陶红色的siRNA双链经接头连着一段绿色辅助寡核苷酸，旁边是腰椎穿刺针与淡绿脊髓轮廓，寓意鞘内递送。图片由 AI 生成，非原文图片。",
+      "ds": "2026-07-15",
+      "disp": "2026.07",
+      "j": "Nature Medicine",
+      "url": "https://doi.org/10.1038/s41591-026-04491-7",
+      "au": "Weiqi Chen 等（通讯 Long-Cheng Li、Yilong Wang），首都医科大学附属北京天坛医院 / Ractigen Therapeutics",
+      "tags": [
+        "nucleic"
+      ],
+      "related": [],
+      "preprint": false,
+      "sum": "6例SOD1-ALS开放标签试验中，鞘内RAG-17达到可接受的安全与耐受；队列1第240天、队列2第210天脑脊液SOD1分别较基线下降69%与56%。",
+      "card_img": "img/c9-rna-7_card.webp",
+      "mech_img": "img/c9-rna-7_mech.webp",
+      "curated": true,
+      "locked": true,
+      "status": "published",
+      "deep": "c9-rna-7"
+    },
+    {
+      "id": "c6-ab-8",
+      "f": "antibody",
+      "field": "抗体工程",
+      "field_label": "抗体工程",
+      "field_color": "#3A6489",
+      "t": "三特异IL-2R抗体αβγVHH-48的EC50达0.015 nM",
+      "card_title": "三特异IL-2R抗体EC50达0.015 nM并偏Treg",
+      "card_caption": "赤陶红三抗把IL-2R三链拉在一起",
+      "cover_caption": "封面示意：赤陶红三特异抗体把Treg表面的IL-2Rα/β/γ拉成可信号的三聚体。图片由 AI 生成，非原文图片。",
+      "ds": "2026-07-10",
+      "disp": "2026.07",
+      "j": "Nature Communications",
+      "url": "https://doi.org/10.1038/s41467-026-75024-6",
+      "au": "Lykhopiy 等（Van Rompaey / Schlenner）",
+      "tags": [
+        "antibody"
+      ],
+      "related": [
+        {
+          "field": "自身免疫与移植免疫",
+          "label": "自身免疫与移植",
+          "color": "#8E4F5A"
+        }
+      ],
+      "preprint": false,
+      "sum": "Lykhopiy等把抗CD25/CD122/CD132的VHH装成三特异激动抗体，先导αβγVHH-48在HEKαβγ上的pSTAT5 EC50为0.015 nM，接近人IL-2的0.010 nM；再做成CD25二价并改几何后，可在皮摩尔甚至飞摩尔级偏向性激活Treg。",
+      "card_img": "img/c6-ab-8_card.webp",
+      "mech_img": "img/c6-ab-8_mech.webp",
+      "curated": true,
+      "locked": true,
+      "status": "published",
+      "deep": "c6-ab-8"
+    },
+    {
+      "id": "c5-am-7",
+      "f": "animal",
+      "field": "疾病模型",
+      "field_label": "疾病模型",
+      "field_color": "#5E6624",
+      "t": "11个单基因ASD小鼠模型共251个样本：放射状胶质谱系短暂延迟，P4层II/IV神经元715个DEG",
+      "card_title": "11个ASD小鼠251样本：放射胶质短暂延迟",
+      "card_caption": "绿色放射状胶质滞留，赤陶神经元后移",
+      "cover_caption": "封面示意：绿色放射状胶质细胞滞留于增殖态，赤陶色新生神经元位置后移，寓意发育延迟而非谱系错指定。图片由 AI 生成，非原文图片。",
+      "ds": "2026-06-17",
+      "disp": "2026.06",
+      "j": "Nature",
+      "url": "https://doi.org/10.1038/s41586-026-10679-1",
+      "au": "Gaia Novarino, Institute of Science and Technology Austria（ISTA）",
+      "tags": [
+        "animal"
+      ],
+      "related": [],
+      "preprint": false,
+      "sum": "对11个单基因ASD小鼠模型的251个样本做单核多组学测序，突变汇聚于放射状胶质谱系的短暂发育延迟；共享转录差异在P4层II/IV神经元最大（715个DEG）。",
+      "card_img": "img/c5-am-7_card.webp",
+      "mech_img": "img/c5-am-7_mech.webp",
+      "curated": true,
+      "locked": true,
+      "status": "published",
+      "deep": "c5-am-7"
+    },
+    {
+      "id": "c9-rna-8",
+      "f": "nucleic",
+      "field": "核酸与基因治疗（含 LNP 递送）",
+      "field_label": "核酸与基因治疗",
+      "field_color": "#8A6212",
+      "t": "优化PE-LNP单剂2 mg/kg使小鼠全肝平均prime editing达49%",
+      "card_title": "单剂PE-LNP使小鼠全肝精准编辑达49%",
+      "card_caption": "赤陶红脂质纳米颗粒进入绿色肝细胞",
+      "cover_caption": "封面示意：一枚剖开的赤陶红色脂质纳米颗粒贴近绿色肝细胞，颗粒内可见RNA链，寓意非病毒递送prime editor。图片由 AI 生成，非原文图片。",
+      "ds": "2026-06-15",
+      "disp": "2026.06",
+      "j": "Nature Nanotechnology",
+      "url": "https://doi.org/10.1038/s41565-026-02200-6",
+      "au": "Allen Y. Jiang 等（末位 Kiran Musunuru、David R. Liu），Broad Institute / 宾夕法尼亚大学",
+      "tags": [
+        "nucleic"
+      ],
+      "related": [
+        {
+          "field": "疾病模型",
+          "label": "疾病模型",
+          "color": "#5E6624"
+        }
+      ],
+      "preprint": false,
+      "sum": "系统优化三组分prime editor的脂质纳米颗粒后，单剂总RNA 2 mg/kg在小鼠全肝实现平均49%无插入缺失的精准编辑，较初始方案提高63倍。",
+      "card_img": "img/c9-rna-8_card.webp",
+      "mech_img": "img/c9-rna-8_mech.webp",
+      "curated": true,
+      "locked": true,
+      "status": "published",
+      "deep": "c9-rna-8"
+    },
+    {
+      "id": "c4-ai-9",
+      "f": "autoimm",
+      "field": "自身免疫与移植免疫",
+      "field_label": "自身免疫与移植",
+      "field_color": "#8E4F5A",
+      "t": "双靶CD19/BCMA CAR-T脱敏后肾移植：2例cPRA≥99.9%安全导入队列均完成移植",
+      "card_title": "双靶CAR-T脱敏后2例高致敏患者完成肾移植",
+      "card_caption": "深绿双靶CAR-T环绕赤陶红HLA浆细胞",
+      "cover_caption": "封面示意：深绿双靶CAR-T环绕赤陶红HLA浆细胞。图片由 AI 生成，非原文图片。",
+      "ds": "2026-06-01",
+      "disp": "2026.06",
+      "j": "New England Journal of Medicine",
+      "url": "https://doi.org/10.1056/nejmoa2513428",
+      "au": "Ali Naji（通讯），Vijay G Bhoj、Alfred L Garfall 等，University of Pennsylvania Perelman School of Medicine",
+      "tags": [
+        "autoimm"
+      ],
+      "related": [
+        {
+          "field": "肿瘤免疫与细胞治疗",
+          "label": "肿瘤免疫与细胞治疗",
+          "color": "#6E3F7A"
+        }
+      ],
+      "preprint": false,
+      "sum": "I期试验安全导入队列中2例极高致敏肾移植候选者接受各5×10^7 CAR+细胞的CD19与BCMA双靶CAR-T后，cPRA下降，并分别于输注后第229天和第93天接受交叉配型相容肾移植；报告期内未见剂量限制性毒性。",
+      "card_img": "img/c4-ai-9_card.webp",
+      "mech_img": "img/c4-ai-9_mech.webp",
+      "curated": true,
+      "locked": true,
+      "status": "published",
+      "deep": "c4-ai-9"
+    },
+    {
       "id": "a-trap",
       "f": "immuno",
       "field": "肿瘤免疫与细胞治疗",
@@ -173,8 +529,8 @@
       ],
       "related": [
         {
-          "field": "动物模型",
-          "label": "动物模型",
+          "field": "疾病模型",
+          "label": "疾病模型",
           "color": "#5E6624"
         }
       ],
@@ -796,7 +1152,18 @@
     "c8-vac-1",
     "c6-ab-3",
     "c4-ai-7",
-    "a-invivocar"
+    "a-invivocar",
+    "c6-ab-9",
+    "c5-am-8",
+    "c9-rna-9",
+    "c5-am-9",
+    "c4-ai-8",
+    "c6-ab-7",
+    "c9-rna-7",
+    "c6-ab-8",
+    "c5-am-7",
+    "c9-rna-8",
+    "c4-ai-9"
   ],
   "hidden": [
     "c4-ai-4",

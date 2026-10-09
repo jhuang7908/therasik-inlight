@@ -1,0 +1,18 @@
+{
+ "id": "c4-ai-9",
+ "status": "published-ready",
+ "preprint": false,
+ "writer_tags": [],
+ "article": {
+  "tier": "deep",
+  "field": "自身免疫与移植免疫",
+  "tags": [
+   "肿瘤免疫与细胞治疗"
+  ],
+  "title": "双靶CD19/BCMA CAR-T脱敏后肾移植：2例cPRA≥99.9%安全导入队列均完成移植",
+  "one_liner": "I期试验安全导入队列中2例极高致敏肾移植候选者接受各5×10^7 CAR+细胞的CD19与BCMA双靶CAR-T后，cPRA下降，并分别于输注后第229天和第93天接受交叉配型相容肾移植；报告期内未见剂量限制性毒性。",
+  "citation": "Bhoj VG, Garfall AL, Naji A, et al. Kidney Transplantation in Two Highly Sensitized Candidates after CAR T-Cell Therapy. N Engl J Med. 2026 Jun 1. https://doi.org/10.1056/nejmoa2513428"
+ },
+ "pmcid": "PMC13240644",
+ "license": "cc by-nc-nd"
+}

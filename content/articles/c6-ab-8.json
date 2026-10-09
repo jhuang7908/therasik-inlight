@@ -1,0 +1,18 @@
+{
+ "id": "c6-ab-8",
+ "status": "published-ready",
+ "preprint": false,
+ "writer_tags": [],
+ "article": {
+  "tier": "deep",
+  "field": "抗体工程",
+  "tags": [
+   "自身免疫与移植"
+  ],
+  "title": "三特异IL-2R抗体αβγVHH-48的EC50达0.015 nM",
+  "one_liner": "Lykhopiy等把抗CD25/CD122/CD132的VHH装成三特异激动抗体，先导αβγVHH-48在HEKαβγ上的pSTAT5 EC50为0.015 nM，接近人IL-2的0.010 nM；再做成CD25二价并改几何后，可在皮摩尔甚至飞摩尔级偏向性激活Treg。",
+  "citation": "Lykhopiy V, Pollenus E, Rangan L, Stakenborg M, Tezil T, Varheust M, 等. Engineering trispecific IL-2 receptor agonistic antibodies through geometry optimization for enhanced Treg targeting. Nat Commun. 2026 Jul 10;17:8534. doi: https://doi.org/10.1038/s41467-026-75024-6"
+ },
+ "pmcid": "PMC13482293",
+ "license": "cc by-nc-nd"
+}

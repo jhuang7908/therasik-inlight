@@ -1,0 +1,18 @@
+{
+ "id": "c6-ab-9",
+ "status": "published-ready",
+ "preprint": false,
+ "writer_tags": [],
+ "article": {
+  "tier": "deep",
+  "field": "抗体工程",
+  "tags": [
+   "疾病模型"
+  ],
+  "title": "pIgR双抗在食蟹猴BAL中暴露提高5.5倍",
+  "one_liner": "Marks等在人、食蟹猴、小鼠组织中比对多聚免疫球蛋白受体（pIgR）后，把抗pIgR VHH接到抗血凝素IgG上；食蟹猴单次静脉5 mg/kg后，双抗血清半衰期约1.6天，支气管肺泡灌洗液（BAL）总暴露为对照IgG的5.5倍。",
+  "citation": "Marks K, Shah N, Pham L, Chen J, White I, Burke K, 等. Bispecific antibodies that engage pIgR enrich in mucosa in cynomolgus monkeys. mAbs. 2026 Oct 3;18(1):2743413. doi: https://doi.org/10.1080/19420862.2026.2743413"
+ },
+ "pmcid": "PMC13644599",
+ "license": "cc by-nc"
+}

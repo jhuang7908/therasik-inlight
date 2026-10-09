@@ -1,0 +1,16 @@
+{
+ "id": "c5-am-7",
+ "status": "published-ready",
+ "preprint": false,
+ "writer_tags": [],
+ "article": {
+  "tier": "deep",
+  "field": "疾病模型",
+  "tags": [],
+  "title": "11个单基因ASD小鼠模型共251个样本：放射状胶质谱系短暂延迟，P4层II/IV神经元715个DEG",
+  "one_liner": "对11个单基因ASD小鼠模型的251个样本做单核多组学测序，突变汇聚于放射状胶质谱系的短暂发育延迟；共享转录差异在P4层II/IV神经元最大（715个DEG）。",
+  "citation": "Schwarz LA, Dotter CP, Isaev S, Lisi M, Malzl D, Büschl C, et al. Cortical development dynamics across autism spectrum disorder mouse models. Nature. 2026 Jun 17. doi: https://doi.org/10.1038/s41586-026-10679-1"
+ },
+ "pmcid": "PMC13441911",
+ "license": "cc by"
+}

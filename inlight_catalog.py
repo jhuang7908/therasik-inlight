@@ -31,7 +31,7 @@ WEEKLY_FIELD_MAP = {
     "c2": "AI 药物设计",
     "c3": "肿瘤免疫与细胞治疗",
     "c4": "自身免疫与移植免疫",
-    "c5": "动物模型",
+    "c5": "疾病模型",
     "c6": "抗体工程",
     "c7": "肿瘤免疫与细胞治疗",
     "c8": "疫苗与感染免疫",
@@ -43,6 +43,7 @@ WEEKLY_FIELD_MAP = {
 FIELD_KEYS = {
     "类器官": "organoid",
     "动物模型": "animal",
+    "疾病模型": "animal",
     "AI 药物设计": "ai",
     "肿瘤免疫与细胞治疗": "immuno",
     "自身免疫与移植免疫": "autoimm",
@@ -56,6 +57,7 @@ FIELD_KEYS = {
 FIELD_BLURBS = {
     "类器官": "疾病建模、药物筛选、器官芯片",
     "动物模型": "人源化小鼠、基因编辑、PDX",
+    "疾病模型": "人源化小鼠、基因编辑、PDX",
     "AI 药物设计": "结构预测、生成式蛋白设计、药效预测",
     "肿瘤免疫与细胞治疗": "检查点、微环境、CAR-T、新抗原",
     "自身免疫与移植免疫": "狼疮、类风湿、移植免疫",
@@ -96,6 +98,8 @@ def field_by_key() -> dict[str, dict]:
 
 
 def field_record(name: str) -> dict:
+    if name == "动物模型":
+        name = "疾病模型"
     fields = field_by_name()
     if name in fields:
         return fields[name]

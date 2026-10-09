@@ -1,0 +1,18 @@
+{
+ "id": "c6-ab-7",
+ "status": "published-ready",
+ "preprint": false,
+ "writer_tags": [],
+ "article": {
+  "tier": "deep",
+  "field": "抗体工程",
+  "tags": [
+   "肿瘤免疫与细胞治疗"
+  ],
+  "title": "156个巨噬激活双抗筛出WTa2d1xCD38，IC50低至18.0 pM",
+  "one_liner": "Pagès-Geli等用功能优先的表面组筛选加156个异源scFv-Fc双抗，选出低亲和SIRPα诱饵×CD38分子WTa2d1xCD38；在10条淋巴瘤细胞系上IC50为18.0 pM至3.08 nM，体内可延长生存并与利妥昔单抗联用出现完全治愈。",
+  "citation": "Pagès-Geli C, Ribeiro J, Wienclaw T, Meglan AM, Sloat L, Silva M, 等. High-throughput engineering of bispecific antibodies to enhance macrophage-mediated cytotoxicity of B-cell lymphoma. Nat Commun. 2026 Aug 1;17:8491. doi: https://doi.org/10.1038/s41467-026-76180-5"
+ },
+ "pmcid": "PMC13482096",
+ "license": "cc by"
+}

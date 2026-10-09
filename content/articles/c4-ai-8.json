@@ -1,0 +1,18 @@
+{
+ "id": "c4-ai-8",
+ "status": "published-ready",
+ "preprint": false,
+ "writer_tags": [],
+ "article": {
+  "tier": "deep",
+  "field": "自身免疫与移植免疫",
+  "tags": [
+   "肿瘤免疫与细胞治疗"
+  ],
+  "title": "难治性重症肌无力抗CD19 CAR-T个案随访：3例均维持停药临床缓解至少19个月",
+  "one_liner": "3例AChR阳性难治全身型重症肌无力接受KYV-101（1×10^8细胞）后，随访24、19、19个月均维持停用MG特异性免疫治疗的临床缓解；抗AChR抗体未完全转阴，不良事件短暂可处理。",
+  "citation": "Hegelmaier T, Motte J, Walther D, Feist E, Duscha A, Desel C, et al. Long-term outcomes of anti-CD19 CAR T cell therapy in refractory myasthenia gravis: A case series. Cell Rep Med. 2026;7(9):103000. doi: https://doi.org/10.1016/j.xcrm.2026.103000"
+ },
+ "pmcid": "PMC13589498",
+ "license": "cc by"
+}

@@ -1,0 +1,18 @@
+{
+ "id": "c9-rna-8",
+ "status": "published-ready",
+ "preprint": false,
+ "writer_tags": [],
+ "article": {
+  "tier": "deep",
+  "field": "核酸与基因治疗（含 LNP 递送）",
+  "tags": [
+   "疾病模型"
+  ],
+  "title": "优化PE-LNP单剂2 mg/kg使小鼠全肝平均prime editing达49%",
+  "one_liner": "系统优化三组分prime editor的脂质纳米颗粒后，单剂总RNA 2 mg/kg在小鼠全肝实现平均49%无插入缺失的精准编辑，较初始方案提高63倍。",
+  "citation": "Jiang AY, Cristian A, Brooks DL, Feierman ER, Chen PZ, Whittaker MN, et al. Efficient prime editing in vivo and in vitro using lipid nanoparticles. Nat Nanotechnol. 2026 Jun 15. https://doi.org/10.1038/s41565-026-02200-6"
+ },
+ "pmcid": "PMC13379318",
+ "license": "cc by"
+}
