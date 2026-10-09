@@ -27,7 +27,7 @@ img{max-width:100%}
 <style>
 /* Layout: 顶部固定导航 + 单页多视图（首页 / 领域 / 文章 / 商业化动态 / 订阅赞助），hash 路由 */
 :root{
-  --bg:#f5f7f6; --surface:#ffffff; --raise:#eef2f0; --fg:#1d2a27; --muted:#5c6b67; --line:#d6dedb; --accent:#0f6b5c;
+  --bg:#f5f7f6; --surface:#ffffff; --raise:#eef2f0; --fg:#1d2a27; --muted:#5c6b67; --line:#d6dedb; --accent:#2E6B4F;
   --c1:#2f7d6d; --c2:#5a55b5; --c3:#c0492f; --c4:#b07a12; --c5:#3d6fa8; --c6:#9a3f7e; --c7:#6f7d10; --c8:#1d7f9c; --c9:#8a5a2b;
   --display:"Noto Serif SC","Songti SC",serif; --body:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
 }
@@ -198,6 +198,13 @@ svg text{font-family:var(--body)}
 .tile{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--tkc,var(--accent));border-radius:9px;padding:10px 12px;display:grid;gap:1px}
 .tile .tv{font-size:19px;font-weight:800;font-family:var(--display);font-variant-numeric:tabular-nums;line-height:1.25}
 .tile .tk{font-size:11.5px;color:var(--muted)}
+a.tile{color:var(--fg);text-decoration:none;cursor:pointer;transition:border-color .15s,box-shadow .15s,transform .15s}
+a.tile:hover{border-color:var(--tkc,var(--accent));box-shadow:0 2px 10px rgba(46,107,79,.14);transform:translateY(-1px)}
+a.tile:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+a.tile[aria-current="true"]{background:color-mix(in srgb,var(--tkc,var(--accent)) 9%,var(--surface));border-color:var(--tkc,var(--accent))}
+a.tile .tk::after{content:" →";opacity:.55}
+#dealfeed,#articles{scroll-margin-top:80px}
+#dealcount .clearf{margin-left:2px;white-space:nowrap}
 /* 两侧广告位：从 1400px 起显示，这样 1280 与 r8 预览同宽（pv-shell 1100）。 */
 .shell,.navshell,.footshell{max-width:1100px;margin:0 auto}
 @media (min-width:1400px){
@@ -434,6 +441,15 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 }
 .shell:has(#v-paper:not([hidden])){display:block;max-width:1100px}
 #v-paper.pv-art{max-width:1100px}
+
+/* style_unify_v2 (Oct 2026): original illustrations kept, recoloured to the site palette
+   (img/pal/*). Deal type tags in deep green, amounts in terracotta #C0492F (single accent). */
+.feed .kind,.feed-details-panel .kind{border-color:#2E6B4F!important;color:#2E6B4F!important}
+.feed .item .money{color:#C0492F}
+.feed .item .money.nil{color:var(--muted);font-weight:500}
+.feed .cover,.fthumb{background:#fff}
+/* style_unify_v6: deal covers rotate through ten illustrations per deal type (img/pal/kinds/v6/), off-white ground. */
+.feed .cover{background:#F6F4EE}
 </style>
 </head>
 <body>
@@ -495,37 +511,37 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
       <svg viewBox="0 0 1200 420" preserveAspectRatio="xMidYMid slice">
         <defs>
           <linearGradient id="hbg" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#fbfdfc"/><stop offset=".5" stop-color="#eef5f2"/><stop offset="1" stop-color="#e3f0f3"/>
+            <stop offset="0" stop-color="#fbfcfb"/><stop offset=".5" stop-color="#f3f7f4"/><stop offset="1" stop-color="#EEF4F0"/>
           </linearGradient>
           <radialGradient id="hglow" cx=".74" cy=".22" r=".7">
-            <stop offset="0" stop-color="#9fd8cb" stop-opacity=".38"/><stop offset="1" stop-color="#9fd8cb" stop-opacity="0"/>
+            <stop offset="0" stop-color="#A9C9B4" stop-opacity=".38"/><stop offset="1" stop-color="#A9C9B4" stop-opacity="0"/>
           </radialGradient>
           <pattern id="hdots" width="26" height="26" patternUnits="userSpaceOnUse">
-            <circle cx="2" cy="2" r="1.4" fill="#0f6b5c" opacity=".1"/>
+            <circle cx="2" cy="2" r="1.4" fill="#2E6B4F" opacity=".1"/>
           </pattern>
         </defs>
         <rect width="1200" height="420" fill="url(#hbg)"/>
         <rect width="1200" height="420" fill="url(#hdots)"/>
         <rect width="1200" height="420" fill="url(#hglow)"/>
-        <g fill="none" stroke="#2f7d6d" stroke-opacity=".3" stroke-width="2">
+        <g fill="none" stroke="#6F9A80" stroke-opacity=".3" stroke-width="2">
           <path d="M700 420c0-120 48-168 128-200s150-66 178-150"/>
           <path d="M760 420c0-96 44-140 118-172s142-64 170-146"/>
           <path d="M820 420c0-72 40-112 108-146s134-62 162-134"/>
         </g>
-        <g stroke="#1d7f9c" stroke-opacity=".45" stroke-width="2.2" fill="none">
-          <circle cx="968" cy="150" r="66"/><circle cx="968" cy="150" r="27" fill="#1d7f9c" fill-opacity=".12"/>
-          <circle cx="1088" cy="262" r="40"/><circle cx="1088" cy="262" r="16" fill="#2f7d6d" fill-opacity=".12"/>
-          <circle cx="878" cy="296" r="28" stroke="#2f7d6d" stroke-opacity=".4"/>
+        <g stroke="#2E6B4F" stroke-opacity=".45" stroke-width="2.2" fill="none">
+          <circle cx="968" cy="150" r="66"/><circle cx="968" cy="150" r="27" fill="#2E6B4F" fill-opacity=".12"/>
+          <circle cx="1088" cy="262" r="40"/><circle cx="1088" cy="262" r="16" fill="#6F9A80" fill-opacity=".12"/>
+          <circle cx="878" cy="296" r="28" stroke="#6F9A80" stroke-opacity=".4"/>
         </g>
-        <g stroke="#2f7d6d" stroke-opacity=".35" stroke-width="1.8">
+        <g stroke="#6F9A80" stroke-opacity=".35" stroke-width="1.8">
           <path d="M968 216l120 6M1008 196l80 66M912 272l56 24M1060 300l-92-4"/>
         </g>
-        <g fill="#0f6b5c" fill-opacity=".5">
+        <g fill="#2E6B4F" fill-opacity=".5">
           <circle cx="1148" cy="96" r="5"/><circle cx="1104" cy="58" r="3.5"/><circle cx="836" cy="118" r="4"/>
           <circle cx="792" cy="196" r="3"/><circle cx="1160" cy="352" r="4"/>
         </g>
       </svg>
-      <img src="img/hero.jpg?v=4" alt="" onerror="this.remove()">
+      <img src="img/pal/hero_v6.jpg?v=1" alt="" onerror="this.remove()">
     </div>
     <div class="hb-text">
       <span class="hb-kicker">中文 · 每周更新</span>
@@ -553,7 +569,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
   </section>
 
   <!-- 最新 / 按领域 两个标签：对标 Endpoints 的 Latest / Most read -->
-  <section>
+  <section id="articles">
     <div class="sechead">
       <h2>解读</h2>
       <div class="tabs">
@@ -620,7 +636,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
     <div class="tracker" id="tracker"></div>
   </section>
 
-  <section>
+  <section id="dealfeed">
     <div class="sechead"><h2>最新更新</h2><span id="dealcount"></span></div>
     <div class="chips" id="chips"></div>
     <div class="feed" id="feed"></div>
@@ -821,9 +837,9 @@ const ICONS={
   clin:'<path d="M9 36h30"/><rect x="11" y="27" width="6" height="7" rx="1"/><rect x="20" y="21" width="6" height="13" rx="1"/><rect x="29" y="13" width="6" height="21" rx="1"/>',
   inv:'<path d="M8 36h32"/><path d="M10 30l8-6 7 4 8-9 6-5"/><circle cx="10" cy="30" r="2"/><circle cx="18" cy="24" r="2"/><circle cx="25" cy="28" r="2"/><circle cx="33" cy="19" r="2"/>'
 };
-function cover(kind,cvar,img){
+function cover(kind,cvar,img,fb){
   const c=`var(--${cvar})`;
-  if(img) return `<div class="cover" aria-hidden="true"><img class="coverimg" src="${img}" alt="" loading="lazy" onerror="this.remove()"></div>`;
+  if(img) return `<div class="cover" aria-hidden="true"><img class="coverimg" src="${img}"${fb?` data-fb="${fb}"`:''} alt="" loading="lazy" onerror="if(this.dataset.fb){this.src=this.dataset.fb;this.removeAttribute('data-fb')}else this.remove()"></div>`;
   return `<div class="cover" aria-hidden="true"><svg viewBox="0 0 300 150" preserveAspectRatio="xMidYMid slice">
     <rect width="300" height="150" fill="${c}" opacity=".08"/>
     <circle cx="266" cy="20" r="42" fill="${c}" opacity=".07"/>
@@ -840,21 +856,39 @@ function icon(kind,cvar,cls){
     ${ICONS[kind]||ICONS.cell}</svg></span>`;
 }
 // 九张领域固定图，放在 img/fields/ 下即自动生效；缺图时退回 SVG 图标
-const FIELD_IMG={organoid:'organoid.jpg',ai:'ai-drug-design.jpg',immuno:'tumor-immunology.jpg',
-  autoimm:'autoimmune.jpg',animal:'animal-model.jpg',antibody:'antibody-engineering.jpg',
-  vaccine:'vaccine.jpg',nucleic:'lnp-oligo.jpg',precision:'cell-therapy.jpg',
-  c1:'organoid.jpg',c2:'ai-drug-design.jpg',c3:'tumor-immunology.jpg',
-  c4:'autoimmune.jpg',c5:'animal-model.jpg',c6:'antibody-engineering.jpg',
-  c7:'cell-therapy.jpg',c8:'vaccine.jpg',c9:'lnp-oligo.jpg'};
+const FIELD_IMG={organoid:'organoid_v6.jpg',ai:'ai-drug-design_v6.jpg',immuno:'tumor-immunology_v6.jpg',
+  autoimm:'autoimmune_v6.jpg',animal:'animal-model_v6.jpg',antibody:'antibody-engineering_v6.jpg',
+  vaccine:'vaccine_v6.jpg',nucleic:'lnp-oligo_v6.jpg',precision:'cell-therapy_v6.jpg',
+  c1:'organoid_v6.jpg',c2:'ai-drug-design_v6.jpg',c3:'tumor-immunology_v6.jpg',
+  c4:'autoimmune_v6.jpg',c5:'animal-model_v6.jpg',c6:'antibody-engineering_v6.jpg',
+  c7:'cell-therapy_v6.jpg',c8:'vaccine_v6.jpg',c9:'lnp-oligo_v6.jpg'};
 function fieldThumb(f){
   const key=(f&&f.k)||f;
   const color=(f&&f.color)||key;
-  return `<span class="fthumb">${icon(FIELD_MOTIF[key]||'cell',color)}<img src="img/fields/${FIELD_IMG[key]||FIELD_IMG.organoid}?v=4" alt="" loading="lazy" onerror="this.remove()"></span>`;
+  return `<span class="fthumb">${icon(FIELD_MOTIF[key]||'cell',color)}<img src="img/pal/fields/${FIELD_IMG[key]||FIELD_IMG.organoid}?v=1" alt="" loading="lazy" onerror="this.remove()"></span>`;
 }
 const FIELD_MOTIF={organoid:'organoid',ai:'net',immuno:'cell',autoimm:'antibody',animal:'model',antibody:'antibody',vaccine:'vaccine',nucleic:'lnp',precision:'cell',
   c1:'organoid',c2:'net',c3:'cell',c4:'antibody',c5:'model',c6:'antibody',c7:'cell',c8:'vaccine',c9:'lnp'};
 const KIND_MOTIF={acq:'acq',lic:'lic',newco:'newco',clin:'clin',inv:'inv',policy:'model'};
 const KIND_CVAR={acq:'c3',lic:'c2',newco:'c7',clin:'c1',inv:'c5',policy:'c6'};
+// v6 交易卡配图：每个交易类型多张图轮换（img/pal/kinds/v6/{kind}_{n}.jpg）。不改 DEALS 数据：
+// 按“同类型内从最早一条起的序号”取模分配，新条目加在 DEALS 顶部时旧卡配图不变，相邻同类卡也不会撞图。
+// 某类型没有轮换图或图缺失时，退回该类型的单张图。
+const KIND_ART_N={acq:10,lic:10,inv:10,clin:10,policy:10,newco:10};
+const KIND_ART_BASE={acq:'acq_v5',lic:'lic_v4',inv:'inv_v4',clin:'clin_v4',policy:'policy_v5',newco:'newco_v4'};
+let DEAL_ART=null;
+function dealArt(x){
+  if(!DEAL_ART){
+    DEAL_ART=new Map(); const seen={};
+    for(let j=DEALS.length-1;j>=0;j--){
+      const d=DEALS[j], k=d.kinds[0], n=KIND_ART_N[k]||0, c=seen[k]||0;
+      if(n) DEAL_ART.set(d,`img/pal/kinds/v6/${k}_${(c%n)+1}.jpg?v=6`);
+      seen[k]=c+1;
+    }
+  }
+  const k=x.kinds[0], base=KIND_ART_BASE[k]?`img/pal/kinds/${KIND_ART_BASE[k]}.jpg?v=1`:'';
+  return [DEAL_ART.get(x)||base, base];
+}
 
 const MONTH={'01':'1 月','02':'2 月','03':'3 月','04':'4 月','05':'5 月','06':'6 月','07':'7 月','08':'8 月','09':'9 月','10':'10 月','11':'11 月','12':'12 月'};
 function hiddenSet(){return (typeof HIDDEN!=='undefined')?HIDDEN:new Set((window.INLIGHT_SITE&&INLIGHT_SITE.hidden)||[]);}
@@ -1015,16 +1049,17 @@ function renderTracker(){
   const kindCount=k=>DEALS.filter(x=>x.kinds.includes(k)).length;
   const srcs=new Set(DEALS.map(x=>x.src)).size;
   const tiles=[
-    ['收录动态',DEALS.length+' 条','var(--accent)'],
-    ['收购',kindCount('acq')+' 条',KINDS.acq[1]],
-    ['授权交易',kindCount('lic')+' 条',KINDS.lic[1]],
-    ['NewCo',kindCount('newco')+' 条',KINDS.newco[1]],
-    ['临床进展',kindCount('clin')+' 条',KINDS.clin[1]],
-    ['投资融资',kindCount('inv')+' 条',KINDS.inv[1]],
-    ['监管政策',kindCount('policy')+' 条',KINDS.policy[1]],
-    ['收录解读',visibleCat().length+' 篇','var(--c6)'],
+    ['收录动态',DEALS.length+' 条','var(--accent)','#deals?kind=all','all'],
+    ['收购',kindCount('acq')+' 条',KINDS.acq[1],'#deals?kind=acq','acq'],
+    ['授权交易',kindCount('lic')+' 条',KINDS.lic[1],'#deals?kind=lic','lic'],
+    ['NewCo',kindCount('newco')+' 条',KINDS.newco[1],'#deals?kind=newco','newco'],
+    ['临床进展',kindCount('clin')+' 条',KINDS.clin[1],'#deals?kind=clin','clin'],
+    ['投资融资',kindCount('inv')+' 条',KINDS.inv[1],'#deals?kind=inv','inv'],
+    ['监管政策',kindCount('policy')+' 条',KINDS.policy[1],'#deals?kind=policy','policy'],
+    ['收录解读',visibleCat().length+' 篇','var(--c6)','#home?sec=articles',''],
   ];
-  el.innerHTML=tiles.map(([k,v,c])=>`<div class="tile" style="--tkc:${c}"><span class="tv">${v}</span><span class="tk">${k}</span></div>`).join('');
+  // 每格都是链接：交易类筛选下方“最新更新”（#deals?kind=xx，可分享、可后退），收录解读跳到首页解读区
+  el.innerHTML=tiles.map(([k,v,c,href,fk])=>`<a class="tile" href="${href}" style="--tkc:${c}"${fk&&fk===filter?' aria-current="true"':''} aria-label="${k} ${v}，${fk?(fk==='all'?'查看全部动态':'只看'+k):'查看解读'}"><span class="tv">${v}</span><span class="tk">${k}</span></a>`).join('');
 }
 
 let filter='all';
@@ -1035,7 +1070,7 @@ function renderChips(){
     const n=k==='all'?DEALS.length:DEALS.filter(x=>x.kinds.includes(k)).length;
     return `<button class="chip" type="button" data-k="${k}" aria-pressed="${filter===k}">${label} ${n}</button>`;
   }).join('');
-  chips.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{filter=b.dataset.k;renderChips();renderFeed()});
+  chips.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{filter=b.dataset.k;history.pushState(null,'','#deals?kind='+filter);renderChips();renderFeed()});
 }
 function escAttr(s){return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function dealCard(x,i){
@@ -1043,10 +1078,10 @@ function dealCard(x,i){
   const [y,mo]=x.d.split('-');
   const tags=x.kinds.map(k=>`<span class="kind" style="--kc:${KINDS[k][1]}">${KINDS[k][0]}</span>`).join('');
   return `<div class="item" style="--kc:${kc}">
-    ${cover(KIND_MOTIF[k0],KIND_CVAR[k0],`img/kinds/${k0}.jpg?v=4`)}
+    ${cover(KIND_MOTIF[k0],KIND_CVAR[k0],...dealArt(x))}
     <div class="cbody">
       <h3>${x.t}</h3>
-      <div class="money">${x.m}</div>
+      <div class="money${/\d/.test(x.m||'')?'':' nil'}">${x.m}</div>
       <div class="metarow"><span class="idate">${y}.${String(+mo).padStart(2,'0')}</span>
         <span class="tagrow">${tags}</span>
         <button class="expbtn" type="button" aria-expanded="false" data-key="${escAttr(dealKey(x))}">详情 ↓</button></div>
@@ -1155,7 +1190,8 @@ function repaintCatalog(){
 }
 function renderFeed(){
   const rows=DEALS.filter(x=>filter==='all'||x.kinds.includes(filter));
-  dc.textContent=filter==='all'?`共 ${rows.length} 条，按时间倒序`:`已筛选 ${rows.length} 条`;
+  dc.innerHTML=filter==='all'?`共 ${rows.length} 条，按时间倒序`:`已筛选「${KINDS[filter][0]}」${rows.length} 条 · <a class="clearf" href="#deals?kind=all">显示全部 ×</a>`;
+  renderTracker();
   if(!rows.length){feed.innerHTML='<div class="empty">这个分类暂无条目。只收录有公开披露金额或双方确认的交易，等到有确切条目时再补。</div>';return}
   feed.innerHTML=rows.map((x,i)=>dealCard(x,'f'+i)).join('');
 }
@@ -1196,6 +1232,9 @@ function route(){
       return;
     }
   }
+  // 查询参数：#deals?kind=acq 筛选交易类型；#home?sec=articles 跳到解读区
+  const qi=h.indexOf('?'), q=new URLSearchParams(qi<0?'':h.slice(qi+1));
+  if(qi>=0) h=h.slice(0,qi);
   let target=document.getElementById('v-'+h)?h:'home';
   let pageTitle=TITLES[target]||TITLES.home;
   const paperId=h.startsWith('p-')?h.slice(2):(visibleCat().some(x=>x.id===h)?h:'');
@@ -1210,11 +1249,13 @@ function route(){
   }
   document.title=pageTitle;
   views.forEach(v=>{v.hidden = v.id!=='v-'+target});
-  if(target==='deals') renderFeed();
+  if(target==='deals'){ const k=q.get('kind'); filter=(k&&KINDS[k])?k:'all'; renderChips(); renderFeed(); }
   if(target==='home') refit();
   /* Grid columns now controlled purely by CSS */
   document.querySelectorAll('.nav-in a').forEach(a=>a.classList.toggle('on',a.dataset.v===target));
-  window.scrollTo(0,0);
+  const jump=target==='deals'&&q.has('kind')?'dealfeed':(target==='home'&&q.get('sec')==='articles'?'articles':'');
+  const je=jump&&document.getElementById(jump);
+  if(je) je.scrollIntoView({block:'start'}); else window.scrollTo(0,0);
 }
 function mergeWeekly(data){
   const ids=new Set(CAT.map(a=>a.id));
