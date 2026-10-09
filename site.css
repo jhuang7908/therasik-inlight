@@ -7,7 +7,7 @@ img{max-width:100%}
 
 /* Layout: 顶部固定导航 + 单页多视图（首页 / 领域 / 文章 / 商业化动态 / 订阅赞助），hash 路由 */
 :root{
-  --bg:#f5f7f6; --surface:#ffffff; --raise:#eef2f0; --fg:#1d2a27; --muted:#5c6b67; --line:#d6dedb; --accent:#0f6b5c;
+  --bg:#f5f7f6; --surface:#ffffff; --raise:#eef2f0; --fg:#1d2a27; --muted:#5c6b67; --line:#d6dedb; --accent:#2E6B4F;
   --c1:#2f7d6d; --c2:#5a55b5; --c3:#c0492f; --c4:#b07a12; --c5:#3d6fa8; --c6:#9a3f7e; --c7:#6f7d10; --c8:#1d7f9c; --c9:#8a5a2b;
   --display:"Noto Serif SC","Songti SC",serif; --body:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
 }
@@ -414,3 +414,10 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 }
 .shell:has(#v-paper:not([hidden])){display:block;max-width:1100px}
 #v-paper.pv-art{max-width:1100px}
+
+/* style_unify_v2 (Oct 2026): original illustrations kept, recoloured to the site palette
+   (img/pal/*). Deal type tags in deep green, amounts in terracotta #C0492F (single accent). */
+.feed .kind,.feed-details-panel .kind{border-color:#2E6B4F!important;color:#2E6B4F!important}
+.feed .item .money{color:#C0492F}
+.feed .item .money.nil{color:var(--muted);font-weight:500}
+.feed .cover,.fthumb{background:#fff}

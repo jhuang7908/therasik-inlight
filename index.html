@@ -27,7 +27,7 @@ img{max-width:100%}
 <style>
 /* Layout: 顶部固定导航 + 单页多视图（首页 / 领域 / 文章 / 商业化动态 / 订阅赞助），hash 路由 */
 :root{
-  --bg:#f5f7f6; --surface:#ffffff; --raise:#eef2f0; --fg:#1d2a27; --muted:#5c6b67; --line:#d6dedb; --accent:#0f6b5c;
+  --bg:#f5f7f6; --surface:#ffffff; --raise:#eef2f0; --fg:#1d2a27; --muted:#5c6b67; --line:#d6dedb; --accent:#2E6B4F;
   --c1:#2f7d6d; --c2:#5a55b5; --c3:#c0492f; --c4:#b07a12; --c5:#3d6fa8; --c6:#9a3f7e; --c7:#6f7d10; --c8:#1d7f9c; --c9:#8a5a2b;
   --display:"Noto Serif SC","Songti SC",serif; --body:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
 }
@@ -434,6 +434,13 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 }
 .shell:has(#v-paper:not([hidden])){display:block;max-width:1100px}
 #v-paper.pv-art{max-width:1100px}
+
+/* style_unify_v2 (Oct 2026): original illustrations kept, recoloured to the site palette
+   (img/pal/*). Deal type tags in deep green, amounts in terracotta #C0492F (single accent). */
+.feed .kind,.feed-details-panel .kind{border-color:#2E6B4F!important;color:#2E6B4F!important}
+.feed .item .money{color:#C0492F}
+.feed .item .money.nil{color:var(--muted);font-weight:500}
+.feed .cover,.fthumb{background:#fff}
 </style>
 </head>
 <body>
@@ -495,37 +502,37 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
       <svg viewBox="0 0 1200 420" preserveAspectRatio="xMidYMid slice">
         <defs>
           <linearGradient id="hbg" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#fbfdfc"/><stop offset=".5" stop-color="#eef5f2"/><stop offset="1" stop-color="#e3f0f3"/>
+            <stop offset="0" stop-color="#fbfcfb"/><stop offset=".5" stop-color="#f3f7f4"/><stop offset="1" stop-color="#EEF4F0"/>
           </linearGradient>
           <radialGradient id="hglow" cx=".74" cy=".22" r=".7">
-            <stop offset="0" stop-color="#9fd8cb" stop-opacity=".38"/><stop offset="1" stop-color="#9fd8cb" stop-opacity="0"/>
+            <stop offset="0" stop-color="#A9C9B4" stop-opacity=".38"/><stop offset="1" stop-color="#A9C9B4" stop-opacity="0"/>
           </radialGradient>
           <pattern id="hdots" width="26" height="26" patternUnits="userSpaceOnUse">
-            <circle cx="2" cy="2" r="1.4" fill="#0f6b5c" opacity=".1"/>
+            <circle cx="2" cy="2" r="1.4" fill="#2E6B4F" opacity=".1"/>
           </pattern>
         </defs>
         <rect width="1200" height="420" fill="url(#hbg)"/>
         <rect width="1200" height="420" fill="url(#hdots)"/>
         <rect width="1200" height="420" fill="url(#hglow)"/>
-        <g fill="none" stroke="#2f7d6d" stroke-opacity=".3" stroke-width="2">
+        <g fill="none" stroke="#6F9A80" stroke-opacity=".3" stroke-width="2">
           <path d="M700 420c0-120 48-168 128-200s150-66 178-150"/>
           <path d="M760 420c0-96 44-140 118-172s142-64 170-146"/>
           <path d="M820 420c0-72 40-112 108-146s134-62 162-134"/>
         </g>
-        <g stroke="#1d7f9c" stroke-opacity=".45" stroke-width="2.2" fill="none">
-          <circle cx="968" cy="150" r="66"/><circle cx="968" cy="150" r="27" fill="#1d7f9c" fill-opacity=".12"/>
-          <circle cx="1088" cy="262" r="40"/><circle cx="1088" cy="262" r="16" fill="#2f7d6d" fill-opacity=".12"/>
-          <circle cx="878" cy="296" r="28" stroke="#2f7d6d" stroke-opacity=".4"/>
+        <g stroke="#2E6B4F" stroke-opacity=".45" stroke-width="2.2" fill="none">
+          <circle cx="968" cy="150" r="66"/><circle cx="968" cy="150" r="27" fill="#2E6B4F" fill-opacity=".12"/>
+          <circle cx="1088" cy="262" r="40"/><circle cx="1088" cy="262" r="16" fill="#6F9A80" fill-opacity=".12"/>
+          <circle cx="878" cy="296" r="28" stroke="#6F9A80" stroke-opacity=".4"/>
         </g>
-        <g stroke="#2f7d6d" stroke-opacity=".35" stroke-width="1.8">
+        <g stroke="#6F9A80" stroke-opacity=".35" stroke-width="1.8">
           <path d="M968 216l120 6M1008 196l80 66M912 272l56 24M1060 300l-92-4"/>
         </g>
-        <g fill="#0f6b5c" fill-opacity=".5">
+        <g fill="#2E6B4F" fill-opacity=".5">
           <circle cx="1148" cy="96" r="5"/><circle cx="1104" cy="58" r="3.5"/><circle cx="836" cy="118" r="4"/>
           <circle cx="792" cy="196" r="3"/><circle cx="1160" cy="352" r="4"/>
         </g>
       </svg>
-      <img src="img/hero.jpg?v=4" alt="" onerror="this.remove()">
+      <img src="img/pal/hero_v4.jpg?v=1" alt="" onerror="this.remove()">
     </div>
     <div class="hb-text">
       <span class="hb-kicker">中文 · 每周更新</span>
@@ -840,16 +847,16 @@ function icon(kind,cvar,cls){
     ${ICONS[kind]||ICONS.cell}</svg></span>`;
 }
 // 九张领域固定图，放在 img/fields/ 下即自动生效；缺图时退回 SVG 图标
-const FIELD_IMG={organoid:'organoid.jpg',ai:'ai-drug-design.jpg',immuno:'tumor-immunology.jpg',
-  autoimm:'autoimmune.jpg',animal:'animal-model.jpg',antibody:'antibody-engineering.jpg',
-  vaccine:'vaccine.jpg',nucleic:'lnp-oligo.jpg',precision:'cell-therapy.jpg',
-  c1:'organoid.jpg',c2:'ai-drug-design.jpg',c3:'tumor-immunology.jpg',
-  c4:'autoimmune.jpg',c5:'animal-model.jpg',c6:'antibody-engineering.jpg',
-  c7:'cell-therapy.jpg',c8:'vaccine.jpg',c9:'lnp-oligo.jpg'};
+const FIELD_IMG={organoid:'organoid_v5.jpg',ai:'ai-drug-design_v4.jpg',immuno:'tumor-immunology_v5.jpg',
+  autoimm:'autoimmune_v4.jpg',animal:'animal-model_v4.jpg',antibody:'antibody-engineering_v5.jpg',
+  vaccine:'vaccine_v5.jpg',nucleic:'lnp-oligo_v4.jpg',precision:'cell-therapy_v4.jpg',
+  c1:'organoid_v5.jpg',c2:'ai-drug-design_v4.jpg',c3:'tumor-immunology_v5.jpg',
+  c4:'autoimmune_v4.jpg',c5:'animal-model_v4.jpg',c6:'antibody-engineering_v5.jpg',
+  c7:'cell-therapy_v4.jpg',c8:'vaccine_v5.jpg',c9:'lnp-oligo_v4.jpg'};
 function fieldThumb(f){
   const key=(f&&f.k)||f;
   const color=(f&&f.color)||key;
-  return `<span class="fthumb">${icon(FIELD_MOTIF[key]||'cell',color)}<img src="img/fields/${FIELD_IMG[key]||FIELD_IMG.organoid}?v=4" alt="" loading="lazy" onerror="this.remove()"></span>`;
+  return `<span class="fthumb">${icon(FIELD_MOTIF[key]||'cell',color)}<img src="img/pal/fields/${FIELD_IMG[key]||FIELD_IMG.organoid}?v=1" alt="" loading="lazy" onerror="this.remove()"></span>`;
 }
 const FIELD_MOTIF={organoid:'organoid',ai:'net',immuno:'cell',autoimm:'antibody',animal:'model',antibody:'antibody',vaccine:'vaccine',nucleic:'lnp',precision:'cell',
   c1:'organoid',c2:'net',c3:'cell',c4:'antibody',c5:'model',c6:'antibody',c7:'cell',c8:'vaccine',c9:'lnp'};
@@ -1043,10 +1050,10 @@ function dealCard(x,i){
   const [y,mo]=x.d.split('-');
   const tags=x.kinds.map(k=>`<span class="kind" style="--kc:${KINDS[k][1]}">${KINDS[k][0]}</span>`).join('');
   return `<div class="item" style="--kc:${kc}">
-    ${cover(KIND_MOTIF[k0],KIND_CVAR[k0],`img/kinds/${k0}.jpg?v=4`)}
+    ${cover(KIND_MOTIF[k0],KIND_CVAR[k0],`img/pal/kinds/${k0}_${(k0==='policy'||k0==='acq')?'v5':'v4'}.jpg?v=1`)}
     <div class="cbody">
       <h3>${x.t}</h3>
-      <div class="money">${x.m}</div>
+      <div class="money${/\d/.test(x.m||'')?'':' nil'}">${x.m}</div>
       <div class="metarow"><span class="idate">${y}.${String(+mo).padStart(2,'0')}</span>
         <span class="tagrow">${tags}</span>
         <button class="expbtn" type="button" aria-expanded="false" data-key="${escAttr(dealKey(x))}">详情 ↓</button></div>
