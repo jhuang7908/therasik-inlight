@@ -1,0 +1,593 @@
+{
+ "id": "c5-am-5",
+ "round": "r3",
+ "drafter_of_edits": "grok-bot (self)",
+ "base_drafter_model": "gpt-5.5-2026-04-23",
+ "source_draft": "work/r3b/c5-am-5/rw_c5-am-5_draft_r3fix.json",
+ "edits_r3": [
+  "no text edits; new mech drawing laid out"
+ ],
+ "status": "published-ready",
+ "status_reasons": [],
+ "preprint": false,
+ "writer_tags": [
+  "HIV储存库",
+  "SHIV幼猴",
+  "广谱中和抗体",
+  "CCR5阻断",
+  "治疗中断",
+  "IPDA"
+ ],
+ "tags_note": "editor related-field tags prepended; writer tags trimmed to 6 (metadata only)",
+ "article": {
+  "tier": "deep",
+  "field": "疫苗与感染免疫",
+  "tags": [
+   "动物模型",
+   "抗体工程",
+   "HIV储存库",
+   "SHIV幼猴",
+   "广谱中和抗体",
+   "CCR5阻断"
+  ],
+  "primary_endpoint_basis": "本文为幼年恒河猴口服SHIV感染模型。原文在Results首段写明“As the primary readout for infection, we measured plasma viral RNA loads (PVLs) and cell-associated viral DNA loads (CAVLs) in peripheral blood mononuclear cells”，并在三联治疗实验中以ATI后PVL、PBMC/组织CAVL、CD8耗竭和IPDA共同判断是否建立永久/潜伏储存库。标题数字来自Results：“all eight infants remained aviraemic through 6 months of follow-up after ATI”和“no cell-associated viral DNA was detected in the PBMCs or tissues of any animal”。",
+  "comparison_design": "临床前动物实验。Methods写明样本量按“两侧检验、80% power、alpha = 0.05”估算，每组6只用于检测PVL显著差异，并写明“Animal assignment to study groups was done sequentially by birth date, rather than through randomization”。关键定量比较中，LRM对淋巴和胃肠组织CAVL的降低使用two-way ANOVA和mixed-effect analysis with Tukey’s multiple comparison test，图注只给显著性星号范围而非精确P值；三联治疗8只无反弹/无CAVL是组内核心读出，原文未给出与2只ART+bNAb或2只未治疗对照的正式比较P值。",
+  "untested_comparisons": [
+   "三联治疗8/8无病毒血症与ART+bNAb 0/2未反弹之间，原文未报告正式比较P值，且对照数仅2只",
+   "三联治疗8/8无Gag特异性CD8 T细胞与ART+bNAb 2/2有抗病毒免疫之间，原文未报告正式比较P值",
+   "ART+bNAb对照中1只立即反弹峰值10^5、1只7周后峰值10^6 copies/ml与三联治疗的差异，原文未报告正式比较P值",
+   "48小时bNAb 5/6清除与72小时bNAb 6/6反弹之间，原文未报告正式比较P值",
+   "21天ART或ART+bNAb各2/6低于检测限的组间差异，原文未报告正式比较P值"
+  ],
+  "number_basis_note": "摘要与正文在核心数字上未见冲突：72 h启动三联治疗后，1 year after treatment interruption的摘要表述对应正文week 84终末取材；正文与图主要使用6 months after ATI、week 56、week 61和week 84等Results/图注口径。正文和图均采用Results/Methods口径，不混用其他摘要口径。",
+  "must_cover": [
+   {
+    "id": "m1",
+    "item_zh": "8只72小时接受LRM+bNAbs+27周ART的幼猴，在ART中断后6个月均保持无病毒血症，且任何动物PBMC或组织未检出细胞相关病毒DNA。",
+    "status": "covered",
+    "covered_by": "所有8只三联治疗幼猴在ATI后6个月仍无病毒血症"
+   },
+   {
+    "id": "m2",
+    "item_zh": "三联治疗幼猴未检出潜伏储存库：第84周尸检无病毒DNA，淋巴组织CD4+T细胞IPDA未检出完整或缺陷前病毒，而对照和bNAb+ART动物有病毒DNA。",
+    "status": "covered",
+    "covered_by": "而对照和ART+bNAb动物有病毒DNA"
+   },
+   {
+    "id": "m3",
+    "item_zh": "第61周CD8耗竭未使任何三联治疗幼猴出现血浆或细胞相关DNA反弹，而存活对照和2只bNAb+ART动物出现病毒血症和可检CAVL。",
+    "status": "covered",
+    "covered_by": "第61周CD8细胞耗竭后，8只三联治疗幼猴仍未出现血浆病毒或细胞相关DNA反弹"
+   },
+   {
+    "id": "m4",
+    "item_zh": "研究使用55只约4周龄幼年恒河猴，每组6–8只，高剂量口服SHIV SF162P3感染；72小时开始治疗时血浆病毒血症已可测，分组按出生日期顺序而非随机。",
+    "status": "covered",
+    "covered_by": "研究共纳入55只约4周龄雌雄幼年恒河猴，每组6–8只"
+   },
+   {
+    "id": "m5",
+    "item_zh": "三联方案：72小时起LRM 50 mg/kg每周6周、10 mg/kg每周3周；VRC07-523LS和PGT121各20 mg/kg一次；TDF/FTC/DTG每日ART 27周；确认bNAb、LRM和CCR5占位洗脱后中断ART。",
+    "status": "covered",
+    "covered_by": "三联组在72 h启动LRM、bNAb和ART"
+   },
+   {
+    "id": "m6",
+    "item_zh": "48小时bNAb一次给药使5/6幼猴清除病毒；72小时bNAb单用6只均反弹（4只第5–6周，2只第16和22周）；21天ART或ART+bNAb每组仅2/6低于检测限。",
+    "status": "covered",
+    "covered_by": "48 h一次bNAb使5/6幼猴清除病毒"
+   },
+   {
+    "id": "m7",
+    "item_zh": "72小时起LRM单药每周28周使血浆病毒下降2–4 log10，治疗末3/6不可测，但6只PBMC仍有细胞相关病毒，未阻止储存库建立。",
+    "status": "covered",
+    "covered_by": "LRM单药每周28周把稳态血浆病毒降低2–4 log10"
+   },
+   {
+    "id": "m8",
+    "item_zh": "LRM加27周ART（无bNAb）未阻止感染：ART停止后4/6动物反弹，其中3只血浆病毒和PBMC细胞相关病毒延迟9–10周。",
+    "status": "covered",
+    "covered_by": "LRM加27周ART也未阻止感染"
+   },
+   {
+    "id": "m9",
+    "item_zh": "LRM使淋巴组织储存库播散较ART或ART+bNAb降低约1 log10；在胃肠组织中，LRM单用或合并ART也降低约1 log10。",
+    "status": "covered",
+    "covered_by": "尸检组织显示，LRM使淋巴组织CAVL较ART或ART+bNAb降低1 log10"
+   },
+   {
+    "id": "m10",
+    "item_zh": "三联实验对照：2只未治疗幼猴病毒血症失控（1只第20周因AIDS相关疾病安乐死），2只ART+bNAb幼猴ATI后反弹（1只立即、峰值10^5；1只7周后、峰值10^6 copies/ml），并出现Gag特异性CD8 T细胞和抗Env抗体；三联组均无。",
+    "status": "covered",
+    "covered_by": "2只ART+bNAb对照在ATI后反弹，峰值为10^5或10^6 copies/ml，并出现Gag特异性CD8 T细胞和抗Env抗体"
+   },
+   {
+    "id": "m11",
+    "item_zh": "作者承认，更深的非淋巴组织取样（骨髓、中枢神经系统）可能发现潜伏病毒；CCR5阻断不一定适用于CXCR4使用病毒；成人疗效未检验。",
+    "status": "covered",
+    "covered_by": "作者承认，若更深取样骨髓或中枢神经系统等非淋巴组织，仍可能发现潜伏病毒"
+   },
+   {
+    "id": "m12",
+    "item_zh": "作者指出72小时干预是非常早、峰值病毒血症前的时间点，是局限；LRM–bNAb协同机制未知；三联组n=8，只有2只未治疗和2只ART+bNAb比较动物。",
+    "status": "covered",
+    "covered_by": "72 h干预仍在峰值病毒血症前，是作者点名的局限"
+   }
+  ],
+  "title": "72小时三联治疗后，8只幼猴停药6个月无病毒血症",
+  "one_liner": "口服SHIV感染幼猴在72小时启动LRM、bNAb和27周ART后，8只ATI后6个月均无病毒血症且PBMC/组织未检出CAVL。",
+  "datacard": {
+   "study_type": "非随机临床前动物实验，幼年恒河猴口服SHIV感染模型",
+   "n": "共55只约4周龄幼年恒河猴；多数实验组6–8只；三联组8只、未治疗对照2只、ART+bNAb对照2只",
+   "control": "历史和同期未治疗对照7只；三联实验含2只未治疗对照和2只ART+bNAb对照",
+   "intervention": "72 h启动三联：LRM 50 mg/kg每周6周后10 mg/kg每周3周，VRC07-523LS和PGT121各20 mg/kg一次，TDF/FTC/DTG每日ART 27周",
+   "followup": "ATI后6个月；第56周免疫和CD4+T细胞病毒DNA检测；第61周CD8耗竭；第84周尸检",
+   "primary_endpoint": "主要感染读出为血浆病毒RNA负荷PVL和PBMC细胞相关病毒DNA负荷CAVL；三联实验核心读出为ATI后病毒反弹、PBMC/组织CAVL、CD8耗竭后反弹和IPDA",
+   "primary_endpoint_result": "三联组8/8在ATI后6个月无病毒血症，PBMC或组织均未检出细胞相关病毒DNA；第84周8只三联治疗动物无病毒核酸阳性样本，IPDA未检出完整或缺陷前病毒",
+   "statistics": "样本量按双侧检验80% power、alpha=0.05估算，每组6只用于检测PVL差异；分组按出生日期顺序而非随机；LRM组织CAVL比较用two-way ANOVA和mixed-effect analysis with Tukey校正",
+   "safety": "三联方案耐受良好，日常健康监测无临床担忧；与未感染幼猴相比未见体重增长受影响，尸检无SHIV相关病理证据",
+   "evidence_level": "全文",
+   "check_record": "核对章节：Abstract、Main、Results、Discussion、Methods、Fig.1–4图注和Extended Data图注；来源为用户提供全文材料"
+  },
+  "background": [
+   "儿童围产期获得HIV后，即使ART可长期抑制复制，潜伏储存库仍难以清除；未治疗儿童在1岁内死亡率可达50%。既有资料显示，幼猴在口服SIV或SHIV后病毒很快播散，ART若从72 h才开始，往往仍会在停药后反弹。",
+   "bNAb可中和Env并短期压低病毒血症，CCR5抗体LRM可阻断主要共受体；但单一策略在储存库已建立后难以清除病毒。Sacha等在Nature Microbiology把问题前移到暴露后72 h，测试中和、复制抑制和CCR5阻断能否共同减少新感染灶播散。"
+  ],
+  "design": [
+   "研究共纳入55只约4周龄雌雄幼年恒河猴，每组6–8只，经高剂量SHIV SF162P3单日口服感染。治疗多在72 h开始，此时血浆病毒血症已可测。动物按出生日期顺序分组而非随机；病理和病毒定量实验使用编码样本盲法完成。",
+   "三联组在72 h启动LRM、bNAb和ART：LRM 50 mg/kg每周6周后10 mg/kg每周3周，PGT121与VRC07-523LS各20 mg/kg一次，TDF/FTC/DTG每日ART 27周；确认bNAb、LRM和CCR5占位洗脱后ATI。主要感染读出为PVL和PBMC CAVL，样本量按80%把握度、alpha=0.05估算用于检测PVL差异；未排除数据，并纵向监测病毒读出。"
+  ],
+  "results": [
+   {
+    "subhead": "窗口先被限定",
+    "text": "48 h一次bNAb使5/6幼猴清除病毒；推迟到72 h后，bNAb单用6只均反弹，其中4只在第5–6周、2只在第16和22周。72 h启动21天ART或ART+bNAb仅各有2/6低于检测限，说明72 h时单靠中和或短程ART不足。"
+   },
+   {
+    "subhead": "CCR5阻断减播散",
+    "text": "LRM单药每周28周把稳态血浆病毒降低2–4 log10，治疗末3/6不可测，但6只PBMC仍有细胞相关病毒。LRM加27周ART也未阻止感染：ART停后4/6反弹，其中3只血浆和PBMC病毒延迟9–10周。"
+   },
+   {
+    "subhead": "组织储存库减少",
+    "text": "尸检组织显示，LRM使淋巴组织CAVL较ART或ART+bNAb降低1 log10；在胃肠组织中，LRM单用或合并ART也降低1 log10。图注说明这些组织比较用two-way ANOVA和Tukey多重比较，显著性以P<0.05至P<0.0001标注。"
+   },
+   {
+    "subhead": "三联后未反弹",
+    "text": "所有8只三联治疗幼猴在ATI后6个月仍无病毒血症，且任何动物PBMC或组织未检出CAVL。同一实验的2只未治疗对照病毒血症失控，1只在第20周因AIDS相关疾病安乐死；2只ART+bNAb对照在ATI后反弹，峰值为10^5或10^6 copies/ml，并出现Gag特异性CD8 T细胞和抗Env抗体，三联组均无。"
+   },
+   {
+    "subhead": "潜伏病毒未检出",
+    "text": "第56周，8只三联治疗幼猴未见Gag特异性CD8 T细胞，也无抗Env抗体；第61周CD8细胞耗竭后，8只三联治疗幼猴仍未出现血浆病毒或细胞相关DNA反弹，而存活对照和2只ART+bNAb动物出现病毒血症和可检CAVL。第84周尸检时，8只三联治疗动物没有任何样本病毒核酸阳性，淋巴组织CD4+T细胞IPDA也未检出完整或缺陷前病毒，而对照和ART+bNAb动物有病毒DNA。"
+   }
+  ],
+  "mechanism_proven": [
+   "实验证明的链条是：72 h时血浆病毒已可测，单用bNAb、ART或LRM不能清除全部感染；LRM可在血液CD4+T细胞上维持CCR5受体占位，并把淋巴和胃肠组织CAVL降低1 log10。加入bNAb和27周ART后，8只动物ATI、CD8耗竭和第84周尸检均未检出复制或潜伏病毒。",
+   "免疫学读出支持“不是由可测适应性抗病毒免疫维持控制”。第56周，对照和2只ART+bNAb动物可测Gag特异性CD8 T细胞，2只ART+bNAb动物还有抗Env抗体；8只三联治疗动物这些应答均未观察到，CD8耗竭也未诱发反弹。"
+  ],
+  "mechanism_inferred": [
+   "作者推测，三联作用可能来自多层阻断：bNAb中和Env，ART压制复制，LRM阻断CCR5进入并可能改变CCR5+CD4+T细胞向胃肠组织迁移。但原文明确称LRM与bNAb协同机制未知，也没有直接证据证明bNAb介导清除已感染细胞。"
+  ],
+  "limitations": [
+   "72 h干预仍在峰值病毒血症前，是作者点名的局限；这接近暴露后极早治疗，而不是已确诊多日或成人慢性感染。",
+   "三联实验的比较组很小：三联组n=8，只有2只未治疗和2只ART+bNAb同期比较动物。研究未随机分组，而是按出生日期顺序分配；虽然病毒定量和病理使用盲法，组间结论不应读作大样本疗效比较。",
+   "作者承认，若更深取样骨髓或中枢神经系统等非淋巴组织，仍可能发现潜伏病毒；研究重点取样淋巴组织、PBMC、胃肠组织和脾。第84周无检出不能等同于证明全身每个解剖位点绝对无病毒。",
+   "机制仍未闭合：CCR5阻断若主要依赖共受体封锁，可能不适用于使用CXCR4的传播病毒；LRM与bNAb协同机制未知，成人HIV感染中的有效性也未检验。"
+  ],
+  "significance": [
+   "若这一幼猴模型能预测人类围产期感染，72 h内把bNAb、ART和CCR5阻断合用，可能把治疗目标从长期抑制推进到阻止永久储存库成熟。其转化吸引力在于LRM、VRC07-523LS和PGT121均为人用抗体或临床研究相关产品。",
+   "但产业和临床推进应以早期暴露识别、可及给药和病毒嗜性为前提。该研究支持设计新生儿暴露后强化方案，不能解读为儿童HIV已可治愈；下一步关键是验证不同暴露剂量、启动时间和CXCR4相关风险。"
+  ],
+  "citation": "Sacha JB, Ordonez T, Pandey S, Webb G, Barnette P, Pessoa C, et al. Combination therapy with broadly neutralizing antibodies, antiretroviral therapy and CCR5 blockade limits viral reservoir seeding in infant macaque model of HIV. Nature Microbiology. 2026. https://doi.org/10.1038/s41564-026-02444-x",
+  "data_points": [
+   {
+    "value": "72小时",
+    "meaning": "标题和导语：三联治疗启动时间为感染后72 h",
+    "source_quote": "27 weeks of ART beginning at 72 h post-infection in 8 orally SHIV-infected infants",
+    "location": "Results: Triple therapy prevents viral reservoir seeding and post-treatment rebound"
+   },
+   {
+    "value": "8只",
+    "meaning": "标题、导语和结果：三联治疗幼猴数量",
+    "source_quote": "27 weeks of ART beginning at 72 h post-infection in 8 orally SHIV-infected infants",
+    "location": "Results: Triple therapy prevents viral reservoir seeding and post-treatment rebound"
+   },
+   {
+    "value": "8/8",
+    "meaning": "数据卡和图标签：三联治疗动物均无病毒血症",
+    "source_quote": "all eight infants remained aviraemic through 6 months of follow-up after ATI",
+    "location": "Results: Triple therapy prevents viral reservoir seeding and post-treatment rebound"
+   },
+   {
+    "value": "8只",
+    "meaning": "数据卡和结果：第84周三联治疗动物没有病毒核酸阳性样本",
+    "source_quote": "no sample from any of the eight triple therapy-treated infants was positive for virus nucleic acid",
+    "location": "Results: Triple therapy prevents viral reservoir seeding and post-treatment rebound"
+   },
+   {
+    "value": "6个月",
+    "meaning": "标题、导语和结果：ATI后无病毒血症随访时长",
+    "source_quote": "all eight infants remained aviraemic through 6 months of follow-up after ATI",
+    "location": "Results: Triple therapy prevents viral reservoir seeding and post-treatment rebound"
+   },
+   {
+    "value": "27周",
+    "meaning": "导语、设计、数据卡：三联方案ART疗程",
+    "source_quote": "bNAbs (20 mg kg −1 each of VRC07-523LS and PGT121) and 27 weeks of ART beginning at 72 h post-infection",
+    "location": "Results: Triple therapy prevents viral reservoir seeding and post-treatment rebound"
+   },
+   {
+    "value": "55只",
+    "meaning": "设计和数据卡：全研究幼猴数量",
+    "source_quote": "The study included 55 male and female infant macaques in groups of 6 to 8",
+    "location": "Results: Early treatment with bNAbs to define the window of opportunity"
+   },
+   {
+    "value": "约4周龄",
+    "meaning": "设计和数据卡：感染时幼猴年龄",
+    "source_quote": "orally infected with SHIV SF162P3 at ~4 weeks of age",
+    "location": "Methods: Animals, virus infection and treatment groups"
+   },
+   {
+    "value": "6–8只",
+    "meaning": "设计和数据卡：多数实验组大小",
+    "source_quote": "The study included 55 male and female infant macaques in groups of 6 to 8",
+    "location": "Results: Early treatment with bNAbs to define the window of opportunity"
+   },
+   {
+    "value": "50 mg/kg",
+    "meaning": "设计、数据卡和图标签：LRM初始每周剂量",
+    "source_quote": "LRM (6 weekly infusions of 50 mg kg −1 , followed by 3 weekly infusions of 10 mg kg −1 )",
+    "location": "Results: Triple therapy prevents viral reservoir seeding and post-treatment rebound"
+   },
+   {
+    "value": "6周",
+    "meaning": "设计、数据卡和图标签：LRM 50 mg/kg持续周数",
+    "source_quote": "LRM (6 weekly infusions of 50 mg kg −1 , followed by 3 weekly infusions of 10 mg kg −1 )",
+    "location": "Results: Triple therapy prevents viral reservoir seeding and post-treatment rebound"
+   },
+   {
+    "value": "10 mg/kg",
+    "meaning": "设计、数据卡和图标签：LRM后续每周剂量",
+    "source_quote": "LRM (6 weekly infusions of 50 mg kg −1 , followed by 3 weekly infusions of 10 mg kg −1 )",
+    "location": "Results: Triple therapy prevents viral reservoir seeding and post-treatment rebound"
+   },
+   {
+    "value": "3周",
+    "meaning": "设计、数据卡和图标签：三联方案LRM 10 mg/kg持续周数",
+    "source_quote": "LRM (6 weekly infusions of 50 mg kg −1 , followed by 3 weekly infusions of 10 mg kg −1 )",
+    "location": "Results: Triple therapy prevents viral reservoir seeding and post-treatment rebound"
+   },
+   {
+    "value": "20 mg/kg",
+    "meaning": "设计、数据卡和图标签：每种bNAb剂量",
+    "source_quote": "bNAbs (20 mg kg −1 each of VRC07-523LS and PGT121)",
+    "location": "Results: Triple therapy prevents viral reservoir seeding and post-treatment rebound"
+   },
+   {
+    "value": "80%",
+    "meaning": "设计、数据卡：样本量估计把握度",
+    "source_quote": "Sample sizes were calculated assuming a two-sided hypothesis test, with 80% power and alpha = 0.05",
+    "location": "Methods: Animals, virus infection and treatment groups"
+   },
+   {
+    "value": "alpha=0.05",
+    "meaning": "设计、数据卡：样本量估计显著性水平",
+    "source_quote": "Sample sizes were calculated assuming a two-sided hypothesis test, with 80% power and alpha = 0.05",
+    "location": "Methods: Animals, virus infection and treatment groups"
+   },
+   {
+    "value": "48 h",
+    "meaning": "结果：bNAb较早给药时间",
+    "source_quote": "we injected a bolus of the bNAb cocktail consisting of 20 mg kg −1 each of PGT121 and VRC07-523LS initiated 48 h after SHIV infection",
+    "location": "Results: Early treatment with bNAbs to define the window of opportunity"
+   },
+   {
+    "value": "5/6",
+    "meaning": "结果：48 h bNAb清除病毒的幼猴比例",
+    "source_quote": "This treatment resulted in therapeutic antibody levels in plasma and eliminated the virus in 5/6 animals",
+    "location": "Results: Early treatment with bNAbs to define the window of opportunity"
+   },
+   {
+    "value": "5–6周",
+    "meaning": "结果：72 h bNAb单用4只反弹时间",
+    "source_quote": "resulted in viral rebound in 4 infants at weeks 5 and 6",
+    "location": "Results: Early treatment with bNAbs to define the window of opportunity"
+   },
+   {
+    "value": "4只",
+    "meaning": "结果：72 h bNAb单用在第5–6周反弹的动物数",
+    "source_quote": "resulted in viral rebound in 4 infants at weeks 5 and 6",
+    "location": "Results: Early treatment with bNAbs to define the window of opportunity"
+   },
+   {
+    "value": "2只",
+    "meaning": "结果：72 h bNAb单用在第16和22周反弹的动物数",
+    "source_quote": "with the other 2 rebounding at weeks 16 and 22",
+    "location": "Results: Early treatment with bNAbs to define the window of opportunity"
+   },
+   {
+    "value": "16和22周",
+    "meaning": "结果：72 h bNAb单用其余2只反弹时间",
+    "source_quote": "with the other 2 rebounding at weeks 16 and 22",
+    "location": "Results: Early treatment with bNAbs to define the window of opportunity"
+   },
+   {
+    "value": "21天",
+    "meaning": "结果：短程ART疗程",
+    "source_quote": "We explored whether the addition of a short course of ART (21 days) could improve the effectiveness",
+    "location": "Results: Early treatment with bNAbs to define the window of opportunity"
+   },
+   {
+    "value": "2/6",
+    "meaning": "结果：21天ART或ART+bNAb组低于检测限的动物比例",
+    "source_quote": "with 2/6 animals in each group below the limit of detection with episodic viral blips",
+    "location": "Results: Early treatment with bNAbs to define the window of opportunity"
+   },
+   {
+    "value": "28周",
+    "meaning": "结果：LRM单药治疗时长",
+    "source_quote": "Weekly LRM treatment for 28 weeks resulted in 2–4 log 10 reduction in steady-state levels of virus in plasma",
+    "location": "Results: Treatment with LRM at 72 h reduces viral seeding but does not clear infection"
+   },
+   {
+    "value": "2–4 log10",
+    "meaning": "结果：LRM单药降低稳态血浆病毒幅度",
+    "source_quote": "Weekly LRM treatment for 28 weeks resulted in 2–4 log 10 reduction in steady-state levels of virus in plasma",
+    "location": "Results: Treatment with LRM at 72 h reduces viral seeding but does not clear infection"
+   },
+   {
+    "value": "3/6",
+    "meaning": "结果：LRM单药治疗末PVL不可测的动物比例",
+    "source_quote": "with 3/6 infants reaching undetectable PVL by the end of the treatment window",
+    "location": "Results: Treatment with LRM at 72 h reduces viral seeding but does not clear infection"
+   },
+   {
+    "value": "4/6",
+    "meaning": "结果：LRM+ART停药后反弹比例",
+    "source_quote": "virus rebounded in 4/6 animals, with a delay of 9–10 weeks",
+    "location": "Results: Treatment with LRM at 72 h reduces viral seeding but does not clear infection"
+   },
+   {
+    "value": "9–10周",
+    "meaning": "结果：LRM+ART中3只反弹动物延迟时间",
+    "source_quote": "with a delay of 9–10 weeks in both the plasma virus and cell-associated PBMC virus in 3 of the rebounding animals",
+    "location": "Results: Treatment with LRM at 72 h reduces viral seeding but does not clear infection"
+   },
+   {
+    "value": "3只",
+    "meaning": "结果：LRM+ART反弹动物中出现9–10周延迟的数量",
+    "source_quote": "with a delay of 9–10 weeks in both the plasma virus and cell-associated PBMC virus in 3 of the rebounding animals",
+    "location": "Results: Treatment with LRM at 72 h reduces viral seeding but does not clear infection"
+   },
+   {
+    "value": "1 log10",
+    "meaning": "结果、机制和图标签：LRM降低淋巴或胃肠组织CAVL幅度",
+    "source_quote": "Within lymphoid tissues, LRM treatment resulted in a 1 log 10 reduction in CAVLs compared with ART alone or ART plus bNAbs (Fig. 2f ). Within gastrointestinal tissues, LRM, alone or in combination with ART, resulted in a 1 log 10 reduction in CAVLs compared with ART alone or ART plus bNAbs",
+    "location": "Results: Treatment with LRM at 72 h reduces viral seeding but does not clear infection"
+   },
+   {
+    "value": "P<0.05",
+    "meaning": "结果：组织比较图注显著性标记下限",
+    "source_quote": "* P < 0.05, ** P < 0.01, *** P < 0.001 and **** P < 0.0001",
+    "location": "Fig. 2 caption"
+   },
+   {
+    "value": "P<0.0001",
+    "meaning": "结果：组织比较图注显著性标记上限",
+    "source_quote": "* P < 0.05, ** P < 0.01, *** P < 0.001 and **** P < 0.0001",
+    "location": "Fig. 2 caption"
+   },
+   {
+    "value": "2只",
+    "meaning": "结果、数据卡和局限：三联实验未治疗对照数量",
+    "source_quote": "We included two untreated SHIV-inoculated controls and two SHIV-inoculated infants treated with daily ART for 27 weeks plus the same bNAb bolus",
+    "location": "Results: Triple therapy prevents viral reservoir seeding and post-treatment rebound"
+   },
+   {
+    "value": "2只",
+    "meaning": "结果、数据卡和局限：三联实验ART+bNAb对照数量",
+    "source_quote": "We included two untreated SHIV-inoculated controls and two SHIV-inoculated infants treated with daily ART for 27 weeks plus the same bNAb bolus",
+    "location": "Results: Triple therapy prevents viral reservoir seeding and post-treatment rebound"
+   },
+   {
+    "value": "20周",
+    "meaning": "结果：三联实验一只未治疗对照安乐死时间",
+    "source_quote": "one of the control infants requiring euthanasia at 20 weeks owing to AIDS-related illness",
+    "location": "Results: Triple therapy prevents viral reservoir seeding and post-treatment rebound"
+   },
+   {
+    "value": "10^5",
+    "meaning": "结果：ART+bNAb对照一只即时反弹峰值",
+    "source_quote": "virus in one infant rebounded immediately with a peak of 10 5 copies per ml",
+    "location": "Results: Triple therapy prevents viral reservoir seeding and post-treatment rebound"
+   },
+   {
+    "value": "7周",
+    "meaning": "结果：ART+bNAb对照另一只反弹延迟时间",
+    "source_quote": "whereas virus in the second infant rebounded 7 weeks later with a peak of 10 6 copies per ml",
+    "location": "Results: Triple therapy prevents viral reservoir seeding and post-treatment rebound"
+   },
+   {
+    "value": "10^6 copies/ml",
+    "meaning": "结果：ART+bNAb对照另一只反弹峰值",
+    "source_quote": "whereas virus in the second infant rebounded 7 weeks later with a peak of 10 6 copies per ml",
+    "location": "Results: Triple therapy prevents viral reservoir seeding and post-treatment rebound"
+   },
+   {
+    "value": "第56周",
+    "meaning": "结果、数据卡和机制：免疫与CD4+T细胞病毒DNA检测时间",
+    "source_quote": "at week 56 post-infection, we assayed for antiviral CD8 + T immunity in PBMCs and LNs",
+    "location": "Results: Triple therapy prevents viral reservoir seeding and post-treatment rebound"
+   },
+   {
+    "value": "第61周",
+    "meaning": "结果和数据卡：CD8+细胞耗竭时间",
+    "source_quote": "before CD8 + cell depletion at week 61",
+    "location": "Results: Triple therapy prevents viral reservoir seeding and post-treatment rebound"
+   },
+   {
+    "value": "第84周",
+    "meaning": "结果、数据卡和机制：终末尸检时间",
+    "source_quote": "At week 84 post-infection, all animals were euthanized",
+    "location": "Results: Triple therapy prevents viral reservoir seeding and post-treatment rebound"
+   },
+   {
+    "value": "1岁",
+    "meaning": "背景：未治疗儿童1岁内死亡率时间点",
+    "source_quote": "leading to 50% mortality by 1 year of life if untreated",
+    "location": "Main"
+   },
+   {
+    "value": "50%",
+    "meaning": "背景：未治疗儿童1岁内死亡率",
+    "source_quote": "leading to 50% mortality by 1 year of life if untreated",
+    "location": "Main"
+   },
+   {
+    "value": "TDF 5.1 mg/kg",
+    "meaning": "数据卡/设计：ART组成中TDF剂量",
+    "source_quote": "TDF (5.1 mg kg −1 ), FTC (40 mg kg −1 ) and DTG (2.5 mg kg −1 )",
+    "location": "Fig. 3 caption"
+   },
+   {
+    "value": "FTC 40 mg/kg",
+    "meaning": "数据卡/设计：ART组成中FTC剂量",
+    "source_quote": "TDF (5.1 mg kg −1 ), FTC (40 mg kg −1 ) and DTG (2.5 mg kg −1 )",
+    "location": "Fig. 3 caption"
+   },
+   {
+    "value": "DTG 2.5 mg/kg",
+    "meaning": "数据卡/设计：ART组成中DTG剂量",
+    "source_quote": "TDF (5.1 mg kg −1 ), FTC (40 mg kg −1 ) and DTG (2.5 mg kg −1 )",
+    "location": "Fig. 3 caption"
+   },
+   {
+    "value": "26 copies/ml",
+    "meaning": "图标签/事实：Fig.3/4血浆病毒检测下限",
+    "source_quote": "Horizontal dashed line indicates limit of detection of 26 SIV gag RNA copies per ml",
+    "location": "Fig. 3 caption"
+   }
+  ],
+  "steps": [
+   "72 h确认病毒血症可测",
+   "三联阻断进入与复制",
+   "27周后洗脱并ATI",
+   "6个月无反弹",
+   "第84周未检出前病毒"
+  ],
+  "figure_caption": "图示72 h后口服SHIV幼猴已可测病毒血症，三联方案同时用bNAb、ART和LRM阻断复制与CCR5进入；随后ATI、CD8耗竭和第84周组织检测均未见可测病毒。示意图由 AI 生成，依据原文结果绘制，非期刊原图，不代表分子比例",
+  "image_story": {
+   "stages": [
+    {
+     "visual_en": "An infant rhesus macaque with pale mint oral mucosa and scattered deep green SHIV particles, with faint generic tissue silhouettes indicating early distribution.",
+     "source_quote": "the virus is in the process of being distributed to tissues and before the peak of viraemia"
+    },
+    {
+     "visual_en": "A treatment field around CD4 T cells: two deep green Y-shaped antibodies binding viral envelope, small pale mint ART capsules, and one large terracotta antibody blocking a CCR5 receptor.",
+     "source_quote": "We next tested the efficacy of a triple therapy consisting of LRM (6 weekly infusions of 50 mg kg −1 , followed by 3 weekly infusions of 10 mg kg −1 ), bNAbs (20 mg kg −1 each of VRC07-523LS and PGT121) and 27 weeks of ART beginning at 72 h post-infection"
+    },
+    {
+     "visual_en": "Quiet lymph node and gut tissue with light grey-green CD4 T cells and no visible viral genomes after interruption and depletion.",
+     "source_quote": "no cell-associated viral DNA was detected in the PBMCs or tissues of any animal throughout the entire monitoring period"
+    }
+   ],
+   "key_element_en": "one CCR5-blocking LRM antibody"
+  },
+  "image_subject_en": "A left-to-right process in three stages, drawn large. Stage 1 shows an infant rhesus macaque in soft light grey-green with a pale mint oral mucosa, nearby lymph node and gut tissue shapes in mid green, and scattered deep green SHIV particles approaching CD4 T cells. Stage 2 shows the intervention around enlarged CD4 T cells: deep green Y-shaped broadly neutralizing antibodies clasp viral envelope spikes, pale mint small drug particles represent antiretroviral therapy near viral replication complexes, and one very large, solid, boldly filled terracotta #C0492F CCR5-blocking LRM antibody covers a CCR5 receptor on a CD4 T cell surface. Stage 3 shows calm lymphoid and gastrointestinal tissue compartments in pale mint and light grey-green, with intact CD4 T cells and empty spaces where viral genomes would be, conveying no detectable reservoir after interruption and CD8 depletion. Use a semi-realistic 3D scientific illustration style, clean biomolecular forms, soft shadows, white-to-pale mint background, no text, no numbers, no symbols, no charts, no axes. Only the CCR5-blocking LRM antibody is terracotta.",
+  "card_subject_en": "A compact hero image of one enlarged CD4 T cell in pale mint and light grey-green, its surface dotted with deep green CCR5 receptors and nearby deep green SHIV particles restrained by deep green Y-shaped antibodies. One very large, solid, boldly filled terracotta #C0492F CCR5-blocking LRM antibody caps a single CCR5 receptor, dominating the composition as the central protective element. Add a few pale mint antiretroviral drug particles around the cell, with soft 3D lighting and clean biomedical realism. No text, no numbers, no symbols. Only the CCR5-blocking LRM antibody is terracotta.",
+  "figure_labels": {
+   "heads": [
+    "72h已感染",
+    "三联阻断",
+    "停药未反弹"
+   ],
+   "callouts": [
+    {
+     "t": "PVL已可测\n72 h启动",
+     "stage": 1,
+     "entity_en": "infant rhesus macaque"
+    },
+    {
+     "t": "bNAb各\n20 mg/kg",
+     "stage": 2,
+     "entity_en": "Y-shaped broadly neutralizing antibodies"
+    },
+    {
+     "t": "LRM 50 mg/kg×6周\n后10 mg/kg×3周",
+     "stage": 2,
+     "entity_en": "CCR5-blocking LRM antibody"
+    },
+    {
+     "t": "ART\n27周",
+     "stage": 2,
+     "entity_en": "antiretroviral therapy drug particles"
+    },
+    {
+     "t": "8只ATI后\n6个月无病毒血症",
+     "stage": 3,
+     "entity_en": "lymphoid and gastrointestinal tissue compartments"
+    },
+    {
+     "t": "第84周\nIPDA未检出",
+     "stage": 3,
+     "entity_en": "CD4 T cells"
+    }
+   ],
+   "facts": [
+    [
+     "全研究**55只**幼猴",
+     "顺序分组非随机"
+    ],
+    [
+     "淋巴/胃肠CAVL",
+     "较ART或ART+bNAb",
+     "降**1 log10**"
+    ],
+    [
+     "三联组**8/8**",
+     "ATI后6个月无反弹"
+    ]
+   ],
+   "note": "图用Results/Methods口径；组间2只对照未作正式比较。示意图由 AI 生成，非期刊原图。"
+  },
+  "chart": {
+   "justified": true,
+   "title_zh": "不同实验读出的描述性比例",
+   "unit": "动物比例",
+   "figure_source": "Fig. 1g and Fig. 3f/4i",
+   "values": [
+    {
+     "label_zh": "48 h bNAb清除",
+     "value": 83.3,
+     "n": "5/6",
+     "source_quote": "This treatment resulted in therapeutic antibody levels in plasma and eliminated the virus in 5/6 animals"
+    },
+    {
+     "label_zh": "72 h 21天ART低于检测限",
+     "value": 33.3,
+     "n": "2/6",
+     "source_quote": "with 2/6 animals in each group below the limit of detection with episodic viral blips"
+    },
+    {
+     "label_zh": "72 h 21天ART+bNAb低于检测限",
+     "value": 33.3,
+     "n": "2/6",
+     "source_quote": "with 2/6 animals in each group below the limit of detection with episodic viral blips"
+    },
+    {
+     "label_zh": "72 h 三联ATI后无病毒血症",
+     "value": 100,
+     "n": "8/8",
+     "source_quote": "all eight infants remained aviraemic through 6 months of follow-up after ATI"
+    }
+   ],
+   "note": "这些为不同实验的描述性比例；48 h bNAb、21天ART/ART+bNAb和三联治疗终点口径不同，不能解读为正式疗效比较。"
+  }
+ },
+ "images": {
+  "mech_raw": "c5-am-5_mech_raw_r3.png",
+  "mech": "c5-am-5_mech_r3.png",
+  "card": "c5-am-5_card.png",
+  "image_model": "mech: grok-imagine (drawing supplied by parent run); card: gpt-image-2 (earlier round)",
+  "note": ""
+ }
+}

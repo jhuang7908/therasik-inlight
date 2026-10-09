@@ -1,0 +1,608 @@
+{
+ "id": "c5-am-2",
+ "final_version": 1,
+ "drafter_model": "claude-sonnet-5-5",
+ "drafter_models_per_version": {
+  "1": "claude-sonnet-5-5"
+ },
+ "verifier_model": "claude-sonnet-5-5",
+ "mustcover_frozen_by": "claude-opus-5-5",
+ "selected_from_versions": [
+  1
+ ],
+ "remaining_failures_n": 0,
+ "remaining_failures": [],
+ "status": "published-ready",
+ "status_reasons": [],
+ "preprint": false,
+ "tags_note": "editor related-field tags prepended; writer tags trimmed to 6 (metadata only)",
+ "writer_tags": [
+  "异种移植",
+  "无皮质小鼠",
+  "皮质类器官移植",
+  "L5-ET神经元",
+  "MoSeq行为分析",
+  "缺氧损伤模型"
+ ],
+ "article": {
+  "tier": "deep",
+  "field": "类器官",
+  "tags": [
+   "动物模型",
+   "异种移植",
+   "无皮质小鼠",
+   "皮质类器官移植",
+   "L5-ET神经元",
+   "MoSeq行为分析"
+  ],
+  "primary_endpoint_basis": "临床前研究，无方案预设终点。核心读出取摘要与正文一致、且原文给出统计推断的移植物生长：MRI 测得移植后2至3个月约增长4.7倍（配对t检验，P = 1.66×10−6，Fig. 2d），并配合描述性的91.9%皮质组织占比（Fig. 2e）。标题数字来自正文 Results 与 Fig. 2d/e 图注。",
+  "comparison_design": "临床前动物研究。移植物生长用配对t检验，行为、缺氧CatWalk、Y迷宫用ANOVA/单样本t检验等并给出P值；91.9%占比、L5-ET富集倍数、VEN样细胞比例为描述性数值，未见统计检验。原文称样本量依既往研究经验性估计，性别效应研究未设计效能。",
+  "untested_comparisons": [
+   "XCX的L5-ET神经元比例比既往大鼠及成年小鼠移植高三倍以上（未见统计检验）",
+   "85%的XCX L5-ET神经元对HNOCA体外类器官213,753个神经元中的3个（描述性）",
+   "移植物占皮质组织总体积91.9%（描述性，n = 7）",
+   "MoSeq中无皮质与XCX的区分较弱（原文称仅弱分类）",
+   "3/3只XCX小鼠的HIF1α与SWI观察（未做定量统计）"
+  ],
+  "number_basis_note": "摘要不含数值，与正文无口径冲突；标题、导语、图与数据卡均采用正文 Results 与图注口径。",
+  "must_cover": [
+   {
+    "id": "m1",
+    "item_zh": "无皮质小鼠由Emx1-cre+/− Esco2fl/fl Prkdcscid/scid构成，无皮质后代23.4%（n = 91窝，46个繁育笼），脑组织约减少50%",
+    "status": "covered",
+    "covered_by": "无皮质后代占23.4%（n = 91窝，46个繁育笼），与孟德尔25%预期一致"
+   },
+   {
+    "id": "m2",
+    "item_zh": "880,149个核的snRNA-seq显示背侧皮质来源谷氨酸能神经元约七倍减少，其余类别保留，apallial为操作性名称",
+    "status": "covered",
+    "covered_by": "背侧皮质来源谷氨酸能神经元各类别约七倍减少"
+   },
+   {
+    "id": "m3",
+    "item_zh": "移植成功率86.2%（29只，3株细胞系），2至3个月约增长4.7倍（n = 14），3个月时占皮质组织体积91.9%（n = 7）",
+    "status": "covered",
+    "covered_by": "3个月时移植物占皮质组织总体积的91.9%（n = 7）"
+   },
+   {
+    "id": "m4",
+    "item_zh": "85%的XCX L5-ET神经元UCell评分>0.1，HNOCA中3/213,753，比既往方案高三倍以上",
+    "status": "covered",
+    "covered_by": "XCX中85%的第5层颅外投射（L5-ET）神经元UCell评分>0.1"
+   },
+   {
+    "id": "m5",
+    "item_zh": "VEN样细胞见于3/3只XCX小鼠，占标记胞体0.16%，中位胞体29.8 µm对整体9.251 µm",
+    "status": "covered",
+    "covered_by": "占标记胞体的0.16%，其中位胞体29.8 µm"
+   },
+   {
+    "id": "m6",
+    "item_zh": "3只XCX小鼠脊髓颈段见稀疏人源投射，局灶移植与野生型对照无",
+    "status": "covered",
+    "covered_by": "局灶移植对照与野生型对照脊髓均无信号"
+   },
+   {
+    "id": "m7",
+    "item_zh": "4个月时钙爆发、约100 ms传播、与口面部运动相关（P = 0.021，n = 3），LFP爆发（n = 3）",
+    "status": "covered",
+    "covered_by": "爆发与口面部运动相关（配对t检验P = 0.021，n = 3只）"
+   },
+   {
+    "id": "m8",
+    "item_zh": "MoSeq显示行为状态空间移位，XCX更接近无皮质、漂移最大（P = 0.019；XCX对对照P = 0.027），未正常化",
+    "status": "covered",
+    "covered_by": "更接近无皮质，会话间漂移最大"
+   },
+   {
+    "id": "m9",
+    "item_zh": "跑速无差异（P = 0.8467），摆动时间无皮质对照P = 0.0019、XCX对对照P = 0.2303，对角爪同步改变",
+    "status": "covered",
+    "covered_by": "摆动时间无皮质组短于对照（P = 0.0019），XCX对对照P = 0.2303"
+   },
+   {
+    "id": "m10",
+    "item_zh": "Y迷宫对照与XCX高于随机、无皮质否（n = 16，P = 0.3016），无皮质与XCX恐惧条件反射受损",
+    "status": "covered",
+    "covered_by": "无皮质小鼠（n = 16，P = 0.3016）则否"
+   },
+   {
+    "id": "m11",
+    "item_zh": "缺氧后HIF1α见于3/3只XCX移植物，XCX 3至4爪支撑增加最多（P = 0.0047等），速度无变化（P = 0.3845）",
+    "status": "covered",
+    "covered_by": "XCX小鼠3至4爪支撑占比较基线增加最多（ANOVA P = 0.0047"
+   },
+   {
+    "id": "m12",
+    "item_zh": "移植物缺乏规范分层、完整区域化、足量GABA能神经元和成熟转录，约二孕期晚期，最长177天，成熟错配",
+    "status": "covered",
+    "covered_by": "缺少规范皮质分层、完整区域化、足量GABA能中间神经元和成熟转录谱"
+   },
+   {
+    "id": "m13",
+    "item_zh": "移植物对特定行为必需或充分尚不清楚，功能整合需通路特异操控，缺非皮质类器官对照",
+    "status": "covered",
+    "covered_by": "移植物对特定行为是否必需或充分尚不清楚"
+   }
+  ],
+  "title": "人皮质类器官移植入无皮质小鼠：移植物占皮质体积91.9%，2至3个月约增长4.7倍",
+  "one_liner": "在Esco2缺失的免疫缺陷无皮质小鼠中新生期移植4个人皮质类器官，移植物3个月时占皮质组织体积91.9%，2至3个月约增长4.7倍。",
+  "datacard": {
+   "study_type": "临床前动物研究（人iPS细胞来源皮质类器官异种移植小鼠）",
+   "n": "移植成功率评估29只；生长n = 14；皮质占比n = 7；全脑snRNA-seq每组2只；钙成像与LFP各3只；CatWalk对照16、无皮质10、XCX 7；Y迷宫对照39、无皮质16、XCX 18；缺氧CatWalk对照6雌5雄、无皮质9雌、XCX 4雌5雄",
+   "primary_endpoint": "MRI测定的移植物体积增长（移植后2至3个月）及占皮质组织体积比例",
+   "primary_endpoint_result": "2至3个月约增长4.7倍（n = 14，配对t检验，t = 8.219，P = 1.66×10−6）；3个月时占皮质组织总体积91.9%（n = 7，描述性）；移植成功率86.2%（29只）",
+   "control": "同窝Esco2fl/fl Prkdcscid/scid对照小鼠；移植到完整皮质的局灶移植物；野生型小鼠；未移植无皮质小鼠",
+   "intervention": "5至17日龄无皮质小鼠每侧半球移植2个hCO，每只共4个；缺氧组5% O2暴露5小时（含1小时渐降）",
+   "followup": "MRI监测移植后2至3个月；类器官分化后最长177天",
+   "statistics": "配对/非配对t检验、ANOVA（Holm–Šidák校正）、Kruskal–Wallis（Bonferroni校正）、单样本t检验，均为双侧",
+   "safety": "无皮质小鼠体重低于对照，约2个月龄存活率有降低趋势；缺氧诱导中有1只小鼠因气道阻塞死亡",
+   "evidence_level": "全文",
+   "check_record": "读了Nature开放获取全文HTML的摘要、正文Results、Discussion、图1–5图注与Methods"
+  },
+  "background": [
+   "人脑组织难以直接取得，人源干细胞来源的皮质类器官（hCO）可模拟皮质神经发生，但体外缺少环路与行为层面的读出。此前将hCO移植入新生大鼠皮质可促进人神经元整合与成熟，但移植物最多占大鼠一侧皮质的约三分之一。",
+   "原文认为，鼠源神经元发育快于人源神经元，快速成熟的宿主环境及既有的大鼠连接可能限制移植物增殖与投射，这对涉及大范围环路失调、行为改变的神经发育疾病建模尤为突出。本研究的切口是先在小鼠中遗传性清除背侧和内侧皮质，再向空出的皮质腔移植hCO。"
+  ],
+  "design": [
+   "无皮质（apallial）小鼠在免疫缺陷SCID背景下于Emx1表达细胞中删除Esco2（Emx1-cre+/− Esco2fl/fl Prkdcscid/scid），使分裂细胞死亡。无皮质后代占23.4%（n = 91窝，46个繁育笼），与孟德尔25%预期一致；MRI示全脑组织较对照Esco2fl/fl Prkdcscid/scid约减少50%。",
+   "5至17日龄（中位10日龄）的无皮质小鼠每侧半球移植2个hCO，每只共4个，来自3株hiPS细胞系，移植后称异种皮质化（XCX）小鼠。对照为同窝Esco2fl/fl Prkdcscid/scid小鼠及移植到完整皮质的局灶移植物。原文称样本量依既往研究经验性估计，且未设计检测性别小效应的效能。"
+  ],
+  "results": [
+   {
+    "subhead": "主要读出：移植物生长与占比",
+    "text": "移植成功率为86.2%（29只小鼠，3株hiPS细胞系），与此前大鼠t-hCO方案一致，提示hCO存活不依赖完整宿主皮质。MRI显示移植物在移植后2至3个月间约增长4.7倍（n = 14，配对t检验，t = 8.219，P = 1.66×10−6）。3个月时移植物占皮质组织总体积的91.9%（n = 7），平均约32,000个神经元/mm3，该占比为描述性数值。"
+   },
+   {
+    "subhead": "皮质清除程度与L5-ET神经元",
+    "text": "全脑snRNA-seq（880,149个核，每组2只）示背侧皮质来源谷氨酸能神经元各类别约七倍减少，嗅球、非皮质及杏仁核、梨状皮质来源类别保留，故“apallial”仅为操作性名称。XCX中85%的第5层颅外投射（L5-ET）神经元UCell评分>0.1，类器官图谱HNOCA中仅213,753个神经元中的3个；XCX的L5-ET比例比既往大鼠与成年小鼠移植高三倍以上。"
+   },
+   {
+    "subhead": "行为：MoSeq与CatWalk",
+    "text": "MoSeq（60个音节，99%方差）提示XCX小鼠位于对照与无皮质之间、更接近无皮质，会话间漂移最大（Kruskal–Wallis P = 0.019；XCX对对照Bonferroni校正P = 0.027），移植未使其正常化。CatWalk跑速无差异（ANOVA P = 0.8467）；摆动时间无皮质组短于对照（P = 0.0019），XCX对对照P = 0.2303；对角爪同步在无皮质与XCX组均改变。"
+   },
+   {
+    "subhead": "Y迷宫与恐惧条件反射",
+    "text": "Y迷宫自发交替中，对照（n = 39，对50%随机水平的单样本t检验P = 2.08×10−7）与XCX小鼠（n = 18，P = 0.0004）高于随机水平，无皮质小鼠（n = 16，P = 0.3016）则否；该效应在相隔数月的两个独立队列中重复。无皮质与XCX小鼠的痕迹恐惧条件反射训练期、线索测试冻结均减少，并有情境冻结缺陷。"
+   },
+   {
+    "subhead": "缺氧损伤后的细胞与步态读出",
+    "text": "XCX与对照小鼠暴露于5% O2 5小时（含1小时渐降期）后，3/3只XCX小鼠的人源移植物可见HIF1α免疫反应，邻近宿主古皮质及同样暴露的对照小鼠则无明显信号。CatWalk中XCX小鼠3至4爪支撑占比较基线增加最多（ANOVA P = 0.0047；对照对XCX P = 0.0120，XCX对无皮质P = 0.0076），而平均速度无变化（P = 0.3845）。"
+   }
+  ],
+  "mechanism_proven": [
+   "分化后4个月的XCX移植物（hSYN1-GCaMP8s标记）出现全移植物同步钙爆发，持续数十秒、每隔数分钟重复，约100 ms内传播过整个背侧表面；爆发与口面部运动相关（配对t检验P = 0.021，n = 3只），32通道探针记录到沿全长同步出现的LFP爆发（n = 3只）。",
+   "3/3只XCX小鼠含VEN样双极或螺旋形细胞，占标记胞体的0.16%，其中位胞体29.8 µm，整体中位为9.251 µm；颈段脊髓在3只XCX小鼠中均见稀疏GCaMP8s+STEM121+人源投射，局灶移植对照与野生型对照脊髓均无信号。"
+  ],
+  "mechanism_inferred": [
+   "作者推测，宿主皮质的遗传性清除可能使L5-ET神经元（含皮质脊髓神经元）得以富集；行为输出可能反映人源移植物与保留的小鼠皮质下环路的相互作用，但移植物是否为特定行为所必需或充分尚不清楚。缺氧后的步态改变可能由后爪接触时间延长、接触面积增大所驱动，这一解释未做因果检验。"
+  ],
+  "limitations": [
+   "移植物最长为分化后177天，24周时转录年龄约相当于二孕期晚期，缺少规范皮质分层、完整区域化、足量GABA能中间神经元和成熟转录谱；作者提出宿主与移植物成熟速度错配可能限制整合。",
+   "研究未设非皮质类器官移植对照，无法区分皮质谱系效应与一般移植效应；移植物对特定行为是否必需或充分尚不清楚，功能整合需通路特异的记录与操控。",
+   "全脑snRNA-seq每组仅2只，钙成像与LFP各3只；VEN样细胞仅占0.16%且依形态判断；缺氧行为实验的无皮质组仅雌性（n = 9）；91.9%占比（n = 7）与L5-ET富集倍数均未见统计检验，MoSeq对无皮质与XCX的区分也较弱。"
+  ],
+  "significance": [
+   "若该结果在更多细胞系与更成熟的时间点得到重复，异种皮质化小鼠可为在体评估人源皮质神经元提供一个移植物占皮质组织体积91.9%的平台，并同时读取环路活动与行为。缺氧模型中的步态变化提示，该平台可能用于围产期缺氧及相关神经发育疾病的建模，以及在较大体积的人源皮质组织上检验治疗干预。",
+   "作者同时指出，若移植物更成熟，需要尽早建立伦理指导。上述均为小鼠临床前数据，尚无患者层面的验证。"
+  ],
+  "citation": "Kaganovsky K, Kelley KW, Gschwind T, Harary PM, Kochalka J, White AD, et al. Developmental xenocortication using human-derived organoids in mice. Nature. 2026. https://doi.org/10.1038/s41586-026-11032-2",
+  "data_points": [
+   {
+    "value": "23.4%",
+    "meaning": "无皮质后代占比",
+    "source_quote": "23.4% apallial offspring ( n = 91 litters, 46 breeding cages",
+    "location": "Results（模型表征）"
+   },
+   {
+    "value": "n = 91窝，46个繁育笼",
+    "meaning": "繁育样本量",
+    "source_quote": "23.4% apallial offspring ( n = 91 litters, 46 breeding cages",
+    "location": "Results（模型表征）"
+   },
+   {
+    "value": "25%",
+    "meaning": "孟德尔预期比例",
+    "source_quote": "consistent with the 25% phenotypic ratio predicted by Mendelian inheritance",
+    "location": "Results（模型表征）"
+   },
+   {
+    "value": "约50%",
+    "meaning": "全脑组织较对照减少",
+    "source_quote": "whole-brain MRI revealed an approximately 50% decrease in total brain tissue relative to the control",
+    "location": "Results（模型表征）"
+   },
+   {
+    "value": "880,149",
+    "meaning": "全脑snRNA-seq核数",
+    "source_quote": "After stringent quality filtering, we obtained 880,149 single-nucleus profiles.",
+    "location": "Results（模型表征）"
+   },
+   {
+    "value": "每组2只",
+    "meaning": "snRNA-seq动物数",
+    "source_quote": "( n = 2 apallial; n = 2 controls)",
+    "location": "Results（模型表征）"
+   },
+   {
+    "value": "约七倍",
+    "meaning": "背侧皮质来源谷氨酸能神经元类别减少",
+    "source_quote": "We observed a sevenfold depletion of all dorsal pallial-derived glutamatergic neuronal cell classes",
+    "location": "Results（模型表征）/Fig. 1"
+   },
+   {
+    "value": "5至17日龄，中位10",
+    "meaning": "移植时受体日龄",
+    "source_quote": "transplanted into 5–17-day old apallial pups (median, 10; interquartile range, 9–13)",
+    "location": "Methods（Organoid transplantation）"
+   },
+   {
+    "value": "每侧2个hCO",
+    "meaning": "每半球移植数",
+    "source_quote": "For each hemisphere, two hCOs were loaded into the Hamilton syringe",
+    "location": "Methods（Organoid transplantation）"
+   },
+   {
+    "value": "每只共4个",
+    "meaning": "每只小鼠移植hCO数",
+    "source_quote": "This yielded four transplanted hCOs per mouse.",
+    "location": "Methods（Organoid transplantation）"
+   },
+   {
+    "value": "86.2%",
+    "meaning": "移植成功率",
+    "source_quote": "This approach resulted in a graft success rate of 86.2%, as measured in 29 mice with three hiPS cell lines",
+    "location": "Results（移植）/Fig. 2c"
+   },
+   {
+    "value": "29只，3株细胞系",
+    "meaning": "成功率分母与细胞系数",
+    "source_quote": "as measured in 29 mice with three hiPS cell lines",
+    "location": "Results（移植）/Fig. 2c"
+   },
+   {
+    "value": "约4.7倍，n = 14",
+    "meaning": "2至3个月移植物体积增长",
+    "source_quote": "demonstrated an approximately 4.7-fold growth between 2 and 3 months after transplantation ( n = 14 mice, 2 hiPS cell lines",
+    "location": "Results（移植）/Fig. 2d"
+   },
+   {
+    "value": "t = 8.219，P = 1.66×10−6",
+    "meaning": "移植物增长配对t检验",
+    "source_quote": "Paired t -test, t = 8.219, d.f. = 13, P = 1.66 × 10 −6",
+    "location": "Fig. 2d"
+   },
+   {
+    "value": "91.9%，n = 7",
+    "meaning": "3个月时移植物占皮质组织体积",
+    "source_quote": "At 3 months after transplantation, the xenocortical graft constituted 91.9% of combined cortical tissue volume ( n = 7 mice",
+    "location": "Results（移植）/Fig. 2e"
+   },
+   {
+    "value": "约32,000个/mm3",
+    "meaning": "移植物神经元密度",
+    "source_quote": "averaging around 32,000 neurons per mm 3",
+    "location": "Results（移植）"
+   },
+   {
+    "value": "85%",
+    "meaning": "XCX L5-ET神经元UCell评分>0.1比例",
+    "source_quote": "whereas 85% of XCX L5-ET neurons and 100% of adult M1 L5-ET neurons exceeded this threshold",
+    "location": "Results（L5-ET）"
+   },
+   {
+    "value": "213,753中3个，阈值0.1",
+    "meaning": "HNOCA体外类器官L5-ET评分>0.1的神经元",
+    "source_quote": "3 out of 213,753 neurons had a L5-ET UCell score greater than 0.1",
+    "location": "Results（L5-ET）"
+   },
+   {
+    "value": "三倍以上",
+    "meaning": "XCX L5-ET比例相对既往移植方案",
+    "source_quote": "the XCX graft contained more than a threefold greater proportion of L5-ET neurons compared with previous approaches",
+    "location": "Results（L5-ET）"
+   },
+   {
+    "value": "3/3，0.16%",
+    "meaning": "VEN样细胞见于XCX小鼠及占标记胞体比例",
+    "source_quote": "We identified cells with VEN-like morphology in all sampled XCX mice (3 out of 3), comprising 0.16% of fluorescently labelled somas",
+    "location": "Results（VEN样细胞）/Fig. 2l,m"
+   },
+   {
+    "value": "29.8 µm",
+    "meaning": "VEN样细胞中位胞体大小",
+    "source_quote": "The median soma size of these cells is 29.8 µm ( n = 3 XCX mice, 6 sections",
+    "location": "Results（VEN样细胞）"
+   },
+   {
+    "value": "9.251 µm",
+    "meaning": "标记胞体整体中位大小",
+    "source_quote": "We measured a median soma size of 9.251 µm",
+    "location": "Results（VEN样细胞）"
+   },
+   {
+    "value": "3只",
+    "meaning": "脊髓颈段见人源投射的XCX小鼠数",
+    "source_quote": "revealed sparse projections in the host cervical spinal cord in all mice examined (Fig. 2n,o and Extended Data Fig. 7m ; n = 3 mice, 2 hiPS cell lines)",
+    "location": "Results（脊髓投射）"
+   },
+   {
+    "value": "4个月",
+    "meaning": "钙成像时类器官分化后时间",
+    "source_quote": "When the transplanted hCO reached 4 months after differentiation, the skulls of XCX mice were optically cleared",
+    "location": "Results（网络活动）"
+   },
+   {
+    "value": "约100 ms",
+    "meaning": "钙事件传播时间尺度",
+    "source_quote": "propagated across the entire dorsal surface of the XCX graft on the order of 100 ms",
+    "location": "Results（网络活动）"
+   },
+   {
+    "value": "t = 6.749，P = 0.021",
+    "meaning": "爆发期与低活动期运动能量配对t检验",
+    "source_quote": "Statistical analysis was performed using paired t -test; t = 6.749, d.f. = 2, P = 0.021.",
+    "location": "Fig. 3j"
+   },
+   {
+    "value": "n = 3只",
+    "meaning": "钙成像相关分析动物数",
+    "source_quote": "n = 3 mice, 18 bursts. Statistical analysis was performed using paired t -test",
+    "location": "Fig. 3j"
+   },
+   {
+    "value": "LFP n = 3，32通道",
+    "meaning": "LFP记录动物数与探针通道",
+    "source_quote": "depth-resolved local-field-potential (LFP) recordings (Fig. 3k ; n = 3 mice) using a 32-channel linear silicon probe",
+    "location": "Results（网络活动）"
+   },
+   {
+    "value": "60个音节，99%",
+    "meaning": "MoSeq音节数及方差解释",
+    "source_quote": "decomposed the depth videos into 60 stereotyped, subsecond syllables that account for 99% of the variance",
+    "location": "Results（行为）"
+   },
+   {
+    "value": "P = 0.019；P = 0.027",
+    "meaning": "会话间距离Kruskal–Wallis及XCX对对照Bonferroni校正",
+    "source_quote": "A Kruskal–Wallis test showed a significant group effect ( H 2 = 7.88, P = 0.019), with a significant post hoc comparison for XCX versus the control (Bonferroni-corrected P = 0.027)",
+    "location": "Fig. 4d"
+   },
+   {
+    "value": "P = 0.8467",
+    "meaning": "CatWalk平均跑速ANOVA",
+    "source_quote": "Average run speed; analysis of variance (ANOVA), F 2,30 = 0.1673 ( P = 0.8467)",
+    "location": "Fig. 4i"
+   },
+   {
+    "value": "P = 0.0019；P = 0.2303",
+    "meaning": "摆动时间：对照对无皮质、对照对XCX",
+    "source_quote": "control versus apallial ( P = 0.0019); control versus XCX ( P = 0.2303)",
+    "location": "Fig. 4k"
+   },
+   {
+    "value": "n = 39/16/18",
+    "meaning": "Y迷宫对照、无皮质、XCX样本量",
+    "source_quote": "control ( n = 39), apallial ( n = 16) and XCX ( n = 18) mice",
+    "location": "Fig. 4p"
+   },
+   {
+    "value": "P = 2.08×10−7；0.3016；0.0004",
+    "meaning": "Y迷宫交替对50%的单样本t检验",
+    "source_quote": "control, t = 6.319, d.f. = 38, P = 2.08 × 10 − 7 ; apallial, t = 1.070, d.f. = 15, P = 0.3016; XCX, t = 4.343, d.f. = 17, P = 0.0004",
+    "location": "Fig. 4q"
+   },
+   {
+    "value": "50%",
+    "meaning": "Y迷宫随机水平",
+    "source_quote": "One sample t -test against chance performance (50%)",
+    "location": "Fig. 4q"
+   },
+   {
+    "value": "两个独立队列",
+    "meaning": "Y迷宫效应重复",
+    "source_quote": "This effect was reproduced in two independent cohorts tested months apart",
+    "location": "Results（行为）"
+   },
+   {
+    "value": "5% O2，5小时，1小时渐降",
+    "meaning": "缺氧方案",
+    "source_quote": "We exposed control and XCX mice to 5% O 2 for 5 h in a BioSpherix chamber (including a 1 h graded descent from atmospheric oxygen to 5% O 2",
+    "location": "Results（缺氧）"
+   },
+   {
+    "value": "3/3",
+    "meaning": "XCX移植物HIF1α阳性小鼠",
+    "source_quote": "In 3 out of 3 XCX mice exposed to 5% O 2 for 5 h, HIF1α immunoreactivity was detected in the human graft",
+    "location": "Results（缺氧）"
+   },
+   {
+    "value": "3至4爪支撑",
+    "meaning": "缺氧后XCX增加最多的指标",
+    "source_quote": "XCX mice showed the greatest increase from baseline in three- to four-paw support",
+    "location": "Results（缺氧）"
+   },
+   {
+    "value": "P = 0.0047；0.0120；0.0076",
+    "meaning": "3至4爪支撑ANOVA及对照对XCX、XCX对无皮质",
+    "source_quote": "ANOVA, F 2,26 = 6.634, P = 0.0047. Holm–Šidák-corrected post hoc tests: control versus apallial ( P = 0.6144), control versus XCX ( P = 0.0120), XCX versus apallial (P = 0.0076)",
+    "location": "Fig. 5k"
+   },
+   {
+    "value": "P = 0.3845",
+    "meaning": "缺氧后平均速度变化ANOVA",
+    "source_quote": "Difference in the average speed. ANOVA, F 2,26 = 0.9919, P = 0.3845",
+    "location": "Fig. 5n"
+   },
+   {
+    "value": "无皮质组n = 9（雌）",
+    "meaning": "缺氧CatWalk无皮质组样本",
+    "source_quote": "control ( n = 6 female, 5 male), apallial ( n = 9 female) and XCX ( n = 4 female, 5 male) mice",
+    "location": "Fig. 5k–n"
+   },
+   {
+    "value": "CatWalk n = 16/10/7",
+    "meaning": "步态分析各组样本量",
+    "source_quote": "control ( n = 16), apallial ( n = 10) and XCX ( n = 7) mice in i – o",
+    "location": "Fig. 4h"
+   },
+   {
+    "value": "177天",
+    "meaning": "实验所用类器官最长分化天数",
+    "source_quote": "The present experiments used organoids up to 177 days after differentiation",
+    "location": "Discussion"
+   },
+   {
+    "value": "24周",
+    "meaning": "XCX谷氨酸能神经元转录年龄评估时间点",
+    "source_quote": "XCX glutamatergic neuron samples at 24 weeks after differentiation exhibited a maturation state equivalent to approximately late second trimester",
+    "location": "Results（细胞组成）"
+   },
+   {
+    "value": "约三分之一",
+    "meaning": "既往大鼠移植物占一侧皮质比例上限",
+    "source_quote": "While transplanted hCOs can occupy up to a third of a rat’s cortical hemisphere",
+    "location": "Main（引言）"
+   },
+   {
+    "value": "1只",
+    "meaning": "缺氧诱导中死亡小鼠数",
+    "source_quote": "one mouse in the entire cohort died during induction due to airway obstruction",
+    "location": "Methods（Induction of hypoxic injury）"
+   }
+  ],
+  "steps": [
+   "Emx1-cre删除Esco2，清除背侧皮质",
+   "新生期每只移植4个hCO",
+   "MRI追踪移植物生长与占比",
+   "检测L5-ET神经元与脊髓投射",
+   "缺氧后读取CatWalk步态"
+  ],
+  "figure_caption": "左：Emx1阳性细胞中删除Esco2使小鼠背侧皮质空缺；中：新生期向皮质腔移植人皮质类器官并生长；右：移植物含L5-ET神经元，并向宿主脊髓发出稀疏投射。示意图由 AI 生成，依据原文结果绘制，非期刊原图，不代表分子比例",
+  "image_story": {
+   "stages": [
+    {
+     "visual_en": "A semi-transparent mouse brain in side view whose dorsal cortex is missing, leaving an empty pale mint cavity; four small pale mint organoid spheres float above it.",
+     "source_quote": "Closer morphological analysis, MRI and immunostaining demonstrated that subcortical structures formed the dorsal surface of the brain and cortical structures were severely depleted"
+    },
+    {
+     "visual_en": "The same brain with the cavity now filled by one very large solid terracotta graft, with fine axon-like fibres leaving its base.",
+     "source_quote": "At 3 months after transplantation, the xenocortical graft constituted 91.9% of combined cortical tissue volume"
+    },
+    {
+     "visual_en": "A deep green pyramidal neuron with a long axon, and thin pale mint fibres entering a mid green cervical spinal cord segment.",
+     "source_quote": "revealed sparse projections in the host cervical spinal cord in all mice examined"
+    }
+   ],
+   "key_element_en": "the large human cortical organoid graft filling the mouse cortical cavity"
+  },
+  "image_subject_en": "A left-to-right process in three stages, drawn large. Stage 1: a semi-transparent mouse brain in side view, rendered in light grey-green and mid green, whose dorsal cortex is missing, leaving a clearly visible empty hollow cavity in pale mint; four small pale mint organoid spheres hover just above the cavity. Stage 2: the same brain, now with the cavity completely filled by a single very large, bulging graft, drawn as one very large, solid, boldly filled terracotta #C0492F dome nestled into the brain, with a few fine pale fibres leaving its base toward the deep brain. Stage 3: a large deep green pyramidal neuron with a long descending axon, and beneath it a mid green segment of cervical spinal cord in cross-section, with thin pale mint fibres entering it. Soft studio lighting, semi-realistic 3D scientific illustration, clean light grey-green background, subject filling about 72% of the frame, visual weight near the 0.618 line. No text, numbers, symbols, charts or axes anywhere. Only the graft is terracotta.",
+  "card_subject_en": "A single compact subject: a semi-realistic 3D mouse brain in side view, built from mid green and pale mint translucent layers, with a deep hollow in its dorsal surface completely filled by one very large, solid, boldly filled terracotta #C0492F rounded organoid graft that bulges slightly above the surface, with a few fine deep green fibres trailing from its base into the brain below. Soft studio lighting, clean light grey-green background, subject large and centred slightly off-axis on the 0.382 line, filling about 72% of the frame. No text, numbers, symbols, charts or axes. Only the graft is terracotta.",
+  "figure_labels": {
+   "heads": [
+    "清除宿主皮质",
+    "移植人皮质类器官",
+    "移植物特征与投射"
+   ],
+   "callouts": [
+    {
+     "t": "皮质腔空出\n脑组织约减少50%",
+     "stage": 1,
+     "entity_en": "empty dorsal cortical cavity in the mouse brain"
+    },
+    {
+     "t": "每只移植4个hCO\n成功率86.2%",
+     "stage": 1,
+     "entity_en": "four small pale mint organoid spheres"
+    },
+    {
+     "t": "占皮质体积91.9%\n2至3个月约增4.7倍",
+     "stage": 2,
+     "entity_en": "large terracotta graft filling the cavity"
+    },
+    {
+     "t": "L5-ET神经元\n85%超过阈值",
+     "stage": 3,
+     "entity_en": "deep green pyramidal neuron with a long axon"
+    },
+    {
+     "t": "颈段脊髓稀疏投射\n3/3只小鼠",
+     "stage": 3,
+     "entity_en": "thin pale mint fibres entering the spinal cord"
+    }
+   ],
+   "facts": [
+    [
+     "**91.9%**",
+     "皮质组织体积被移植物占据",
+     "（3个月，n = 7）"
+    ],
+    [
+     "**4.7倍**",
+     "2至3个月移植物增长",
+     "（n = 14，MRI）"
+    ],
+    [
+     "**86.2%**",
+     "移植成功率",
+     "（29只小鼠）"
+    ]
+   ],
+   "note": "91.9%为描述性数值；85%指UCell评分>0.1。示意图由 AI 生成，非期刊原图。"
+  },
+  "chart": {
+   "justified": false,
+   "note": "主要终点（移植物增长、皮质占比）无同口径可比的对照数值，不画数据图。"
+  }
+ },
+ "images": {
+  "mech_raw": "c5-am-2_mech_raw_r2.png",
+  "mech": "c5-am-2_mech_r2.png",
+  "card": "c5-am-2_card_r2.png",
+  "mech_raw_source": "c5-am-2_mech.png",
+  "card_source": "c5-am-2_cardsrc.png",
+  "card_placement": {
+   "axis": "v",
+   "line": 0.618
+  },
+  "generator": "gpt-image-2 (gen3.py), text-free, house green palette + terracotta"
+ },
+ "card_title": "人皮质类器官移植入无皮质小鼠：移植物占皮质体积91.9%",
+ "card_caption": "绿色小鼠大脑，背侧砖红色圆块寓意类器官。",
+ "mech_dropped_callouts": [],
+ "card_text_meta": {
+  "model": "gemini-3.1-pro-preview (OpenAI out of credits, Claude at usage limit)",
+  "gemini_caption_check": {
+   "match": true,
+   "problem": ""
+  },
+  "caption_v1": null
+ },
+ "judge": {
+  "judge": "gemini-3.1-pro-preview",
+  "blind_id": "d844f635",
+  "overall": 7,
+  "scores": {
+   "accuracy": 7,
+   "information": 7,
+   "understanding": 7,
+   "exposition": 7,
+   "figure_information": 6,
+   "significance": 7
+  },
+  "factual_errors": [],
+  "weaknesses": [
+   "图2缺乏文字标注，传达的定量信息较少"
+  ],
+  "note": "Claude second judge not run: Anthropic API usage limit (until 2026-11-01); Gemini only."
+ },
+ "files": {
+  "checks": "c5-am-2_checks_r2.json",
+  "mech_raw": "c5-am-2_mech_raw_r2.png",
+  "mech": "c5-am-2_mech_r2.png",
+  "card": "c5-am-2_card_r2.png",
+  "final_md": "c5-am-2_final_r2.md",
+  "final_json": "c5-am-2_final_r2.json"
+ },
+ "superseded_early_files": "c5-am-2_final.json/.md, c5-am-2_checks.json, c5-am-2_mech_raw.png, c5-am-2_card.png (first assembly, superseded by the _r2 files)"
+}

@@ -1,0 +1,818 @@
+{
+ "id": "c1-org-3",
+ "round": "r3",
+ "drafter_of_edits": "grok-bot (self)",
+ "base_drafter_model": "gpt-5.5-2026-04-23",
+ "source_draft": "work/r3b/c1-org-3/rw_c1-org-3_draft_r3fix.json",
+ "edits_r3": [
+  "title (15->24 字)",
+  "limitations[0] shortened (r3a3 by previous worker)"
+ ],
+ "status": "published-ready",
+ "status_reasons": [],
+ "preprint": false,
+ "writer_tags": [
+  "患者来源类器官",
+  "全基因组测序",
+  "DNA甲基化",
+  "单核RNA测序",
+  "OncoMatch",
+  "替莫唑胺耐药"
+ ],
+ "tags_note": "editor related-field tags prepended; writer tags trimmed to 6 (metadata only)",
+ "article": {
+  "tier": "deep",
+  "field": "精准肿瘤与临床转化",
+  "tags": [
+   "类器官",
+   "患者来源类器官",
+   "全基因组测序",
+   "DNA甲基化",
+   "单核RNA测序",
+   "OncoMatch"
+  ],
+  "primary_endpoint_basis": "这是一项患者来源癌症模型资源构建与分子一致性研究，无临床方案预设疗效终点。本文可领衔的核心读出来自摘要与正文一致的肿瘤-模型保真度：摘要写明“Analyses of 421 matched tumour–model pairs reveal high genetic (97.8%) and epigenetic (95%) concordance”；正文进一步定义遗传一致性为“most HCMI models (97.8%) retained at least two and often all four of the DNA-based features ... (driver mutations, mutational signatures, WGD and ploidy)”。标题数字97.8%来自这一正文定义。",
+  "comparison_design": "原文不是组间比较设计效能的临床试验，而是国际资源建设、配对肿瘤-模型分子剖析和若干统计检验的观察性/实验性研究。关键对比中，甲基化配对以FDR<0.1判定较随机更接近；GBM培养基差异使用Fisher’s exact test；HCMI与CCLE覆盖度使用两侧Mann–Whitney U检验并经Benjamini–Hochberg校正；SBS11与非SBS11药敏使用Wilcoxon检验。文章未声明为任何临床组间比较做效能设计。",
+  "untested_comparisons": [
+   "HCMI包含153个罕见癌模型和38个近期非洲血统模型，被作者用于说明多样性仍不足，但未作为检验性比较。",
+   "模型来源于原发灶394个与转移灶250个，原文报告构成比例，未把两者作正式优劣检验。",
+   "ecDNA中模型特异93/212与肿瘤特异69/212为描述性分布，作者主要归因于低测序覆盖，并非经效能设计的组间比较。",
+   "GBM单核RNA测序中条件培养基模型几乎转向间质状态，而NSA模型保留更多异质性；这是小样本机制性观察，培养基总体比较另有Fisher检验。"
+  ],
+  "number_basis_note": "未发现摘要与正文在核心数字上冲突：665个模型、2,780名供者、25种癌、421对配对分析、97.8%遗传一致性和95%表观遗传一致性均可在摘要与正文找到一致支撑。正文与图采用Results/Methods口径；图注中Fig.3f给出P=0.001，而正文同一比较给P=1.5×10−4，本文正文与图标签采用正文Results的P=1.5×10−4，并在数据点登记正文来源。",
+  "must_cover": [
+   {
+    "id": "m1",
+    "item_zh": "在421对配对肿瘤-模型中，HCMI模型与亲本肿瘤显示高遗传一致性（97.8%）和表观遗传一致性（95%）。",
+    "status": "covered",
+    "covered_by": "421对配对分析给出了主读出：按DNA特征汇总，97.8%模型保留至少两类特征；在201对有甲基化数据的配对中，190对、即95%比随机配对更接近"
+   },
+   {
+    "id": "m2",
+    "item_zh": "HCMI从2,780名同意参与的供者生成665个下一代模型，覆盖25种癌；包括522个有完整临床数据的模型、153个罕见癌模型和71个非欧洲血统供者模型。",
+    "status": "covered",
+    "covered_by": "项目在2016至2021年纳入2,780名同意参与者，最终从637名患者建立665个模型，覆盖25种癌；其中522个带综合临床数据，153个来自罕见癌，71个来自主要非欧洲血统供者"
+   },
+   {
+    "id": "m3",
+    "item_zh": "模型来自637名患者；78%（n=519）为3D类器官、6%（n=37）为3D球体、16%（n=109）为2D贴壁细胞系，并且已在培养中传代至少1年。",
+    "status": "covered",
+    "covered_by": "在形态上，78%为3D类器官（n=519），6%为3D球体（n=37），16%为2D贴壁患者来源细胞系（n=109）；遗传保真度分析还说明模型已在体外培养至少1年"
+   },
+   {
+    "id": "m4",
+    "item_zh": "97.8%遗传保真度定义为排除22个（5%）低纯度模型、留下643个优先模型后，模型至少保留四项DNA特征（驱动突变、突变特征、WGD和倍性）中的两项。",
+    "status": "covered",
+    "covered_by": "这一97.8%不是单一突变重合率，而是在22个低纯度模型被排除、留下643个优先模型后，模型至少保留驱动突变、突变特征、WGD和倍性四项DNA特征中的两项"
+   },
+   {
+    "id": "m5",
+    "item_zh": "转录层面，Celligner将297对中的242对（81%）判为显著一致；在286个被至少4/6种方法评估的模型中，263个（92%）被不超过1种方法判为不一致。",
+    "status": "covered",
+    "covered_by": "转录层面，Celligner在297对中判定242对、即81%显著一致；286个至少被4种方法评估的模型中，263个、即92%至多被1种方法判为不一致"
+   },
+   {
+    "id": "m6",
+    "item_zh": "201对有甲基化数据的配对中，190对（95%）比随机更接近（FDR<0.1）；11个表观遗传不一致模型中9个来自纯度低于60%的肿瘤，提示伪影性不一致。",
+    "status": "covered",
+    "covered_by": "在201对有甲基化数据的配对中，190对、即95%比随机配对更接近（FDR<0.1）；11个表观遗传不一致模型中有9个来自纯度低于60%的肿瘤，提示不一致可能偏向样本伪影"
+   },
+   {
+    "id": "m7",
+    "item_zh": "WGD状态在88%的配对中被再现，但10%为模型特异WGD、2%为肿瘤特异WGD；模型特异WGD事件在突变时间线上更晚（P=0.047），与培养选择一致。",
+    "status": "covered",
+    "covered_by": "WGD状态在88%配对中被再现；10%为模型特异WGD，2%为肿瘤特异WGD，且模型特异WGD在突变时间线上更晚（P=0.047），与培养相关克隆选择或空间取样差异一致"
+   },
+   {
+    "id": "m8",
+    "item_zh": "ecDNA一致性相对较低：212个ecDNA中93个（43.9%）为模型特异、69个（32.5%）为肿瘤特异，作者主要归因于低测序覆盖。",
+    "status": "covered",
+    "covered_by": "ecDNA是保真度的弱项：212个事件中93个、即43.9%为模型特异，69个、即32.5%为肿瘤特异；作者把多数不一致归因于低测序覆盖"
+   },
+   {
+    "id": "m9",
+    "item_zh": "GBM中，NeuroCult NSA培养基模型比条件培养基模型更接近亲本肿瘤（P = 1.5 × 10−4）；16对snRNA-seq显示条件培养基模型几乎完全转向间质状态；该比较仅3个CM配对 vs 37个NSA配对。",
+    "status": "covered",
+    "covered_by": "培养基效应集中在GBM：NeuroCult NSA培养模型比Propagenix条件培养基模型更接近亲本肿瘤（P=1.5×10−4），但总体比较只有3个CM配对和37个NSA配对；在16对单核RNA测序中，条件培养基GBM模型几乎完全转向间质样状态"
+   },
+   {
+    "id": "m10",
+    "item_zh": "与CCLE（n = 1,377）相比，HCMI在19种癌的11种中OncoMatch表现更好，CCLE在6种中更好（其中4种HCMI队列n≤10）；合并后77.3%（n = 6,902）的TCGA肿瘤至少有一个高保真模型（NES≥10）。",
+    "status": "covered",
+    "covered_by": "与CCLE的1,377个模型相比，HCMI在19种癌里11种OncoMatch表现更好，CCLE在6种更好"
+   },
+   {
+    "id": "m11",
+    "item_zh": "GBM中，携带替莫唑胺相关SBS11特征的模型相对非SBS11模型替莫唑胺敏感性显著降低（Wilcoxon P<0.05），且独立于MGMT启动子甲基化状态。",
+    "status": "covered",
+    "covered_by": "携带SBS11的GBM模型对替莫唑胺敏感性低于非SBS11模型（Wilcoxon P<0.05），且独立于MGMT启动子甲基化状态"
+   },
+   {
+    "id": "m12",
+    "item_zh": "作者指出，缺少基质和免疫细胞限制其用于免疫研究；血统多样性不足，尽管已有153个罕见癌模型和38个非洲血统模型。",
+    "status": "covered",
+    "covered_by": "作者明确指出，HCMI模型缺少基质和免疫细胞，限制其用于免疫反应研究；多样性也不足，尽管已有153个罕见癌模型和38个近期非洲血统患者模型"
+   }
+  ],
+  "title": "HCMI资源：421对肿瘤与模型配对中97.8%保留至少两类DNA特征",
+  "one_liner": "在25种癌的665个患者来源模型中，421对配对分析显示97.8%保留至少两类DNA特征，甲基化一致性为95%。",
+  "datacard": {
+   "study_type": "国际多中心患者来源癌症模型资源构建与多组学配对分析",
+   "n": "2,780名供者；665个模型；421对匹配肿瘤-模型用于核心一致性分析",
+   "control": "亲本肿瘤、随机配对背景、CCLE模型库（n=1,377）",
+   "followup": "临床数据覆盖522个模型；总体生存随访范围0–34年；治疗后中位随访1.5年",
+   "primary_endpoint": "核心读出：模型与亲本肿瘤的遗传和表观遗传一致性；遗传一致性定义为至少保留驱动突变、突变特征、WGD和倍性四项DNA特征中的两项",
+   "primary_endpoint_result": "421对配对分析显示遗传一致性97.8%；201对甲基化配对中190对（95%）比随机配对更接近（FDR<0.1）",
+   "statistics": "甲基化FDR<0.1；GBM培养基Fisher’s exact test P=1.5×10−4；SBS11药敏Wilcoxon P<0.05",
+   "safety": "非治疗性资源研究，不涉及患者给药安全性终点",
+   "evidence_level": "全文",
+   "check_record": "读了Europe PMC fullTextXML PMC13581597的Abstract、Results、Discussion、Methods、Fig.1–6图注"
+  },
+  "background": [
+   "癌症图谱已经积累了大量驱动事件、转录状态和耐药假说，但验证这些机制仍依赖能长期扩增、可分发、并保留亲本肿瘤特征的实验模型。既有细胞系超过1,000个，却常被批评表型复杂度有限、与原发标本关系不清、临床治疗史不足。",
+   "患者来源类器官、神经球和新型细胞系能改善这一缺口，但能否在长期培养后系统保留遗传、表观遗传和转录状态，并覆盖罕见癌与非欧洲血统人群，缺少大规模检验。ElHarouni等在Nature报告HCMI资源，目标是把可分发模型和配对多组学一起公开。"
+  ],
+  "design": [
+   "项目在2016至2021年纳入2,780名同意参与者，最终从637名患者建立665个模型，覆盖25种癌；其中522个带综合临床数据，153个来自罕见癌，71个来自主要非欧洲血统供者。在形态上，78%为3D类器官（n=519），6%为3D球体（n=37），16%为2D贴壁患者来源细胞系（n=109）；遗传保真度分析还说明模型已在体外培养至少1年。",
+   "研究没有临床干预或随机分组，也不是为组间疗效比较设计效能。主要读出是配对亲本肿瘤与模型的多组学一致性：WGS/WES评估驱动突变、SNV/indel、LOH、WGD和倍性，甲基化、RNA-seq、Celligner、MOMA/OncoMatch评估状态保留，并以CCLE的1,377个模型作资源覆盖参照。"
+  ],
+  "results": [
+   {
+    "subhead": "核心保真度",
+    "text": "421对配对分析给出了主读出：按DNA特征汇总，97.8%模型保留至少两类特征；在201对有甲基化数据的配对中，190对、即95%比随机配对更接近（FDR<0.1）。这一97.8%不是单一突变重合率，而是在22个低纯度模型被排除、留下643个优先模型后，模型至少保留驱动突变、突变特征、WGD和倍性四项DNA特征中的两项。"
+   },
+   {
+    "subhead": "DNA层面细节",
+    "text": "在420个可估计纯度的模型中，406个纯度>80%，仅9个显示与亲本不同的非整倍体模式；388对中361对LOH一致性超过80%，平均为94%。WGD状态在88%配对中被再现；10%为模型特异WGD，2%为肿瘤特异WGD，且模型特异WGD在突变时间线上更晚（P=0.047），与培养相关克隆选择或空间取样差异一致。"
+   },
+   {
+    "subhead": "表观与转录",
+    "text": "在201对有甲基化数据的配对中，190对、即95%比随机配对更接近（FDR<0.1）；11个表观遗传不一致模型中有9个来自纯度低于60%的肿瘤，提示不一致可能偏向样本伪影。转录层面，Celligner在297对中判定242对、即81%显著一致；286个至少被4种方法评估的模型中，263个、即92%至多被1种方法判为不一致。"
+   },
+   {
+    "subhead": "漂移与培养基",
+    "text": "培养基效应集中在GBM：NeuroCult NSA培养模型比Propagenix条件培养基模型更接近亲本肿瘤（P=1.5×10−4），但总体比较只有3个CM配对和37个NSA配对；在16对单核RNA测序中，条件培养基GBM模型几乎完全转向间质样状态。ecDNA是保真度的弱项：212个事件中93个、即43.9%为模型特异，69个、即32.5%为肿瘤特异；作者把多数不一致归因于低测序覆盖。"
+   },
+   {
+    "subhead": "转化覆盖度",
+    "text": "与CCLE的1,377个模型相比，HCMI在19种癌里11种OncoMatch表现更好，CCLE在6种更好；其中4种为HCMI≤10个模型的小队列。两库合并后，77.3%的TCGA肿瘤（n=6,902）至少有1个高保真模型（NES≥10）。携带SBS11的GBM模型对替莫唑胺敏感性低于非SBS11模型（Wilcoxon P<0.05），且独立于MGMT启动子甲基化状态。"
+   }
+  ],
+  "mechanism_proven": [
+   "原文直接证明的链条首先是“配对保留”：同一供者的肿瘤和模型在DNA、甲基化、RNA层面多指标相似。驱动突变、突变签名、WGD和倍性组成的DNA汇总指标给出97.8%一致；甲基化190/201对显著接近随机背景；转录上263/286个模型未被多方法一致判为漂移。",
+   "第二条链条是“培养条件可改变细胞状态”。GBM中，NSA与条件培养基的Celligner相似性差异有统计检验；HCM-BROD-0416-C71从NSA切换到配方条件培养基后，出现形态改变、SOX2核强度下降和72小时、2周的转录标志变化。单核RNA测序进一步显示，部分GBM模型向间质样状态偏移。"
+  ],
+  "mechanism_inferred": [
+   "作者推测，少数不一致来自三类过程：培养时丢失亲本肿瘤中的基质和免疫浸润，相当于“纯化”；小克隆在体外被选择性扩增；以及培养基诱导的表观和转录可塑性。对于ecDNA不一致，作者主要归因于低覆盖度，也提出体内外生长条件可能选择或反选择ecDNA扩增。"
+  ],
+  "limitations": [
+   "第一，外推性受队列结构限制。665个模型覆盖25种癌，但欧洲血统占85%，主要非欧洲血统模型为71个，对非欧洲血统人群的外推受限。",
+   "第二，终点是分子保真度和模型覆盖，不是患者获益。522个模型带临床数据，治疗后中位随访1.5年、总体生存范围0–34年，但没有前瞻性用模型指导治疗的临床验证。",
+   "第三，方法层面存在模型格式限制。作者明确指出，HCMI模型缺少基质和免疫细胞，限制其用于免疫反应研究；多样性也不足，尽管已有153个罕见癌模型和38个近期非洲血统患者模型。",
+   "第四，部分结论依赖小亚组或测序条件。GBM培养基比较只有3个CM配对和37个NSA配对；ecDNA中43.9%模型特异、32.5%肿瘤特异，作者主要归因为低测序覆盖。"
+  ],
+  "significance": [
+   "如果研究者要在药物筛选、CRISPR依赖性图谱或耐药机制研究中选择患者来源模型，HCMI把665个可分发模型、亲本肿瘤多组学和临床治疗史连在一起。对罕见癌、胰腺癌、食管癌、结直肠癌等模型稀缺领域，它提供了更接近亲本肿瘤的候选体系。",
+   "但这项工作更像基础设施而非治疗发现。只有在实验问题与模型边界相匹配时，例如研究肿瘤细胞内在遗传依赖、SBS11相关替莫唑胺耐药，或用OncoMatch寻找代表性模型，DNA保真度才可能转化为可操作优势。"
+  ],
+  "citation": "ElHarouni D, Al-Jazrawe M, Choi S, Dede M, Hinoue T, Misek SA, et al. A compendium of next-generation patient-derived models for diverse cancers. Nature. 2026. https://doi.org/10.1038/s41586-026-10806-y",
+  "data_points": [
+   {
+    "value": "665",
+    "meaning": "导语、设计、局限和意义中HCMI患者来源模型总数",
+    "source_quote": "Here we present the generation and comprehensive genomic, transcriptomic and epigenomic characterization of 665 fully accessible patient-derived organoid, neurosphere and cell line models",
+    "location": "Main"
+   },
+   {
+    "value": "97.8%",
+    "meaning": "标题、导语和核心结果中DNA层面遗传一致性核心读出",
+    "source_quote": "most HCMI models (97.8%) retained at least two and often all four of the DNA-based features that we evaluated herein",
+    "location": "Evaluation of genomic fidelity"
+   },
+   {
+    "value": "25",
+    "meaning": "导语、设计和局限中覆盖癌种数",
+    "source_quote": "665 models from 637 patients representing 25 distinct human malignancies",
+    "location": "Generation of 665 cancer models"
+   },
+   {
+    "value": "421",
+    "meaning": "标题、导语、数据卡和结果中匹配肿瘤-模型配对分析数",
+    "source_quote": "Analyses of 421 matched tumour–model pairs reveal high genetic (97.8%) and epigenetic (95%) concordance",
+    "location": "Abstract"
+   },
+   {
+    "value": "2",
+    "meaning": "导语、数据卡和结果中至少保留DNA特征数阈值",
+    "source_quote": "retained at least two and often all four of the DNA-based features",
+    "location": "Evaluation of genomic fidelity"
+   },
+   {
+    "value": "95%",
+    "meaning": "导语、数据卡、结果和图标签中表观遗传/甲基化一致性比例",
+    "source_quote": "Analyses of 421 matched tumour–model pairs reveal high genetic (97.8%) and epigenetic (95%) concordance",
+    "location": "Abstract"
+   },
+   {
+    "value": "2,780",
+    "meaning": "设计和数据卡中同意参与供者数",
+    "source_quote": "Between 2016 and 2021, 2,780 patients from the United States, United Kingdom, Italy and the Netherlands consented to participate",
+    "location": "Generation of 665 cancer models"
+   },
+   {
+    "value": "2016",
+    "meaning": "设计中项目纳入起始年份",
+    "source_quote": "Between 2016 and 2021, 2,780 patients from the United States, United Kingdom, Italy and the Netherlands consented to participate",
+    "location": "Generation of 665 cancer models"
+   },
+   {
+    "value": "2021",
+    "meaning": "设计中项目纳入结束年份",
+    "source_quote": "Between 2016 and 2021, 2,780 patients from the United States, United Kingdom, Italy and the Netherlands consented to participate",
+    "location": "Generation of 665 cancer models"
+   },
+   {
+    "value": "637",
+    "meaning": "设计中成功模型来自患者数",
+    "source_quote": "This process generated 665 models from 637 patients representing 25 distinct human malignancies",
+    "location": "Generation of 665 cancer models"
+   },
+   {
+    "value": "522",
+    "meaning": "设计、数据卡、局限和意义中有综合临床数据的模型数",
+    "source_quote": "The resource provides 522 models with comprehensive clinical data",
+    "location": "Abstract"
+   },
+   {
+    "value": "153",
+    "meaning": "设计、局限和意义中罕见癌模型数",
+    "source_quote": "The resource provides 522 models with comprehensive clinical data, 153 models of rare cancers",
+    "location": "Abstract"
+   },
+   {
+    "value": "71",
+    "meaning": "设计和局限中主要非欧洲血统供者模型数",
+    "source_quote": "Overall, 71 models are from primarily non-European ancestry donors",
+    "location": "Generation of 665 cancer models"
+   },
+   {
+    "value": "78%",
+    "meaning": "设计和图标签中3D类器官比例",
+    "source_quote": "Overall, 78% of models ( n = 519) are three-dimensional (3D) organoid cultures",
+    "location": "Generation of 665 cancer models"
+   },
+   {
+    "value": "519",
+    "meaning": "设计中3D类器官数量",
+    "source_quote": "Overall, 78% of models ( n = 519) are three-dimensional (3D) organoid cultures",
+    "location": "Generation of 665 cancer models"
+   },
+   {
+    "value": "3D",
+    "meaning": "设计和图标签中类器官和球体培养维度",
+    "source_quote": "Overall, 78% of models ( n = 519) are three-dimensional (3D) organoid cultures, 6% are 3D spheroid cultures",
+    "location": "Generation of 665 cancer models"
+   },
+   {
+    "value": "6%",
+    "meaning": "设计中3D球体比例",
+    "source_quote": "6% are 3D spheroid cultures ( n = 37)",
+    "location": "Generation of 665 cancer models"
+   },
+   {
+    "value": "37",
+    "meaning": "设计中3D球体数量",
+    "source_quote": "6% are 3D spheroid cultures ( n = 37)",
+    "location": "Generation of 665 cancer models"
+   },
+   {
+    "value": "16%",
+    "meaning": "设计中2D贴壁细胞系比例",
+    "source_quote": "16% are two-dimensional (2D) adherent patient-derived cell lines ( n = 109)",
+    "location": "Generation of 665 cancer models"
+   },
+   {
+    "value": "2D",
+    "meaning": "设计中贴壁细胞系培养维度",
+    "source_quote": "16% are two-dimensional (2D) adherent patient-derived cell lines ( n = 109)",
+    "location": "Generation of 665 cancer models"
+   },
+   {
+    "value": "109",
+    "meaning": "设计中2D贴壁细胞系数量",
+    "source_quote": "16% are two-dimensional (2D) adherent patient-derived cell lines ( n = 109)",
+    "location": "Generation of 665 cancer models"
+   },
+   {
+    "value": "1年",
+    "meaning": "设计中模型体外培养传代时间下限",
+    "source_quote": "despite being passaged in culture for at least 1 year",
+    "location": "Evaluation of genomic fidelity"
+   },
+   {
+    "value": "1,377",
+    "meaning": "设计、结果和数据卡中CCLE参照模型数量",
+    "source_quote": "compared results with the Cancer Cell Line Encyclopedia (CCLE) 1 ( n = 1,377)",
+    "location": "HCMI expands model diversity"
+   },
+   {
+    "value": "201",
+    "meaning": "数据卡和结果中有甲基化数据的配对数",
+    "source_quote": "for the 201 tumour–model pairs for which DNA methylation profiles were available",
+    "location": "Epigenetic and transcriptomic fidelity"
+   },
+   {
+    "value": "190",
+    "meaning": "数据卡、结果和图标签中甲基化显著接近随机背景的配对数",
+    "source_quote": "we found that 190 paired distances (95%) were smaller than expected by random chance",
+    "location": "Epigenetic and transcriptomic fidelity"
+   },
+   {
+    "value": "190/201",
+    "meaning": "图标签和图表中甲基化一致数/总数",
+    "source_quote": "for the 201 tumour–model pairs for which DNA methylation profiles were available, we found that 190 paired distances (95%) were smaller than expected by random chance",
+    "location": "Epigenetic and transcriptomic fidelity"
+   },
+   {
+    "value": "FDR<0.1",
+    "meaning": "数据卡和结果中甲基化一致性判定阈值",
+    "source_quote": "false discovery rate (FDR) < 0.1",
+    "location": "Epigenetic and transcriptomic fidelity"
+   },
+   {
+    "value": "0–34年",
+    "meaning": "数据卡和局限中总体生存随访范围",
+    "source_quote": "patient overall survival (74% of models, with overall survival range of 0–34 years)",
+    "location": "Generation of 665 cancer models"
+   },
+   {
+    "value": "1.5年",
+    "meaning": "数据卡和局限中治疗后中位随访",
+    "source_quote": "post-therapy surival (median follow-up of 1.5 years)",
+    "location": "Generation of 665 cancer models"
+   },
+   {
+    "value": "1.5×10−4",
+    "meaning": "数据卡、结果和图标签中GBM培养基相似性差异P值",
+    "source_quote": "Fisher’s exact test, P = 1.5 × 10 −4",
+    "location": "Epigenetic and transcriptomic fidelity"
+   },
+   {
+    "value": "22",
+    "meaning": "结果和图标签中因低纯度被降优先级模型数",
+    "source_quote": "In aggregate, 22 (5%) models were deprioritized for further interrogation owing to low purity",
+    "location": "Evaluation of genomic fidelity"
+   },
+   {
+    "value": "5%",
+    "meaning": "结果中低纯度降优先级模型比例",
+    "source_quote": "In aggregate, 22 (5%) models were deprioritized for further interrogation owing to low purity",
+    "location": "Evaluation of genomic fidelity"
+   },
+   {
+    "value": "643",
+    "meaning": "结果中低纯度模型排除后的优先模型数",
+    "source_quote": "which led to a collection of 643 prioritized HCMI models",
+    "location": "Evaluation of genomic fidelity"
+   },
+   {
+    "value": "4",
+    "meaning": "结果中DNA特征总项数",
+    "source_quote": "retained at least two and often all four of the DNA-based features that we evaluated herein",
+    "location": "Evaluation of genomic fidelity"
+   },
+   {
+    "value": "420",
+    "meaning": "结果中可估计纯度模型数",
+    "source_quote": "For the 420 models for which purity values could be ascertained",
+    "location": "Evaluation of genomic fidelity"
+   },
+   {
+    "value": "406",
+    "meaning": "结果中纯度大于80%的模型数",
+    "source_quote": "406 models had an estimated tumour purity of >80%",
+    "location": "Evaluation of genomic fidelity"
+   },
+   {
+    "value": ">80%",
+    "meaning": "结果中模型纯度阈值",
+    "source_quote": "406 models had an estimated tumour purity of >80%",
+    "location": "Evaluation of genomic fidelity"
+   },
+   {
+    "value": "9",
+    "meaning": "结果中显示与亲本不同非整倍体模式的模型数",
+    "source_quote": "very few ( n = 9) models showed patterns of aneuploidy distinct from parental tumours",
+    "location": "Evaluation of genomic fidelity"
+   },
+   {
+    "value": "9",
+    "meaning": "结果中11个表观遗传不一致模型里来自纯度低于60%肿瘤的模型数",
+    "source_quote": "Overall, 9 out of 11 models with apparent epigenetic discordance were derived from tumours for which tissue purity estimates were below 60%",
+    "location": "Epigenetic and transcriptomic fidelity"
+   },
+   {
+    "value": "388",
+    "meaning": "结果中LOH一致性分析配对数",
+    "source_quote": "361 among 388 of the models with paired tumours exhibited a DNA loss of heterozygosity (LOH) concordance that exceeded 80%",
+    "location": "Evaluation of genomic fidelity"
+   },
+   {
+    "value": "361",
+    "meaning": "结果中LOH一致性超过80%的模型数",
+    "source_quote": "361 among 388 of the models with paired tumours exhibited a DNA loss of heterozygosity (LOH) concordance that exceeded 80%",
+    "location": "Evaluation of genomic fidelity"
+   },
+   {
+    "value": "80%",
+    "meaning": "结果中LOH一致性阈值",
+    "source_quote": "a DNA loss of heterozygosity (LOH) concordance that exceeded 80%",
+    "location": "Evaluation of genomic fidelity"
+   },
+   {
+    "value": "94%",
+    "meaning": "结果中LOH平均一致性",
+    "source_quote": "LOH concordance that exceeded 80% (average of 94%)",
+    "location": "Evaluation of genomic fidelity"
+   },
+   {
+    "value": "88%",
+    "meaning": "结果中WGD状态再现比例",
+    "source_quote": "Most models recapitulated tumour WGD status (88%)",
+    "location": "Evaluation of genomic fidelity"
+   },
+   {
+    "value": "10%",
+    "meaning": "结果中模型特异WGD比例",
+    "source_quote": "In 10% of the pairs, WGD was detected in the model but not the matched tumour",
+    "location": "Evaluation of genomic fidelity"
+   },
+   {
+    "value": "2%",
+    "meaning": "结果中肿瘤特异WGD比例",
+    "source_quote": "whereas WGD was seldom detected in the tumour but not the model (2% of cases)",
+    "location": "Evaluation of genomic fidelity"
+   },
+   {
+    "value": "P=0.047",
+    "meaning": "结果中模型特异WGD突变时间较晚的P值",
+    "source_quote": "P = 0.047, one-sided Mann–Whitney U -test",
+    "location": "Evaluation of genomic fidelity"
+   },
+   {
+    "value": "11",
+    "meaning": "结果中表观遗传不一致模型总数",
+    "source_quote": "9 out of 11 models with apparent epigenetic discordance were derived from tumours for which tissue purity estimates were below 60%",
+    "location": "Epigenetic and transcriptomic fidelity"
+   },
+   {
+    "value": "11",
+    "meaning": "结果中HCMI优于CCLE的癌种数",
+    "source_quote": "HCMI outperformed CCLE in modelling 11 out of 19 cancer types",
+    "location": "HCMI expands model diversity"
+   },
+   {
+    "value": "60%",
+    "meaning": "结果中表观遗传不一致肿瘤纯度阈值",
+    "source_quote": "tissue purity estimates were below 60%",
+    "location": "Epigenetic and transcriptomic fidelity"
+   },
+   {
+    "value": "297",
+    "meaning": "结果中Celligner转录一致性分析配对数",
+    "source_quote": "We next evaluated transcriptional concordance in 297 tumour–model pairs using Celligner",
+    "location": "Epigenetic and transcriptomic fidelity"
+   },
+   {
+    "value": "242",
+    "meaning": "结果中Celligner判定显著一致配对数",
+    "source_quote": "Celligner identified 242 pairs (81%) as significantly concordant",
+    "location": "Epigenetic and transcriptomic fidelity"
+   },
+   {
+    "value": "81%",
+    "meaning": "结果中Celligner判定显著一致比例",
+    "source_quote": "Celligner identified 242 pairs (81%) as significantly concordant",
+    "location": "Epigenetic and transcriptomic fidelity"
+   },
+   {
+    "value": "286",
+    "meaning": "结果中至少4/6方法评估的模型数",
+    "source_quote": "Of the 286 models assessed by at least 4 of the 6 independent similarity metrics",
+    "location": "Epigenetic and transcriptomic fidelity"
+   },
+   {
+    "value": "4",
+    "meaning": "结果中至少评估方法数",
+    "source_quote": "assessed by at least 4 of the 6 independent similarity metrics",
+    "location": "Epigenetic and transcriptomic fidelity"
+   },
+   {
+    "value": "6",
+    "meaning": "结果中独立相似性指标总数",
+    "source_quote": "at least 4 of the 6 independent similarity metrics",
+    "location": "Epigenetic and transcriptomic fidelity"
+   },
+   {
+    "value": "263",
+    "meaning": "结果中至多一种方法判为不一致的模型数",
+    "source_quote": "Overall, 263 (92%) models were identified as discordant by no more than 1 method",
+    "location": "Epigenetic and transcriptomic fidelity"
+   },
+   {
+    "value": "263/286",
+    "meaning": "图表中转录多方法保留的分子和分母",
+    "source_quote": "Of the 286 models assessed by at least 4 of the 6 independent similarity metrics, only 1 model (HCM-CSHL-0255-C18) was considered non-concordant by 3 methods. Overall, 263 (92%) models were identified as discordant by no more than 1 method",
+    "location": "Epigenetic and transcriptomic fidelity"
+   },
+   {
+    "value": "92%",
+    "meaning": "结果和图标签中至多一种方法判为不一致比例",
+    "source_quote": "Overall, 263 (92%) models were identified as discordant by no more than 1 method",
+    "location": "Epigenetic and transcriptomic fidelity"
+   },
+   {
+    "value": "1",
+    "meaning": "结果中至多一种方法判为不一致",
+    "source_quote": "discordant by no more than 1 method",
+    "location": "Epigenetic and transcriptomic fidelity"
+   },
+   {
+    "value": "1",
+    "meaning": "结果中TCGA肿瘤至少一个高保真模型",
+    "source_quote": "TCGA tumours having at least 1 high-fidelity model",
+    "location": "HCMI expands model diversity"
+   },
+   {
+    "value": "3",
+    "meaning": "结果和局限中条件培养基CM配对数",
+    "source_quote": "conditioned media (CM, n = 3 pairs) and NeuroCult NSA ( n = 37 pairs)",
+    "location": "Fig. 3"
+   },
+   {
+    "value": "37",
+    "meaning": "结果和局限中NeuroCult NSA配对数",
+    "source_quote": "conditioned media (CM, n = 3 pairs) and NeuroCult NSA ( n = 37 pairs)",
+    "location": "Fig. 3"
+   },
+   {
+    "value": "16",
+    "meaning": "结果中单核RNA测序肿瘤-模型配对数",
+    "source_quote": "We selected a representative subset of 16 tumour–model pairs for single-nucleus transcriptomic analysis",
+    "location": "Single-cell analysis of tumour–model pairs"
+   },
+   {
+    "value": "212",
+    "meaning": "结果和局限中ecDNA事件总数",
+    "source_quote": "93 out of 212 (43.9%) of ecDNAs being model-specific and 69 out of 212 (32.5%) being tumour-specific",
+    "location": "Evaluation of genomic fidelity"
+   },
+   {
+    "value": "93",
+    "meaning": "结果和局限中模型特异ecDNA事件数",
+    "source_quote": "93 out of 212 (43.9%) of ecDNAs being model-specific",
+    "location": "Evaluation of genomic fidelity"
+   },
+   {
+    "value": "43.9%",
+    "meaning": "结果和局限中模型特异ecDNA比例",
+    "source_quote": "93 out of 212 (43.9%) of ecDNAs being model-specific",
+    "location": "Evaluation of genomic fidelity"
+   },
+   {
+    "value": "69",
+    "meaning": "结果和局限中肿瘤特异ecDNA事件数",
+    "source_quote": "69 out of 212 (32.5%) being tumour-specific",
+    "location": "Evaluation of genomic fidelity"
+   },
+   {
+    "value": "32.5%",
+    "meaning": "结果和局限中肿瘤特异ecDNA比例",
+    "source_quote": "69 out of 212 (32.5%) being tumour-specific",
+    "location": "Evaluation of genomic fidelity"
+   },
+   {
+    "value": "19",
+    "meaning": "结果中OncoMatch比较癌种总数",
+    "source_quote": "HCMI outperformed CCLE in modelling 11 out of 19 cancer types",
+    "location": "HCMI expands model diversity"
+   },
+   {
+    "value": "4",
+    "meaning": "结果中CCLE优于HCMI的癌种里HCMI样本数不超过10的小队列数",
+    "source_quote": "four out of these six, were HCMI cohorts with a small number of models ( n ≤ 10)",
+    "location": "HCMI expands model diversity"
+   },
+   {
+    "value": "6",
+    "meaning": "结果中CCLE优于HCMI癌种数",
+    "source_quote": "CCLE outperformed HCMI in six cancer types",
+    "location": "HCMI expands model diversity"
+   },
+   {
+    "value": "10",
+    "meaning": "结果中小HCMI队列阈值",
+    "source_quote": "four out of these six, were HCMI cohorts with a small number of models ( n ≤ 10)",
+    "location": "HCMI expands model diversity"
+   },
+   {
+    "value": "77.3%",
+    "meaning": "结果和图标签中合并HCMI和CCLE后有至少一个高保真模型的TCGA肿瘤比例",
+    "source_quote": "77.3% ( n = 6,902) of TCGA tumours having at least 1 high-fidelity model",
+    "location": "HCMI expands model diversity"
+   },
+   {
+    "value": "6,902",
+    "meaning": "结果中合并后有至少一个高保真模型的TCGA肿瘤数",
+    "source_quote": "77.3% ( n = 6,902) of TCGA tumours having at least 1 high-fidelity model",
+    "location": "HCMI expands model diversity"
+   },
+   {
+    "value": "NES≥10",
+    "meaning": "结果中OncoMatch高保真模型阈值",
+    "source_quote": "at least 1 high-fidelity model (normalized enrichment score (NES) ≥ 10)",
+    "location": "HCMI expands model diversity"
+   },
+   {
+    "value": "SBS11",
+    "meaning": "结果和意义中替莫唑胺相关突变特征标签",
+    "source_quote": "models with the SBS11 signature exhibited significantly attenuated temozolomide sensitivity compared with non-SBS11 counterparts",
+    "location": "Translational utility of HCMI models"
+   },
+   {
+    "value": "P<0.05",
+    "meaning": "数据卡、结果和图标签中SBS11模型替莫唑胺敏感性差异P值",
+    "source_quote": "Wilcoxon P < 0.05",
+    "location": "Translational utility of HCMI models"
+   },
+   {
+    "value": "85%",
+    "meaning": "局限中欧洲血统占比",
+    "source_quote": "the predominant ancestry groups were European (85%)",
+    "location": "Generation of 665 cancer models"
+   },
+   {
+    "value": "38",
+    "meaning": "局限中近期非洲血统患者模型数",
+    "source_quote": "the HCMI includes 153 rare cancer models and 38 models from patients of recent African descent",
+    "location": "Discussion"
+   },
+   {
+    "value": "25",
+    "meaning": "局限中既往免疫治疗暴露模型数",
+    "source_quote": "in a subset of 25 models derived from patients previously treated with immunotherapy",
+    "location": "Discussion"
+   },
+   {
+    "value": "1,000",
+    "meaning": "背景中既有细胞系资源规模",
+    "source_quote": "comprehensively annotated compendia of over 1,000 cell lines",
+    "location": "Main"
+   },
+   {
+    "value": "72小时",
+    "meaning": "机制实验证明中培养基切换后短期检测时间",
+    "source_quote": "for either 72 h or 2 weeks",
+    "location": "Medium-switching assay"
+   },
+   {
+    "value": "2周",
+    "meaning": "机制实验证明中培养基切换后长期检测时间",
+    "source_quote": "for either 72 h or 2 weeks",
+    "location": "Medium-switching assay"
+   },
+   {
+    "value": "95%",
+    "meaning": "图标签中甲基化一致性比例",
+    "source_quote": "190 paired distances (95%) were smaller than expected by random chance",
+    "location": "Epigenetic and transcriptomic fidelity"
+   },
+   {
+    "value": "92%",
+    "meaning": "图标签中转录一致性多方法比例",
+    "source_quote": "Overall, 263 (92%) models were identified as discordant by no more than 1 method",
+    "location": "Epigenetic and transcriptomic fidelity"
+   }
+  ],
+  "steps": [
+   "建立患者来源模型库",
+   "配对测序评估保真度",
+   "定位培养基相关漂移",
+   "连接临床史与耐药"
+  ],
+  "figure_caption": "图示HCMI从多癌种患者标本建立可分发模型，再以亲本肿瘤配对的DNA、甲基化、RNA和单核转录组评估保真度；GBM培养条件提示状态漂移，ecDNA不一致多归因于低覆盖，临床史则支持耐药研究。示意图由 AI 生成，依据原文结果绘制，非期刊原图，不代表分子比例",
+  "image_story": {
+   "stages": [
+    {
+     "visual_en": "A large biobank tray containing patient-derived organoids, spheroids, and adherent cell cultures connected to a preserved tumour specimen.",
+     "source_quote": "This process generated 665 models from 637 patients representing 25 distinct human malignancies"
+    },
+    {
+     "visual_en": "Matched tumour and model samples flowing through genome, methylation, and transcriptome profiling instruments with paired nuclei nearby.",
+     "source_quote": "Analyses of 421 matched tumour–model pairs reveal high genetic (97.8%) and epigenetic (95%) concordance"
+    },
+    {
+     "visual_en": "A glioblastoma culture dish diverging under conditioned medium toward mesenchymal-like malignant cells, next to a temozolomide response plate.",
+     "source_quote": "models with the SBS11 signature exhibited significantly attenuated temozolomide sensitivity compared with non-SBS11 counterparts"
+    }
+   ],
+   "key_element_en": "the matched patient-derived model organoid"
+  },
+  "image_subject_en": "A left-to-right process in three stages, drawn large. Stage 1 shows fresh tumour tissue fragments and a compact biobank tray of patient-derived cancer models: round organoids in pale mint hydrogel domes, green spheroid clusters, and flat adherent tumour cells on light grey-green plates. Stage 2 shows the same tumour specimen paired with a model sample entering three profiling modules represented only by abstract machines and molecular ribbons: deep green DNA helices, mint methylation beads, and pale green RNA strands, plus a few single nuclei in transparent droplets. Stage 3 shows a glioblastoma culture dish under a conditioned medium droplet, with malignant cells shifting from mixed pale mint states toward a mesenchymal-like cluster, and a nearby drug-sensitivity well plate in muted green. Draw the matched patient-derived model organoid as one very large, solid, boldly filled terracotta #C0492F sphere-with-lumen at the center of the composition, linking all stages visually. Use deep green, mid green, pale mint, and light grey-green for all other entities. No letters, numbers, symbols, charts, axes, or labels. Only the matched patient-derived model organoid is terracotta.",
+  "card_subject_en": "A compact hero image of one patient-derived cancer organoid culture beside its matching tumour fragment in a shallow biobank dish. The tumour fragment is deep green with pale mint cut surfaces, surrounded by light grey-green hydrogel droplets and small mid-green nuclei. Draw one very large, solid, boldly filled terracotta #C0492F organoid sphere with a clear inner lumen as the focal object, slightly forward and illuminated, representing the matched model. All other cells, plates, and molecular ribbons remain in deep green, mid green, pale mint, and light grey-green. No text, numbers, symbols, labels, charts, or axes.",
+  "figure_labels": {
+   "heads": [
+    "建库",
+    "配对保真",
+    "漂移与应用"
+   ],
+   "callouts": [
+    {
+     "t": "665个模型\n25种癌",
+     "stage": 1,
+     "entity_en": "biobank tray of patient-derived cancer models"
+    },
+    {
+     "t": "3D类器官\n78%",
+     "stage": 1,
+     "entity_en": "round organoids in pale mint hydrogel domes"
+    },
+    {
+     "t": "遗传一致\n97.8%",
+     "stage": 2,
+     "entity_en": "deep green DNA helices"
+    },
+    {
+     "t": "甲基化一致\n95%",
+     "stage": 2,
+     "entity_en": "mint methylation beads"
+    },
+    {
+     "t": "转录保留\n92%",
+     "stage": 2,
+     "entity_en": "pale green RNA strands"
+    },
+    {
+     "t": "GBM培养基\nP=1.5×10−4",
+     "stage": 3,
+     "entity_en": "conditioned medium droplet"
+    },
+    {
+     "t": "SBS11耐药\nP<0.05",
+     "stage": 3,
+     "entity_en": "drug-sensitivity well plate"
+    }
+   ],
+   "facts": [
+    [
+     "**421**对配对分析",
+     "排除22个低纯度模型"
+    ],
+    [
+     "**95%**甲基化",
+     "比随机配对更接近",
+     "190/201对"
+    ],
+    [
+     "**77.3%** TCGA肿瘤",
+     "合并库有高保真模型"
+    ]
+   ],
+   "note": "数字采用Results口径；培养基为小亚组比较（P为正文Results口径）。示意图由 AI 生成，非期刊原图。"
+  },
+  "chart": {
+   "justified": true,
+   "title_zh": "HCMI配对模型的多组学一致性",
+   "unit": "%",
+   "figure_source": "Fig.2g, Fig.3a, Fig.3c",
+   "values": [
+    {
+     "label_zh": "DNA特征一致",
+     "value": 97.8,
+     "n": "配对/可评估肿瘤-模型口径",
+     "source_quote": "most HCMI models (97.8%) retained at least two and often all four of the DNA-based features that we evaluated herein"
+    },
+    {
+     "label_zh": "甲基化一致",
+     "value": 95,
+     "n": "190/201对",
+     "source_quote": "we found that 190 paired distances (95%) were smaller than expected by random chance"
+    },
+    {
+     "label_zh": "转录多方法保留",
+     "value": 92,
+     "n": "263/286个",
+     "source_quote": "Overall, 263 (92%) models were identified as discordant by no more than 1 method"
+    }
+   ],
+   "note": "三项为不同分析集和操作定义，不作互相优劣检验。"
+  }
+ },
+ "images": {
+  "mech_raw": "c1-org-3_mech_raw.png",
+  "mech": "c1-org-3_mech.png",
+  "card": "c1-org-3_card.png",
+  "image_model": "gpt-image-2 (earlier rounds)",
+  "note": "card source QC off-warm 6.8% (>5%) was not a gate in earlier assembly; composed card passed"
+ }
+}

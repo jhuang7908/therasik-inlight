@@ -1,0 +1,568 @@
+{
+ "id": "c6-ab-6",
+ "round": "r5img",
+ "drafter_model": "grok-bot (self)",
+ "drafter_of_edits": "grok-bot (self)",
+ "verifier_model": "grok-bot (self): scripted audit_rw + verbatim-quote claim check (no external verifier model available)",
+ "mustcover_frozen_by": "gpt-5.5-2026-04-23",
+ "mustcover_file": "work/r5/mc/mc_c6-ab-6_frozen.json",
+ "source_draft": "work/r5/c6-ab-6/rw_c6-ab-6_draft_v3.json",
+ "edits_r5": [
+  "v1 drafted by grok-bot (self) from full text",
+  "v2: results +~60 字 (2a any-grade TRAE, 2L DOR, SEZ6 H-score by dose); data_points for label numbers 2.5 and 2",
+  "v3: background[0] historical <20% ORR scoped to platinum-resistant/refractory patients as in source"
+ ],
+ "text_status": "text-pass",
+ "status": "published-ready",
+ "status_reasons": [],
+ "preprint": false,
+ "writer_tags": [
+  "抗体偶联药物",
+  "SEZ6",
+  "小细胞肺癌",
+  "拓扑异构酶1抑制剂",
+  "剂量优化"
+ ],
+ "tags_note": "editor related-field tags prepended; writer tags trimmed to 6 (metadata only)",
+ "article": {
+  "tier": "deep",
+  "field": "精准肿瘤与临床转化",
+  "tags": [
+   "抗体工程",
+   "抗体偶联药物",
+   "SEZ6",
+   "小细胞肺癌",
+   "拓扑异构酶1抑制剂",
+   "剂量优化"
+  ],
+  "primary_endpoint_basis": "1期试验主要目标为安全性、耐受性、药代、免疫原性与抗肿瘤活性，并由第1、2部分确定R/R SCLC的推荐2期剂量（RP2D）；主要疗效指标为研究者评估的确认ORR。标题与一句话结论领衔摘要与Results一致的ORR 52%（65/124）及RP2D 1.8 mg/kg。",
+  "comparison_design": "所有分析为描述性，未计划正式假设检验，未做样本量或把握度计算（样本量按ORR单侧80% CI下限估计约40例/组）。第2a部分两剂量平均随机但未为组间比较设计效能；剂量间ORR、DOR、PFS、OS差异均为数值描述。SEZ6表达分布比较给出Wilcoxon P=0.7424。",
+  "untested_comparisons": [
+   "1.8对2.5 mg/kg组ORR 56%对59%",
+   "DOR 5.9对4.9个月、PFS 6.4对5.6个月、OS 12.4对11.9个月",
+   "Top1i初治对既往暴露ORR 62%对42%（事后分析）",
+   "与拓扑替康、卢比替定等历史ORR的跨研究比较"
+  ],
+  "number_basis_note": "≥3级TRAE按剂量：摘要写1.8 mg/kg 39%、2.5 mg/kg 70%，Results剂量递增列表写1.8 mg/kg 40%、2.5 mg/kg 70%，第2a部分R/R SCLC两组为54%对77%；正文写摘要口径并标注，第2a部分单列。SEZ6可评估例数：Fig. 2图注为38/47和37/42，Results为38/48和37/44，在局限中并列指出。",
+  "must_cover": [
+   {
+    "id": "m1",
+    "item_zh": "R/R SCLC单药ORR 52%（65/124）。",
+    "status": "covered",
+    "covered_by": "研究者评估ORR为52%（65/124）"
+   },
+   {
+    "id": "m2",
+    "item_zh": "第2a部分1.8与2.5 mg/kg组ORR 56%对59%，DOR 5.9对4.9个月。",
+    "status": "covered",
+    "covered_by": "1.8与2.5 mg/kg组ORR分别为56%（23/41）和59%（23/39）"
+   },
+   {
+    "id": "m3",
+    "item_zh": "PFS 6.4对5.6个月，OS 12.4对11.9个月，1.8 mg/kg数值更高。",
+    "status": "covered",
+    "covered_by": "中位PFS 6.4对5.6个月，中位OS 12.4对11.9个月"
+   },
+   {
+    "id": "m4",
+    "item_zh": "综合安全性、初步疗效和药代，确定1.8 mg/kg Q3W为RP2D。",
+    "status": "covered",
+    "covered_by": "1.8 mg/kg Q3W被确定为R/R SCLC的推荐2期剂量"
+   },
+   {
+    "id": "m5",
+    "item_zh": "单药240例：贫血61%、乏力38%、≥3级TRAE 61%，1.8 mg/kg为39%、2.5 mg/kg为70%。",
+    "status": "covered",
+    "covered_by": "摘要按剂量报告≥3级事件1.8 mg/kg为39%、2.5 mg/kg为70%"
+   },
+   {
+    "id": "m6",
+    "item_zh": "首次人体、开放标签1期试验，每3周静脉给药。",
+    "status": "covered",
+    "covered_by": "这是一项首次人体、开放标签1期试验"
+   },
+   {
+    "id": "m7",
+    "item_zh": "240例单药中124例R/R SCLC，80例进入随机剂量优化：1.8 mg/kg 41例、2.5 mg/kg 39例。",
+    "status": "covered",
+    "covered_by": "80例进入第2a部分（1.8 mg/kg组41例、2.5 mg/kg组39例）"
+   },
+   {
+    "id": "m8",
+    "item_zh": "核心疗效读出为研究者评估的确认ORR，初次缓解须至少4周后确认。",
+    "status": "covered",
+    "covered_by": "主要疗效指标为研究者评估的确认ORR"
+   },
+   {
+    "id": "m9",
+    "item_zh": "图2生物标志物分析可评估例数仅38/47与37/42。",
+    "status": "covered",
+    "covered_by": "图2图注写1.8 mg/kg组47例中38例、2.5 mg/kg组42例中37例有可评估SEZ6数据"
+   },
+   {
+    "id": "m10",
+    "item_zh": "SEZ6各表达水平均见缓解，与PFS、OS不相关。",
+    "status": "covered",
+    "covered_by": "两剂量组均在不同SEZ6表达水平观察到缓解，表达与PFS、OS无相关"
+   },
+   {
+    "id": "m11",
+    "item_zh": "作者称1期研究非随机、开放标签、未为疗效设计效能、无假设检验。",
+    "status": "covered",
+    "covered_by": "试验总体非随机、开放标签，未为疗效设计效能且无假设检验"
+   },
+   {
+    "id": "m12",
+    "item_zh": "缺少标准治疗对照组，留待2/3期研究。",
+    "status": "covered",
+    "covered_by": "也没有标准治疗对照组，作者表示将在2/3期研究中解决"
+   }
+  ],
+  "title": "SEZ6靶向ADC ABBV-706 1期：复发难治SCLC客观缓解率52%，推荐剂量1.8 mg/kg",
+  "one_liner": "在124例复发/难治小细胞肺癌单药治疗中，ABBV-706每3周给药的确认ORR为52%（65/124），随机剂量优化后选定1.8 mg/kg为推荐2期剂量。",
+  "datacard": {
+   "study_type": "首次人体、开放标签、多部分1期临床试验（NCT05599984），含第2a部分随机剂量优化",
+   "n": "入组288例；单药240例，其中R/R SCLC 124例；第2a部分80例（1.8 mg/kg 41例、2.5 mg/kg 39例）",
+   "control": "无标准治疗对照组；第2a部分为两剂量平行随机",
+   "intervention": "ABBV-706静脉给药Q3W；剂量递增1.3–3.5 mg/kg，剂量优化1.8或2.5 mg/kg",
+   "followup": "R/R SCLC中位随访16.9个月；1.8与2.5 mg/kg组17.5与16.8个月",
+   "primary_endpoint": "主要目标为安全性、耐受性、药代、免疫原性、抗肿瘤活性及RP2D；主要疗效指标为研究者评估的确认ORR（RECIST v1.1）",
+   "primary_endpoint_result": "R/R SCLC ORR 52%（65/124）；第2a部分56%（23/41）对59%（23/39）；RP2D 1.8 mg/kg Q3W",
+   "statistics": "全部为描述性分析，无正式假设检验，无样本量/把握度计算",
+   "safety": "单药240例中≥3级TRAE 61%；裁定肺炎/间质性肺病10例（4%）；3例死亡判定与药物相关",
+   "evidence_level": "全文",
+   "check_record": "Europe PMC全文XML（PMC13472869）：Abstract、Results、Discussion、Methods及Fig. 2–3图注"
+  },
+  "background": [
+   "小细胞肺癌（SCLC）约占肺癌的11%，多数患者一线治疗起初有效，但近50%在6个月内进展，广泛期5年总生存率仅约12%。复发后可用拓扑替康、氨柔比星、卢比替定等标准化疗，作者指出，铂耐药或难治患者接受这些化疗的历史缓解率低于20%。",
+   "SEZ6是一种神经谱系I型跨膜蛋白，在SCLC和高级别神经内分泌癌中高选择性表达。ABBV-706把SEZ6单抗经稳定连接子偶联拓扑异构酶1抑制剂（Top1i），药物抗体比为6，内化后在溶酶体释放载荷。Byers等在Nature Medicine报告其首次人体1期结果。"
+  ],
+  "design": [
+   "这是一项首次人体、开放标签1期试验，ABBV-706每3周静脉给药（Q3W）。第1部分在晚期实体瘤中按贝叶斯最优区间设计从1.3递增至3.5 mg/kg；第2a部分把铂类化疗免疫治疗后进展的SCLC患者平均随机至1.8或2.5 mg/kg，不设分层；第4部分为高级别神经内分泌肿瘤扩展。截至2025年9月27日共入组288例。",
+   "其中240例接受单药，124例为复发/难治（R/R）SCLC，80例进入第2a部分（1.8 mg/kg组41例、2.5 mg/kg组39例）。主要疗效指标为研究者评估的确认ORR，即RECIST v1.1完全或部分缓解，并在至少4周后复核确认。全部分析为描述性，未计划正式假设检验，也未做样本量或把握度计算。"
+  ],
+  "results": [
+   {
+    "subhead": "整体缓解率52%",
+    "text": "在124例R/R SCLC单药患者中，研究者评估ORR为52%（65/124），中位缓解持续时间5.3个月（95% CI 4.1–6.7）。中位随访16.9个月时，中位PFS为5.4个月，中位OS为11.3个月（95% CI 9.1–14.8），15个月总生存率估计为40%。"
+   },
+   {
+    "subhead": "两剂量缓解相近",
+    "text": "第2a部分随机剂量优化中，1.8与2.5 mg/kg组ORR分别为56%（23/41）和59%（23/39），中位缓解持续时间5.9个月（95% CI 3.6–11.1）对4.9个月（3.5–6.9）。中位PFS 6.4对5.6个月，中位OS 12.4对11.9个月，15个月总生存率44%对38%；这些长期指标为探索性，原文未做组间检验。"
+   },
+   {
+    "subhead": "毒性随剂量上升",
+    "text": "240例单药患者中93%出现治疗相关不良事件，61%为≥3级，最常见为贫血（61%）和乏力（38%）；摘要按剂量报告≥3级事件1.8 mg/kg为39%、2.5 mg/kg为70%。第2a部分两组任意级别事件为88%对97%，≥3级为54%对77%。经裁定的肺炎/间质性肺病10例（4%），3例死亡判定与药物相关。"
+   },
+   {
+    "subhead": "选定1.8 mg/kg",
+    "text": "综合安全性、初步疗效和药代，1.8 mg/kg Q3W被确定为R/R SCLC的推荐2期剂量。第2a部分治疗相关中断和减量在2.5 mg/kg组为51%和33%，1.8 mg/kg组为24%和16%。事后分析中，1.8 mg/kg二线亚组（17例）ORR为82%，中位缓解持续时间6.6个月（95% CI 3.1–12.5）。"
+   },
+   {
+    "subhead": "SEZ6表达不分高低",
+    "text": "可得组织中93%（108例）SEZ6免疫组化阳性，中位H评分145；1.8与2.5 mg/kg组中位H评分153对130，分布相近（P=0.7424）。两剂量组均在不同SEZ6表达水平观察到缓解，表达与PFS、OS无相关。ctDNA最早在第2周期第1天快速下降，应答者降幅显著大于未应答者。"
+   }
+  ],
+  "mechanism_proven": [
+   "这是一项临床试验，没有直接机制实验；可由数据直接支持的是药理特征。药代在1.3–3.5 mg/kg内呈线性，未见明显靶点介导处置；偶联物与总抗体暴露曲线基本重叠，作者据此认为连接子稳定。首剂后偶联物和总抗体终末半衰期约7天、游离Top1i约10天，第3周期相对第1周期累积不足1.5倍。",
+   "毒性同样呈剂量依赖：≥3级治疗相关不良事件从1.3 mg/kg的40%升至3.5 mg/kg的100%，以血细胞减少为主。中位相对剂量强度在第2a部分为98.9%（1.8 mg/kg）对85.3%（2.5 mg/kg）；8.3%（20/240）患者检出抗药抗体，未见影响偶联物药代。"
+  ],
+  "mechanism_inferred": [
+   "作者推测，2.5 mg/kg组更多中断与减量导致相对剂量强度更低，可能影响了两剂量间观察到的疗效。1.8 mg/kg组中Top1i初治者ORR为62%、既往暴露者为42%，作者认为这提示既往用过Top1i的患者可能因作用机制相似而对载荷先天耐药。"
+  ],
+  "limitations": [
+   "作者承认，作为1期研究，试验总体非随机、开放标签，未为疗效设计效能且无假设检验，也没有标准治疗对照组，作者表示将在2/3期研究中解决；剂量间DOR、PFS、OS的差异只能视为数值差异。",
+   "生物标志物证据有限：图2图注写1.8 mg/kg组47例中38例、2.5 mg/kg组42例中37例有可评估SEZ6数据，Results则写38/48和37/44，口径不一；SEZ6与疗效的关系需在随机对照研究中再判定。",
+   "外推方面，入组者中既往接受tarlatamab的很少；颅内缓解率不是预设终点；82%的二线ORR来自17例事后亚组，时间相关终点仍需更大规模2/3期随机试验确认。"
+  ],
+  "significance": [
+   "若在随机试验中得到确认，ABBV-706可为复发/难治SCLC提供一个以SEZ6为靶点的ADC选择；本研究中各表达水平均见缓解，提示入组时未必需要按SEZ6高低预筛。原文列举的历史数据中拓扑替康ORR为17–24%、卢比替定为35%，但属跨研究比较。",
+   "对剂量选择而言，本试验展示了在缓解率相近时，以毒性、剂量强度和长期指标选定较低剂量的随机剂量优化路径；ABBV-706联合阿替利珠单抗的一线试验已经启动。"
+  ],
+  "citation": "Byers LA, Cho BC, Cooper AJ, Chiang AC, Han JY, Furqan M, et al. SEZ6-targeting antibody−drug conjugate ABBV-706 in advanced small cell lung cancer and solid tumors: a phase 1 trial. Nat Med. 2026 Jun 1. doi: https://doi.org/10.1038/s41591-026-04452-0",
+  "data_points": [
+   {
+    "value": "52%（65/124）",
+    "meaning": "R/R SCLC单药ORR",
+    "source_quote": "with an objective response rate (ORR) of 52% (65/124)",
+    "location": "Abstract"
+   },
+   {
+    "value": "1.8 mg/kg",
+    "meaning": "推荐2期剂量",
+    "source_quote": "1.8 mg kg −1 Q3W was confirmed as the optimal RP2D for patients with R/R SCLC",
+    "location": "Abstract"
+   },
+   {
+    "value": "124例",
+    "meaning": "R/R SCLC单药人数",
+    "source_quote": "240 received monotherapy, including 124 with relapsed/refractory (R/R) SCLC",
+    "location": "Abstract"
+   },
+   {
+    "value": "56%（23/41）对59%（23/39）",
+    "meaning": "第2a部分两剂量ORR",
+    "source_quote": "ORR was similar between 1.8 mg kg −1 and 2.5 mg kg −1 doses (56% (23/41) and 59% (23/39), respectively)",
+    "location": "Abstract"
+   },
+   {
+    "value": "5.9个月（3.6–11.1）对4.9个月（3.5–6.9）",
+    "meaning": "两剂量中位DOR",
+    "source_quote": "The DOR at 1.8 mg kg −1 was 5.9 months (95% CI: 3.6−11.1) and at 2.5 mg kg −1 was 4.9 months (95% CI: 3.5−6.9)",
+    "location": "Results: Efficacy"
+   },
+   {
+    "value": "6.4对5.6个月；12.4对11.9个月",
+    "meaning": "两剂量中位PFS与OS",
+    "source_quote": "the median PFS in the 1.8 mg kg −1 and 2.5 mg kg −1 cohorts was 6.4 months (95% CI: 4.0−8.1) and 5.6 months (95% CI: 4.4−7.0)",
+    "location": "Results: Efficacy"
+   },
+   {
+    "value": "12.4对11.9个月",
+    "meaning": "两剂量中位OS",
+    "source_quote": "The median OS was 12.4 months (95% CI: 8.2−17.3) in the 1.8 mg kg −1 cohort and 11.9 months (95% CI: 6.7−16.7) in the 2.5 mg kg −1 cohort",
+    "location": "Results: Efficacy"
+   },
+   {
+    "value": "44%对38%",
+    "meaning": "15个月总生存率估计",
+    "source_quote": "Landmark OS estimate at 15 months was 44% (95% CI: 27−59) and 38% (95% CI: 23−53), respectively.",
+    "location": "Results: Efficacy"
+   },
+   {
+    "value": "5.3个月（4.1–6.7）；5.4个月；11.3个月（9.1–14.8）；40%；16.9个月",
+    "meaning": "全体R/R SCLC的DOR、PFS、OS、15个月OS与随访",
+    "source_quote": "Median duration of response (DOR) was 5.3 months (95% confidence interval (CI): 4.1−6.7). With a median follow-up of 16.9 months, median progression-free survival (PFS) was 5.4 months",
+    "location": "Results: Efficacy"
+   },
+   {
+    "value": "11.3个月；40%",
+    "meaning": "全体中位OS与15个月OS",
+    "source_quote": "Median OS was 11.3 months (95% CI: 9.1−14.8), and landmark OS estimate at 15 months was 40% (95% CI: 30−49).",
+    "location": "Results: Efficacy"
+   },
+   {
+    "value": "288例；240例",
+    "meaning": "入组与单药人数",
+    "source_quote": "As of 27 September 2025 (data cutoff), 288 patients with solid tumors were enrolled, which included 240 patients in monotherapy",
+    "location": "Results: Study design and patients"
+   },
+   {
+    "value": "80例；41例；39例",
+    "meaning": "第2a部分随机人数",
+    "source_quote": "80 of whom were enrolled in the randomized dose-optimization part 2a (1.8 mg kg −1 cohort, n = 41; 2.5 mg kg −1 cohort, n = 39)",
+    "location": "Results: Study design and patients"
+   },
+   {
+    "value": "1.3–3.5 mg/kg",
+    "meaning": "剂量递增范围",
+    "source_quote": "escalating doses between 1.3 mg kg −1 and 3.5 mg/kg −1 , following a Bayesian optimal interval design",
+    "location": "Methods: Trial design and treatment"
+   },
+   {
+    "value": "4周",
+    "meaning": "确认缓解间隔",
+    "source_quote": "with an initial complete response or partial response confirmed in an assessment at least 4 weeks later",
+    "location": "Methods: Outcomes and assessments"
+   },
+   {
+    "value": "93%；61%；61%；38%",
+    "meaning": "单药TRAE、≥3级、贫血、乏力",
+    "source_quote": "222 out of 240 patients (93%) in the safety analysis population who received ABBV-706 monotherapy had one or more treatment-related adverse events (TRAEs), of whom 147 (61%) had a grade 3 or higher event",
+    "location": "Results: Safety"
+   },
+   {
+    "value": "61%；38%",
+    "meaning": "贫血与乏力发生率",
+    "source_quote": "the most common treatment-related adverse events (TRAEs) at any grade were anemia (61%) and fatigue (38%)",
+    "location": "Abstract"
+   },
+   {
+    "value": "39%对70%",
+    "meaning": "摘要按剂量≥3级TRAE",
+    "source_quote": "Grade 3 or higher TRAEs occurred in 61% of patients and were dose dependent (39% at 1.8 mg kg −1 and 70% at 2.5 mg kg −1 )",
+    "location": "Abstract"
+   },
+   {
+    "value": "54%对77%",
+    "meaning": "第2a部分≥3级TRAE",
+    "source_quote": "Grade 3 or higher TRAEs occurred in 54% and 77% of patients",
+    "location": "Results: Safety"
+   },
+   {
+    "value": "10例（4%）",
+    "meaning": "裁定肺炎/ILD",
+    "source_quote": "10 (4%) patients had adjudicated pneumonitis/ILD",
+    "location": "Results: Safety"
+   },
+   {
+    "value": "3例",
+    "meaning": "药物相关死亡",
+    "source_quote": "Three events (3%) leading to death were considered related to ABBV-706",
+    "location": "Results: Safety"
+   },
+   {
+    "value": "51%和33%；24%和16%",
+    "meaning": "中断与减量",
+    "source_quote": "Treatment-related interruptions and reductions were more frequent at 2.5 mg kg −1 (51% and 33%) than at 1.8 mg kg −1 (24% and 16%)",
+    "location": "Results: Safety"
+   },
+   {
+    "value": "82%；17例",
+    "meaning": "1.8 mg/kg二线亚组ORR",
+    "source_quote": "among patients who received 1.8 mg kg −1 in the 2L setting ( n = 17), the ORR was 82%",
+    "location": "Results: Efficacy"
+   },
+   {
+    "value": "93%；108例；145",
+    "meaning": "SEZ6阳性率与中位H评分",
+    "source_quote": "tumor SEZ6 expression detected by immunohistochemistry in 93% of patients whose tissue samples were available, above or equal to 1% with 1+ intensity (108 patients",
+    "location": "Results: Exploratory biomarker analysis"
+   },
+   {
+    "value": "145",
+    "meaning": "中位SEZ6 H评分",
+    "source_quote": "The median SEZ6 cytomembrane H-score was 145",
+    "location": "Results: Exploratory biomarker analysis"
+   },
+   {
+    "value": "38/47；37/42",
+    "meaning": "图2图注SEZ6可评估例数",
+    "source_quote": "Evaluable SEZ6 expression data were available for 38 of 47 patients with response assessment in the 1.8 mg kg −1 cohort and for 37 of 42 patients in the 2.5 mg kg −1 cohort.",
+    "location": "Fig. 2 legend"
+   },
+   {
+    "value": "38/48；37/44",
+    "meaning": "Results中SEZ6可评估例数",
+    "source_quote": "available for 38 of 48 patients having responses per RECIST version 1.1 in the 1.8 mg kg −1 cohort and for 37 of 44 patients in the 2.5 mg kg −1 cohort",
+    "location": "Results: Exploratory biomarker analysis"
+   },
+   {
+    "value": "约7天；10天；<1.5倍",
+    "meaning": "半衰期与累积",
+    "source_quote": "the terminal phase elimination half-life was approximately 7 days for the ABBV-706 conjugate and total antibody and 10 days for the free Top1i payload",
+    "location": "Results: Clinical PK and immunogenicity"
+   },
+   {
+    "value": "<1.5倍",
+    "meaning": "第3周期对第1周期累积比",
+    "source_quote": "minimal (accumulation ratio <1.5-fold) increase in exposure for ABBV-706 conjugate, total antibody and free Top1i payload in cycle 3 versus cycle 1",
+    "location": "Results: Clinical PK and immunogenicity"
+   },
+   {
+    "value": "8.3%（20/240）",
+    "meaning": "抗药抗体阳性",
+    "source_quote": "with 8.3% (20/240) of patients testing positive for ABBV-706 ADA across all available timepoints",
+    "location": "Results: Clinical PK and immunogenicity"
+   },
+   {
+    "value": "40%；100%",
+    "meaning": "1.3与3.5 mg/kg的≥3级TRAE",
+    "source_quote": "with 40% at 1.3 mg kg −1 , 40% at 1.8 mg kg −1 , 70% at 2.5 mg kg −1 , 87% at 3.0 mg kg −1 and 100% at 3.5 mg kg −1",
+    "location": "Results: Safety"
+   },
+   {
+    "value": "98.9%；85.3%",
+    "meaning": "第2a部分中位相对剂量强度",
+    "source_quote": "the median relative dose intensity was 98.9% (range, 59−105) in the 1.8 mg kg −1 dose cohort and 85.3% (range, 44−106) in the 2.5 mg kg −1 cohort",
+    "location": "Results: Safety"
+   },
+   {
+    "value": "62%对42%",
+    "meaning": "Top1i初治对暴露ORR（事后）",
+    "source_quote": "In patients at the 1.8 mg kg −1 dose who were Top1i naive versus Top1i exposed, the ORR was 62% versus 42%, respectively.",
+    "location": "Results: Efficacy"
+   },
+   {
+    "value": "11%；50%；6个月；12%；20%",
+    "meaning": "背景流行病学与历史缓解率",
+    "source_quote": "Small cell lung cancer (SCLC) accounts for about 11% of all lung cancers",
+    "location": "Main"
+   },
+   {
+    "value": "50%；6个月",
+    "meaning": "一线后6个月内进展比例",
+    "source_quote": "with nearly 50% of patients experiencing disease progression within 6 months",
+    "location": "Main"
+   },
+   {
+    "value": "12%",
+    "meaning": "广泛期5年OS",
+    "source_quote": "the 5-year overall survival (OS) rate is only approximately 12%",
+    "location": "Main"
+   },
+   {
+    "value": "<20%",
+    "meaning": "历史标准化疗缓解率",
+    "source_quote": "historically, these patients have response rates lower than 20% with current approved standard-of-care systemic chemotherapies",
+    "location": "Discussion"
+   },
+   {
+    "value": "药物抗体比6",
+    "meaning": "ABBV-706 DAR",
+    "source_quote": "attached via a stable linker to a SEZ6-directed monoclonal antibody with a drug:antibody ratio of 6",
+    "location": "Main"
+   },
+   {
+    "value": "17–24%；35%",
+    "meaning": "历史拓扑替康与卢比替定ORR",
+    "source_quote": "topotecan (ORR: 17−24%), lurbinectedin (ORR: 35%)",
+    "location": "Discussion"
+   },
+   {
+    "value": "17.5与16.8个月",
+    "meaning": "两剂量组中位随访",
+    "source_quote": "17.5 months, 17.5 months and 16.8 months for the 1.8 mg kg −1 , 1.8 mg kg −1 2L and 2.5 mg kg −1 cohorts",
+    "location": "Results: Study design and patients"
+   },
+   {
+    "value": "2025年9月27日",
+    "meaning": "数据截止",
+    "source_quote": "As of 27 September 2025 (data cutoff)",
+    "location": "Results"
+   },
+   {
+    "value": "2.5 mg/kg",
+    "meaning": "第2a部分较高剂量组",
+    "source_quote": "patients with R/R SCLC were randomized evenly to receive ABBV-706 1.8 mg kg −1 or 2.5 mg kg −1 Q3W to determine the RP2D",
+    "location": "Methods: Trial design and treatment"
+   },
+   {
+    "value": "推荐2期剂量（2期）",
+    "meaning": "RP2D",
+    "source_quote": "to determine the recommended phase 2 dose (RP2D) of ABBV-706 in R/R SCLC",
+    "location": "Abstract"
+   },
+   {
+    "value": "6.6个月（3.1–12.5）",
+    "meaning": "二线亚组中位DOR",
+    "source_quote": "the ORR was 82% and the median DOR was 6.6 months (95% CI: 3.1−12.5)",
+    "location": "Results: Efficacy"
+   },
+   {
+    "value": "153对130；P=0.7424",
+    "meaning": "两剂量组SEZ6中位H评分及分布比较",
+    "source_quote": "the median SEZ6 cytomembrane H-score was 153, with 25th and 75th percentile H-scores of 67 and 185, respectively. This is similar ( P = 0.7424, two-sided Wilcoxon rank-sum test)",
+    "location": "Results: Exploratory biomarker analysis"
+   },
+   {
+    "value": "88%对97%",
+    "meaning": "第2a部分任意级别TRAE",
+    "source_quote": "any-grade TRAEs occurred in 88% and 97%, respectively",
+    "location": "Results: Safety"
+   }
+  ],
+  "steps": [
+   "SEZ6抗体携带Top1i载荷",
+   "每3周静脉给药",
+   "肿瘤缩小，ORR 52%",
+   "随机比较后选1.8 mg/kg"
+  ],
+  "figure_caption": "示意图概括本试验：SEZ6靶向ADC携带拓扑异构酶1抑制剂结合SCLC细胞，124例单药患者确认ORR 52%；两剂量缓解率相近，较低剂量毒性更少，被选为推荐2期剂量。示意图由 AI 生成，依据原文结果绘制，非期刊原图，不代表分子比例",
+  "image_story": {
+   "stages": [
+    {
+     "visual_en": "A SEZ6-directed antibody carrying six small payload beads binds the surface of small cell lung cancer cells.",
+     "source_quote": "ABBV-706, an antibody−drug conjugate with a SEZ6-directed antibody linked to topoisomerase-1 inhibitor (Top1i), was administered intravenously every 3 weeks"
+    },
+    {
+     "visual_en": "A cluster of tumour cells shrinks as many cells break apart.",
+     "source_quote": "Rapid and durable responses were seen across both 1.8 mg kg −1 and 2.5 mg kg −1 doses"
+    },
+    {
+     "visual_en": "Two parallel infusion bags of different fill level, with the lower-dose one leading to a calmer blood stream with fewer damaged blood cells.",
+     "source_quote": "Treatment-related interruptions and reductions were more frequent at 2.5 mg kg −1 (51% and 33%) than at 1.8 mg kg −1 (24% and 16%)"
+    }
+   ],
+   "key_element_en": "ABBV-706 antibody-drug conjugate"
+  },
+  "image_subject_en": "A left-to-right process in three stages, drawn large. Stage 1 shows a cluster of rounded small cell lung cancer cells in mid green with deep green nuclei, their membranes dotted with pale mint SEZ6 surface proteins, and one very large, solid, boldly filled terracotta #C0492F ABBV-706 antibody-drug conjugate, a Y-shaped antibody carrying six small bead-like payloads on short linkers, docking onto a SEZ6 protein. Stage 2 shows the same tumour cluster markedly smaller, several cells breaking into light grey-green fragments, with deep green DNA strands inside a few nuclei shown snapped. Stage 3 shows two parallel pale mint infusion bags of different fill levels connected to a blood vessel cross-section; the vessel fed by the less-filled bag carries many intact light grey-green red blood cells and deep green white cells, while the other carries fewer intact cells. Only the ABBV-706 antibody-drug conjugate is terracotta.",
+  "card_subject_en": "A compact hero subject: one large Y-shaped ABBV-706 antibody-drug conjugate drawn as a very large, solid, boldly filled terracotta #C0492F molecule carrying six small bead-like payloads, docking onto a pale mint SEZ6 protein on the curved membrane of a mid green small cell lung cancer cell with a deep green nucleus; a few neighbouring tumour cells in light grey-green sit behind. No text, no numbers, no symbols. Only the ABBV-706 antibody-drug conjugate is terracotta.",
+  "figure_labels": {
+   "heads": [
+    "SEZ6靶向ADC",
+    "肿瘤缩小",
+    "剂量优化"
+   ],
+   "callouts": [
+    {
+     "t": "SEZ6抗体＋Top1i\n药物抗体比6",
+     "stage": 1,
+     "entity_en": "ABBV-706 antibody-drug conjugate"
+    },
+    {
+     "t": "SEZ6阳性93%\n各表达水平均缓解",
+     "stage": 1,
+     "entity_en": "SEZ6 surface proteins"
+    },
+    {
+     "t": "124例ORR 52%\n（65/124）",
+     "stage": 2,
+     "entity_en": "tumour cluster"
+    },
+    {
+     "t": "ORR 56%对59%\n（1.8对2.5 mg/kg）",
+     "stage": 3,
+     "entity_en": "infusion bags"
+    },
+    {
+     "t": "≥3级TRAE\n54%对77%",
+     "stage": 3,
+     "entity_en": "blood vessel cross-section"
+    }
+   ],
+   "facts": [
+    [
+     "R/R SCLC单药",
+     "ORR **52%**"
+    ],
+    [
+     "中位OS",
+     "12.4对11.9个月"
+    ],
+    [
+     "推荐2期剂量",
+     "1.8 mg/kg Q3W"
+    ]
+   ],
+   "note": "描述性分析，剂量间未做检验。示意图由 AI 生成，非期刊原图。"
+  },
+  "chart": {
+   "justified": true,
+   "title_zh": "第2a部分两剂量确认ORR",
+   "unit": "%",
+   "figure_source": "Results / Table 3",
+   "values": [
+    {
+     "label_zh": "1.8 mg/kg",
+     "value": 56,
+     "n": "n=41",
+     "source_quote": "The ORR was 56% in the 1.8 mg kg −1 cohort"
+    },
+    {
+     "label_zh": "2.5 mg/kg",
+     "value": 59,
+     "n": "n=39",
+     "source_quote": "59% in the 2.5 mg kg −1 cohort"
+    }
+   ],
+   "note": "描述性数据，未做组间检验。"
+  }
+ },
+ "images": {
+  "mech_raw": "work/r5img/clean/c6-ab-6_mech_raw_r5_clean.png",
+  "mech": "c6-ab-6_mech_r5.png",
+  "card": "c6-ab-6_card_r5.png",
+  "image_model": "mech + card: Grok drawings r5 (supplied by parent run)",
+  "note": "raw backgrounds cleaned (work/r4/clean_r4b.py); QC rules per user decision 2026-10-09"
+ },
+ "card_title": "SEZ6靶向ADC 1期：复发难治SCLC缓解率52%",
+ "card_caption": "赤陶红抗体偶联药物结合绿色肺癌细胞表面",
+ "card_text_meta": {
+  "model": "grok-bot (self)",
+  "card_title_chars": 16,
+  "card_caption_chars": 19
+ },
+ "notes": "≥3级TRAE at 1.8 mg/kg: Abstract 39% vs Results dose list 40%; SEZ6 evaluable n: Fig. 2 legend 38/47, 37/42 vs Results 38/48, 37/44 (flagged in limitations). Discussion calls the study non-randomized although part 2a was randomized; written as the authors state ('总体非随机').",
+ "text_from": "c6-ab-6_final_r5.json (text unchanged)"
+}

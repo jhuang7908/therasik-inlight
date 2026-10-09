@@ -1,0 +1,449 @@
+{
+ "id": "c1-org-5",
+ "round": "r4",
+ "text_from": "c1-org-5_final_r3.json (unchanged in r4; images only)",
+ "drafter_of_edits": "grok-bot (self)",
+ "base_drafter_model": "gpt-5.5-2026-04-23",
+ "source_draft": "work/r3b/c1-org-5/rw_c1-org-5_draft_r3fix2.json",
+ "edits_r3": [
+  "significance[1] last sentence (141->151 字)",
+  "(v4 vs v3, by gpt-5.5) significance[0] reframed, 8 cm wording, results[4], mechanism_proven[0]"
+ ],
+ "status": "published-ready",
+ "status_reasons": [],
+ "preprint": false,
+ "writer_tags": [
+  "肠道类器官",
+  "肠神经系统",
+  "移植成熟",
+  "单细胞转录组",
+  "神经肌肉功能",
+  "支架限域培养"
+ ],
+ "tags_note": "editor related-field tags prepended; writer tags trimmed to 6 (metadata only)",
+ "article": {
+  "tier": "deep",
+  "field": "类器官",
+  "tags": [
+   "动物模型",
+   "肠道类器官",
+   "肠神经系统",
+   "移植成熟",
+   "单细胞转录组",
+   "神经肌肉功能"
+  ],
+  "primary_endpoint_basis": "本文为临床前工程化类器官研究；标题领衔采用摘要与Results一致、且在Fig.1d有统计检验支撑的核心读出：d14 SI CCS移植达到100% engraftment，并与d14 mesentery HIO比较，Fisher精确检验P=9.25×10−7。标题数字“100%”来自Results原句“When transplanted at 14 d, SI CCS achieved 100% engraftment”。提供材料中的图注未展开d14 HIO的绝对百分比，因此不把对照百分比写入标题。",
+  "comparison_design": "非临床研究，原文未声明按组间优效进行效能设计；关键对比以图注统计检验报告。小肠植入率Fig.1d采用Fisher’s exact test，d14 mesentery HIO vs d14 mesentery SI CCS为P=9.25×10−7；尺寸Fig.1f为HIO n=6、SI CCS n=9，Two-tailed Mann–Whitney test；非刺激器官浴Fig.3b为tHIO+ENS n=4、SI CCS n=5、adult human SI n=3，Two-tailed Mann–Whitney test，并明示SI CCS与成人小肠无显著差异；tie in功能读出按Fig.6图注使用Mann–Whitney、ANOVA/Tukey或t检验。",
+  "untested_comparisons": [
+   "摘要中的“up to ten times larger”是概括性尺度表述，正文图注提供尺寸检验但未给出用于十倍计算的成对数值；不作为标题唯一卖点。",
+   "G CCS“improved engraftment and size”在正文为结论性描述，提供材料未列出具体效应量；不用于标题。",
+   "d14 SI CCS神经比例小于d28 HIO+ENS后作者提示可能受解离伪影或外源神经群影响，该解释不写成因果结论。"
+  ],
+  "number_basis_note": "未见摘要与正文在100%植入、8 cm、10周、d14/d28、约40%与超过80%等核心数字上冲突。正文与图标签采用Results/Methods/Figure legend口径；摘要中的“最高大10倍”仅作为摘要概括并注明来源，不与图内数字混用。",
+  "must_cover": [
+   {
+    "id": "m1",
+    "item_zh": "与传统方法相比，CCS产生的类器官最高可大10倍，10周后宽度达8 cm，并提高植入率。",
+    "status": "covered",
+    "covered_by": "摘要称，与传统方法相比，CCS产物最高可大10倍；小肠CCS移植物在10周后宽度可达8 cm，并伴随更高植入率。"
+   },
+   {
+    "id": "m2",
+    "item_zh": "SI CCS在14 d达到可移植并有100%植入率，而既往HIO工作至少需28 d后再做肾包膜或肠系膜移植。",
+    "status": "covered",
+    "covered_by": "与既往HIO至少培养28 d再做肾包膜或肠系膜移植不同，SI CCS在d14已可移植，植入率为100%"
+   },
+   {
+    "id": "m3",
+    "item_zh": "非刺激器官浴收缩中，SI CCS（n=5）与tHIO + ENS（n=4）和成人小肠（n=3）比较，SI CCS与成人小肠无显著差异。",
+    "status": "covered",
+    "covered_by": "非刺激状态下，器官浴比较tHIO + ENS（n=4）、SI CCS（n=5）和成人小肠（n=3）；SI CCS与成人小肠差异不显著。"
+   },
+   {
+    "id": "m4",
+    "item_zh": "CCS构建使用约4000个球体，d0至d5融合，d6取出，培养至d14。",
+    "status": "covered",
+    "covered_by": "约4000个自发球体装入限位槽，d0仍分散，d5融合成统一结构，d6取出并在Matrigel中续培至d14。"
+   },
+   {
+    "id": "m5",
+    "item_zh": "动物设计中，每个常规类器官移植使用1只小鼠，每个CCS类器官移植使用1只大鼠，全研究共用183只动物。",
+    "status": "covered",
+    "covered_by": "动物设计为每个常规类器官移植用1只小鼠、每个CCS移植用1只大鼠，全研究共用183只动物。"
+   },
+   {
+    "id": "m6",
+    "item_zh": "神经肌肉终点为刺激前后60 s的AUC，胆碱能和硝能组分由L-NAME和阿托品顺序相减得到。",
+    "status": "covered",
+    "covered_by": "神经肌肉读出以刺激前后60 s的AUC计量，胆碱能和硝能贡献由L-NAME、阿托品顺序处理后的差值推算。"
+   },
+   {
+    "id": "m7",
+    "item_zh": "移植前，早期祖细胞亚群在d28 HIO + ENS神经簇中约占40%，在d14 SI CCS中超过80%，提示SI CCS ENS更早期。",
+    "status": "covered",
+    "covered_by": "移植前，早期祖细胞亚群占d28 HIO + ENS神经簇约40%，在d14 SI CCS中超过80%。"
+   },
+   {
+    "id": "m8",
+    "item_zh": "CCS方法扩展到小肠以外：10周后C CCS宽度约6 cm，前肠球体置入支架后改善G CCS植入和尺寸。",
+    "status": "covered",
+    "covered_by": "CCS也扩展至结肠和胃：10周后C CCS宽度约6 cm，G CCS植入和尺寸提高。"
+   },
+   {
+    "id": "m9",
+    "item_zh": "作者将d28 HIO移植入小鼠和大鼠以测试宿主体型混杂因素，收集时未见显著尺寸差异。",
+    "status": "covered",
+    "covered_by": "为排除宿主体型，作者把d28 HIO分别移入小鼠和大鼠，收集时未见显著尺寸差异。"
+   },
+   {
+    "id": "m10",
+    "item_zh": "腔内暴露实验中，SI CCS ‘tie in’与sham的TEER无显著差异，但Fig. 6j旁细胞通透性显著降低。",
+    "status": "covered",
+    "covered_by": "在SI CCS“tie in”与sham比较中，TEER无显著差异，但旁细胞通透性显著降低；"
+   },
+   {
+    "id": "m11",
+    "item_zh": "早期小鼠‘tie in’模型虽在5 d观察到连续上皮，但高死亡率限制长期研究。",
+    "status": "covered",
+    "covered_by": "早期小鼠“tie in”虽在5 d见宿主与移植物连续上皮，却因高死亡率限制长期研究；"
+   },
+   {
+    "id": "m12",
+    "item_zh": "作者指出CCS来源ENS的起源仍未确定，尽管神经多样性超过HIO + ENS系统26，是持续研究方向。",
+    "status": "covered",
+    "covered_by": "讨论中作者明确，CCS来源ENS的起源仍未确定，虽其神经多样性超过既往HIO + ENS体系。"
+   }
+  ],
+  "title": "暂限培养使小肠类器官早期移植达到100%植入率",
+  "one_liner": "在人源小肠类器官中，CCS让约4000个球体暂限融合，d14移植达到100%植入，并显著高于d14常规HIO。",
+  "datacard": {
+   "study_type": "开放获取全文的临床前人源hPSC胃肠类器官与异种移植研究",
+   "n": "小肠尺寸HIO n=6、SI CCS n=9；非刺激器官浴tHIO+ENS n=4、SI CCS n=5、成人小肠n=3；全研究动物183只",
+   "control": "常规HIO/HCO/HaGO、HIO+ENS、sham和成人小肠样本",
+   "intervention": "PDMS限位槽内暂限融合；约4000个小肠球体d6取出，续培至d14后移植",
+   "followup": "移植后10周；tie in后12周",
+   "primary_endpoint": "临床前核心读出：d14 SI CCS移植植入率，并与d14常规HIO肠系膜移植比较",
+   "primary_endpoint_result": "SI CCS在d14移植达到100%植入；与d14 mesentery HIO比较，Fisher精确检验P=9.25×10−7",
+   "statistics": "Fisher精确检验、Mann–Whitney、ANOVA/Tukey和t检验用于图示关键比较",
+   "evidence_level": "全文",
+   "check_record": "来源为用户提供的Nature Biomedical Engineering开放获取HTML全文材料；核对范围包括Abstract、Results、Methods、图注和Discussion"
+  },
+  "background": [
+   "人源胃肠类器官可模拟上皮、间质和部分功能，但传统HIO通常以球形单体生长，形状远离肠管；移植前成熟不足、尺度有限，也使后续手术和功能读出受限。结肠和胃类器官的常规培养还常有植入率低、尺寸小的问题。",
+   "另一个瓶颈是ENS。既有assembloid策略需把神经嵴细胞与肠球体分开制备再重组，增加比例和时序控制难度。Poling等把切口放在物理限域：不另加神经细胞，而是让大量球体在长槽中暂时共发育，促成熟。"
+  ],
+  "design": [
+   "研究为开放获取全文的临床前工程化类器官研究。作者用打印模具制备PDMS限位槽。约4000个自发球体装入限位槽，d0仍分散，d5融合成统一结构，d6取出并在Matrigel中续培至d14。随后将SI CCS移植，并与常规HIO、HIO+ENS及成人小肠样本比较。",
+   "动物设计为每个常规类器官移植用1只小鼠、每个CCS移植用1只大鼠，全研究共用183只动物。研究不是临床试验，也未声明按组间优效效能设计；关键比较依赖Fisher、Mann–Whitney、ANOVA或t检验。神经肌肉读出以刺激前后60 s的AUC计量，胆碱能和硝能贡献由L-NAME、阿托品顺序处理后的差值推算。"
+  ],
+  "results": [
+   {
+    "subhead": "移植提前",
+    "text": "与既往HIO至少培养28 d再做肾包膜或肠系膜移植不同，SI CCS在d14已可移植，植入率为100%；与d14肠系膜HIO相比，Fisher精确检验P=9.25×10−7。这一路径把球形单体改成长条限域培养，作者据此将SI CCS定位为更早可进入移植的组织。"
+   },
+   {
+    "subhead": "尺度扩大",
+    "text": "摘要称，与传统方法相比，CCS产物最高可大10倍；小肠CCS移植物在10周后宽度可达8 cm，并伴随更高植入率。尺寸分析纳入HIO n=6、SI CCS n=9，增殖、刷状缘酶和分泌细胞染色支持结构成熟，并可见大片连续上皮。"
+   },
+   {
+    "subhead": "排除体型",
+    "text": "为排除宿主体型，作者把d28 HIO分别移入小鼠和大鼠，收集时未见显著尺寸差异。随后常规类器官主要放入小鼠，CCS主要放入大鼠，在这一基础上分开处理宿主大小和移植物本身效应。"
+   },
+   {
+    "subhead": "神经肌功能",
+    "text": "非刺激状态下，器官浴比较tHIO + ENS（n=4）、SI CCS（n=5）和成人小肠（n=3）；SI CCS与成人小肠差异不显著。EFS可诱发SI CCS收缩，TTX显著降低反应；bethanechol引起剂量依赖收缩，scopolamine诱导放松，所有数据按组织质量归一化。"
+   },
+   {
+    "subhead": "外推与腔暴露",
+    "text": "移植前，早期祖细胞亚群占d28 HIO + ENS神经簇约40%，在d14 SI CCS中超过80%。CCS也扩展至结肠和胃：10周后C CCS宽度约6 cm，G CCS植入和尺寸提高。在SI CCS“tie in”与sham比较中，TEER无显著差异，但旁细胞通透性显著降低；结肠和胃CCS也在器官浴中显示ENS依赖性收缩，区域标志物亦支持组织类型身份。"
+   }
+  ],
+  "mechanism_proven": [
+   "免疫染色在10周SI CCS肌层间看到UCHL1、TUBB3、HuC/HuD阳性神经束，并与XRCC5共定位，支持神经来自人源移植物而非宿主长入；CHAT与NOS1显示兴奋性胆碱能和抑制性硝能神经亚型。",
+   "器官浴EFS诱发SI CCS收缩，TTX显著降低AUC；L-NAME和阿托品顺序抑制显示硝能和胆碱能都参与。bethanechol产生剂量依赖性收缩，scopolamine可放松，证明平滑肌与ENS可耦合也可独立反应，读出均归一化至组织质量。"
+  ],
+  "mechanism_inferred": [
+   "讨论中作者明确，CCS来源ENS的起源仍未确定，虽其神经多样性超过既往HIO + ENS体系。作者推测，限域提高细胞—细胞相互作用和共发育，可能有助于早期祖细胞在移植后的功能能力；这一链条仍是解释而非直接溯源。"
+  ],
+  "limitations": [
+   "早期小鼠“tie in”虽在5 d见宿主与移植物连续上皮，却因高死亡率限制长期研究；原文还指出该模型需要高技能外科、严格饮食控制，且小类器官尺寸限制下游分析。",
+   "宿主体型被专门测试：d28 HIO移入小鼠和大鼠后尺寸无显著差异。此后常规类器官与CCS类器官分别主要放在小鼠和大鼠中，读数应连同这一动物使用策略理解。",
+   "样本量按实验不同而偏小：小肠尺寸为HIO n=6、SI CCS n=9，非刺激器官浴为n=4、n=5、n=3；组织学和免疫荧光多按代表图及重复数呈现。",
+   "讨论中作者明确，CCS来源ENS的起源仍未确定，虽其神经多样性超过既往HIO + ENS体系。原文把该模型定位为继续追踪ENS来源的系统。"
+  ],
+  "significance": [
+   "若仅按本文临床前证据解读，CCS提供的价值不是单一细胞类型，而是把移植时点从传统28 d前移到d14，同时让组织在10周后达到厘米级并保留ENS功能。",
+   "对产业端，本文没有点名公司或管线；更现实的意义是给肠道发育建模、Hirschsprung病等ENS相关疾病模型、以及未来组织替代策略提供可放大的制造路径。患者疗效与长期安全性仍未在人体中得到验证。"
+  ],
+  "citation": "Poling HM, Noël T, Singh A, Fisher GW, Thorner K, Chaturvedi P, et al. Large-scale and innervated functional human gut tissues for transplantation via transient spheroid confinement. Nat Biomed Eng. 2026. https://doi.org/10.1038/s41551-026-01688-6",
+  "data_points": [
+   {
+    "value": "100%",
+    "meaning": "d14 SI CCS移植植入率；标题和导语核心数字",
+    "source_quote": "When transplanted at 14 d, SI CCS achieved 100% engraftment",
+    "location": "Results – Reduction in time to engraftment and enhanced morphometric features"
+   },
+   {
+    "value": "d14",
+    "meaning": "SI CCS达到移植时点；用于导语、设计、结果、图标签",
+    "source_quote": "By d6, these structures were manually removed and re-plated in Matrigel for continued culture until d14",
+    "location": "Results – Implementation of a scaffolding tray for organoid generation"
+   },
+   {
+    "value": "P=9.25×10−7",
+    "meaning": "d14 mesentery HIO与d14 mesentery SI CCS植入率比较的Fisher精确检验P值",
+    "source_quote": "P = 9.25 × 10 −7 for d14 mesentery HIO engraftment rate vs d14 mesentery SI CCS engraftment rate",
+    "location": "Fig. 1 legend"
+   },
+   {
+    "value": "28 d",
+    "meaning": "既往HIO移植前所需培养时间基准",
+    "source_quote": "requiring HIOs to be cultured for at least 28 d before transplantation into the kidney capsule or mesentery",
+    "location": "Results – Reduction in time to engraftment and enhanced morphometric features"
+   },
+   {
+    "value": "约4000个",
+    "meaning": "每个小肠CCS限位槽使用的球体数量",
+    "source_quote": "~4,000 spheroids from spontaneous morphogenesis were used",
+    "location": "Results – Implementation of a scaffolding tray for organoid generation"
+   },
+   {
+    "value": "d0",
+    "meaning": "CCS内球体仍为分散状态的起始时点",
+    "source_quote": "They began as discrete spheroids at d0 that developed into a unified construct by d5",
+    "location": "Results – Implementation of a scaffolding tray for organoid generation"
+   },
+   {
+    "value": "d5",
+    "meaning": "CCS内球体融合成统一结构的时点",
+    "source_quote": "They began as discrete spheroids at d0 that developed into a unified construct by d5",
+    "location": "Results – Implementation of a scaffolding tray for organoid generation"
+   },
+   {
+    "value": "d6",
+    "meaning": "CCS结构从限位槽取出并重铺的时点",
+    "source_quote": "By d6, these structures were manually removed and re-plated in Matrigel",
+    "location": "Results – Implementation of a scaffolding tray for organoid generation"
+   },
+   {
+    "value": "1只小鼠",
+    "meaning": "每个常规类器官移植对应的动物使用量",
+    "source_quote": "One mouse was used per conventional organoid transplantation, and one rat was used per CCS organoid transplantation",
+    "location": "Methods – Animals"
+   },
+   {
+    "value": "1只大鼠",
+    "meaning": "每个CCS类器官移植对应的动物使用量",
+    "source_quote": "One mouse was used per conventional organoid transplantation, and one rat was used per CCS organoid transplantation",
+    "location": "Methods – Animals"
+   },
+   {
+    "value": "183只",
+    "meaning": "全研究动物总数",
+    "source_quote": "Including use in all experiments and those required for breeding, 183 animals were used in the completion of this work",
+    "location": "Methods – Animals"
+   },
+   {
+    "value": "60 s",
+    "meaning": "EFS刺激前后AUC量化窗口",
+    "source_quote": "Responses were quantified as the area under the curve (AUC) for 60 s before and after stimulation",
+    "location": "Methods – Ex vivo neuromuscular function and muscle tone"
+   },
+   {
+    "value": "10倍",
+    "meaning": "摘要概括的CCS类器官相对传统方法最高尺度提升",
+    "source_quote": "yielding organoids that are up to ten times larger, reaching widths of 8 cm after 10 weeks",
+    "location": "Abstract"
+   },
+   {
+    "value": "8 cm",
+    "meaning": "小肠CCS移植物10周后的可达宽度",
+    "source_quote": "yielding organoids that are up to ten times larger, reaching widths of 8 cm after 10 weeks",
+    "location": "Abstract"
+   },
+   {
+    "value": "10周",
+    "meaning": "主要移植物收集和尺度评估时间",
+    "source_quote": "After 10 weeks, SI CCS and HIO grafts were collected",
+    "location": "Results – Reduction in time to engraftment and enhanced morphometric features"
+   },
+   {
+    "value": "HIO n=6",
+    "meaning": "小肠尺寸比较中常规HIO样本量",
+    "source_quote": "Violin plot of HIO ( n = 6) and SI CCS ( n = 9) graft sizes",
+    "location": "Fig. 1 legend"
+   },
+   {
+    "value": "SI CCS n=9",
+    "meaning": "小肠尺寸比较中SI CCS样本量",
+    "source_quote": "Violin plot of HIO ( n = 6) and SI CCS ( n = 9) graft sizes",
+    "location": "Fig. 1 legend"
+   },
+   {
+    "value": "n=4",
+    "meaning": "非刺激器官浴中tHIO + ENS样本量",
+    "source_quote": "average cyclic height of contractile tracings from tHIO + ENS ( n = 4), SI CCS ( n = 5) and adult human SI ( n = 3)",
+    "location": "Fig. 3 legend"
+   },
+   {
+    "value": "n=5",
+    "meaning": "非刺激器官浴中SI CCS样本量",
+    "source_quote": "average cyclic height of contractile tracings from tHIO + ENS ( n = 4), SI CCS ( n = 5) and adult human SI ( n = 3)",
+    "location": "Fig. 3 legend"
+   },
+   {
+    "value": "n=3",
+    "meaning": "非刺激器官浴中成人小肠样本量",
+    "source_quote": "average cyclic height of contractile tracings from tHIO + ENS ( n = 4), SI CCS ( n = 5) and adult human SI ( n = 3)",
+    "location": "Fig. 3 legend"
+   },
+   {
+    "value": "d28",
+    "meaning": "HIO+ENS移植前转录组比较时点",
+    "source_quote": "scRNA-seq was performed on d28 HIO + ENS and d14 SI CCS, their respective stages for transplantation",
+    "location": "Results – The in vitro SI CCS ENS represents an early developmental state"
+   },
+   {
+    "value": "约40%",
+    "meaning": "d28 HIO+ENS神经簇中早期祖细胞亚群比例",
+    "source_quote": "accounted for ~40% of the neural cluster in d28 HIO + ENS but over 80% in d14 SI CCS",
+    "location": "Results – The in vitro SI CCS ENS represents an early developmental state"
+   },
+   {
+    "value": "超过80%",
+    "meaning": "d14 SI CCS神经簇中早期祖细胞亚群比例",
+    "source_quote": "accounted for ~40% of the neural cluster in d28 HIO + ENS but over 80% in d14 SI CCS",
+    "location": "Results – The in vitro SI CCS ENS represents an early developmental state"
+   },
+   {
+    "value": "约6 cm",
+    "meaning": "C CCS在10周后的可达宽度",
+    "source_quote": "After 10 weeks, HCOs and C CCS were collected, with C CCS reaching widths of ~6 cm",
+    "location": "Results – Extending the CCS technique to generate additional gastrointestinal tissue types"
+   },
+   {
+    "value": "5 d",
+    "meaning": "早期小鼠tie in中观察到连续上皮的时间点",
+    "source_quote": "by 5 d we observed the establishment of continuous epithelia between the host and transplanted organoid",
+    "location": "Results – Proof of concept for the clinical applicability of SI CCS"
+   },
+   {
+    "value": "12周",
+    "meaning": "大鼠CCS tie in延长观察周期和图标签扩展读出时间",
+    "source_quote": "allowed for the dietary transition back to chow, enabling extended 12-week studies",
+    "location": "Results – Proof of concept for the clinical applicability of SI CCS"
+   },
+   {
+    "value": "22周",
+    "meaning": "观察到ENS更一致全层整合的较晚移植时间点",
+    "source_quote": "at the 22-week timepoint, a more consistent incorporation was observed throughout the full thickness of the tissue",
+    "location": "Results – Proof of concept for the clinical applicability of SI CCS"
+   },
+   {
+    "value": "2026",
+    "meaning": "论文发表年份",
+    "source_quote": "PUBLICATION DATE: 2026-05-22",
+    "location": "Article metadata"
+   },
+   {
+    "value": "10.1038/s41551-026-01688-6",
+    "meaning": "论文DOI",
+    "source_quote": "DOI: https://doi.org/10.1038/s41551-026-01688-6",
+    "location": "Article metadata"
+   }
+  ],
+  "steps": [
+   "约4000球体装入限位槽",
+   "d0至d5融合成条带",
+   "d6取出，培养至d14",
+   "移植后形成带ENS肠组织"
+  ],
+  "figure_caption": "图示约4000个球体在限位槽内融合，d6取出续培至d14；移植10周后形成厘米级、带人源ENS且可收缩的肠组织。示意图由 AI 生成，依据原文结果绘制，非期刊原图，不代表分子比例",
+  "image_story": {
+   "stages": [
+    {
+     "visual_en": "Pale mint spheroids packed inside long light grey-green confinement lanes of a PDMS tray, viewed as a large close-up.",
+     "source_quote": "~4,000 spheroids from spontaneous morphogenesis were used"
+    },
+    {
+     "visual_en": "A unified elongated gut organoid emerging from the lane, with deep green epithelial lining and mid green mesenchyme.",
+     "source_quote": "They began as discrete spheroids at d0 that developed into a unified construct by d5"
+    },
+    {
+     "visual_en": "A large transplanted elongated SI CCS graft with a central lumen and surrounding neural plexus, placed near a host mesentery.",
+     "source_quote": "SI CCS grafts were significantly larger than HIO grafts, reaching widths of 8 cm with large central lumens"
+    }
+   ],
+   "key_element_en": "elongated SI CCS graft"
+  },
+  "image_subject_en": "A left-to-right process in three stages, drawn large. Stage 1 shows thousands of small pale mint human gut spheroids packed inside long parallel light grey-green PDMS confinement lanes, with a deep green tray rim and soft laboratory lighting. Stage 2 shows the spheroids fused into one elongated mid green intestinal organoid strip with a continuous deep green epithelial tube and pale mint mesenchymal layer, with no mature neural plexus drawn at this stage. Stage 3 shows one very large, solid, boldly filled terracotta #C0492F elongated SI CCS graft with a central lumen, surrounded by deep green smooth muscle bands and pale mint enteric neural plexus fibers, placed beside a muted rat mesentery silhouette. Use a polished semi-realistic 3D biomedical illustration style, no letters, no numbers, no symbols, no plots, no axes. Only the elongated SI CCS graft is terracotta.",
+  "card_subject_en": "A compact card visual centered on one very large, solid, boldly filled terracotta #C0492F elongated SI CCS graft, enlarged as the hero object. The graft has a visible central lumen, a deep green epithelial inner lining, mid green smooth muscle bands, and a delicate pale mint enteric neural plexus wrapping the outside. A few light grey-green confinement-lane fragments sit behind it as context, softly out of focus. Semi-realistic 3D biomedical style, clean background, no letters, no numbers, no symbols. Only the elongated SI CCS graft is terracotta.",
+  "figure_labels": {
+   "heads": [
+    "限域融合",
+    "移植成熟",
+    "神经肌耦合"
+   ],
+   "callouts": [
+    {
+     "t": "约4000球体\n装入限位槽",
+     "stage": 1,
+     "entity_en": "human gut spheroids"
+    },
+    {
+     "t": "d0至d5\n融合成条带",
+     "stage": 1,
+     "entity_en": "spheroids/unified construct"
+    },
+    {
+     "t": "d14移植\n植入率100%",
+     "stage": 2,
+     "entity_en": "elongated intestinal organoid strip"
+    },
+    {
+     "t": "10周后\n宽度可达8 cm",
+     "stage": 3,
+     "entity_en": "elongated SI CCS graft"
+    },
+    {
+     "t": "TTX降低\nEFS收缩",
+     "stage": 3,
+     "entity_en": "enteric neural plexus fibers"
+    },
+    {
+     "t": "tie in术后12周\n较sham通透性降",
+     "stage": 3,
+     "entity_en": "central lumen"
+    }
+   ],
+   "facts": [
+    [
+     "d14移植",
+     "**100%**植入"
+    ],
+    [
+     "10周后",
+     "宽度可达8 cm"
+    ],
+    [
+     "早期祖细胞占神经簇",
+     "d28 HIO+ENS约40%",
+     "d14 SI CCS超80%"
+    ]
+   ],
+   "note": "植入率为d14 SI CCS口径；tie in为扩展读出。示意图由 AI 生成，非期刊原图。"
+  },
+  "chart": {
+   "justified": false,
+   "note": "主要终点有SI CCS 100%和组间P值，但提供材料未包含d14 HIO对照百分比；不绘制数据图。"
+  }
+ },
+ "images": {
+  "mech_raw": "work/r4/clean/c1-org-5_mech_raw_r4c_clean.png",
+  "mech": "c1-org-5_mech_r4c.png",
+  "card": "c1-org-5_card_r4c.png",
+  "card_src": "work/r4/clean/c1-org-5_card_raw_r4c_clean.png (cleanup 232/200/12/6)",
+  "image_model": "mech + card: Grok drawings r4c (supplied by parent run)",
+  "note": "mech strict pass; card raw warm 8.7% -> 1.9% under rule (b)"
+ }
+}

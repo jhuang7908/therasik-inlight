@@ -2,69 +2,138 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>用机器人批量组装 TCR，再让 AlphaFold3 预测它能不能认出抗原 - 前沿追踪</title>
-<meta name="description" content="功能验证后发现，公共数据库里平均只有 56% 的 TCR 真的具有标注的反应性。按来源拆开后波动很大（&lt;10% 到 &gt;95%），提示数据库噪声水平因来源而异。本站写了完整解读。">
-
-<!-- Open Graph -->
-<meta property="og:title" content="用机器人批量组装 TCR，再让 AlphaFold3 预测它能不能认出抗原 - 前沿追踪">
-<meta property="og:description" content="功能验证后发现，公共数据库里平均只有 56% 的 TCR 真的具有标注的反应性。按来源拆开后波动很大（&lt;10% 到 &gt;95%），提示数据库噪声水平因来源而异。本站写了完整解读。">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>合成TCR库规模化验证显示所测VDJdb TCR中平均仅56%复现原注释反应性 - 前沿追踪</title>
+<meta name="description" content="T-RAP合成TCR库经汇集筛选检验VDJdb注释，平均仅56%（n=2,667）复现原反应性；在验证集上tcrdist3与AlphaFold3平均AUROC分别为0.80、0.74。">
+<meta property="og:title" content="合成TCR库规模化验证显示所测VDJdb TCR中平均仅56%复现原注释反应性 - 前沿追踪">
+<meta property="og:description" content="T-RAP合成TCR库经汇集筛选检验VDJdb注释，平均仅56%（n=2,667）复现原反应性；在验证集上tcrdist3与AlphaFold3平均AUROC分别为0.80、0.74。">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://inlight.therasik.com/pages/article/a-trap.html">
-<meta property="og:image" content="https://inlight.therasik.com/img/papers/a-trap.jpg">
+<meta property="og:image" content="https://inlight.therasik.com/img/a-trap_card.webp">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:site_name" content="前沿追踪">
-
-<!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="用机器人批量组装 TCR，再让 AlphaFold3 预测它能不能认出抗原 - 前沿追踪">
-<meta name="twitter:description" content="功能验证后发现，公共数据库里平均只有 56% 的 TCR 真的具有标注的反应性。按来源拆开后波动很大（&lt;10% 到 &gt;95%），提示数据库噪声水平因来源而异。本站写了完整解读。">
-<meta name="twitter:image" content="https://inlight.therasik.com/img/papers/a-trap.jpg">
-
-<!-- Article metadata -->
+<meta name="twitter:title" content="合成TCR库规模化验证显示所测VDJdb TCR中平均仅56%复现原注释反应性 - 前沿追踪">
+<meta name="twitter:description" content="T-RAP合成TCR库经汇集筛选检验VDJdb注释，平均仅56%（n=2,667）复现原反应性；在验证集上tcrdist3与AlphaFold3平均AUROC分别为0.80、0.74。">
+<meta name="twitter:image" content="https://inlight.therasik.com/img/a-trap_card.webp">
 <meta property="article:published_time" content="2026-10-01">
-<meta property="article:section" content="肿瘤免疫">
-<meta property="article:tag" content="肿瘤免疫">
-
-<!-- Canonical is this static page for SEO; redirect to SPA view -->
+<meta property="article:section" content="肿瘤免疫与细胞治疗">
 <link rel="canonical" href="https://inlight.therasik.com/pages/article/a-trap.html">
-<meta http-equiv="refresh" content="0;url=https://inlight.therasik.com/#p-a-trap">
-
-<style>
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  max-width: 600px;
-  margin: 40px auto;
-  padding: 20px;
-  background: #f5f7f6;
-  color: #1d2a27;
-}
-h1 { font-size: 1.5em; line-height: 1.4; }
-.meta { color: #5c6b67; font-size: 0.9em; margin: 1em 0; }
-.redirect { 
-  background: #e8f5f2; 
-  padding: 1em; 
-  border-radius: 8px;
-  margin-top: 2em;
-}
-a { color: #0f6b5c; }
-</style>
+<link rel="icon" type="image/png" href="../../img/favicon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;800&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../../site.css">
 </head>
 <body>
+<nav><div class="navshell"><div class="nav-in">
+  <a class="brand" href="https://inlight.therasik.com/#home">
+    <span class="bmark-wrap"><img src="../../img/logo.png" alt=""></span>
+    <span class="btext"><span class="bn">前沿追踪</span><span class="bs">FRONTIER DIGEST</span></span>
+  </a>
+  <div class="nav-tabs">
+    <a href="https://inlight.therasik.com/#home">首页</a>
+    <a href="https://inlight.therasik.com/#fields">领域</a>
+    <a href="https://inlight.therasik.com/#deals">动态</a>
+    <a href="https://inlight.therasik.com/#archive">存档</a>
+    <a href="https://inlight.therasik.com/#about">关于</a>
+  </div>
+  <a class="navsub" href="https://inlight.therasik.com/#support">订阅</a>
+</div></div></nav>
+<div class="pv-shell pv-art"><div class="wrap">
+<a class="back" href="https://inlight.therasik.com/#home">← 返回首页</a>
 <article>
-<h1>用机器人批量组装 TCR，再让 AlphaFold3 预测它能不能认出抗原</h1>
-<p class="meta">
-肿瘤免疫 · Immunity · 2026-10-01<br>
-Messemaker、Kwee 等（Schumacher 组）
-</p>
-<p>功能验证后发现，公共数据库里平均只有 56% 的 TCR 真的具有标注的反应性。按来源拆开后波动很大（&lt;10% 到 &gt;95%），提示数据库噪声水平因来源而异。本站写了完整解读。...</p>
-<div class="redirect">
-正在跳转至完整文章页面...<br>
-<a href="https://inlight.therasik.com/#p-a-trap">如未自动跳转，请点击此处</a>
+ <div class="ahead">
+  <div class="eyebrow">肿瘤免疫与细胞治疗</div>
+  <div class="zh-title">合成TCR库规模化验证显示所测VDJdb TCR中平均仅56%复现原注释反应性</div>
+  <div class="pv-chips"><span class="pv-chip pri" style="--fc:#6E3F7A">肿瘤免疫与细胞治疗</span><span class="pv-chip rel" style="--fc:#44489A">AI药物设计</span></div>
+ </div>
+ <div class="abody">
+  <aside class="meta">
+   <div><span class="k">文献出处</span><p><b>Immunity</b><br>2026 年 10 月 1 日<br><a href="https://doi.org/10.1016/j.immuni.2026.09.007" target="_blank" rel="noopener">原文</a></p></div>
+   <div><span class="k">主领域</span><p>肿瘤免疫与细胞治疗</p></div>
+  </aside>
+  <div class="amain">
+<div class="pv-hero"><img src="../../img/a-trap_card.webp" width="1600" height="1000" alt="封面示意图"><p class="cap">封面示意：绿色的 T 细胞受体（TCR）结合在浅色 MHC 分子上，红色串珠代表被呈递的肽段，左侧多孔板寓意汇集功能筛选。图片由 AI 生成，非原文图片。</p></div>
+<div class="sec">
+<p><b>T-RAP合成TCR库经汇集筛选检验VDJdb注释，平均仅56%（n=2,667）复现原反应性；在验证集上tcrdist3与AlphaFold3平均AUROC分别为0.80、0.74。</b></p>
+<p>主领域：肿瘤免疫与细胞治疗　相关：AI 药物设计 / TCR-pMHC 反应性预测 / AlphaFold3 / 合成TCR文库（T-RAP） / 汇集功能筛选 / VDJdb 数据质量</p>
 </div>
+<div class="pv-card"><h2>关键数据卡</h2>
+<ul>
+<li><b>研究类型</b>：临床前方法学与计算评估研究（合成TCR库、汇集功能筛选与模型评估；Immunity，同行评审）</li>
+<li><b>样本量 n</b>：功能筛选评估注释反应性的TCR 2,667个；阵列共培养验证77个TCR；多聚体筛选聚焦YLQ与GLC；新抗原检验为1名黑色素瘤患者的197个TIL来源TCR</li>
+<li><b>对照</b>：468个阴性对照TCR（注释于无关表位）；阵列共培养真值；非同源pMHC与未验证TCR作为模型对照</li>
+<li><b>干预/剂量</b>：T-RAP装配VDJdb-10 TCR库（3,693个TCR），导入TCR缺失的CD8αβ+ Jurkat，与表达表位的HLA+ B细胞共培养，分选CD69最高10%；三次技术重复，覆盖500x</li>
+<li><b>主要终点</b>：汇集功能筛选中VDJdb注释TCR复现原注释表位反应性的比例（验证率；CD69高表达富集，PyDESeq2 Wald检验，阈值为468个阴性对照TCR第5百分位P值）</li>
+<li><b>主要终点结果</b>：平均56%（n=2,667；摘要写作约50%）；NLV 28.3%（91/322）至CIN 76.3%（174/228）；以阵列共培养为真值，一致率96.1%，假阴性率3.9%，无假阳性</li>
+<li><b>统计量</b>：PyDESeq2 Wald检验；Mann-Whitney U检验（RTR与新抗原比较）；AUROC与AUC PR评估模型；新抗原检验p=5.5×10⁻³与3.3×10⁻³</li>
+<li><b>证据等级</b>：全文</li>
+<li><b>核对记录</b>：读取Cell Press开放获取HTML全文：Summary、Introduction、Results（五个小节）、Discussion、Limitations of the study、图1–5图注与STAR Methods</li>
+</ul>
+</div>
+<div class="fig paperfig"><div class="fig-scroll"><img src="../../img/a-trap_mech.webp" alt="机制示意图" loading="lazy"></div>
+</div>
+<ul>
+<li>机器人在384孔板装配12,078个TCR</li>
+<li>Jurkat与B细胞共培养，分选CD69最高10%</li>
+<li>平均仅56%的TCR复现原注释反应性</li>
+<li>AlphaFold3 min-PAE评分，平均AUROC 0.74</li>
+</ul>
+<p class="cap">机器人在孔板中逐个装配合成TCR，形成均一文库；文库转入报告细胞与抗原提呈细胞共培养，经汇集功能筛选得到验证TCR（平均仅56%复现原注释）；再以AlphaFold3界面置信度评分。示意图由 AI 生成，依据原文结果绘制，非期刊原图，不代表分子比例</p>
+<div class="sec"><h2>研究背景与待解问题</h2>
+<p>预测TCR对pMHC的反应性是免疫学的长期目标，但进展有限。训练与评估所依赖的VDJdb、IEDB数据来自多种实验方法与样本来源；VDJdb虽有置信分，其价值不明，各库中真正反应的TCR-pMHC所占比例也从未被评估。</p>
+<p>作者推测数据集质量本身可能构成限制。为此，研究先建立可规模化装配合成TCR的平台T-RAP，在统一条件下功能验证数千个已报道的TCR-pMHC配对，再用验证后的数据评估tcrdist3与AlphaFold3，并在一例黑色素瘤患者的新抗原TCR上做零样本检验。</p>
+</div>
+<div class="sec"><h2>研究设计</h2>
+<p>临床前方法学与计算评估研究，无患者分组，各比较为描述性或单独检验，无组间效能设计。VDJdb经过滤保留6,307条条目，取注释到密度最高的10个表位的TCR构建VDJdb-10库（3,693个TCR），其中八个表位（HLA-A*01:01或A*02:01限制）用于筛选。T-RAP在384孔板中逐个装配TCR并保留阵列存档。</p>
+<p>TCR库导入TCR缺失的CD8αβ+ Jurkat细胞，与表达表位及对应HLA的永生化B细胞共培养，分选CD69最高10%的细胞，三次技术重复，库覆盖500x。用PyDESeq2的Wald检验比较各表位CD69+组的富集，P值低于468个阴性对照TCR第5百分位者判为验证，另设零假设判定非验证，其余为不明确。模型以AUROC与AUC PR评估。</p>
+</div>
+<div class="sec"><h2>核心结果</h2>
+<h3>平台与库质量</h3>
+<p>T-RAP在五轮合成中装配了12,078个TCR，其中TCR-s1至TCR-s4共8,385个，覆盖肿瘤来源与设计TCR。VDJdb-10库（3,693个TCR）经UMI-ONT分析，96.2%的TCR成功装配，平均79%的分子序列完全正确，第5与第95百分位的TCR丰度仅相差6.1倍。每个库随机抽取82个装配做Sanger测序，&gt;98%以目标TCR为主导序列。</p>
+<h3>主要读出：注释验证率</h3>
+<p>在功能筛选中，平均仅56%的被评估TCR（n=2,667）复现了原注释反应性（摘要写作约50%，此处用正文口径）。按表位，验证率从NLV的28.3%（91/322）到CIN的76.3%（174/228）；按来源研究，验证率从&lt;10%到&gt;95%。VDJdb自身置信分仅显示中等精确度、低敏感度。以上均为描述性比例，未做组间检验。</p>
+<h3>筛选准确性与读出一致性</h3>
+<p>以77个TCR的阵列共培养为真值，汇集筛选与之一致率为96.1%，假阴性率3.9%，无假阳性；49个TCR在Jurkat的CD69与原代CD8+ T细胞的CD137两种读出下完全一致。GLC与YLQ的多聚体汇集筛选验证率分别为64.7%和41.9%，与功能筛选一致性93%；18个不一致TCR中15个为假阴性（多聚体6个、功能9个），无假阳性，另3个YLQ TCR能结合但不引起信号。</p>
+<h3>两种模型的区分能力</h3>
+<p>tcrdist3在GIL与YLQ表位的AUROC为0.87–0.93，AlphaFold3 min-PAE在LLW与YLQ为0.84–0.88、在CIN与LTD仅0.58–0.61；两者平均AUROC分别为0.80和0.74，但tcrdist3需已知反应性的参考TCR。AlphaFold3 RTR评分对全部8个表位均将验证TCR与同源pMHC配对的排序高于与非同源pMHC配对，GIL与LTD的AUROC为0.83–0.90，CIN与NLV为0.65–0.66。</p>
+<h3>对照与新抗原零样本检验</h3>
+<p>对照中，未验证的YLQ、GLC注释TCR无RTR表现；有PDB结构的TCR评分未高于平均，训练集无结构的LTD与LLW仍有表现。在一名黑色素瘤患者197个TIL TCR中，AlphaFold3零样本对TNFAIP2 P&gt;A（8个反应性TCR）与CCSER2 P&gt;L（11个）的AUROC为0.79（p=5.5×10⁻³）与0.76（p=3.3×10⁻³），AUC PR为0.20（随机0.04）与0.28（随机0.06）。</p>
+</div>
+<div class="sec"><h2>机制解读</h2>
+<p><b>原文实验证明：</b>在阵列检测的77个TCR中，汇集筛选未见假阳性，另18个不一致TCR的个体检测亦未见假阳性；功能信号与多聚体结合的一致性为93%，因此低验证率不能简单归因于读出方式。在验证集中，tcrdist3与AlphaFold3 min-PAE均可区分验证与非验证TCR（平均AUROC分别0.80、0.74）。</p>
+<p>对照实验中，未验证的YLQ、GLC注释TCR没有RTR表现；有PDB复合物结构的TCR并无高于平均的RTR，LTD与LLW训练集无结构仍有表现，不支持数据泄漏为成因。</p>
+<p><b>作者推测：</b>作者推测，VDJdb错误可能来自多聚体非特异结合与双TCRα细胞的α链误判；只结合不信号的3个YLQ TCR可能与反向对接或缺乏catch bond有关。AlphaFold3表现可能受模型准确性、评分准确性、模型相关性三因素限制；两个表位上多聚体预测未优于信号预测，作者据此认为力诱导构象不太可能是主因。</p>
+</div>
+<div class="sec"><h2>局限与不确定</h2>
+<ul>
+<li>TCRvdb仅覆盖八个研究最充分的病毒表位，限于HLA-A*01:01与A*02:01，并在Jurkat报告细胞中测定；作者指出需扩展到更多表位。</li>
+<li>新抗原检验仅来自一名患者的197个TIL TCR（反应性8个与11个），AUC PR为0.20与0.28，虽高于随机的0.04与0.06，绝对水平仍低；作者也指出AlphaFold3性能需进一步提高才能广泛用于临床，CIN与LTD的AUROC仅0.58–0.61。</li>
+<li>阵列库的均一性比汇集装配（Rootpath、TCRAFT）约高7.5倍，但汇集法可不借助机器人生成更大的库，多样性与灵敏度需权衡；验证集含3.9%假阴性率，使第一类任务的性能被略微低估；tcrdist3与AlphaFold3的平均AUROC未做正式比较。</li>
+</ul>
+</div>
+<div class="sec"><h2>临床/产业意义</h2>
+<p>若这些结果在更多表位与HLA背景中成立，公共TCR数据库中相当比例的注释可能需在统一条件下重新验证，此前对预测模型性能的估计也可能偏低。不同来源研究的验证率差异很大，提示数据质量本身会影响对模型的评价。</p>
+<p>TCRvdb可作为评估与改进模型的验证集，T-RAP可仅凭序列装配任意TCR库。若结构预测经进一步改进，或可为患者特异性新抗原TCR提供初筛；但目前仅有一名患者的零样本检验，尚非临床验证。VDJdb的置信分仅显示中等精确度，提示其之外仍需标准化验证。</p>
+</div>
+<div class="sec"><h2>作者、出处与核对</h2>
+<p>Messemaker M, Kwee BPY, Moravec Ž, Paauw Sd, Urbanus J, Álvarez-Salmoral D, et al. Functional evaluation of TCR-pMHC pairs at scale allows in silico TCR reactivity prediction. Immunity. 2026. <a href="https://doi.org/10.1016/j.immuni.2026.09.007" target="_blank" rel="noopener">https://doi.org/10.1016/j.immuni.2026.09.007</a></p>
+<p>证据等级：全文；核对记录：读取Cell Press开放获取HTML全文：Summary、Introduction、Results（五个小节）、Discussion、Limitations of the study、图1–5图注与STAR Methods</p>
+</div>
+  </div>
+ </div>
 </article>
-<script>
-window.location.replace("https://inlight.therasik.com/#p-a-trap");
-</script>
+</div></div>
+<footer>
+  <div class="footshell"><div class="foot-in">
+    <div class="fbrand">
+      <b>前沿追踪</b>
+      <p>TheraSik · 启曜生科 出品。九个领域的前沿进展与商业化动态，中文整理。</p>
+    </div>
+    <div class="footnav">
+      <a href="https://inlight.therasik.com/#home">首页</a><a href="https://inlight.therasik.com/#fields">领域</a><a href="https://inlight.therasik.com/#deals">商业化动态</a><a href="https://inlight.therasik.com/#archive">存档</a><a href="https://inlight.therasik.com/#about">关于</a><a href="https://inlight.therasik.com/#support">订阅</a>
+    </div>
+    <p class="footmail">广告、赞助、纠错都写 <a href="mailto:contact@therasik.com">contact@therasik.com</a></p>
+  </div></div>
+</footer>
 </body>
 </html>

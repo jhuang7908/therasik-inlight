@@ -1,0 +1,601 @@
+{
+ "id": "c3-io-4",
+ "final_version": 3,
+ "drafter_model": "gpt-5.5-2026-04-23",
+ "drafter_models_per_version": {
+  "1": "gpt-5.5-2026-04-23",
+  "2": "gpt-5.5-2026-04-23",
+  "3": "gpt-5.5-2026-04-23"
+ },
+ "verifier_model": "gpt-5.5-2026-04-23",
+ "mustcover_frozen_by": "claude-sonnet-5-5",
+ "selected_from_versions": [
+  1,
+  2,
+  3
+ ],
+ "remaining_failures_n": 0,
+ "remaining_failures": [],
+ "status": "published-ready",
+ "status_reasons": [],
+ "preprint": false,
+ "tags_note": "editor related-field tags prepended; writer tags trimmed to 6 (metadata only)",
+ "writer_tags": [
+  "T细胞耗竭",
+  "IL-2R-STAT5",
+  "CRISPR筛选",
+  "p300增强子",
+  "PD-L1阻断"
+ ],
+ "article": {
+  "tier": "deep",
+  "field": "肿瘤免疫与细胞治疗",
+  "tags": [
+   "T细胞耗竭",
+   "IL-2R-STAT5",
+   "CRISPR筛选",
+   "p300增强子",
+   "PD-L1阻断"
+  ],
+  "primary_endpoint_basis": "临床前研究无方案预设主要终点。本文把摘要与正文一致、且由筛选与验证实验反复支持的核心读出作为主要终点：ZMYND8缺失使耗竭CD8+T细胞偏向效应样状态并抑制终末耗竭，同时增强IL-2R–STAT5信号。依据包括摘要“targeting ZMYND8 in CD8+ T cells promoted both intermediate exhausted T cells and killer cell lectin-like receptor-expressing exhausted T cells”和正文“Flow cytometry analysis validated that ZMYND8 deficiency increased numbers of effector-like cells and reduced Tex term cells at multiple time points after infection”。标题未使用未检验组间数值，也未使用非主要终点数字作卖点。",
+  "comparison_design": "这是小鼠慢性感染、肿瘤模型、人源体外体系和组学筛选组成的临床前研究，不涉及临床试验效能设计。关键实验均按图注给出统计检验：Fig.2 c–h用two-tailed unpaired Student’s t-test，Fig.2 j–m用two-way ANOVA；Fig.3 b–e、g–i用two-tailed unpaired Student’s t-test，j–l用one-way ANOVA；Fig.4 f用two-way ANOVA，g–i用one-way ANOVA；Fig.5 f用Student’s t-test，g–i、k–p用two-way ANOVA，生存曲线在Methods中说明用log-rank检验。",
+  "untested_comparisons": [
+   "公共HIV、黑色素瘤、皮肤癌、结直肠癌队列中的ZMYND8表达或签名与耗竭/治疗响应为相关性分析，不写成因果。",
+   "“组合治疗相对任一单药更好”的肿瘤叙述按原文两因素ANOVA和生存分析语气写，不在标题中作为优效结论。",
+   "ZMYND8缺失单独降低病毒载量被正文称为modest reduction，不在标题中放大。",
+   "公共数据集中ZMYND8活性与IL-2或ICB反应负相关，不作为机制证明。"
+  ],
+  "number_basis_note": "材料未显示摘要与正文核心数字口径冲突。图和正文均采用Results/Methods口径；没有把缺少具体数值的图中柱高自行读数或换算。",
+  "must_cover": [
+   {
+    "id": "m1",
+    "item_zh": "体内scCRISPR筛选中，Zmynd8位列效应样细胞顶级负调控因子和Tex term正调控因子；bulk CRISPR确认其为顶级命中。",
+    "status": "covered",
+    "covered_by": "Zmynd8位列效应样细胞的顶级负调控因子、Tex term的正调控因子"
+   },
+   {
+    "id": "m2",
+    "item_zh": "表观遗传CRISPR库覆盖91个表观遗传因子和9个已知转录因子，每基因3条sgRNA、30条非靶向对照、共330条sgRNA；体内scCRISPR在Cas9 P14、LCMV Cl13、28 dpi读出，检出326/330条sgRNA。",
+    "status": "covered",
+    "covered_by": "库含91个表观遗传因子、9个已知转录因子、每基因3条sgRNA和30条非靶向对照"
+   },
+   {
+    "id": "m3",
+    "item_zh": "双色转移系统将sgZmynd8（Ametrine）和sgNTC spike（GFP）P14细胞按1:1共同转入同一宿主；频率、gMFI和数量相对spike和转移前输入比例归一化，以控制宿主差异。",
+    "status": "covered",
+    "covered_by": "双色转移把Ametrine标记的sgZmynd8 P14与GFP标记的sgNTC spike按1:1混合"
+   },
+   {
+    "id": "m4",
+    "item_zh": "ZMYND8缺失P14细胞在多个时间点累积为效应样细胞（Tex int和Tex KLR），Tex term减少；由流式和scRNA-seq验证，并由独立sgRNA与naive细胞Cas9-RNP编辑复现。",
+    "status": "covered",
+    "covered_by": "ZMYND8缺失使P14细胞选择性累积为Tex int和Tex KLR"
+   },
+   {
+    "id": "m5",
+    "item_zh": "ZMYND8是筛选中STAT5活性的顶级负调控因子；ZMYND8缺失细胞STAT5CA Up签名上升、STAT5CA Down签名下降。",
+    "status": "covered",
+    "covered_by": "筛选还把ZMYND8列为STAT5活性的顶级负调控因子"
+   },
+   {
+    "id": "m6",
+    "item_zh": "ZMYND8缺失单药抗病毒获益真实但有限；ex vivo和in vivo gp33靶细胞杀伤改善，但病毒负荷仅小幅下降。",
+    "status": "covered",
+    "covered_by": "抗病毒读出显示单独删除ZMYND8能提高gp33靶细胞杀伤"
+   },
+   {
+    "id": "m7",
+    "item_zh": "ZMYND8缺失P14细胞联合IL-2治疗（30–35 dpi每日rhIL-2）较任一单药降低病毒载量，也提高体内杀伤并进一步扩增效应样和Tex KLR细胞。",
+    "status": "covered",
+    "covered_by": "IL-2在30–35 dpi每日给药、共6次"
+   },
+   {
+    "id": "m8",
+    "item_zh": "上位性对照：共删除STAT5B逆转ZMYND8缺失导致的效应样和Tex KLR累积，也逆转GZMA/GZMB/IFNγ和TOX表型；共删除CD25或CD122效果大体类似。",
+    "status": "covered",
+    "covered_by": "共删除STAT5B逆转了ZMYND8缺失带来的效应样和Tex KLR累积，也逆转GZMA、GZMB、IFNγ和TOX表型"
+   },
+   {
+    "id": "m9",
+    "item_zh": "CUT&RUN发现2,863个ZMYND8核心结合位点，其中IL-2–STAT5信号为最富集通路（含Il2ra和Il2rb）；ZMYND8与H3K4me1/H3K27Ac活性增强子重叠，并与p300共占位。",
+    "status": "covered",
+    "covered_by": "CUT&RUN定义了2,863个ZMYND8核心结合峰"
+   },
+   {
+    "id": "m10",
+    "item_zh": "共删除p300阻断ZMYND8缺失诱导的效应样细胞增加，校正Tex prog/Tex term减少，并逆转CD25和CD122升高，定义ZMYND8–p300轴控制IL-2R表达。",
+    "status": "covered",
+    "covered_by": "共删除p300阻断了ZMYND8缺失诱导的效应样和Tex KLR增加，并校正Tex prog或Tex term减少"
+   },
+   {
+    "id": "m11",
+    "item_zh": "B16-gp33荷瘤小鼠中，ZMYND8缺失P14细胞降低肿瘤负荷并延长生存；与IL-2或后续抗PD-L1联用优于任一单药，pmel细胞在B16F10肿瘤中类似。",
+    "status": "covered",
+    "covered_by": "在B16-gp33模型中，ZMYND8缺失P14降低肿瘤负荷并延长生存"
+   },
+   {
+    "id": "m12",
+    "item_zh": "作者说明研究发现能否外推到慢性LCMV感染和黑色素瘤之外仍需调查。",
+    "status": "covered",
+    "covered_by": "作者也明示，慢性LCMV感染和黑色素瘤之外的适用性仍待检验"
+   }
+  ],
+  "title": "靶向ZMYND8重塑小鼠耗竭T细胞并增强免疫治疗反应",
+  "one_liner": "在LCMV与黑色素瘤模型中，靶向ZMYND8使P14细胞偏向效应样耗竭状态，并增强杀伤与免疫治疗反应。",
+  "datacard": {
+   "study_type": "临床前机制研究；体内CRISPR筛选、小鼠慢性感染与黑色素瘤模型、人CD8+T细胞体外验证",
+   "n": "体内scCRISPR筛选检出19,032个P14细胞；效应样/Tex term验证n=7/组、Tex KLR验证n=9/组；肿瘤治疗n=5–8/组",
+   "control": "sgNTC、同宿主GFP spike细胞、PBS、IgG同型对照、单药治疗组",
+   "intervention": "Zmynd8/ZMYND8靶向sgRNA或Cas9-RNP；rhIL-2；抗PD-L1；部分上位性实验共删除STAT5B、CD25、CD122或p300",
+   "followup": "LCMV实验多在7、21、28、36或90 dpi读出；肿瘤体积每2天测量",
+   "primary_endpoint": "临床前核心读出：ZMYND8缺失后耗竭CD8+T细胞向效应样Tex int/Tex KLR而非Tex term分化，并伴随IL-2R–STAT5信号增强",
+   "primary_endpoint_result": "体内筛选中Zmynd8为效应样细胞顶级负调控因子、Tex term正调控因子；流式在多个时间点验证效应样细胞增加、Tex term减少；p300共删除阻断该效应",
+   "statistics": "非临床效能设计；按图注使用Student’s t检验、one-way或two-way ANOVA、Fisher精确检验、Wilcoxon秩和检验和log-rank检验",
+   "evidence_level": "全文",
+   "check_record": "读到Nature OA全文的Abstract、Results、Methods、图注、Discussion与Limitations；来源编号DOI 10.1038/s41586-026-11059-5"
+  },
+  "background": [
+   "慢性感染和肿瘤会让CD8+T细胞进入耗竭程序：高亲和力IL-2受体亚基下降，STAT5激活不足，细胞从祖细胞样耗竭状态走向终末耗竭，而不是形成更具杀伤力的效应样群体。免疫检查点阻断可短暂推动效应样细胞，但终末化和信号衰减仍限制疗效。",
+   "Wang等在Nature追问一个上游问题：持续抗原刺激如何通过表观遗传机制压低IL-2R–STAT5轴。研究切口不是直接加细胞因子，而是在体内耗竭T细胞中筛选染色质调控因子，寻找能把Tex KLR等效应样状态从终末耗竭中释放出来的刹车分子。"
+  ],
+  "design": [
+   "作者先在Cas9 P14细胞中做体内scCRISPR和bulk CRISPR筛选。库含91个表观遗传因子、9个已知转录因子、每基因3条sgRNA和30条非靶向对照，共330条sgRNA；P14细胞转入小鼠后感染LCMV Cl13，在28 dpi读出，scCRISPR检出326条sgRNA，并注释出4类耗竭状态。",
+   "后续验证采用双色转移和单色治疗体系。双色转移把Ametrine标记的sgZmynd8 P14与GFP标记的sgNTC spike按1:1混合，转入同一宿主；频率、gMFI和细胞数相对spike及转移前输入比例归一化，以降低宿主差异。该研究为临床前比较，未按临床试验方式设计组间效能。"
+  ],
+  "results": [
+   {
+    "subhead": "筛选锁定ZMYND8",
+    "text": "在28 dpi的体内筛选中，4类耗竭状态被注释为Tex prog、Tex int、Tex KLR和Tex term。Zmynd8位列效应样细胞的顶级负调控因子、Tex term的正调控因子；bulk CRISPR又确认其为效应样相对Tex term的顶级命中。另一个IL-2信号筛选显示，削弱IL-2信号会减少效应样和总P14，解除负调控则增加这些细胞。"
+   },
+   {
+    "subhead": "命运偏向效应样",
+    "text": "scRNA-seq与流式验证显示，ZMYND8缺失使P14细胞选择性累积为Tex int和Tex KLR，并减少Tex term；这一变化跨多个时间点出现。3条独立sgRNA中，g1和g2效应明显，g3较弱；naive P14的Cas9-RNP编辑也复现该方向。90 dpi仍见Tex KLR增加，多组织方向一致。"
+   },
+   {
+    "subhead": "抗病毒增强有限",
+    "text": "抗病毒读出显示单独删除ZMYND8能提高gp33靶细胞杀伤：ex vivo各耗竭亚群杀伤增强，in vivo也更快清除gp33脉冲脾细胞。但病毒负荷仅小幅下降，作者称为modest reduction，说明单一靶向并未完全恢复慢性感染控制。"
+   },
+   {
+    "subhead": "与IL-2协同",
+    "text": "IL-2在30–35 dpi每日给药、共6次，并在36 dpi评估体内杀伤和细胞状态。接受ZMYND8缺失P14加IL-2的小鼠，病毒载量低于任一单药，3 h体内杀伤更强；细胞层面，组合进一步增加效应样细胞和Tex KLR，并减少Tex term，符合释放IL-2响应的解释。"
+   },
+   {
+    "subhead": "肿瘤与ICB扩展",
+    "text": "在B16-gp33模型中，ZMYND8缺失P14降低肿瘤负荷并延长生存；与IL-2联合进一步改善控制和生存。pmel细胞在B16F10中方向一致。CD19 CAR T模型中，ZMYND8缺失也提高CD25、CD122和p-STAT5，并降低TOX。抗PD-L1实验中，ZMYND8缺失维持CD25和p-STAT5升高，联合治疗改善肿瘤控制、P14浸润和生存。"
+   }
+  ],
+  "mechanism_proven": [
+   "筛选还把ZMYND8列为STAT5活性的顶级负调控因子；ZMYND8缺失细胞中STAT5CA Up签名升高、STAT5CA Down签名降低。IL-2刺激后，鼠和人CD8+T细胞的p-STAT5均上升；CD25和CD122也增加，提示ZMYND8限制IL-2R–STAT5信号。",
+   "CUT&RUN定义了2,863个ZMYND8核心结合峰，IL-2–STAT5信号为最富集通路，包含Il2ra和Il2rb。ZMYND8结合H3K4me1/H3K27Ac活性增强子，并与p300共占位；共删除STAT5B逆转了ZMYND8缺失带来的效应样和Tex KLR累积，也逆转GZMA、GZMB、IFNγ和TOX表型，CD25或CD122共删除效果大体类似。共删除p300阻断了ZMYND8缺失诱导的效应样和Tex KLR增加，并校正Tex prog或Tex term减少、逆转CD25和CD122升高。"
+  ],
+  "mechanism_inferred": [
+   "作者推测，持续TCR刺激诱导ZMYND8表达，形成一种表观遗传反馈：signal 1的慢性抗原刺激通过ZMYND8压制signal 3的IL-2信号，使细胞更易走向终末耗竭。公共患者数据只支持ZMYND8表达或签名与耗竭、ICB反应的相关性，不能单独证明患者内因果。"
+  ],
+  "limitations": [
+   "第一，外推边界清楚。核心因果验证主要来自LCMV Cl13、B16-gp33和B16F10黑色素瘤模型，以及健康供者来源人CD8+T细胞体外慢性刺激；作者也明示，慢性LCMV感染和黑色素瘤之外的适用性仍待检验。",
+   "第二，终点层级仍限于临床前表型和模型疗效。流式验证示例为效应样/Tex term的n=7/组和Tex KLR的n=9/组，肿瘤治疗按Methods为5–8只/组；这些数据来自动物和体外体系，不能替代患者中的剂量、持久性和疗效终点。",
+   "第三，方法层面，肿瘤实验依赖B16-gp33和B16F10等细胞系；Methods明确细胞系未独立认证或支原体检测。肿瘤生长曲线每2天测量，伦理上限为3,000 mm3或≤20%体重，这界定了动物读出边界。"
+  ],
+  "significance": [
+   "如果后续能在更多肿瘤类型和工程化T细胞体系中复现，ZMYND8可成为一种“细胞内解除刹车”的候选靶点：它不只是提高单个效应分子，而是把耗竭T细胞的命运从Tex term拉向Tex KLR等效应样状态，并增强IL-2R–STAT5可响应性。",
+   "对细胞治疗而言，结果提示可在P14或pmel等抗原特异细胞中编辑ZMYND8，并与IL-2或PD-L1阻断配合；CD19 CAR T部分仅显示IL-2R–STAT5、TOX和NKG2D等表型。目前证据仍限于临床前体系，不能解读为患者疗效已被验证。"
+  ],
+  "citation": "Wang Y, Shi H, Chapman NM, KC A, Sun R, Song H, et al. Targeting ZMYND8 unleashes IL-2 signalling to override T cell exhaustion. Nature. 2026 Sep 23. doi: https://doi.org/10.1038/s41586-026-11059-5",
+  "data_points": [
+   {
+    "value": "ZMYND8",
+    "meaning": "本文研究的染色质阅读器靶点",
+    "source_quote": "the chromatin reader ZMYND8 antagonizes IL-2R–STAT5 signals",
+    "location": "Abstract"
+   },
+   {
+    "value": "IL-2",
+    "meaning": "导语和机制中的细胞因子信号",
+    "source_quote": "ZMYND8 antagonizes IL-2R–STAT5 signals to restrain effector-like states",
+    "location": "Abstract"
+   },
+   {
+    "value": "CD8+",
+    "meaning": "研究对象为CD8+T细胞",
+    "source_quote": "targeting ZMYND8 in CD8 + T cells promoted both intermediate exhausted T cells",
+    "location": "Abstract"
+   },
+   {
+    "value": "STAT5",
+    "meaning": "ZMYND8限制的下游信号分子",
+    "source_quote": "ZMYND8 antagonizes IL-2R–STAT5 signals to restrain effector-like states",
+    "location": "Abstract"
+   },
+   {
+    "value": "P14",
+    "meaning": "LCMV抗原特异性TCR转基因CD8+T细胞模型",
+    "source_quote": "we applied complementary in vivo single-cell CRISPR (scCRISPR) and bulk CRISPR screens in Cas9-expressing P14 cells",
+    "location": "Results: Tex epigenetic gene regulatory networks"
+   },
+   {
+    "value": "Cas9",
+    "meaning": "体内筛选和编辑体系使用Cas9表达细胞/小鼠",
+    "source_quote": "bulk CRISPR screens in Cas9-expressing P14 cells",
+    "location": "Results: Tex epigenetic gene regulatory networks"
+   },
+   {
+    "value": "LCMV Cl13",
+    "meaning": "慢性病毒感染模型",
+    "source_quote": "P14 cells, which are antigen-specific CD8 + T cells that respond to chronic lymphocytic choriomeningitis virus (LCMV) clone 13 (Cl13) infection",
+    "location": "Results: Tex epigenetic gene regulatory networks"
+   },
+   {
+    "value": "28 dpi",
+    "meaning": "筛选读出时间点",
+    "source_quote": "followed by LCMV Cl13 infection and analysis at 28 days post-infection (dpi)",
+    "location": "Results: Tex epigenetic gene regulatory networks"
+   },
+   {
+    "value": "91",
+    "meaning": "CRISPR库中的表观遗传因子数",
+    "source_quote": "resulting in a total of 91 epigenetic factors",
+    "location": "Results: Tex epigenetic gene regulatory networks"
+   },
+   {
+    "value": "9",
+    "meaning": "库中已知调控T细胞耗竭分化的转录因子数",
+    "source_quote": "Nine transcription factors known to regulate T ex differentiation were also included in the library",
+    "location": "Results: Tex epigenetic gene regulatory networks"
+   },
+   {
+    "value": "3 sgRNAs",
+    "meaning": "每个基因的sgRNA数量",
+    "source_quote": "contained 3 sgRNAs per gene and 30 non-targeting control sgRNAs",
+    "location": "Results: Tex epigenetic gene regulatory networks"
+   },
+   {
+    "value": "30",
+    "meaning": "非靶向对照sgRNA数量",
+    "source_quote": "contained 3 sgRNAs per gene and 30 non-targeting control sgRNAs",
+    "location": "Results: Tex epigenetic gene regulatory networks"
+   },
+   {
+    "value": "330",
+    "meaning": "CRISPR库sgRNA总数",
+    "source_quote": "Of the 330 total sgRNAs in the library, 326 were detected in the scCRISPR screen",
+    "location": "Results: Tex epigenetic gene regulatory networks"
+   },
+   {
+    "value": "326",
+    "meaning": "scCRISPR筛选中检出的sgRNA数",
+    "source_quote": "Of the 330 total sgRNAs in the library, 326 were detected in the scCRISPR screen",
+    "location": "Results: Tex epigenetic gene regulatory networks"
+   },
+   {
+    "value": "4",
+    "meaning": "UMAP中注释的耗竭T细胞状态数量",
+    "source_quote": "Four clusters were identified and annotated as Tex prog , Tex int , Tex KLR and Tex term clusters",
+    "location": "Results: Tex epigenetic gene regulatory networks"
+   },
+   {
+    "value": "1:1",
+    "meaning": "双色转移中实验细胞与spike对照细胞混合比例",
+    "source_quote": "were mixed at a 1:1 ratio with those transduced with sgNTC labelled with GFP (spike)",
+    "location": "Methods: Adoptive T cell transfer"
+   },
+   {
+    "value": "g1",
+    "meaning": "独立Zmynd8 sgRNA之一",
+    "source_quote": "P14 cells expressing sg Zmynd8 .g1 and sg Zmynd8 .g2 showed marked increases",
+    "location": "Results: ZMYND8 impedes effector-like state"
+   },
+   {
+    "value": "g2",
+    "meaning": "独立Zmynd8 sgRNA之一；多实验默认Zmynd8向导",
+    "source_quote": "Unless otherwise indicated in the text, the guides used for targeting Zmynd8 , ZMYND8 and Ep300 in all experiments were sg Zmynd8 .g2, sg ZMYND8 .g1 and sg Ep300 .g2, respectively.",
+    "location": "Methods: Naive T cell isolation and viral transduction"
+   },
+   {
+    "value": "g3",
+    "meaning": "效应较弱的独立Zmynd8 sgRNA",
+    "source_quote": "with sg Zmynd8 .g3 exerting similar, albeit less pronounced, effects",
+    "location": "Results: ZMYND8 impedes effector-like state"
+   },
+   {
+    "value": "gp33",
+    "meaning": "体内外杀伤实验中的LCMV靶抗原肽",
+    "source_quote": "splenocytes pulsed with LCMV epitope glycoprotein 33–41 (gp33) peptide",
+    "location": "Results: ZMYND8 loss enhances antiviral immunity"
+   },
+   {
+    "value": "30–35 dpi",
+    "meaning": "慢性LCMV中IL-2治疗给药窗口",
+    "source_quote": "rhIL-2) (1.5 × 10 4 IU per mouse; National Cancer Institute) was injected intraperitoneally into LCMV Cl13-infected mice once daily from 30–35 dpi",
+    "location": "Methods: In vivo administration of biologics in LCMV Cl13-infected mice"
+   },
+   {
+    "value": "6",
+    "meaning": "慢性LCMV中IL-2每日注射总次数",
+    "source_quote": "once daily from 30–35 dpi for a total of 6 daily injections",
+    "location": "Methods: In vivo administration of biologics in LCMV Cl13-infected mice"
+   },
+   {
+    "value": "3 h",
+    "meaning": "体内杀伤实验转移靶细胞后的分析时间",
+    "source_quote": "followed by analysis of in vivo cytotoxicity against these splenocytes after 3 h",
+    "location": "Methods: Ex vivo and in vivo killing assays"
+   },
+   {
+    "value": "STAT5B",
+    "meaning": "上位性验证中共删除的IL-2信号分子",
+    "source_quote": "Co-deletion of STAT5B reversed the increases in effector-like and Tex KLR cell accumulation",
+    "location": "Results: ZMYND8 antagonizes IL-2 signalling"
+   },
+   {
+    "value": "GZMA/GZMB/IFNγ",
+    "meaning": "STAT5B共删除逆转的效应分子表型",
+    "source_quote": "as well as the enhanced expression of GZMA, GZMB and IFNγ",
+    "location": "Results: ZMYND8 antagonizes IL-2 signalling"
+   },
+   {
+    "value": "CD25",
+    "meaning": "IL-2Rα，ZMYND8/p300轴调控的受体亚基",
+    "source_quote": "Co-deletion of p300 also reversed the increased CD25 and CD122 expression",
+    "location": "Results: ZMYND8 limits p300 activation of IL-2R"
+   },
+   {
+    "value": "CD122",
+    "meaning": "IL-2Rβ，ZMYND8/p300轴调控的受体亚基",
+    "source_quote": "Co-deletion of p300 also reversed the increased CD25 and CD122 expression",
+    "location": "Results: ZMYND8 limits p300 activation of IL-2R"
+   },
+   {
+    "value": "2,863",
+    "meaning": "CUT&RUN定义的ZMYND8核心结合峰数量",
+    "source_quote": "Among core ZMYND8 binding sites (2,863 peaks in total), IL-2–STAT5 signalling was the most enriched pathway",
+    "location": "Results: ZMYND8 limits p300 activation of IL-2R"
+   },
+   {
+    "value": "H3K4me1/H3K27Ac",
+    "meaning": "与ZMYND8结合位点重叠的活性增强子组蛋白标记",
+    "source_quote": "ZMYND8 binding on Il2ra and Il2rb extensively overlapped with H3K4me1 and H3K27Ac-bound regions",
+    "location": "Results: ZMYND8 limits p300 activation of IL-2R"
+   },
+   {
+    "value": "p300",
+    "meaning": "与ZMYND8共占位并被其抑制的组蛋白乙酰转移酶",
+    "source_quote": "p300 and ZMYND8 co-occupied enhancer regions on Il2ra and Il2rb",
+    "location": "Results: ZMYND8 limits p300 activation of IL-2R"
+   },
+   {
+    "value": "B16-gp33",
+    "meaning": "表达gp33的黑色素瘤模型",
+    "source_quote": "in B16F10 tumours expressing gp33 (B16-gp33)",
+    "location": "Results: ZMYND8 loss improves IL-2 immunotherapy"
+   },
+   {
+    "value": "B16F10",
+    "meaning": "pmel细胞验证使用的黑色素瘤模型",
+    "source_quote": "ZMYND8-deficient pmel cells (which recognize an endogenous B16F10 melanoma antigen)",
+    "location": "Results: ZMYND8 loss improves IL-2 immunotherapy"
+   },
+   {
+    "value": "PD-L1",
+    "meaning": "免疫检查点阻断对象",
+    "source_quote": "the combination of ZMYND8-deficient P14 cells with PD-L1 blockade improved tumour control",
+    "location": "Results: ZMYND8 deletion enhances ICB therapy"
+   },
+   {
+    "value": "19,032",
+    "meaning": "通过scCRISPR质量过滤用于下游分析的P14细胞数",
+    "source_quote": "A total of 19,032 P14 cells passed quality filtering and were used for downstream analysis",
+    "location": "Methods: In vivo single-cell and bulk CRISPR screening"
+   },
+   {
+    "value": "n=7/组",
+    "meaning": "效应样和Tex term细胞验证样本量",
+    "source_quote": "effector-like and Tex term cells ( n = 7 per group) ( c )",
+    "location": "Fig. 2 caption"
+   },
+   {
+    "value": "n=9/组",
+    "meaning": "Tex KLR细胞验证样本量",
+    "source_quote": "Tex KLR cells ( n = 9 per group) ( d ) among P14 cells at 21 dpi",
+    "location": "Fig. 2 caption"
+   },
+   {
+    "value": "n=5–8/组",
+    "meaning": "肿瘤治疗实验方法给出的每组小鼠数范围",
+    "source_quote": "treatment groups (5–8 mice per group)",
+    "location": "Methods: Tumour models and immunotherapeutic treatments"
+   },
+   {
+    "value": "7 dpi",
+    "meaning": "p-STAT5实验读出时间",
+    "source_quote": "p-STAT5 + cell frequencies among indicated populations at 7 dpi",
+    "location": "Fig. 3 caption"
+   },
+   {
+    "value": "7 dpi",
+    "meaning": "CUT&RUN实验读出时间",
+    "source_quote": "At 7 dpi, P14 cells were profiled by CUT&RUN assay using the indicated antibodies",
+    "location": "Fig. 4 caption"
+   },
+   {
+    "value": "21 dpi",
+    "meaning": "多项流式验证和体内杀伤读出时间",
+    "source_quote": "among P14 cells at 21 dpi",
+    "location": "Fig. 2 caption"
+   },
+   {
+    "value": "36 dpi",
+    "meaning": "IL-2治疗后体内杀伤和细胞状态读出时间",
+    "source_quote": "to assess in vivo killing at 36 dpi",
+    "location": "Fig. 2 caption"
+   },
+   {
+    "value": "90 dpi",
+    "meaning": "长期感染时间点，用于观察Tex KLR等状态",
+    "source_quote": "ZMYND8 deficiency increased Tex KLR cells at 90 dpi",
+    "location": "Results: ZMYND8 impedes effector-like state"
+   },
+   {
+    "value": "2天",
+    "meaning": "肿瘤体积测量频率",
+    "source_quote": "tumours were measured every 2 days with digital callipers",
+    "location": "Methods: Tumour models and immunotherapeutic treatments"
+   },
+   {
+    "value": "3,000 mm3",
+    "meaning": "动物实验批准的肿瘤体积上限",
+    "source_quote": "Tumour size limits were approved to reach a maximum of 3,000 mm 3",
+    "location": "Methods: Tumour models and immunotherapeutic treatments"
+   },
+   {
+    "value": "≤20%",
+    "meaning": "动物实验批准的相对体重肿瘤负荷上限",
+    "source_quote": "or ≤20% of body weight",
+    "location": "Methods: Tumour models and immunotherapeutic treatments"
+   },
+   {
+    "value": "CD19",
+    "meaning": "人CD19 CAR T模型",
+    "source_quote": "In a human CD19 chimeric antigen receptor (CAR) T cell model",
+    "location": "Results: ZMYND8 loss improves IL-2 immunotherapy"
+   },
+   {
+    "value": "10.1038/s41586-026-11059-5",
+    "meaning": "论文DOI",
+    "source_quote": "https://doi.org/10.1038/s41586-026-11059-5",
+    "location": "Materials: DOI"
+   }
+  ],
+  "steps": [
+   "慢性刺激上调ZMYND8",
+   "ZMYND8压制p300增强子",
+   "IL-2R–STAT5被释放",
+   "Tex KLR与杀伤增强"
+  ],
+  "figure_caption": "图示概括本文验证链条：慢性抗原刺激下，ZMYND8占据Il2ra/Il2rb相关活性增强子并限制p300、H3K27Ac与IL-2R–STAT5信号；删除ZMYND8后，CD25/CD122和p-STAT5升高，耗竭T细胞偏向Tex KLR等效应样状态。示意图由 AI 生成，依据原文结果绘制，非期刊原图，不代表分子比例",
+  "image_story": {
+   "stages": [
+    {
+     "visual_en": "A pale mint exhausted CD8 T cell under chronic antigen stimulation, with a deep green nucleus containing a chromatin loop and a large terracotta ZMYND8 reader bound near enhancer beads.",
+     "source_quote": "Zmynd8 expression was higher in CD8 + T cells at late stage of chronic infection versus early stage or acute infection"
+    },
+    {
+     "visual_en": "Inside the nucleus, p300 and H3K27Ac enhancer marks are restrained at Il2ra/Il2rb loci while IL-2 receptor components on the cell surface stay sparse.",
+     "source_quote": "p300 and ZMYND8 co-occupied enhancer regions on Il2ra and Il2rb"
+    },
+    {
+     "visual_en": "After ZMYND8 targeting, p300 enhancer activity expands, CD25/CD122 receptors and p-STAT5 signals rise, and cells branch toward an effector-like Tex KLR phenotype.",
+     "source_quote": "Co-deletion of p300 also reversed the increased CD25 and CD122 expression on ZMYND8-deficient P14 cells"
+    }
+   ],
+   "key_element_en": "ZMYND8 chromatin reader"
+  },
+  "image_subject_en": "A left-to-right process in three stages, drawn large. Stage 1 shows a pale mint exhausted CD8 T cell exposed to chronic antigen stimulation, with a deep green nucleus, compact chromatin loops, and one very large, solid, boldly filled terracotta #C0492F ZMYND8 chromatin reader clamped on an enhancer region; surrounding cell membrane receptors are sparse and muted light grey-green. Stage 2 shows the same nucleus in close-up, with mid green chromatin, pale mint enhancer beads, restrained p300 proteins in deep green, and low H3K27Ac marks around Il2ra and Il2rb enhancer regions; the terracotta ZMYND8 remains the only warm-colored entity and visually blocks p300. Stage 3 shows ZMYND8 targeting, with open chromatin loops, abundant deep green CD25 and CD122 receptor dimers on the cell surface, bright mid green p-STAT5 signals entering the nucleus, and an effector-like Tex KLR cell with cytotoxic granules. Only the ZMYND8 chromatin reader is terracotta.",
+  "card_subject_en": "A compact hero object: one exhausted CD8 T cell cutaway with a large deep green nucleus and curved chromatin loop, surrounded by pale mint CD25 and CD122 receptor dimers and mid green p-STAT5 signal particles. At the center of the chromatin loop sits one very large, solid, boldly filled terracotta #C0492F ZMYND8 chromatin reader being lifted away from a p300-marked enhancer. The cell body uses pale mint and light grey-green, with cytotoxic granules in deep green. No text, no numbers, no symbols. Only the ZMYND8 chromatin reader is terracotta.",
+  "figure_labels": {
+   "heads": [
+    "慢性刺激",
+    "增强子刹车",
+    "信号释放"
+   ],
+   "callouts": [
+    {
+     "t": "ZMYND8上调\n终末耗竭相关",
+     "stage": 1,
+     "entity_en": "ZMYND8 chromatin reader"
+    },
+    {
+     "t": "2,863个结合峰\n富集IL-2–STAT5",
+     "stage": 2,
+     "entity_en": "chromatin loop"
+    },
+    {
+     "t": "p300共占位\nH3K27Ac增强子",
+     "stage": 2,
+     "entity_en": "p300 proteins"
+    },
+    {
+     "t": "CD25/CD122升高\np-STAT5增加",
+     "stage": 3,
+     "entity_en": "CD25 and CD122 receptor dimers"
+    },
+    {
+     "t": "偏向Tex KLR\n杀伤增强",
+     "stage": 3,
+     "entity_en": "effector-like Tex KLR cell"
+    },
+    {
+     "t": "作者推测\nsignal 1压制signal 3",
+     "stage": 1,
+     "entity_en": "chronic antigen stimulation"
+    }
+   ],
+   "facts": [
+    [
+     "scCRISPR检出**326**/330",
+     "28 dpi读出"
+    ],
+    [
+     "IL-2给药30–35 dpi",
+     "共**6**次"
+    ],
+    [
+     "p300共删除",
+     "阻断效应样增加"
+    ]
+   ],
+   "note": "图用Results/Methods口径；患者公共数据仅为相关。示意图由 AI 生成，非期刊原图。"
+  },
+  "chart": {
+   "justified": true,
+   "title_zh": "筛选库sgRNA检出情况",
+   "unit": "sgRNA条数",
+   "figure_source": "Results: Tex epigenetic gene regulatory networks",
+   "values": [
+    {
+     "label_zh": "库总数",
+     "value": 330,
+     "n": "体内scCRISPR库",
+     "source_quote": "Of the 330 total sgRNAs in the library, 326 were detected in the scCRISPR screen"
+    },
+    {
+     "label_zh": "检出",
+     "value": 326,
+     "n": "体内scCRISPR筛选",
+     "source_quote": "Of the 330 total sgRNAs in the library, 326 were detected in the scCRISPR screen"
+    }
+   ],
+   "note": "该图仅展示筛选覆盖度，不代表功能效应大小。"
+  }
+ },
+ "images": {
+  "mech_raw": "c3-io-4_mech_raw.png",
+  "mech": "c3-io-4_mech.png",
+  "card": "c3-io-4_card.png",
+  "mech_raw_source": "c3-io-4_mech.png",
+  "card_source": "c3-io-4_cardsrc.png",
+  "card_placement": {
+   "axis": "v",
+   "line": 0.382
+  },
+  "generator": "gpt-image-2 (gen3.py), text-free, house green palette + terracotta"
+ },
+ "card_title": "靶向ZMYND8增加小鼠效应样耗竭T细胞并增强免疫治疗反应",
+ "card_caption": "剖开的白色T细胞，赤陶红元素为ZMYND8蛋白",
+ "mech_dropped_callouts": [],
+ "card_text_meta": {
+  "model": "gemini-3.1-pro-preview (OpenAI out of credits, Claude at usage limit)",
+  "gemini_caption_check": {
+   "match": true,
+   "problem": ""
+  },
+  "caption_v1": "剖开的绿色T细胞，中央砖红元素为ZMYND8蛋白"
+ },
+ "files": {
+  "checks": "c3-io-4_checks.json",
+  "mech_raw": "c3-io-4_mech_raw.png",
+  "mech": "c3-io-4_mech.png",
+  "card": "c3-io-4_card.png",
+  "final_md": "c3-io-4_final.md",
+  "final_json": "c3-io-4_final.json"
+ }
+}

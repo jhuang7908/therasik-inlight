@@ -432,6 +432,16 @@ def load_existing_urls() -> set[str]:
             pass
     
     existing.update(existing_raw)  # Include raw URLs for non-DOI content
+    try:
+        import inlight_catalog
+        for url in inlight_catalog.public_article_urls():
+            if url.startswith("#"):
+                continue
+            existing_raw.add(url)
+            existing.add(normalize_doi(url))
+        existing.update(existing_raw)
+    except Exception:
+        logging.debug("catalog URLs not available for dedup", exc_info=True)
     logging.info("已有 %d 个去重 URL/DOI（规范化后）", len(existing))
     return existing
 
@@ -789,6 +799,9 @@ def site_article(item: dict, image_rel: str) -> dict:
         "steps": item["steps"],
         "note": f"材料来自 {item['source']}，只写来源里能核对的内容。",
         "img": image_rel,
+        "curated": False,
+        "locked": False,
+        "status": "weekly",
     }
     # Include optional metadata fields if present
     if item.get("study_type"):
@@ -943,6 +956,13 @@ def update_latest(dest: Path) -> None:
         "articles": merged_a[:40],
         "deals": merged_d[:40],
     }
+    try:
+        import inlight_catalog
+        payload = inlight_catalog.protect_latest_payload(previous, payload)
+        payload["deals"] = merged_d[:40]
+    except Exception:
+        logging.exception("weekly catalog guard failed; refusing to write latest.json")
+        raise
     latest_path.parent.mkdir(exist_ok=True)
     latest_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
     logging.info("已更新 content/latest.json")

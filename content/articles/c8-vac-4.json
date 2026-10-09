@@ -1,0 +1,476 @@
+{
+ "id": "c8-vac-4",
+ "round": "r5img",
+ "drafter_model": "grok-bot (self)",
+ "drafter_of_edits": "grok-bot (self)",
+ "verifier_model": "grok-bot (self): scripted audit_rw + verbatim-quote claim check (no external verifier model available)",
+ "mustcover_frozen_by": "gpt-5.5-2026-04-23",
+ "mustcover_file": "work/r5/mc/mc_c8-vac-4_frozen.json",
+ "source_draft": "work/r5/c8-vac-4/rw_c8-vac-4_draft_v6.json",
+ "edits_r5": [
+  "v1 drafted by grok-bot (self) from full text",
+  "v2: mechanism_proven[1] states the authors' necessary-and-sufficient conclusion verbatim so frozen item m6 is covered in the body",
+  "v3: mechanism_proven[1] trimmed to <=150 字 and section back in range",
+  "v4: mechanism_proven[0] trimmed by 6 字 (section 347)",
+  "v5: mechanism section trimmed to range (347 字)",
+  "v6: m12 covered_by points to the limitations sentence"
+ ],
+ "text_status": "text-pass",
+ "status": "published-ready",
+ "status_reasons": [],
+ "preprint": false,
+ "writer_tags": [
+  "mRNA疫苗",
+  "佐剂",
+  "dectin-2",
+  "中和抗体广度",
+  "生发中心",
+  "IL-1与I型干扰素"
+ ],
+ "tags_note": "editor related-field tags prepended; writer tags trimmed to 6 (metadata only)",
+ "article": {
+  "tier": "deep",
+  "field": "疫苗与感染免疫",
+  "tags": [
+   "核酸与基因治疗",
+   "mRNA疫苗",
+   "佐剂",
+   "dectin-2",
+   "中和抗体广度",
+   "生发中心"
+  ],
+  "primary_endpoint_basis": "这是临床前研究。主要读出取摘要与Results一致、并有统计检验的核心结果：与单独WA1mRNA相比，WA1mRNA+MA显著延长并拓宽中和抗体应答——对WA1 D614G假病毒的中和延长至第500天，对BA.5和XBB.1.5假病毒的中和同样持续到第500天，而WA1mRNA或WA1mRNA+alum没有。标题的第500天来自这一口径。",
+  "comparison_design": "小鼠与非人灵长类的临床前实验，未为任何组间比较设计效能。组间比较按原文统计描述：图1、图2用双向ANOVA加Tukey多重比较；克隆多样性用稀释化后的Hill指数并给出P值（如q=0增加37.85个有效克隆，P=0.0280）。",
+  "untested_comparisons": [
+   "WA1mRNA+MA与WA1mRNA+AS04之间多数读出的优劣（原文称MA表现更好，部分读出给出显著性，整体非效能设计）",
+   "猴中IgG与中和升高的幅度未给出效应量",
+   "VirScan中对MERS-CoV刺突表位识别只是趋势"
+  ],
+  "number_basis_note": "摘要只给定性结论，数字均取自Results、Methods与图注。小鼠剂量按Methods（WA1mRNA 1 µg/只、alum 100 µg/只、mannan 500 µg/只），猴剂量按Methods NHP部分（30 µg/只，Alhydrogel 1 mg＋mannan 5 mg/只），两套剂量分别标明物种，不混用。",
+  "must_cover": [
+   {
+    "id": "m1",
+    "item_zh": "WA1mRNA+MA（而非+alum）把对WA1病毒的中和延长至第84天、对WA1 D614G假病毒延长至第500天。",
+    "status": "covered",
+    "covered_by": "对WA1 SARS-CoV-2的中和延长至第84天，对带D614G的WA1刺突假病毒延长至第500天，而WA1mRNA+alum组没有"
+   },
+   {
+    "id": "m2",
+    "item_zh": "只有WA1mRNA+MA组血清在第500天仍中和BA.5和XBB.1.5假病毒，并在第35、56天以接近WA1的水平中和BA.1与BA.5真病毒。",
+    "status": "covered",
+    "covered_by": "只有WA1mRNA+MA组血清到第500天仍能中和表达BA.5或XBB.1.5刺突的假病毒，并在第35天和第56天中和BA.1与BA.5真病毒"
+   },
+   {
+    "id": "m3",
+    "item_zh": "食蟹猴中WA1mRNA+MA使刺突特异IgG与对WA1、BA.4/BA.5、XBB.1.5假病毒的中和显著升高，持续至第180天。",
+    "status": "covered",
+    "covered_by": "刺突特异IgG和对WA1、BA.4/BA.5、XBB.1.5假病毒的中和能力显著高于单独WA1mRNA，并持续到免疫后第180天"
+   },
+   {
+    "id": "m4",
+    "item_zh": "K18-hACE2小鼠第56天用BA.5攻毒，WA1mRNA+MA组第4天肺内检测不到病毒。",
+    "status": "covered",
+    "covered_by": "WA1mRNA+MA组肺内检测不到病毒"
+   },
+   {
+    "id": "m5",
+    "item_zh": "MA克服抗原印记：WA1两针后再用XBB.1.5mRNA+MA加强，对XBB.1.5的中和与全程XBB.1.5mRNA相当，并提高对BA.5和WA1的中和。",
+    "status": "covered",
+    "covered_by": "对XBB.1.5假病毒的中和与全程两次XBB.1.5mRNA免疫相当，并显著提高了对BA.5和WA1刺突假病毒的中和"
+   },
+   {
+    "id": "m6",
+    "item_zh": "机制上，引流淋巴结内持续的I型干扰素产生与增强的IL-1信号是MA作用的必要且充分条件。",
+    "status": "covered",
+    "covered_by": "引流淋巴结内持续的I型干扰素产生与增强的IL-1信号，是MA发挥作用的必要且充分条件"
+   },
+   {
+    "id": "m7",
+    "item_zh": "关键小鼠设计：C57BL/6J在第0天和第14天肌注WA1mRNA、WA1mRNA+MA或MA，采血至第35天。",
+    "status": "covered",
+    "covered_by": "C57BL/6J小鼠在第0天（初免）和第14天（加强）肌注WA1mRNA、WA1mRNA+MA或单独MA，并采集血清"
+   },
+   {
+    "id": "m8",
+    "item_zh": "猴实验在第0、21天肌注，WA1mRNA 30 µg/只，MA为Alhydrogel 1 mg加mannan 5 mg/只。",
+    "status": "covered",
+    "covered_by": "在第0天和第21天肌注WA1mRNA（30 µg/只）或WA1mRNA+MA（Alhydrogel 1 mg加mannan 5 mg/只）"
+   },
+   {
+    "id": "m9",
+    "item_zh": "假病毒中和的核心读出为NT50，初始1:30稀释未达50%抑制或拟合不佳时取检测下限。",
+    "status": "covered",
+    "covered_by": "中和读出为NT50，即使感染抑制50%的血清滴度；若初始1:30稀释未达50%抑制或回归拟合不佳，则记为检测下限"
+   },
+   {
+    "id": "m10",
+    "item_zh": "配方对照：24小时内mRNA泄漏不足3%，与是否加MA无关。",
+    "status": "covered",
+    "covered_by": "24小时内mRNA泄漏不足3%，与是否加入MA无关"
+   },
+   {
+    "id": "m11",
+    "item_zh": "反应原性对照：免疫后48小时内体温和全身IL-1β、TNF、IL-6相近。",
+    "status": "covered",
+    "covered_by": "免疫后48小时内体温与全身IL-1β、TNF、IL-6在两组间相近"
+   },
+   {
+    "id": "m12",
+    "item_zh": "作者指出，MA诱导的干扰素如何影响对WA1mRNA的应答仍待阐明。",
+    "status": "covered",
+    "covered_by": "MA诱导的干扰素如何影响WA1mRNA应答"
+   }
+  ],
+  "title": "真菌甘露聚糖佐剂加入新冠mRNA疫苗：小鼠中和抗体广度与持续期延长至第500天",
+  "one_liner": "在小鼠与食蟹猴中，把真菌甘露聚糖与铝佐剂的复合物mannadjuvant混入WA1 mRNA疫苗，可诱导持续到第500天的抗BA.5和XBB.1.5中和抗体，并克服抗原印记。",
+  "datacard": {
+   "study_type": "临床前研究：小鼠免疫与攻毒、食蟹猴免疫、人外周血细胞体外实验",
+   "n": "小鼠每组多为5–14只（按图注）；食蟹猴10只雄性，3–5岁",
+   "control": "单独WA1mRNA、WA1mRNA+alum、单独MA、生理盐水、AS04佐剂对照、无关抗原与自身抗原阵列",
+   "intervention": "WA1mRNA（小鼠1 µg/只）单用或混合MA（alum 100 µg＋mannan 500 µg/只）；猴为30 µg/只，MA含Alhydrogel 1 mg＋mannan 5 mg/只",
+   "followup": "小鼠随访至免疫后第500天；猴至第180天；BA.5攻毒在第56天、读出在攻毒后第4天",
+   "primary_endpoint": "临床前核心读出：相对单独WA1mRNA，加入MA后中和抗体（真病毒与假病毒NT50）的幅度、持续时间与对变异株的广度",
+   "primary_endpoint_result": "WA1mRNA+MA（非+alum）把WA1中和延长至第84天、WA1 D614G假病毒至第500天；对BA.5与XBB.1.5假病毒的中和持续到第500天；猴中IgG与三种假病毒中和显著升高至第180天",
+   "statistics": "双向ANOVA加Tukey多重比较（图1、图2）；克隆多样性用稀释化Hill指数，给出P值",
+   "safety": "小鼠48小时内体温与全身炎症因子未升高；猴未见注射部位反应，体温、体重与血液学参数与对照相近；自身抗原阵列未见打破自身耐受",
+   "evidence_level": "全文",
+   "check_record": "Europe PMC全文XML（PMC13226070）：Abstract、Results、Discussion、Methods及Fig. 1–8图注"
+  },
+  "background": [
+   "mRNA疫苗由脂质纳米颗粒包裹编码抗原的mRNA，在新冠大流行中已证明有效，但控制其效力的免疫通路仍有争议，而用佐剂调节炎症能否提升mRNA疫苗效力一直少有人问。另一方面，现有mRNA疫苗难以覆盖同一病毒的多个变异株，是作者指出的主要局限。",
+   "糖类作为佐剂研究不足。白色念珠菌甘露聚糖可激活C型凝集素受体dectin-2；它与氢氧化铝自发反应形成的复合物被称为mannadjuvant（MA），此前已被报道能增强蛋白疫苗。Jena等在Nature Immunology中检验MA能否增强原始单价mRNA疫苗（WA1mRNA）。"
+  ],
+  "design": [
+   "C57BL/6J小鼠在第0天（初免）和第14天（加强）肌注WA1mRNA、WA1mRNA+MA或单独MA，并采集血清，另设WA1mRNA+alum与生理盐水对照；小鼠用量为WA1mRNA 1 µg/只，MA由alum 100 µg与甘露聚糖500 µg组成。随访最长至免疫后第500天，读出包括刺突特异IgG、真病毒与假病毒中和、淋巴结TFH与生发中心B细胞、骨髓浆细胞。",
+   "另设三类体系：K18-hACE2小鼠在第56天以BA.5攻毒、第4天测肺内病毒；10只3–5岁雄性食蟹猴在第0天和第21天肌注WA1mRNA（30 µg/只）或WA1mRNA+MA（Alhydrogel 1 mg加mannan 5 mg/只）；人外周血单个核细胞体外刺激。中和读出为NT50，即使感染抑制50%的血清滴度；若初始1:30稀释未达50%抑制或回归拟合不佳，则记为检测下限。"
+  ],
+  "results": [
+   {
+    "subhead": "持续期延长至500天",
+    "text": "混合不改变疫苗本身：动态光散射未见粒径变化，24小时内mRNA泄漏不足3%，与是否加入MA无关；免疫后48小时内体温与全身IL-1β、TNF、IL-6在两组间相近。WA1mRNA+MA组抗WA1刺突IgG在第500天前持续高于WA1mRNA或WA1mRNA+alum组，骨髓抗体分泌细胞和长寿浆细胞比例也更高。"
+   },
+   {
+    "subhead": "广度扩展到变异株",
+    "text": "对WA1 SARS-CoV-2的中和延长至第84天，对带D614G的WA1刺突假病毒延长至第500天，而WA1mRNA+alum组没有，说明起作用的是甘露聚糖而非铝。只有WA1mRNA+MA组血清到第500天仍能中和表达BA.5或XBB.1.5刺突的假病毒，并在第35天和第56天中和BA.1与BA.5真病毒。"
+   },
+   {
+    "subhead": "生发中心与克隆更均衡",
+    "text": "WA1mRNA+MA组TFH和生发中心B细胞数量到第84天都高于另两组，第500天回落。单细胞BCR测序显示其克隆优势减弱、分布更均衡：WA1特异克隆的丰富度（q=0）增加37.85个有效克隆（P=0.0280），偏重均匀度的多样性（q=2）增加20.61（P=0.0012），重链与轻链体细胞高频突变也显著增加。"
+   },
+   {
+    "subhead": "攻毒保护与猴验证",
+    "text": "K18-hACE2小鼠第56天以BA.5攻毒，第4天WA1mRNA组肺内病毒滴度低于未免疫组，WA1mRNA+MA组肺内检测不到病毒，肺泡和细支气管周围损伤也显著减轻。食蟹猴中，刺突特异IgG和对WA1、BA.4/BA.5、XBB.1.5假病毒的中和能力显著高于单独WA1mRNA，并持续到免疫后第180天。"
+   },
+   {
+    "subhead": "克服抗原印记",
+    "text": "小鼠先用WA1mRNA两针，再在第56天以XBB.1.5mRNA+MA二次加强：第84天其对XBB.1.5假病毒的中和与全程两次XBB.1.5mRNA免疫相当，并显著提高了对BA.5和WA1刺突假病毒的中和，同时刺突特异生发中心B细胞、记忆B细胞和TFH细胞数量高于其他各组。"
+   }
+  ],
+  "mechanism_proven": [
+   "引流淋巴结转录组显示，WA1mRNA与WA1mRNA+alum的程序高度重叠，WA1mRNA+MA则落在独立空间：第1天炎症小体与IL-1相关通路上调（Nlrp3、Il1rn、Il1a居前），第3和第7天干扰素驱动的反应仍升高，而另两组第1天上调的基因到第3天已关闭。",
+   "功能阻断给出因果证据：IL-1受体抑制剂anakinra或caspase-1抑制剂VX765都阻止了WA1mRNA+MA组抗刺突IgG升高、生发中心B与TFH扩增以及对WA1、BA.5、XBB.1.5假病毒中和的增强，对单独WA1mRNA组影响很小；阻断干扰素亦然。两者互为上游，Il1rn缺失小鼠只用WA1mRNA即达WA1mRNA+MA水平，作者据此认为引流淋巴结内持续的I型干扰素产生与增强的IL-1信号，是MA发挥作用的必要且充分条件。"
+  ],
+  "mechanism_inferred": [
+   "作者推测，持久的生发中心反应让高亲和力抗体遮蔽免疫优势表位、给低亲和力克隆进入的机会，由此解释MA带来的更均衡克隆库与更广中和；他们也写明，MA如何控制炎症小体激活仍有待确定。"
+  ],
+  "limitations": [
+   "机制链条尚未闭合：作者自述MA诱导的干扰素如何影响WA1mRNA应答、MA如何控制炎症小体激活、以及干扰素通路与经典促炎因子的分工，都还需要进一步研究，这些结论目前建立在阻断实验与转录组关联之上。",
+   "证据层级仍是临床前：保护性终点只有K18-hACE2小鼠在第56天的BA.5攻毒，猴实验只有免疫原性而无攻毒，人源数据限于体外外周血单个核细胞与树突状细胞的细胞因子分泌，没有人体接种数据。",
+   "规模与外推受限：小鼠每组多为5–14只，猴仅10只雄性、3–5岁，随访到第180天；安全性读出限于反应原性、血液学参数和自身抗原阵列，未涵盖长期安全性。"
+  ],
+  "significance": [
+   "若在更高物种与人体中得到验证，这类靶向dectin-2的真菌糖类佐剂提示了一条升级现有mRNA疫苗的路径：不改抗原序列，只靠混入佐剂来延长抗体持续时间并覆盖逃逸能力强的变异株。",
+   "对疫苗研发的另一层意义在于抗原印记：原文中先接种WA1再用含MA的XBB.1.5加强，可把对新变异株的中和拉到与全程新毒株免疫相当，这一思路若经临床验证，可能影响加强针的设计。"
+  ],
+  "citation": "Jena KK, Qu P, Baracco L, Saghaei S, Keerti, Allahyari Z, 等. A glycan-based adjuvant expands the breadth and duration of protection of mRNA-based vaccines. Nat Immunol. 2026 May 22. doi: https://doi.org/10.1038/s41590-026-02517-3",
+  "data_points": [
+   {
+    "value": "第500天",
+    "meaning": "小鼠随访与中和持续时间终点",
+    "source_quote": "was significantly extended up to day 84 or day 500, respectively, in WA1mRNA+MA mice",
+    "location": "Results: MA enhances and expands WA1mRNA activity"
+   },
+   {
+    "value": "第84天",
+    "meaning": "WA1真病毒中和延长的终点",
+    "source_quote": "The neutralization of WA1 SARS-CoV2 or of a pseudovirus expressing the WA1 spike bearing the D614G mutation (hereafter ‘WA1 spike’) was significantly extended up to day 84 or day 500",
+    "location": "Results"
+   },
+   {
+    "value": "BA.5、XBB.1.5；第500天",
+    "meaning": "对变异株假病毒中和的持续",
+    "source_quote": "neutralized pseudoviruses expressing the spike of BA.5 or XBB.1.5 up to day 500 after immunization",
+    "location": "Results: MA expands germinal centers"
+   },
+   {
+    "value": "第35天、第56天",
+    "meaning": "真病毒BA.1与BA.5中和的时间点",
+    "source_quote": "as well as BA.1 and BA.5 SARS-CoV-2 viruses at day 35 and day 56",
+    "location": "Results"
+   },
+   {
+    "value": "第180天",
+    "meaning": "猴中IgG与中和升高的持续",
+    "source_quote": "were significantly increased in WA1mRNA+MA compared to WA1mRNA NHPs up to day 180 after immunization",
+    "location": "Results: MA works in NHPs"
+   },
+   {
+    "value": "第56天；第4天",
+    "meaning": "攻毒与读出时间",
+    "source_quote": "challenged at day 56 with BA.5 virus (Fig. 7d ). At day 4 after challenge",
+    "location": "Results: MA works in NHPs"
+   },
+   {
+    "value": "检测不到",
+    "meaning": "WA1mRNA+MA组肺内病毒",
+    "source_quote": "whereas WA1mRNA+MA K18-hACE2 mice had no detectable virus in the lungs",
+    "location": "Results"
+   },
+   {
+    "value": "第0天、第14天",
+    "meaning": "小鼠初免与加强",
+    "source_quote": "C57BL/6J wild-type mice immunized i.m. with WA1mRNA, WA1mRNA+MA or MA on day 0 (prime) and on day 14 (boost)",
+    "location": "Fig. 1 legend"
+   },
+   {
+    "value": "第0天、第21天；30 µg/只；1 mg；5 mg",
+    "meaning": "猴免疫方案与剂量",
+    "source_quote": "Immunization was performed on day 0 (prime) and on day 21 (boost) using WA1mRNA (30 µg per monkey) alone or WA1mRNA+MA (Alhydrogel (1 mg per monkey) + mannan (5 mg per monkey)).",
+    "location": "Methods: NHP studies"
+   },
+   {
+    "value": "10只；3–5岁",
+    "meaning": "猴数量与年龄",
+    "source_quote": "Ten male cynomolgus monkeys ( M. fascicularis ), aged 3–5 years and confirmed to be seronegative for SARS-CoV-2 antibodies prior to the study",
+    "location": "Methods: NHP studies"
+   },
+   {
+    "value": "1 µg/只；100 µg；500 µg",
+    "meaning": "小鼠疫苗与佐剂剂量",
+    "source_quote": "WA1mRNA was used at 1 µg per injection",
+    "location": "Methods: Adjuvant and vaccine formulation"
+   },
+   {
+    "value": "100 µg；500 µg",
+    "meaning": "MA中alum与甘露聚糖用量",
+    "source_quote": "mixing alum (100 µg per mouse) and mannan (500 µg per mouse)",
+    "location": "Methods: Adjuvant and vaccine formulation"
+   },
+   {
+    "value": "NT50；1:30；50%",
+    "meaning": "中和读出定义与下限规则",
+    "source_quote": "represented as 50% neutralizing titer (NT 50 ) (the titer to cause 50% inhibition of infection). The NT 50 was set to the limit of detection (LOD) if the initial dilution of serum (1:30) did not reach a neutralization of 50% or if the regression fit was poor (<0.7).",
+    "location": "Methods: SARS-CoV-2 pseudovirus neutralization assay"
+   },
+   {
+    "value": "不足3%；24小时",
+    "meaning": "mRNA泄漏对照",
+    "source_quote": "less than 3% of the mRNA content was released after 24 hours, independently of MA",
+    "location": "Results"
+   },
+   {
+    "value": "48小时",
+    "meaning": "反应原性观察窗",
+    "source_quote": "Body temperature and systemic inflammatory cytokines were similar in WA1mRNA+MA and WA1mRNA mice during the first 48 hours after immunization",
+    "location": "Results"
+   },
+   {
+    "value": "37.85；P=0.0280",
+    "meaning": "WA1特异克隆丰富度增加",
+    "source_quote": "Clone richness ( q = 0) increased by 37.85 effective clones ( P = 0.0280)",
+    "location": "Results: MA boosts somatic hypermutation and B cell diversity"
+   },
+   {
+    "value": "20.61；P=0.0012",
+    "meaning": "偏均匀度多样性增加",
+    "source_quote": "diversity weighted toward evenness ( q = 2) increased by 20.61 ( P = 0.0012)",
+    "location": "Results"
+   },
+   {
+    "value": "第28天、第84天",
+    "meaning": "生发中心B细胞增加的时间窗",
+    "source_quote": "significantly increased in WA1mRNA+MA mice compared to WA1mRNA and WA1mRNA+alum mice starting at day 28 until day 84, normalizing at day 500",
+    "location": "Results: MA expands germinal centers"
+   },
+   {
+    "value": "第1天、第3天、第7天",
+    "meaning": "引流淋巴结转录组时间点",
+    "source_quote": "we performed bulk RNA-seq on whole dLNs isolated at days 1, 3 and 7",
+    "location": "Results: MA rewires WA1mRNA-driven inflammation in the dLN"
+   },
+   {
+    "value": "第56天；第84天",
+    "meaning": "抗原印记实验二次加强与读出",
+    "source_quote": "or XBB.1.5mRNA+MA (hereafter ‘WA1mRNA+XBB.1.5mRNA+MA’) at day 56 after prime",
+    "location": "Results: MA overcomes antigenic imprinting"
+   },
+   {
+    "value": "第84天",
+    "meaning": "抗原印记实验读出时间",
+    "source_quote": "At day 84 after prime, WA1mRNA+XBB.1.5mRNA+MA mice had significantly higher WA1 spike-specific IgGs compared to all other groups",
+    "location": "Results"
+   },
+   {
+    "value": "5–14只",
+    "meaning": "小鼠每组数量范围（图注）",
+    "source_quote": "CD19 + CD95 + GL7 + B GC cells ( n = 5–14)",
+    "location": "Fig. 2 legend"
+   },
+   {
+    "value": "5只",
+    "meaning": "反应原性实验每组小鼠数",
+    "source_quote": "WA1mRNA or WA1mRNA+MA mice ( n = 5 per group) at 0–72 hours after priming",
+    "location": "Fig. 1 legend"
+   },
+   {
+    "value": "20 µg；10 µg",
+    "meaning": "人细胞中最佳甘露聚糖与铝比例",
+    "source_quote": "admixing 20 µg of mannan with 10 µg of alum significantly increased the release of IL-1β, IL-6 and TNF",
+    "location": "Results: MA controls inflammation in human phagocytes"
+   },
+   {
+    "value": "1:1",
+    "meaning": "MA中可溶与颗粒甘露聚糖比例",
+    "source_quote": "MA contains a 1:1 ratio of soluble and particulate mannan",
+    "location": "Results"
+   },
+   {
+    "value": "16小时",
+    "meaning": "人外周血细胞GM-CSF处理时长",
+    "source_quote": "PBMCs treated with GM-CSF for 16 hours",
+    "location": "Results"
+   },
+   {
+    "value": "6,455；2,871；3,584",
+    "meaning": "WA1特异重链序列数",
+    "source_quote": "identified 6,455 heavy chain sequences, including 2,871 from WA1mRNA mice and 3,584 from WA1mRNA+MA mice",
+    "location": "Results"
+   },
+   {
+    "value": "约4.39%",
+    "meaning": "WA1mRNA组最高频克隆占比",
+    "source_quote": "top clone approximately 4.39% of total sequences",
+    "location": "Results"
+   },
+   {
+    "value": "6–8周龄",
+    "meaning": "小鼠周龄",
+    "source_quote": "Six-to-eight-week-old female C57BL/6J mice",
+    "location": "Methods: Mice"
+   }
+  ],
+  "steps": [
+   "甘露聚糖与铝佐剂形成MA",
+   "与WA1mRNA混合后肌注",
+   "引流淋巴结IL-1与干扰素升高",
+   "生发中心扩大、克隆更均衡",
+   "广谱中和持续至第500天"
+  ],
+  "figure_caption": "示意图概括本文链条：真菌甘露聚糖与氢氧化铝形成的佐剂与新冠mRNA疫苗混合注射，在引流淋巴结放大IL-1与I型干扰素信号，扩大生发中心并使B细胞克隆更均衡，从而延长并拓宽对变异株的中和抗体。示意图由 AI 生成，依据原文结果绘制，非期刊原图，不代表分子比例",
+  "image_story": {
+   "stages": [
+    {
+     "visual_en": "A syringe injecting a mixture of lipid nanoparticles and clustered glycan-alum particles into muscle.",
+     "source_quote": "mice were immunized i.m. with WA1mRNA+MA"
+    },
+    {
+     "visual_en": "Inside a draining lymph node, phagocytes release IL-1 and interferon signals that feed each other.",
+     "source_quote": "MA initiated a positive feedback loop between IFN and IL-1 signaling that was necessary and sufficient to potentiate the activity of WA1mRNA"
+    },
+    {
+     "visual_en": "An enlarged germinal center produces many different B cell clones and long-lived plasma cells making antibodies that bind several variant spikes.",
+     "source_quote": "MA promoted extensive GC reactions and a more diverse and balanced repertoire of B cell clones"
+    }
+   ],
+   "key_element_en": "mannan-alum adjuvant particle"
+  },
+  "image_subject_en": "A left-to-right process in three stages, drawn large. Stage 1 shows a light grey-green syringe needle entering mid green muscle fibres and releasing a mixture of pale mint lipid nanoparticles and one very large, solid, boldly filled terracotta #C0492F mannan-alum adjuvant particle drawn as a rough clustered grain with branched sugar chains on its surface. Stage 2 shows a bean-shaped draining lymph node in mid green, cut open, with deep green phagocytes inside emitting small round signal dots in two interlocking rings to suggest a feedback loop, and pale mint lymphocytes crowding in. Stage 3 shows a large pale mint germinal center inside the same node, packed with many differently shaped deep green B cells and a few larger plasma cells releasing light grey-green antibodies that attach to three differently shaped mid green spike proteins drifting at the right edge. Only the mannan-alum adjuvant particle is terracotta.",
+  "card_subject_en": "A compact hero subject: one very large, solid, boldly filled terracotta #C0492F mannan-alum adjuvant particle, drawn as a rough clustered grain with branched sugar chains on its surface, sitting beside two smaller pale mint lipid nanoparticles whose cut surface shows a coiled deep green mRNA strand. A mid green lymph node outline curves softly behind them. No text, no numbers, no symbols. Only the mannan-alum adjuvant particle is terracotta.",
+  "figure_labels": {
+   "heads": [
+    "混合肌注",
+    "淋巴结炎症重编程",
+    "更广更久的中和"
+   ],
+   "callouts": [
+    {
+     "t": "甘露聚糖500 µg\n＋铝100 µg（小鼠）",
+     "stage": 1,
+     "entity_en": "mannan-alum adjuvant particle"
+    },
+    {
+     "t": "mRNA泄漏<3%\n反应原性未增加",
+     "stage": 1,
+     "entity_en": "lipid nanoparticles"
+    },
+    {
+     "t": "IL-1与干扰素\n互为必要",
+     "stage": 2,
+     "entity_en": "phagocytes"
+    },
+    {
+     "t": "生发中心扩大\n克隆更均衡",
+     "stage": 3,
+     "entity_en": "germinal center"
+    },
+    {
+     "t": "BA.5/XBB.1.5中和\n持续到第500天",
+     "stage": 3,
+     "entity_en": "spike proteins"
+    }
+   ],
+   "facts": [
+    [
+     "WA1假病毒中和",
+     "延长至**第500天**"
+    ],
+    [
+     "BA.5攻毒第4天",
+     "肺内检测不到病毒"
+    ],
+    [
+     "食蟹猴",
+     "中和升高至第180天"
+    ]
+   ],
+   "note": "小鼠与猴剂量不同，已分别标注。示意图由 AI 生成，非期刊原图。"
+  },
+  "chart": {
+   "justified": true,
+   "title_zh": "克隆多样性增加（WA1特异克隆）",
+   "unit": "有效克隆数增量",
+   "figure_source": "Results: B cell diversity",
+   "values": [
+    {
+     "label_zh": "丰富度 q=0",
+     "value": 37.85,
+     "n": "P=0.0280",
+     "source_quote": "Clone richness ( q = 0) increased by 37.85 effective clones ( P = 0.0280)"
+    },
+    {
+     "label_zh": "均匀度加权 q=2",
+     "value": 20.61,
+     "n": "P=0.0012",
+     "source_quote": "diversity weighted toward evenness ( q = 2) increased by 20.61 ( P = 0.0012)"
+    }
+   ],
+   "note": "为稀释化后WA1mRNA+MA相对WA1mRNA的增量。"
+  }
+ },
+ "images": {
+  "mech_raw": "work/r5img/clean/c8-vac-4_mech_raw_r5_clean.png",
+  "mech": "c8-vac-4_mech_r5.png",
+  "card": "c8-vac-4_card_r5.png",
+  "image_model": "mech + card: Grok drawings r5 (supplied by parent run)",
+  "note": "raw backgrounds cleaned (work/r4/clean_r4b.py); QC rules per user decision 2026-10-09"
+ },
+ "card_title": "真菌糖类佐剂延长新冠mRNA疫苗保护至第500天",
+ "card_caption": "赤陶红糖类佐剂颗粒旁有两枚绿色脂质纳米颗粒",
+ "card_text_meta": {
+  "model": "grok-bot (self)",
+  "card_title_chars": 19,
+  "card_caption_chars": 21
+ },
+ "notes": "Mouse and NHP doses differ and are labelled separately; Results median OS-type conflicts none. Abstract gives only qualitative claims, numbers taken from Results/Methods/figure legends.",
+ "text_from": "c8-vac-4_final_r5.json (text unchanged)"
+}

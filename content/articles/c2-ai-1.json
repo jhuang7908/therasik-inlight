@@ -1,0 +1,582 @@
+{
+ "id": "c2-ai-1",
+ "final_version": 2,
+ "drafter_model": "claude-sonnet-5-5",
+ "drafter_models_per_version": {
+  "1": "claude-sonnet-5-5",
+  "2": "claude-sonnet-5-5"
+ },
+ "verifier_model": "claude-sonnet-5-5",
+ "mustcover_frozen_by": "claude-sonnet-5-5",
+ "selected_from_versions": [
+  1,
+  2
+ ],
+ "remaining_failures_n": 0,
+ "remaining_failures": [],
+ "status": "published-ready",
+ "status_reasons": [],
+ "preprint": false,
+ "tags_note": "editor related-field tags prepended; writer tags trimmed to 6 (metadata only)",
+ "writer_tags": [
+  "抗体亲和力成熟",
+  "盲评基准",
+  "蛋白语言模型",
+  "可开发性评估",
+  "KinExA",
+  "SARS-CoV-2 RBD"
+ ],
+ "article": {
+  "tier": "deep",
+  "field": "AI 药物设计",
+  "tags": [
+   "抗体工程",
+   "抗体亲和力成熟",
+   "盲评基准",
+   "蛋白语言模型",
+   "可开发性评估",
+   "KinExA"
+  ],
+  "primary_endpoint_basis": "该研究是基准挑战赛，无方案预设的主要终点，也无正式组间假设检验。本文以摘要与正文一致的核心读出为主线：挑战 2 中亲和力高于簇对照的提交比例（摘要称除一个模型外差于随机挑选）。因该对比原文未做统计检验，标题改用挑战 1 获胜序列的 95 pM 这一描述性结果，不以未检验对比作卖点。",
+  "comparison_design": "非组间比较设计效能的研究：原文未设预设主要终点，也未为 AI 方法与随机挑选等对比设计把握度。仅有的统计量是检测平台间的 Spearman 秩相关（双侧、未做多重比较校正）和 KinExA 置信区间重叠判断；挑战 2 的 9.8–13.8% 对 39% 等比较均未做统计检验。",
+  "untested_comparisons": [
+   "挑战 2：全部 AI 提交 9.8–13.8% 高于簇对照，对随机挑选克隆 39%",
+   "WashU 50% 对随机基线 39%",
+   "AI 最佳 SPR 340 pM 对实验最佳 517 pM",
+   "ProBioGen 共有序列 540 pM 排在多数 AI 设计之前",
+   "挑战 3 中 2.9、3.1 pM 提交对最佳实验抗体 9.2 pM",
+   "各方法类别获胜差异（原文称非受控比较）"
+  ],
+  "number_basis_note": "摘要未给出与正文冲突的数字。正文内部有两处口径不一：Fig. 3d 图注称 28F 为 5.2%，正文为 13.8%；挑战 3 中“2.4% 的提交”对应两个更强抗体，而“1.2%”对应唯一满足可开发性者，二者百分比分母原文未说明。本文与数据图一律采用正文口径（10.3%、13.8%、9.8%），不使用图注的 5.2%。",
+  "must_cover": [
+   {
+    "id": "m1",
+    "item_zh": "除 WashU 一个模型外，挑战 2 中簇内高亲和力克隆预测差于随机挑选",
+    "status": "covered",
+    "covered_by": "其余 AI 预测策略均差于随机挑选"
+   },
+   {
+    "id": "m2",
+    "item_zh": "511 个 AI 设计/预测抗体、29 家机构、三项任务",
+    "status": "covered",
+    "covered_by": "共测试 29 家机构的 511 个 AI 设计或预测抗体"
+   },
+   {
+    "id": "m3",
+    "item_zh": "挑战 1：165 个提交，71.5% 结合，3.0% 亚纳摩尔，仅 1 个（0.6%）亚 100 pM；Aureka 95 pM，2,000 倍",
+    "status": "covered",
+    "covered_by": "仅 1 个（0.6%）达亚 100 pM"
+   },
+   {
+    "id": "m4",
+    "item_zh": "ProBioGen 无机器学习共有序列在六个 CDR 上与文库共有序列一致，KinExA 540 pM 列第三",
+    "status": "covered",
+    "covered_by": "KinExA 540 pM 列第三"
+   },
+   {
+    "id": "m5",
+    "item_zh": "挑战 2：9.8–13.8% 的提交（获胜者 11–50%）优于簇对照，随机 39%；仅 WashU 50% 对 39%",
+    "status": "covered",
+    "covered_by": "获胜者中该比例为 11–50%"
+   },
+   {
+    "id": "m6",
+    "item_zh": "各簇最佳预测：27F 9.2 pM（4.0 倍，对照 36.6 pM）、47F 50 pM（7.6 倍，对照 378 pM）、28F 1.8 倍（101 对 177 pM）",
+    "status": "covered",
+    "covered_by": "27F 为 9.2 pM，较簇对照（36.6 pM）提高 4.0 倍"
+   },
+   {
+    "id": "m7",
+    "item_zh": "挑战 3：最佳实验抗体 9.2 pM；两个更强（2.9、3.1 pM），四个相当（8.7–9.6 pM），仅一个（1.2%）可开发",
+    "status": "covered",
+    "covered_by": "另四个相当（8.7–9.6 pM）"
+   },
+   {
+    "id": "m8",
+    "item_zh": "挑战 3 获胜抗体 HIC 未洗脱，按常规标准多半被淘汰，却因综合评分夺冠",
+    "status": "covered",
+    "covered_by": "按常规治疗标准多半被淘汰"
+   },
+   {
+    "id": "m9",
+    "item_zh": "五项可开发性检测，0/1/2 计分，阈值依 Jain 等校准，总分≤3 可开发",
+    "status": "covered",
+    "covered_by": "总分≤3 视为可开发"
+   },
+   {
+    "id": "m10",
+    "item_zh": "检测平台秩相关 ρ=0.94、0.97、0.92，绝对亲和力相关较弱，KinExA 通常更高",
+    "status": "covered",
+    "covered_by": "秩相关：SPR 对单点 KinExA ρ=0.94"
+   },
+   {
+    "id": "m11",
+    "item_zh": "首轮单一抗原、由同一联盟组织、依赖组织者诚信而非信息学盲评",
+    "status": "covered",
+    "covered_by": "依赖组织者诚信而非信息学手段保证盲评"
+   },
+   {
+    "id": "m12",
+    "item_zh": "结果应视为该靶点类别计算能力的上界，不代表其他抗原或数据条件",
+    "status": "covered",
+    "covered_by": "作者称结果是该靶点类别当前计算能力的上界"
+   }
+  ],
+  "title": "AIntibody 盲评：511 个 AI 抗体在亲和力成熟中最佳达 95 pM，跨任务表现不一",
+  "one_liner": "29 家机构的 511 个 AI 设计或预测抗体经盲评实验验证：挑战 1 最佳 95 pM（较亲本提高 2,000 倍），挑战 2 中仅 9.8–13.8% 的提交亲和力高于簇对照。",
+  "datacard": {
+   "study_type": "前瞻性、盲评的计算抗体设计基准挑战赛（实验验证，靶点 SARS-CoV-2 RBD）",
+   "n": "511 个 AI 设计或预测抗体，29 家机构；挑战 1：25 家机构 165 个提交；挑战 2：27F、28F、47F 分别 58、58、61 个提交；挑战 3：23 家机构 168 个提交",
+   "primary_endpoint": "无预设主要终点；核心读出为挑战 2 中亲和力高于簇对照（最丰富克隆）的提交比例，并与随机挑选克隆比较",
+   "primary_endpoint_result": "27F、28F、47F 分别为 10.3%、13.8%、9.8%（全部 AI 提交 9.8–13.8%，获胜者 11–50%），随机挑选克隆为 39%；仅 WashU 为 50%；该对比未做统计检验",
+   "control": "亲本抗体、实验衍生抗体、各簇对照（最丰富克隆）、随机挑选克隆",
+   "intervention": "各机构提交的 AI 设计序列，合成为全长 IgG；挑战 1 改 LCDR1–3、HCDR1–2，挑战 3 改 CDR 不改框架",
+   "statistics": "检测平台间双侧 Spearman 秩相关，未做多重比较校正；KinExA 以 95% 置信区间重叠判断无差异",
+   "evidence_level": "全文",
+   "check_record": "读了 Nature Biotechnology 开放获取 HTML 的 Abstract、Main、Results、Discussion、图注（Fig. 1–5、Extended Data Fig. 1–4）与 Methods"
+  },
+  "background": [
+   "计算抗体设计的多数性能评估依赖回顾性分析、缺少新增实验，外部验证有限，也使真实水平难以分辨；在预印本和技术报告中方法不断增多时，这一问题更突出。结构预测领域借 CASP 的前瞻性盲评确立了共同标准，抗体领域缺少对应的基准。",
+   "抗体工程需要多参数优化：除亲和力外还有表达、Tm、多反应性和聚集等可开发性，改善一项而不损伤其他很难。氨基酸序列不能被人直接读出功能，亲和力预测所需的多样实验数据又少而分散。本研究以实验测得的亲和力与可开发性为锚点，做前瞻性盲评。"
+  ],
+  "design": [
+   "AIntibody 为前瞻性盲评挑战赛，靶点 SARS-CoV-2 RBD，共测试 29 家机构的 511 个 AI 设计或预测抗体，分三项任务：基于一期测序的亲和力成熟、三个 HCDR3 簇内亲和力排序、完整选择输出之外的 CDR 设计。序列表达为全长 IgG，由独立实验室检测；未做组间比较效能设计。",
+   "亲和力用 HT-SPR 与 KinExA 测定。可开发性按 AC-SINS、BVP、HIC、Tm、Tagg 五项各记 0（通过）、1（可疑）、2（失败），阈值依 Jain 等临床阶段抗体校准，总分≤3 视为可开发。秩相关：SPR 对单点 KinExA ρ=0.94，单点对标准 KinExA ρ=0.97，标准 KinExA 对 SPR ρ=0.92；绝对亲和力相关较弱，KinExA 通常更高。"
+  ],
+  "results": [
+   {
+    "subhead": "挑战 1：亲和力成熟",
+    "text": "挑战 1 要求在不改 HCDR3 与框架的前提下成熟亲本抗体。25 家机构共 165 个提交中，71.5% 结合 RBD，3.0% 达亚纳摩尔，仅 1 个（0.6%）达亚 100 pM；86.1% 通过可开发性，63.0% 为可开发的结合物。Aureka 的获胜序列为 95 pM，较亲本提高 2,000 倍。"
+   },
+   {
+    "subhead": "与实验抗体及共有序列对照",
+    "text": "AI 最佳 SPR 亲和力为 340 pM，实验最佳为 517 pM；KinExA 下实验前五为 113–1,230 pM，AI 前五为 95–984 pM，置信区间重叠，原文判为统计上无法区分。ProBioGen 不用机器学习的共有序列与文库共有序列在六个 CDR 上完全一致，KinExA 540 pM 列第三、无可开发性问题，排在多数 AI 设计之前。"
+   },
+   {
+    "subhead": "挑战 2：簇内排序",
+    "text": "三簇分别有 10.3%、13.8%、9.8% 的提交亲和力高于簇对照（最丰富克隆），即全部 AI 提交中仅 9.8–13.8%；获胜者中该比例为 11–50%，随机挑选克隆为 39%。除 WashU（50% 对 39%）外，其余 AI 预测策略均差于随机挑选。该对比原文未报告统计检验。"
+   },
+   {
+    "subhead": "各簇最佳预测",
+    "text": "27F 为 9.2 pM，较簇对照（36.6 pM）提高 4.0 倍；47F 为 50 pM，对照 378 pM，提高 7.6 倍；28F 仅提高 1.8 倍（101 对 177 pM）。28F 有 41.4% 的提交因可开发性不佳被取消资格，47F 为 100% 通过，可开发性与 HCDR3 簇强相关。"
+   },
+   {
+    "subhead": "挑战 3：库外设计",
+    "text": "挑战 3 提供了 142 个抗体的亲和力。最佳实验抗体 KinExA 为 9.2 pM；2.9、3.1 pM 的两个提交更强，另四个相当（8.7–9.6 pM），仅一个（占总数 1.2%）满足可开发性（评分≤3）。获胜的 2.9 pM 抗体在 HIC 柱未洗脱，按常规治疗标准多半被淘汰，却因综合评分可抵消单项失败而夺冠。"
+   }
+  ],
+  "mechanism_proven": [
+   "高亲和力抗体呈特异基序（LCDR1 第 6 位酪氨酸、LCDR3 第 8 位色氨酸），部分 AI 算法在给定数据下纳入了这些替换。Aureka 获胜序列与亲本相距 19 个替换、与实验数据集至少 12 个；挑战 3 的前列提交均沿用实验数据中已有的 HCDR3。",
+   "获胜方法类别随任务而变：Aureka（PLM 加结构）胜挑战 1，Xencor（PLM）胜挑战 3，28F 由 WashU 与 Xencor 并列；原文称类别内差异大，仅反映总体趋势，非受控比较。"
+  ],
+  "mechanism_inferred": [
+   "作者推测，簇内排序的优劣可能取决于局部表位或簇的特异性而非方法类别；PLM 类方法可能在库外新序列生成中更有用。作者还认为，获胜者对已有 HCDR3 基序的依赖，使其能否迁移到数据稀少场景存疑，并据此主张按任务匹配方法。"
+  ],
+  "limitations": [
+   "外推性：仅一个抗原（SARS-CoV-2 RBD），数据刻意丰富，作者称结果是该靶点类别当前计算能力的上界，不代表其他抗原；挑战 2、3 还给了亲和力数据，早期发现通常没有。",
+   "盲评与参与：首轮由报告结果的同一联盟组织，依赖组织者诚信而非信息学手段保证盲评，多家知名团队未参与。",
+   "终点与统计：挑战 2 与随机 39% 的比较未检验；KinExA 只测最强子集（挑战 1 仅 8 个 AI 提交）；综合评分允许单项失败被抵消。",
+   "数字口径：Fig. 3d 图注称 28F 为 5.2%，正文为 13.8%，本文按正文。"
+  ],
+  "significance": [
+   "若目标抗原已有深度测序数据，亲和力成熟这类任务可借助表现最好的 AI 方法缩短实验周期；原文估计，若 Aureka 的模型广泛适用，可节省 2–3 周，并认为合成测试 10–20 个设计即可找到有用的高亲和力变体。无机器学习的共有序列基线，则可作为后续方法至少需要超越的参照。",
+   "若未来基准采用硬性否决（go/no-go）条件，评分将更接近治疗开发的实际要求；作者计划在 2026 年的下一轮中，用未知靶点和无亲和力数据的条件重新评估。"
+  ],
+  "citation": "Erasmus MF, Bedinger D, Hopkins E, Ferguson G, Strickler J, Graff CP, et al. A blinded, prospective benchmark of in silico antibody discovery anchored to experimental affinity and developability. Nat Biotechnol. 2026. https://doi.org/10.1038/s41587-026-03238-6",
+  "data_points": [
+   {
+    "value": "511",
+    "meaning": "受测 AI 设计或预测抗体数",
+    "source_quote": "tests 511 artificial intelligence (AI)-designed or predicted antibodies from 29 organizations",
+    "location": "Abstract"
+   },
+   {
+    "value": "29 家机构",
+    "meaning": "参与机构数",
+    "source_quote": "tests 511 artificial intelligence (AI)-designed or predicted antibodies from 29 organizations",
+    "location": "Abstract"
+   },
+   {
+    "value": "三项任务",
+    "meaning": "挑战数",
+    "source_quote": "29 organizations on three tasks",
+    "location": "Abstract"
+   },
+   {
+    "value": "165 个提交 / 25 家机构",
+    "meaning": "挑战 1 提交数与机构数",
+    "source_quote": "Across 25 organizations and 165 submissions, 118 (71.5%) bound the RBD",
+    "location": "Results: Challenge 1"
+   },
+   {
+    "value": "71.5%",
+    "meaning": "挑战 1 结合 RBD 比例",
+    "source_quote": "Across 25 organizations and 165 submissions, 118 (71.5%) bound the RBD",
+    "location": "Results: Challenge 1"
+   },
+   {
+    "value": "3.0%",
+    "meaning": "挑战 1 亚纳摩尔比例",
+    "source_quote": "five (3.0%) achieving subnanomolar affinity",
+    "location": "Results: Challenge 1"
+   },
+   {
+    "value": "0.6%",
+    "meaning": "挑战 1 亚 100 pM 比例（1 个）",
+    "source_quote": "one (0.6%) achieving sub-100 pM affinity",
+    "location": "Results: Challenge 1"
+   },
+   {
+    "value": "86.1% / 63.0%",
+    "meaning": "挑战 1 通过可开发性比例 / 可开发结合物比例",
+    "source_quote": "86.1% passed developability (median = 1; 13.9% disqualified for dev ≥ 4) and 63.0% were developable binders",
+    "location": "Results: Challenge 1"
+   },
+   {
+    "value": "95 pM；2,000 倍",
+    "meaning": "Aureka 获胜序列亲和力及较亲本提高倍数",
+    "source_quote": "The winning entry from Aureka achieved a 95 pM affinity, a 2,000-fold improvement over the parental antibody.",
+    "location": "Results: Challenge 1"
+   },
+   {
+    "value": "340 pM / 517 pM",
+    "meaning": "AI 最佳与实验最佳 SPR 亲和力",
+    "source_quote": "the top computational design had an SPR affinity of 340 pM, compared to 517 pM for the best experimental antibody",
+    "location": "Results: Challenge 1"
+   },
+   {
+    "value": "113–1,230 pM",
+    "meaning": "实验前五 KinExA 亲和力范围",
+    "source_quote": "of the top five experimental antibodies ranged from 113 to 1,230 pM",
+    "location": "Results: Challenge 1"
+   },
+   {
+    "value": "95–984 pM",
+    "meaning": "AI 前五 KinExA 亲和力范围",
+    "source_quote": "The five best AI antibodies ranged from 95 to 984 pM",
+    "location": "Results: Challenge 1"
+   },
+   {
+    "value": "540 pM；六个 CDR",
+    "meaning": "ProBioGen 共有序列 KinExA 亲和力及 CDR 完全一致",
+    "source_quote": "ranked third by KinExA (540 pM) in challenge 1 with no developability concerns",
+    "location": "Results: Computational method class analysis"
+   },
+   {
+    "value": "10.3%、13.8%、9.8%",
+    "meaning": "27F、28F、47F 中亲和力高于簇对照的提交比例",
+    "source_quote": "For clusters 27F, 28F and 47F, 10.3%, 13.8% and 9.8%, respectively, of all submissions were higher affinity relative to the cluster control",
+    "location": "Results: Challenge 2"
+   },
+   {
+    "value": "9.8–13.8%；11–50%；39%",
+    "meaning": "全部 AI 提交、获胜者高于簇对照比例，随机挑选克隆比例",
+    "source_quote": "only 9.8–13.8% of all AI submissions (and 11–50% of the winners) improved upon the cluster control, compared to 39% for randomly picked clones",
+    "location": "Results: Challenge 2"
+   },
+   {
+    "value": "50% 对 39%",
+    "meaning": "WashU 与随机基线",
+    "source_quote": "WashU (D.H.F. Lab) was the only group to exceed the random baseline (50% versus 39%)",
+    "location": "Results: Challenge 2"
+   },
+   {
+    "value": "9.2 pM；4.0 倍；36.6 pM",
+    "meaning": "27F 最佳预测及簇对照",
+    "source_quote": "The best predicted antibody from cluster 27F was 9.2 pM, a 4.0-fold improvement over the cluster control (36.6 pM).",
+    "location": "Results: Challenge 2"
+   },
+   {
+    "value": "50 pM；7.6 倍；378 pM",
+    "meaning": "47F 最佳预测及簇对照",
+    "source_quote": "Cluster 47F showed the greatest improvement at 7.6-fold, identifying a 50 pM antibody relative to 378 pM for the cluster control.",
+    "location": "Results: Challenge 2"
+   },
+   {
+    "value": "1.8 倍；101 对 177 pM",
+    "meaning": "28F 最佳预测改善",
+    "source_quote": "Cluster 28F showed only minimal improvement with a 1.8-fold improvement (101 pM versus 177 pM).",
+    "location": "Results: Challenge 2"
+   },
+   {
+    "value": "58 个 / 61 个",
+    "meaning": "27F、28F 各 58 个，47F 61 个提交",
+    "source_quote": "Lastly, for cluster 47F, across 26 organizations and 61 submissions",
+    "location": "Results: Challenge 2"
+   },
+   {
+    "value": "58 个（27F）",
+    "meaning": "27F 提交数",
+    "source_quote": "For cluster 27F, across 26 organizations and 58 submissions",
+    "location": "Results: Challenge 2"
+   },
+   {
+    "value": "58 个（28F）",
+    "meaning": "28F 提交数",
+    "source_quote": "For cluster 28F, across 26 organizations and 58 submissions",
+    "location": "Results: Challenge 2"
+   },
+   {
+    "value": "41.4%",
+    "meaning": "28F 因可开发性被取消资格比例",
+    "source_quote": "41.4% were disqualified for poor developability (dev ≥ 4, median = 3)",
+    "location": "Results: Challenge 2"
+   },
+   {
+    "value": "100%",
+    "meaning": "47F 通过可开发性比例",
+    "source_quote": "100% passed developability (median = 1)",
+    "location": "Results: Challenge 2"
+   },
+   {
+    "value": "142",
+    "meaning": "挑战 3 提供亲和力的抗体数",
+    "source_quote": "combined with the provided affinities of 142 antibodies",
+    "location": "Results: Challenge 3"
+   },
+   {
+    "value": "9.2 pM；2.9、3.1 pM；8.7–9.6 pM",
+    "meaning": "最佳实验抗体、两个更强提交、四个相当提交",
+    "source_quote": "The KinExA affinity of the best experimental antibody was 9.2 pM; two submissions (2.4% of the total) had higher affinities (2.9 pM and 3.1 pM) and four others had comparable affinities (8.7–9.6 pM)",
+    "location": "Results: Challenge 3"
+   },
+   {
+    "value": "1.2%",
+    "meaning": "唯一满足可开发性的最高亲和力抗体占比",
+    "source_quote": "only one of the highest-affinity antibodies (1.2% of total) met the composite developability criteria (score ≤ 3)",
+    "location": "Results: Challenge 3"
+   },
+   {
+    "value": "2.9 pM",
+    "meaning": "挑战 3 获胜抗体亲和力",
+    "source_quote": "Xencor’s 2.9-pM antibody won the competition according to published rules",
+    "location": "Discussion"
+   },
+   {
+    "value": "ρ=0.94",
+    "meaning": "SPR 对单点 KinExA 秩相关",
+    "source_quote": "strong rank-order correlation between SPR and single-point KinExA ( ρ = 0.94, P = 2.0 × 10 − 46 )",
+    "location": "Results: Assay concordance"
+   },
+   {
+    "value": "ρ=0.97",
+    "meaning": "单点对标准 KinExA 秩相关",
+    "source_quote": "between single-point KinExA and standard KinExA ( ρ = 0.97, P = 6.5 × 10 − 33 )",
+    "location": "Results: Assay concordance"
+   },
+   {
+    "value": "ρ=0.92",
+    "meaning": "标准 KinExA 对 SPR 秩相关",
+    "source_quote": "a slightly weaker correlation ( ρ = 0.92, P = 6.8 × 10 − 22 )",
+    "location": "Results: Assay concordance"
+   },
+   {
+    "value": "五项；0/1/2",
+    "meaning": "可开发性检测数与计分",
+    "source_quote": "Each antibody was assessed on five developability assays",
+    "location": "Results: Assay concordance"
+   },
+   {
+    "value": "0、1、2 分",
+    "meaning": "通过、可疑、失败计分",
+    "source_quote": "given a score of pass (0), questionable (1) or fail (2) for each assay",
+    "location": "Results: Assay concordance"
+   },
+   {
+    "value": "≤3",
+    "meaning": "可开发总分阈值",
+    "source_quote": "constructs with a score ≤ 3 were considered developable",
+    "location": "Results: Assay concordance"
+   },
+   {
+    "value": "第 6 位、第 8 位",
+    "meaning": "LCDR1 酪氨酸与 LCDR3 色氨酸位置",
+    "source_quote": "tyrosine at position 6 of LCDR1 and tryptophan at position 8 of LCDR3",
+    "location": "Results: Challenge 1"
+   },
+   {
+    "value": "19 个替换；至少 12 个",
+    "meaning": "Aureka 获胜序列与亲本及实验数据集的 CDR 距离",
+    "source_quote": "a concatenated CDR distance of 19 substitutions from the parental antibody and at least 12 from any sequence in the experimental dataset",
+    "location": "Results: Challenge 1"
+   },
+   {
+    "value": "2–3 周",
+    "meaning": "作者估计可节省的实验时间",
+    "source_quote": "it would reduce experimental time by 2–3 weeks",
+    "location": "Discussion"
+   },
+   {
+    "value": "10–20 个设计",
+    "meaning": "作者认为足以找到有用变体的测试量",
+    "source_quote": "synthesizing and testing 10–20 designs would be sufficient to identify useful high-affinity variants",
+    "location": "Discussion"
+   },
+   {
+    "value": "2026",
+    "meaning": "下一轮挑战年份",
+    "source_quote": "will be the subject of the next AIntibody challenge for 2026",
+    "location": "Discussion"
+   },
+   {
+    "value": "5.2%",
+    "meaning": "Fig. 3d 图注中 28F 的比例（与正文冲突）",
+    "source_quote": "(10.3% for 27F, 5.2% for 28F and 9.8% for 47F)",
+    "location": "Fig. 3"
+   },
+   {
+    "value": "n=8",
+    "meaning": "挑战 1 KinExA 检测的 AI 提交数",
+    "source_quote": "n = 8 AI submissions tested by KinExA, n = 5 experimental",
+    "location": "Fig. 2"
+   },
+   {
+    "value": "168 个提交 / 23 家机构",
+    "meaning": "挑战 3 提交与机构数",
+    "source_quote": "across 23 organizations and 168 submissions, 117 (69.6%) bound RBD",
+    "location": "Results: Challenge 3"
+   }
+  ],
+  "steps": [
+   "29 家机构提交 511 个 AI 抗体序列",
+   "序列表达为 IgG，测 SPR、KinExA",
+   "五项检测计分，总分≤3 视为可开发",
+   "挑战 2 仅 9.8–13.8% 高于簇对照",
+   "挑战 3 获胜者 2.9 pM 但 HIC 未洗脱"
+  ],
+  "figure_caption": "示意图展示 AIntibody 流程：各机构提交的 AI 抗体序列表达为 IgG，经 SPR、KinExA 与五项可开发性检测，再比较各任务结果；挑战 3 获胜抗体在 HIC 柱上未洗脱。示意图由 AI 生成，依据原文结果绘制，非期刊原图，不代表分子比例",
+  "image_story": {
+   "stages": [
+    {
+     "visual_en": "Many deep green and mid green Y-shaped IgG antibody models with varied loop shapes floating in a cluster, each one a different design",
+     "source_quote": "While the datasets were generated in scFv format, antibodies were expressed and tested as full length IgGs."
+    },
+    {
+     "visual_en": "Antibodies captured in rows on a flat sensor chip, beside five small glass vials representing developability assays",
+     "source_quote": "Affinity measurements were first carried out on all submitted IgGs with SPR, followed by rank-order single-point KinExA and standard KinExA for the highest-affinity antibodies."
+    },
+    {
+     "visual_en": "A translucent glass chromatography column with one large antibody lodged at its top, unable to pass through, while pale mint antibodies pass below",
+     "source_quote": "Importantly, this antibody failed to elute from the HIC column"
+    }
+   ],
+   "key_element_en": "one large antibody lodged at the top of a chromatography column that failed to elute"
+  },
+  "image_subject_en": "A left-to-right process in three stages, drawn large. Stage 1 (left): a loose cluster of about a dozen Y-shaped IgG antibody models in deep green and mid green, each with slightly different loop shapes at the tips, floating above a faint pale mint ribbon of sequence beads. Stage 2 (center): a flat light grey-green sensor chip with neat rows of small pale mint antibodies captured on its surface, and beside it five small translucent glass vials in a row, filled with pale mint liquid at slightly different levels. Stage 3 (right): a tall translucent glass chromatography column with pale mint resin; several small pale mint and light grey-green antibodies pass through the lower part, while one very large antibody is lodged at the very top of the column and cannot pass. The lodged antibody is drawn as one very large, solid, boldly filled terracotta #C0492F object, clearly the focal point. Semi-realistic 3D scientific illustration, soft studio lighting, clean pale background, subject filling about 72% of the frame with visual weight near the 0.618 line. Only the lodged antibody is terracotta. No text, numbers, symbols, charts or axes.",
+  "card_subject_en": "A compact single subject: a tall translucent glass chromatography column filled with pale mint resin, standing beside one deep green Y-shaped IgG antibody model of similar height. Several small mid green and light grey-green antibodies sit at the base of the column, having passed through. At the very top of the column, one very large antibody is lodged and blocked, drawn as one very large, solid, boldly filled terracotta #C0492F object. Semi-realistic 3D scientific illustration, soft studio lighting, clean pale grey-green background, subject large and filling most of the frame. Only the lodged antibody is terracotta. No text, numbers, symbols or charts.",
+  "figure_labels": {
+   "heads": [
+    "AI 设计与预测",
+    "实验盲评检测",
+    "结果：任务间不一"
+   ],
+   "callouts": [
+    {
+     "t": "29 家机构\n511 个抗体",
+     "stage": 1,
+     "entity_en": "cluster of AI-designed IgG antibody models"
+    },
+    {
+     "t": "SPR 与 KinExA\nρ=0.94/0.97/0.92",
+     "stage": 2,
+     "entity_en": "sensor chip with rows of captured antibodies"
+    },
+    {
+     "t": "五项可开发性\n总分≤3 为可开发",
+     "stage": 2,
+     "entity_en": "five small glass vials"
+    },
+    {
+     "t": "挑战 2 提交\n9.8–13.8% 高于对照",
+     "stage": 3,
+     "entity_en": "small pale mint antibodies passing through the column"
+    },
+    {
+     "t": "2.9 pM 获胜者\nHIC 未洗脱",
+     "stage": 3,
+     "entity_en": "one very large antibody lodged at the top of the column"
+    }
+   ],
+   "facts": [
+    [
+     "**511** 个抗体",
+     "29 家机构"
+    ],
+    [
+     "挑战 1 最佳 **95 pM**",
+     "较亲本 2,000 倍"
+    ],
+    [
+     "挑战 2：9.8–13.8%",
+     "随机挑选 39%（未检验）"
+    ]
+   ],
+   "note": "数字为正文口径；挑战 2 与随机 39% 的对比未检验。示意图由 AI 生成，非期刊原图。"
+  },
+  "chart": {
+   "justified": true,
+   "title_zh": "挑战 2：亲和力高于簇对照的提交比例",
+   "unit": "%",
+   "figure_source": "Results: Challenge 2 正文（Fig. 3d 图注 28F 为 5.2%，未采用）",
+   "note": "对比未做统计检验；全部采用正文口径；随机挑选 39% 的 n 原文未给出。",
+   "values": [
+    {
+     "label_zh": "27F 簇 AI 提交",
+     "value": 10.3,
+     "n": "n=58",
+     "source_quote": "For clusters 27F, 28F and 47F, 10.3%, 13.8% and 9.8%, respectively, of all submissions were higher affinity relative to the cluster control"
+    },
+    {
+     "label_zh": "28F 簇 AI 提交",
+     "value": 13.8,
+     "n": "n=58",
+     "source_quote": "For clusters 27F, 28F and 47F, 10.3%, 13.8% and 9.8%, respectively, of all submissions were higher affinity relative to the cluster control"
+    },
+    {
+     "label_zh": "47F 簇 AI 提交",
+     "value": 9.8,
+     "n": "n=61",
+     "source_quote": "For clusters 27F, 28F and 47F, 10.3%, 13.8% and 9.8%, respectively, of all submissions were higher affinity relative to the cluster control"
+    },
+    {
+     "label_zh": "随机挑选克隆",
+     "value": 39,
+     "n": "n 未给出",
+     "source_quote": "compared to 39% for randomly picked clones"
+    }
+   ]
+  }
+ },
+ "images": {
+  "mech_raw": "c2-ai-1_mech_raw_r2.png",
+  "mech": "c2-ai-1_mech_r2.png",
+  "card": "c2-ai-1_card_r2.png",
+  "mech_raw_source": "c2-ai-1_mech_r2.png",
+  "card_source": "c2-ai-1_cardsrc.png",
+  "card_placement": {
+   "axis": "v",
+   "line": 0.382
+  },
+  "generator": "gpt-image-2 (gen3.py), text-free, house green palette + terracotta"
+ },
+ "card_title": "511个AI抗体前瞻盲评：最佳达95 pM，挑战2仅9.8–13.8%优于对照",
+ "card_caption": "层析柱顶有赤陶红抗体，右侧是巨大绿色抗体。",
+ "mech_dropped_callouts": [],
+ "card_text_meta": {
+  "model": "gemini-3.1-pro-preview (OpenAI out of credits, Claude at usage limit)",
+  "gemini_caption_check": {
+   "match": true,
+   "problem": ""
+  },
+  "caption_v1": "绿色层析柱及绿色抗体，柱顶卡着巨大砖红抗体"
+ },
+ "files": {
+  "checks": "c2-ai-1_checks_r2.json",
+  "mech_raw": "c2-ai-1_mech_raw_r2.png",
+  "mech": "c2-ai-1_mech_r2.png",
+  "card": "c2-ai-1_card_r2.png",
+  "final_md": "c2-ai-1_final_r2.md",
+  "final_json": "c2-ai-1_final_r2.json"
+ },
+ "superseded_early_files": "c2-ai-1_final.json/.md, c2-ai-1_checks.json, c2-ai-1_mech_raw.png, c2-ai-1_card.png (first assembly, superseded by the _r2 files)"
+}

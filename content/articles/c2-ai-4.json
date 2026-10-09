@@ -1,0 +1,693 @@
+{
+ "id": "c2-ai-4",
+ "final_version": 3,
+ "drafter_model": "gpt-5.5-2026-04-23",
+ "drafter_models_per_version": {
+  "1": "gpt-5.5-2026-04-23",
+  "2": "gpt-5.5-2026-04-23",
+  "3": "gpt-5.5-2026-04-23"
+ },
+ "verifier_model": "gpt-5.5-2026-04-23",
+ "mustcover_frozen_by": "claude-opus-5-5",
+ "selected_from_versions": [
+  1,
+  2,
+  3
+ ],
+ "remaining_failures_n": 0,
+ "remaining_failures": [],
+ "status": "published-ready",
+ "status_reasons": [],
+ "preprint": false,
+ "tags_note": "editor related-field tags prepended; writer tags trimmed to 6 (metadata only)",
+ "writer_tags": [
+  "蛋白质组衰老钟",
+  "TNIK抑制剂",
+  "特发性肺纤维化",
+  "Olink Explore",
+  "GSEA",
+  "剂量方案"
+ ],
+ "article": {
+  "tier": "deep",
+  "field": "AI 药物设计",
+  "tags": [
+   "蛋白质组衰老钟",
+   "TNIK抑制剂",
+   "特发性肺纤维化",
+   "Olink Explore",
+   "GSEA",
+   "剂量方案"
+  ],
+  "primary_endpoint_basis": "本稿把探索性蛋白质组学分析的核心读出定为ΔBioAge相对安慰剂的多时点、多衰老钟比较，因为摘要写道“all six clocks consistently predicted lower biological age in treated arms”，正文Results将其操作化为“We quantified these shifts as the change in predicted biological age from baseline (ΔBioAge) and compared each treatment arm to placebo at weeks 2, 4 and 12”，并报告“Of these 54 comparisons, 21 reached statistical significance (Q value < 0.10)”。标题数字“21项”来自这54个治疗组对安慰剂ΔBioAge比较中达到Q < 0.10的结果。",
+  "comparison_design": "父试验为随机、双盲、安慰剂对照2a期IPF试验，但本文的蛋白质组衰老钟分析是完成试验后43人同意、42人可分析的附属分析。原文没有给出该附属分析的样本量把握度或为组间ΔBioAge比较设计效能；Methods仅说明“Treatment effects on biological age were analyzed using Mann–Whitney U tests for pairwise comparisons (placebo versus treatment) at each timepoint with Benjamin–Hochberg multiple correction procedure.” 因此可写为经多重校正的探索性组间检验，不写成确证性优效。",
+  "untested_comparisons": [
+   "60 mg QD在原始试验中FVC改善最大，而30 mg BID衰老钟信号最一致；原文用此作解离论据，并未把两剂量的ΔBioAge差异作为正式设计效能比较",
+   "30 mg BID相对60 mg QD可能因更平稳血药浓度产生更强抗衰老签名；原文在Discussion写为hypothesize",
+   "30 mg QD、30 mg BID、60 mg QD之间通路富集数量与类型差异用于机制解释，不作为标题中的疗效比较结论",
+   "BMI与ΔBioAge的54项相关中仅3项名义显著且校正后不显著，不能写成BMI影响或不影响疗效的确证结论"
+  ],
+  "number_basis_note": "摘要与正文在核心方向上没有冲突：摘要只给“six proteomic clocks”和“12-week phase 2a trial”，正文给出54项比较、21项显著、周4集中等量化口径；正文与图标签均采用Results/Methods口径。图5正文列出SenMayo全治疗臂显著阴性但60 mg QD例外Q=0.17，本稿按正文完整口径写。",
+  "must_cover": [
+   {
+    "id": "m1",
+    "item_zh": "在54个治疗组对安慰剂ΔBioAge比较中，21个达到显著性（Q < 0.10）；这些结果集中在第4周，18个比较中有11个显著。",
+    "status": "covered",
+    "covered_by": "在54个治疗组对安慰剂的ΔBioAge比较中，21个达到Q<0.10"
+   },
+   {
+    "id": "m2",
+    "item_zh": "三种方案中，30 mg BID时钟信号最一致（9个显著比较），其次为60 mg QD（7个）和30 mg QD（5个）。",
+    "status": "covered",
+    "covered_by": "按方案看，30 mg BID有9个显著比较，60 mg QD有7个"
+   },
+   {
+    "id": "m3",
+    "item_zh": "父试验为随机、双盲、安慰剂对照2a期IPF试验。71例患者中，18例30 mg QD、18例30 mg BID、18例60 mg QD、17例安慰剂，治疗12周。",
+    "status": "covered",
+    "covered_by": "父试验为随机、双盲、安慰剂对照2a期IPF研究"
+   },
+   {
+    "id": "m4",
+    "item_zh": "仅43名参与者同意蛋白质组子研究，1人排除，最终分析42人（平均年龄67.1岁）。各臂n为安慰剂11、30 mg QD 11、30 mg BID 11、60 mg QD 9。血清在基线、第2周、第4周和第12周用Olink Explore 3072分析。",
+    "status": "covered",
+    "covered_by": "蛋白质组子研究中，43人同意，1人因第12周缺测被排除"
+   },
+   {
+    "id": "m5",
+    "item_zh": "核心读出为ΔBioAge，即相对基线的预测生物年龄变化。每个治疗臂与安慰剂用单侧Mann–Whitney U检验和Benjamini–Hochberg FDR比较。",
+    "status": "covered",
+    "covered_by": "核心读出是ΔBioAge，即相对基线的预测生物年龄变化"
+   },
+   {
+    "id": "m6",
+    "item_zh": "四个按时间年龄训练的钟与实际年龄Spearman r为0.70–0.84，校正后RMSE低于4年；两个死亡风险钟与年龄相关较弱（r 0.16–0.23）。",
+    "status": "covered",
+    "covered_by": "四个按时间年龄训练的钟与实际年龄相关良好，Spearman r为0.70–0.84"
+   },
+   {
+    "id": "m7",
+    "item_zh": "患者标签置换检验的显著比较数零假设均值为0.15，而观察到21个；去除≥3级不良事件参与者后仍有19个显著发现，p < 0.0001。",
+    "status": "covered",
+    "covered_by": "患者标签置换的零假设均值为0.15，而观察到21个显著比较"
+   },
+   {
+    "id": "m8",
+    "item_zh": "60 mg QD臂FVC改善最大，第4周在四个时间年龄钟均显著降低（ΔBioAge −2.71至−3.46年），但两个死亡风险钟均无显著改变。",
+    "status": "covered",
+    "covered_by": "60 mg QD虽在原始试验中FVC改善最大"
+   },
+   {
+    "id": "m9",
+    "item_zh": "到第12周，时钟信号衰减为平台：第4周到第12周之间没有任何臂-时钟组合发生显著变化（配对Wilcoxon，P < 0.05）。",
+    "status": "covered",
+    "covered_by": "第12周信号转为平台：第4周到第12周，没有臂-时钟组合出现显著变化"
+   },
+   {
+    "id": "m10",
+    "item_zh": "ΔFVC只能解释很少ΔBioAge方差（中位R²=0.06，范围0.01–0.18，N=42），反对简单的疾病改善解释。",
+    "status": "covered",
+    "covered_by": "ΔFVC对ΔBioAge的解释度很低，中位R²为0.06"
+   },
+   {
+    "id": "m11",
+    "item_zh": "对照UK Biobank衰老轨迹（55,319名成人），30 mg BID臂的治疗变化与正常衰老负相关（r = −0.30，P < 0.01），而60 mg QD无此相关（r = −0.097，P = 0.37）。",
+    "status": "covered",
+    "covered_by": "与UK Biobank的55,319名成人衰老轨迹相比"
+   },
+   {
+    "id": "m12",
+    "item_zh": "GSEA中，SenMayo衰老/衰老细胞签名在安慰剂上调（NES=1.48，Q < 0.01）；除60 mg QD（Q=0.17）外，所有治疗臂均显著为负（Q < 0.05）。",
+    "status": "covered",
+    "covered_by": "SenMayo签名在安慰剂中上调，NES=1.48、Q<0.01"
+   },
+   {
+    "id": "m13",
+    "item_zh": "作者称样本量小、持续时间短、依赖计算方法且缺少其他组学，阻碍了抗纤维化与抗衰老效应的清楚分离；确认需要非IPF人群。",
+    "status": "covered",
+    "covered_by": "作者明确把样本量小、观察期短、计算方法占主导和缺少其他组学列为限制"
+   }
+  ],
+  "title": "探索性蛋白质组附属分析中Rentosertib衰老钟21项显著",
+  "one_liner": "在42名IPF患者的探索性蛋白质组子研究中，rentosertib使54个ΔBioAge比较中21个达Q<0.10，提示预测生物年龄下降。",
+  "datacard": {
+   "study_type": "2a期随机、双盲、安慰剂对照IPF试验的蛋白质组衰老钟附属分析",
+   "n": "父试验71例；蛋白质组分析42例：安慰剂11例、30 mg QD 11例、30 mg BID 11例、60 mg QD 9例",
+   "control": "安慰剂QD；血清基线、第2周、第4周、第12周纵向采样",
+   "intervention": "口服rentosertib 30 mg QD、30 mg BID或60 mg QD，持续12周，并继续标准治疗",
+   "followup": "12周",
+   "primary_endpoint": "探索性蛋白质组生物标志物读出：ΔBioAge，即六种蛋白质组衰老钟预测生物年龄相对基线的变化；各治疗臂在第2、4、12周与安慰剂比较",
+   "primary_endpoint_result": "54个治疗组对安慰剂比较中21个达到Q<0.10；第4周18个比较中11个显著，置换零假设均值0.15",
+   "statistics": "单侧Mann–Whitney U检验比较治疗臂与安慰剂，Benjamini–Hochberg校正；患者标签置换100,000次；原文未说明蛋白质组子研究为组间比较设计效能",
+   "evidence_level": "全文",
+   "check_record": "读了Nature Biotechnology OA全文的Abstract、Results、Discussion、Methods和图注；来源为全文HTML，DOI 10.1038/s41587-026-03286-y"
+  },
+  "background": [
+   "许多年龄相关疾病药物可能同时触及衰老通路，但常规临床终点难以区分疾病改善与生物衰老调节。DNA甲基化时钟已有临床应用尝试，却常面临模型间不一致、解释困难和机制信息间接等问题。",
+   "Zhavoronkov等在Nature Biotechnology把一个AI设计的TNIK抑制剂rentosertib用于IPF试验的血清样本重新分析，比较六种蛋白质组衰老钟，并把时钟、蛋白轨迹、衰老队列和通路富集放在同一框架内，试图评估疾病试验能否同步读取潜在护老信号和机制线索。"
+  ],
+  "design": [
+   "父试验为随机、双盲、安慰剂对照2a期IPF研究，在中国多中心开展。71例患者被分配至30 mg QD、30 mg BID、60 mg QD或安慰剂，四臂人数分别为18、18、18和17，治疗12周；原文没有说明蛋白质组子研究为组间ΔBioAge比较设计效能。",
+   "蛋白质组子研究中，43人同意，1人因第12周缺测被排除，最终42人、平均年龄67.1岁；各臂为安慰剂11、30 mg QD 11、30 mg BID 11、60 mg QD 9。血清在基线、第2周、第4周和第12周用Olink Explore 3072检测。核心读出是ΔBioAge，即相对基线的预测生物年龄变化；每个治疗臂与安慰剂用单侧Mann–Whitney U检验和Benjamini–Hochberg FDR比较。"
+  ],
+  "results": [
+   {
+    "subhead": "时钟先经校准",
+    "text": "在42份基线样本上，四个按时间年龄训练的钟与实际年龄相关良好，Spearman r为0.70–0.84，线性校正后RMSE低于4年；两个死亡风险钟与年龄相关较弱，r为0.16–0.23。作者据此把两类钟视为互补读出，而不是同一量表。匿名化各时点预测值另列于补充表，供复核各钟读数。"
+   },
+   {
+    "subhead": "主读出达显著",
+    "text": "在54个治疗组对安慰剂的ΔBioAge比较中，21个达到Q<0.10；这些显著结果集中在第4周，当时18个比较中有11个显著。患者标签置换的零假设均值为0.15，而观察到21个显著比较；去除≥3级不良事件者后仍有19个，p<0.0001。"
+   },
+   {
+    "subhead": "方案信号不同",
+    "text": "按方案看，30 mg BID有9个显著比较，60 mg QD有7个，30 mg QD有5个。60 mg QD虽在原始试验中FVC改善最大，第4周四个时间年龄钟均显著降低，ΔBioAge为−2.71至−3.46年，但两个死亡风险钟均无显著改变。"
+   },
+   {
+    "subhead": "平台而非消失",
+    "text": "第12周信号转为平台：第4周到第12周，没有臂-时钟组合出现显著变化，配对Wilcoxon阈值为P<0.05。蛋白层面则不同，30 mg BID和60 mg QD仅5–9%的蛋白变化属短暂型；在衰老钟特征蛋白中，持续变化比例在两个活性剂量臂达到29–36%，提示时钟平台不等同于蛋白效应消退。"
+   },
+   {
+    "subhead": "解离疾病改善",
+    "text": "ΔFVC对ΔBioAge的解释度很低，中位R²为0.06，范围0.01–0.18，N=42。与UK Biobank的55,319名成人衰老轨迹相比，30 mg BID治疗变化负相关，r=−0.30、P<0.01；60 mg QD无此相关，r=−0.097、P=0.37。"
+   }
+  ],
+  "mechanism_proven": [
+   "线性混合模型显示，rentosertib相对安慰剂显著改变326个蛋白轨迹，安慰剂仅2个；其中237个只在一个治疗臂出现，89个在两个或更多治疗臂同向变化。30 mg BID有142个独有变化，和跨时钟信号最一致的观察相互对应。",
+   "GSEA显示衰老细胞相关循环蛋白呈相反轨迹：SenMayo签名在安慰剂中上调，NES=1.48、Q<0.01；除60 mg QD为Q=0.17外，治疗臂均为显著负向，Q<0.05。Reactome中IGF转运与IGFBP摄取通路在两个有效剂量臂下调，NES为−1.70至−1.66。"
+  ],
+  "mechanism_inferred": [
+   "作者推测，30 mg BID较低但更频繁给药，可能比60 mg QD的大峰值暴露更能维持与衰老相关的代谢、氧化还原和IGF轴调节；这种解释来自通路差异和药代讨论，并非直接测得组织TNIK占有率或因果机制。"
+  ],
+  "limitations": [
+   "第一，外推性有限。蛋白质组分析只有42名亚洲IPF患者，且60 mg QD臂只有9人；衰老钟多来自UK Biobank训练，在严重纤维化人群中属于越界应用，作者也要求在非IPF人群确认。",
+   "第二，终点和随访仍偏探索性。观察期为12周，核心读出是血清ΔBioAge而非临床护老结局；第4周信号最强，第12周进入平台，尚不能判断长期持续性、间歇给药或功能获益。",
+   "第三，方法学上仍难拆分抗纤维化与抗衰老。作者明确把样本量小、观察期短、计算方法占主导和缺少其他组学列为限制；Olink面板少于3,000个蛋白，TNIK本身不在平台内，只能间接推断靶点通路。"
+  ],
+  "significance": [
+   "如果后续在非IPF或风险富集老年人群中复现，这项工作提供了一种把AI设计药物的疾病试验扩展为护老信号侦测的模板：同一试验内预设血清蛋白质组、多个衰老钟、正常衰老轨迹参照和计算性通路分析。",
+   "对Insilico Medicine的rentosertib项目而言，结果还提示剂量频次可能影响生物学读出：30 mg BID的衰老钟和代谢通路信号更一致，而60 mg QD更接近FVC改善轴。当前证据只能支持探索性药效标志物，不能推出患者抗衰老疗效。"
+  ],
+  "citation": "Zhavoronkov A, Galkin F, Chen S, Ren F, Aliper A, Durymanov M, et al. Integration of proteomic aging clocks in a phase 2a clinical trial supports simultaneous geroprotective assessment. Nat Biotechnol. 2026. https://doi.org/10.1038/s41587-026-03286-y",
+  "data_points": [
+   {
+    "value": "21项",
+    "meaning": "标题中达到显著性的ΔBioAge治疗组对安慰剂比较数",
+    "source_quote": "Of these 54 comparisons, 21 reached statistical significance ( Q value < 0.10)",
+    "location": "Results: Rentosertib-induced aging clock predictions"
+   },
+   {
+    "value": "42名",
+    "meaning": "一句话结论中的蛋白质组分析人数",
+    "source_quote": "The resulting cohort consisted of 42 Asian people with a mean age of 67.1 years.",
+    "location": "Results"
+   },
+   {
+    "value": "54个",
+    "meaning": "ΔBioAge治疗组对安慰剂比较总数",
+    "source_quote": "yielding 54 comparisons per arm (6 clocks × 3 timepoints × 3 regimens)",
+    "location": "Results: Rentosertib-induced aging clock predictions"
+   },
+   {
+    "value": "Q<0.10",
+    "meaning": "主要核心读出显著性阈值",
+    "source_quote": "21 reached statistical significance ( Q value < 0.10)",
+    "location": "Results: Rentosertib-induced aging clock predictions"
+   },
+   {
+    "value": "2a期",
+    "meaning": "父试验期别",
+    "source_quote": "This analysis used data from a phase 2a, multicenter, double-blind, placebo-controlled, randomized, multidose trial",
+    "location": "Methods: Trial design"
+   },
+   {
+    "value": "71例",
+    "meaning": "父试验随机/选择治疗人数",
+    "source_quote": "Out of 128 patients screened, 71 were selected to receive 30 mg rentosertib once daily",
+    "location": "Results"
+   },
+   {
+    "value": "30 mg QD",
+    "meaning": "rentosertib低剂量每日一次方案",
+    "source_quote": "30 mg rentosertib once daily (QD, N = 18)",
+    "location": "Results"
+   },
+   {
+    "value": "30 mg BID",
+    "meaning": "rentosertib低剂量每日两次方案",
+    "source_quote": "30 mg rentosertib twice daily (BID, N = 18)",
+    "location": "Results"
+   },
+   {
+    "value": "60 mg QD",
+    "meaning": "rentosertib高剂量每日一次方案",
+    "source_quote": "60 mg QD ( N = 18) or placebo ( N = 17)",
+    "location": "Results"
+   },
+   {
+    "value": "18",
+    "meaning": "30 mg QD父试验分配人数",
+    "source_quote": "30 mg rentosertib once daily (QD, N = 18)",
+    "location": "Results"
+   },
+   {
+    "value": "17",
+    "meaning": "父试验安慰剂分配人数",
+    "source_quote": "60 mg QD ( N = 18) or placebo ( N = 17)",
+    "location": "Results"
+   },
+   {
+    "value": "12周",
+    "meaning": "治疗和随访时长",
+    "source_quote": "forced vital capacity (FVC) was recorded at the start and end of the trial (12 weeks)",
+    "location": "Results"
+   },
+   {
+    "value": "43人",
+    "meaning": "同意血清蛋白质组筛查人数",
+    "source_quote": "A total of 43 participants consented to serum proteomic screening",
+    "location": "Results"
+   },
+   {
+    "value": "1人",
+    "meaning": "因缺少终点检测被排除人数",
+    "source_quote": "1 of whom was excluded due to a missing measurement at the end of trial",
+    "location": "Results"
+   },
+   {
+    "value": "67.1岁",
+    "meaning": "蛋白质组分析队列平均年龄",
+    "source_quote": "The resulting cohort consisted of 42 Asian people with a mean age of 67.1 years.",
+    "location": "Results"
+   },
+   {
+    "value": "11",
+    "meaning": "蛋白质组分析中安慰剂、30 mg QD和30 mg BID各臂样本量",
+    "source_quote": "placebo (11), 30 mg QD (11), 30 mg BID (11) and 60 mg QD (9)",
+    "location": "Fig. 3 caption"
+   },
+   {
+    "value": "9",
+    "meaning": "蛋白质组分析中60 mg QD样本量",
+    "source_quote": "placebo (11), 30 mg QD (11), 30 mg BID (11) and 60 mg QD (9)",
+    "location": "Fig. 3 caption"
+   },
+   {
+    "value": "第2周",
+    "meaning": "血清采样和ΔBioAge比较时间点之一",
+    "source_quote": "at weeks 2, 4 and 12",
+    "location": "Results: Rentosertib-induced aging clock predictions"
+   },
+   {
+    "value": "第4周",
+    "meaning": "血清采样、ΔBioAge比较和信号集中时间点",
+    "source_quote": "concentrated at week 4, where 11 of 18 comparisons registered significantly lower ΔBioAge",
+    "location": "Results: Rentosertib-induced aging clock predictions"
+   },
+   {
+    "value": "Olink Explore 3072",
+    "meaning": "血清蛋白检测平台",
+    "source_quote": "Protein expression levels were measured using the Olink Explore 3072 panel following the manufacturer’s standard procedures.",
+    "location": "Methods: Sample collection and processing"
+   },
+   {
+    "value": "0.70–0.84",
+    "meaning": "四个时间年龄钟与实际年龄的Spearman相关范围",
+    "source_quote": "correlated well with actual age (Spearman’s r ∈ 0.70–0.84)",
+    "location": "Results: Aging clock performance"
+   },
+   {
+    "value": "4年",
+    "meaning": "时间年龄钟校正后RMSE上限",
+    "source_quote": "achieved root mean square errors below 4 years",
+    "location": "Results: Aging clock performance"
+   },
+   {
+    "value": "0.16–0.23",
+    "meaning": "死亡风险钟与实际年龄相关范围",
+    "source_quote": "showed weaker correlation with chronological age ( r ∈ 0.16 − 0.23)",
+    "location": "Results: Aging clock performance"
+   },
+   {
+    "value": "18个",
+    "meaning": "第4周比较数",
+    "source_quote": "where 11 of 18 comparisons registered significantly lower ΔBioAge in treated participants",
+    "location": "Results: Rentosertib-induced aging clock predictions"
+   },
+   {
+    "value": "11个",
+    "meaning": "第4周显著比较数",
+    "source_quote": "where 11 of 18 comparisons registered significantly lower ΔBioAge in treated participants",
+    "location": "Results: Rentosertib-induced aging clock predictions"
+   },
+   {
+    "value": "0.15",
+    "meaning": "患者标签置换检验显著比较数零假设均值",
+    "source_quote": "21 significant comparisons far exceeded chance expectation (null mean = 0.15",
+    "location": "Results: Rentosertib-induced aging clock predictions"
+   },
+   {
+    "value": "≥3级",
+    "meaning": "高等级不良事件定义阈值",
+    "source_quote": "Higher-grade adverse events are defined as those classified with grade ≥3 according to the Common Terminology Criteria for Adverse Events",
+    "location": "Extended Data Fig. 2 caption"
+   },
+   {
+    "value": "19个",
+    "meaning": "去除高等级不良事件参与者后的显著发现数",
+    "source_quote": "The reported numbers of findings (21 in the full, and 19 in the reduced cohort) is statistically meaningful",
+    "location": "Extended Data Fig. 2 caption"
+   },
+   {
+    "value": "p<0.0001",
+    "meaning": "置换检验在删去高等级不良事件者后的显著性",
+    "source_quote": "cannot be attributed to random chance (p-value < 0.0001)",
+    "location": "Extended Data Fig. 2 caption"
+   },
+   {
+    "value": "9个",
+    "meaning": "30 mg BID方案显著比较数",
+    "source_quote": "30 mg BID produced the most consistent signal (nine significant comparisons)",
+    "location": "Results: Rentosertib-induced aging clock predictions"
+   },
+   {
+    "value": "7个",
+    "meaning": "60 mg QD方案显著比较数",
+    "source_quote": "followed by 60 mg QD (seven significant comparisons)",
+    "location": "Results: Rentosertib-induced aging clock predictions"
+   },
+   {
+    "value": "5个",
+    "meaning": "30 mg QD方案显著比较数",
+    "source_quote": "and 30 mg QD (five significant comparisons)",
+    "location": "Results: Rentosertib-induced aging clock predictions"
+   },
+   {
+    "value": "−2.71至−3.46年",
+    "meaning": "60 mg QD第4周四个时间年龄钟的ΔBioAge范围",
+    "source_quote": "ΔBioAge ∈ −2.71 to −3.46 years, Q value < 0.10",
+    "location": "Results: Rentosertib-induced aging clock predictions"
+   },
+   {
+    "value": "P<0.05",
+    "meaning": "第4周至第12周配对Wilcoxon显著性阈值",
+    "source_quote": "no arm–clock combination showed significant (paired Wilcoxon, P < 0.05) shift",
+    "location": "Results: Rentosertib-induced aging clock predictions"
+   },
+   {
+    "value": "5–9%",
+    "meaning": "30 mg BID和60 mg QD中短暂蛋白变化比例",
+    "source_quote": "only 5–9% of proteomic shifts were transient",
+    "location": "Results: Stability of rentosertib’s effects"
+   },
+   {
+    "value": "29–36%",
+    "meaning": "两个活性剂量臂中衰老钟特征蛋白持续变化比例",
+    "source_quote": "the portion of proteins with a sustained shift is larger, raching 29–36% in the two active-dosage arms",
+    "location": "Extended Data Fig. 7 caption"
+   },
+   {
+    "value": "0.06",
+    "meaning": "ΔFVC解释ΔBioAge方差的中位R²",
+    "source_quote": "median R 2 = 0.06, range ∈ 0.01–0.18, N = 42",
+    "location": "Results: Isolating geroprotective effects"
+   },
+   {
+    "value": "0.01–0.18",
+    "meaning": "ΔFVC解释ΔBioAge方差的R²范围",
+    "source_quote": "median R 2 = 0.06, range ∈ 0.01–0.18, N = 42",
+    "location": "Results: Isolating geroprotective effects"
+   },
+   {
+    "value": "N=42",
+    "meaning": "ΔFVC解释度分析样本量",
+    "source_quote": "median R 2 = 0.06, range ∈ 0.01–0.18, N = 42",
+    "location": "Results: Isolating geroprotective effects"
+   },
+   {
+    "value": "55,319名",
+    "meaning": "UK Biobank衰老轨迹参照队列人数",
+    "source_quote": "we compared treatment-induced protein changes to age-associated protein changes in 55,319 older adults",
+    "location": "Results: Isolating geroprotective effects"
+   },
+   {
+    "value": "r=−0.30",
+    "meaning": "30 mg BID治疗变化与正常衰老方向的Spearman相关",
+    "source_quote": "Spearman’s r = −0.30, P < 0.01",
+    "location": "Results: Isolating geroprotective effects"
+   },
+   {
+    "value": "P<0.01",
+    "meaning": "30 mg BID治疗变化与正常衰老负相关的P值",
+    "source_quote": "Spearman’s r = −0.30, P < 0.01",
+    "location": "Results: Isolating geroprotective effects"
+   },
+   {
+    "value": "r=−0.097",
+    "meaning": "60 mg QD治疗变化与正常衰老方向的Spearman相关",
+    "source_quote": "60 mg QD regimen showed no such correlation ( r = –0.097, P = 0.37)",
+    "location": "Results: Isolating geroprotective effects"
+   },
+   {
+    "value": "P=0.37",
+    "meaning": "60 mg QD治疗变化与正常衰老方向相关的P值",
+    "source_quote": "60 mg QD regimen showed no such correlation ( r = –0.097, P = 0.37)",
+    "location": "Results: Isolating geroprotective effects"
+   },
+   {
+    "value": "326个",
+    "meaning": "rentosertib显著改变轨迹的蛋白数",
+    "source_quote": "Rentosertib altered the expression trajectories of 326 proteins significantly",
+    "location": "Results: Rentosertib-induced proteomic trajectories"
+   },
+   {
+    "value": "2个",
+    "meaning": "安慰剂组显著改变轨迹的蛋白数",
+    "source_quote": "compared to only 2 in the placebo group",
+    "location": "Results: Rentosertib-induced proteomic trajectories"
+   },
+   {
+    "value": "237个",
+    "meaning": "仅在一个治疗臂响应的蛋白数",
+    "source_quote": "237 proteins responded only in one arm",
+    "location": "Results: Rentosertib-induced proteomic trajectories"
+   },
+   {
+    "value": "89个",
+    "meaning": "在两个或更多治疗组同向变化的蛋白数",
+    "source_quote": "A subset of 89 proteins showed concordant directional changes in two or more treatment groups",
+    "location": "Results: Rentosertib-induced proteomic trajectories"
+   },
+   {
+    "value": "142个",
+    "meaning": "30 mg BID独有受影响蛋白数",
+    "source_quote": "with 142 uniquely affected proteins",
+    "location": "Results: Rentosertib-induced proteomic trajectories"
+   },
+   {
+    "value": "NES=1.48",
+    "meaning": "安慰剂组SenMayo签名富集分数",
+    "source_quote": "normalized enrichment score (NES) = 1.48; Q value < 0.01",
+    "location": "Results: Rentosertib’s senomorphic effect"
+   },
+   {
+    "value": "Q<0.01",
+    "meaning": "安慰剂SenMayo上调显著性",
+    "source_quote": "normalized enrichment score (NES) = 1.48; Q value < 0.01",
+    "location": "Results: Rentosertib’s senomorphic effect"
+   },
+   {
+    "value": "Q<0.05",
+    "meaning": "多数治疗臂SenMayo负向显著性阈值",
+    "source_quote": "significantly negative SenMayo scores and significantly positive CellAge-downregulated scores ( Q value < 0.05)",
+    "location": "Results: Rentosertib’s senomorphic effect"
+   },
+   {
+    "value": "Q=0.17",
+    "meaning": "60 mg QD在SenMayo签名中的例外Q值",
+    "source_quote": "except for 60 mg QD in SenMayo ( Q value = 0.17",
+    "location": "Results: Rentosertib’s senomorphic effect"
+   },
+   {
+    "value": "−1.70至−1.66",
+    "meaning": "IGF转运与IGFBP摄取通路在有效剂量臂的NES范围",
+    "source_quote": "regulation of insulin-like growth factor (IGF) transport and uptake by IGF binding proteins (IGFBPs) ( Q value < 0.10, NES ∈ −1.70 to −1.66)",
+    "location": "Results: Rentosertib’s senomorphic effect"
+   },
+   {
+    "value": "少于3,000个蛋白",
+    "meaning": "蛋白质组数组覆盖规模限制",
+    "source_quote": "proteomic arrays report only under 3,000 proteins",
+    "location": "Discussion"
+   },
+   {
+    "value": "六种",
+    "meaning": "本文比较的蛋白质组衰老钟数量",
+    "source_quote": "Here we compare six proteomic clocks",
+    "location": "Abstract"
+   },
+   {
+    "value": "100,000次",
+    "meaning": "患者标签置换抽样次数",
+    "source_quote": "The distribution was obtained by generating 100,000 samples with patient-label randomization.",
+    "location": "Extended Data Fig. 2 caption"
+   }
+  ],
+  "steps": [
+   "IPF试验采集血清",
+   "六种蛋白时钟估计ΔBioAge",
+   "治疗臂与安慰剂比较",
+   "通路分析提供解离线索"
+  ],
+  "figure_caption": "图示rentosertib蛋白质组附属分析的证据链：IPF患者纵向血清经Olink检测，六种蛋白质组衰老钟计算ΔBioAge；显著信号再与FVC、UK Biobank衰老轨迹、SenMayo和IGF轴通路做交叉分析，提供间接支持。示意图由 AI 生成，依据原文结果绘制，非期刊原图，不代表分子比例",
+  "image_story": {
+   "stages": [
+    {
+     "visual_en": "IPF trial participants and serum tubes entering an Olink proteomics panel",
+     "source_quote": "Their serum samples were screened using the Olink Explore 3072 platform to obtain longitudinal proteomic profiles"
+    },
+    {
+     "visual_en": "six proteomic aging clock dials comparing treated arms with placebo",
+     "source_quote": "All aging clocks record biological age reduction in response to rentosertib, most consistently in the 30 mg BID arm"
+    },
+    {
+     "visual_en": "protein pathway network with visually distinct fibrosis, senescence, metabolism and IGF-axis clusters, shown as indirect analysis rather than full disentanglement",
+     "source_quote": "These coordinated shifts in IGF-axis proteins suggest a potential mechanism linking TNIK inhibition to the metabolic and senescence-related components of biological aging."
+    }
+   ],
+   "key_element_en": "rentosertib molecule"
+  },
+  "image_subject_en": "A left-to-right process in three stages, drawn large. Stage 1 shows a compact group of adult lung fibrosis patients as pale mint human silhouettes beside deep green serum tubes flowing into a light grey-green Olink proteomics instrument, with soft lung shapes behind them. Stage 2 shows six circular proteomic aging clock dials in mid green, arranged around treated-arm serum droplets and a placebo droplet; the treated droplets point downward on the clock faces, while the placebo droplet remains near baseline. Stage 3 shows a branching protein pathway network in deep green and pale mint, with separate clusters suggesting extracellular matrix, senescence markers, metabolism, and IGF-axis proteins, connected but visually distinct. The rentosertib molecule is drawn as one very large, solid, boldly filled terracotta #C0492F structure moving from the dosing area toward the clock dials. Use semi-realistic 3D scientific illustration, soft shadows, clean background, no words, no numbers, no symbols, no axes. Only the rentosertib molecule is terracotta.",
+  "card_subject_en": "A compact semi-realistic 3D scientific still life: one large deep green serum droplet surrounded by six pale mint proteomic aging clock dials and a small light grey-green lung silhouette in the background. A single rentosertib molecule is drawn very large, solid, boldly filled terracotta #C0492F, hovering in front of the droplet as the visual focus. The rest uses deep green, mid green, pale mint, and light grey-green materials, with soft shadows and no words, no numbers, no symbols, no charts.",
+  "figure_labels": {
+   "heads": [
+    "血清蛋白组",
+    "衰老钟读出",
+    "通路交叉分析"
+   ],
+   "callouts": [
+    {
+     "t": "42名IPF患者\n4个时间点",
+     "stage": 1,
+     "entity_en": "IPF trial participants and serum tubes"
+    },
+    {
+     "t": "Olink Explore 3072\n检测血清蛋白",
+     "stage": 1,
+     "entity_en": "Olink proteomics instrument"
+    },
+    {
+     "t": "六种蛋白时钟\n计算ΔBioAge",
+     "stage": 2,
+     "entity_en": "six proteomic aging clock dials"
+    },
+    {
+     "t": "21/54项显著\nQ<0.10",
+     "stage": 2,
+     "entity_en": "treated-arm serum droplets"
+    },
+    {
+     "t": "SenMayo安慰剂上调\nNES=1.48",
+     "stage": 3,
+     "entity_en": "senescence marker cluster"
+    },
+    {
+     "t": "作者推测\n剂量频次影响通路",
+     "stage": 3,
+     "entity_en": "protein pathway network"
+    }
+   ],
+   "facts": [
+    [
+     "蛋白质组分析**42名**",
+     "父试验12周"
+    ],
+    [
+     "**21/54**项比较显著",
+     "第4周11/18项"
+    ],
+    [
+     "ΔFVC解释度低",
+     "中位R²=0.06"
+    ]
+   ],
+   "note": "数字用Results/Methods口径；剂量频次机制为作者推测。示意图由 AI 生成，非期刊原图。"
+  },
+  "chart": {
+   "justified": true,
+   "title_zh": "各给药方案达到显著的ΔBioAge比较数",
+   "unit": "显著比较数（Q<0.10）",
+   "figure_source": "Results: Rentosertib-induced aging clock predictions; Fig. 3",
+   "values": [
+    {
+     "label_zh": "30 mg QD",
+     "value": 5,
+     "n": "n=11",
+     "source_quote": "and 30 mg QD (five significant comparisons)."
+    },
+    {
+     "label_zh": "30 mg BID",
+     "value": 9,
+     "n": "n=11",
+     "source_quote": "30 mg BID produced the most consistent signal (nine significant comparisons)"
+    },
+    {
+     "label_zh": "60 mg QD",
+     "value": 7,
+     "n": "n=9",
+     "source_quote": "followed by 60 mg QD (seven significant comparisons)"
+    }
+   ],
+   "note": "探索性蛋白质组子研究；原文未说明为方案间组间比较设计效能。"
+  }
+ },
+ "images": {
+  "mech_raw": "c2-ai-4_mech_raw.png",
+  "mech": "c2-ai-4_mech.png",
+  "card": "c2-ai-4_card.png",
+  "mech_raw_source": "c2-ai-4_mech.png",
+  "card_source": "c2-ai-4_cardsrc.png",
+  "card_placement": {
+   "axis": "v",
+   "line": 0.618
+  },
+  "generator": "gpt-image-2 (gen3.py), text-free, house green palette + terracotta"
+ },
+ "card_title": "2a期IPF试验附属分析：Rentosertib使54项衰老钟比较中21项显著",
+ "card_caption": "深绿液滴前悬浮砖红分子，伴浅绿表盘与肺影。",
+ "mech_dropped_callouts": [],
+ "card_text_meta": {
+  "model": "gemini-3.1-pro-preview (OpenAI out of credits, Claude at usage limit)",
+  "gemini_caption_check": {
+   "match": true,
+   "problem": ""
+  },
+  "caption_v1": null
+ },
+ "judge": {
+  "judge": "gemini-3.1-pro-preview",
+  "blind_id": "dbae2911",
+  "overall": 7,
+  "scores": {
+   "accuracy": 7,
+   "information": 7,
+   "understanding": 7,
+   "exposition": 7,
+   "figure_information": 6,
+   "significance": 6
+  },
+  "factual_errors": [],
+  "weaknesses": [
+   "图2仅为视觉修饰，缺乏实质性定量信息"
+  ],
+  "note": "Claude second judge not run: Anthropic API usage limit (until 2026-11-01); Gemini only."
+ },
+ "files": {
+  "checks": "c2-ai-4_checks.json",
+  "mech_raw": "c2-ai-4_mech_raw.png",
+  "mech": "c2-ai-4_mech.png",
+  "card": "c2-ai-4_card.png",
+  "final_md": "c2-ai-4_final.md",
+  "final_json": "c2-ai-4_final.json"
+ }
+}

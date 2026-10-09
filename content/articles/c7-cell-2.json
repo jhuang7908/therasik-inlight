@@ -1,0 +1,594 @@
+{
+ "id": "c7-cell-2",
+ "final_version": 2,
+ "drafter_model": "claude-sonnet-5-5",
+ "drafter_models_per_version": {
+  "1": "claude-sonnet-5-5",
+  "2": "claude-sonnet-5-5"
+ },
+ "verifier_model": "claude-opus-5-5",
+ "mustcover_frozen_by": "claude-opus-5-5",
+ "selected_from_versions": [
+  1,
+  2
+ ],
+ "remaining_failures_n": 0,
+ "remaining_failures": [],
+ "status": "published-ready",
+ "status_reasons": [],
+ "preprint": false,
+ "tags_note": "editor related-field tags prepended; writer tags trimmed to 6 (metadata only)",
+ "writer_tags": [
+  "体内 CAR-T",
+  "BCMA",
+  "多发性骨髓瘤",
+  "慢病毒载体",
+  "髓外病灶",
+  "长期随访"
+ ],
+ "article": {
+  "tier": "deep",
+  "field": "肿瘤免疫与细胞治疗",
+  "tags": [
+   "体内 CAR-T",
+   "BCMA",
+   "多发性骨髓瘤",
+   "慢病毒载体",
+   "髓外病灶",
+   "长期随访"
+  ],
+  "primary_endpoint_basis": "方案预设主要终点为 ESO-T01 的安全性和耐受性（Methods: Study endpoints and assessment）；疗效为次要终点。摘要与 Results 一致：最长随访 15 个月，未出现超出首次报道的重要 ESO-T01 相关不良事件，无免疫原性或整合相关毒性。原文未做任何推断统计，标题的 15 个月随访、sCR 与中位 PFS 4.0 个月均取自摘要，均为描述性结果。",
+  "comparison_design": "单臂 1 期研究，无对照臂；原文自述因 n = 4，未做假设检验、效能计算或推断性统计，所有结果均为描述性，并非组间比较设计。",
+  "untested_comparisons": [
+   "体外 BCMA-GPRC5D CAR-T 峰值 419 个细胞/μl 对体内 CAR-T 86 个细胞/μl（Patient 3 单例，未做统计检验）",
+   "抗 CAR 抗体水平与 ITP、MM、健康供者对照的比较（描述性，未做统计检验）",
+   "Patient 2 的持久 sCR 与其余 3 例早期复发之间的差异（个案对比，未检验）"
+  ],
+  "number_basis_note": "摘要与 Results 数字无冲突：ORR 100%、sCR 15 个月、5/3/3 个月复发、OS 5.5–10.9 个月均一致。中位 PFS 4.0（范围 3.0–15.0）个月仅见于摘要，正文引用时已按摘要口径呈现；其余数字取自 Results/Methods。",
+  "must_cover": [
+   {
+    "id": "m1",
+    "item_zh": "最长随访 15 个月，1 例维持 sCR 15 个月，中位 PFS 4.0（范围 3.0–15.0）个月",
+    "status": "covered",
+    "covered_by": "中位 PFS 为 4.0（范围 3.0–15.0）个月"
+   },
+   {
+    "id": "m2",
+    "item_zh": "ORR 100%，2 例 sCR、2 例 PR",
+    "status": "covered",
+    "covered_by": "客观缓解率 100%：2 例 sCR，2 例 PR"
+   },
+   {
+    "id": "m3",
+    "item_zh": "3 例分别于 5、3、3 个月复发或进展，均有髓外受累；挽救治疗后均死亡，死因为感染、疾病进展、颅内出血；OS 5.5–10.9 个月",
+    "status": "covered",
+    "covered_by": "死因分别为感染、疾病进展和颅内出血"
+   },
+   {
+    "id": "m4",
+    "item_zh": "1 期单臂开放标签，4 例 R/R MM，单次静脉 0.2 × 10^9 转导单位，无单采和淋巴细胞清除，阿斯利康收购申办方后试验终止",
+    "status": "covered",
+    "covered_by": "不做白细胞单采，也不做淋巴细胞清除"
+   },
+   {
+    "id": "m5",
+    "item_zh": "高危重度经治人群：中位年龄 63 岁、中位 4 线治疗，4 例均有髓外病灶和 >5 cm 大块浆细胞瘤，1 例五重难治，1 例曾接受 BCMA-GPRC5D CAR-T",
+    "status": "covered",
+    "covered_by": "4 例均有髓外病灶且存在直径超过 5 cm 的大块浆细胞瘤"
+   },
+   {
+    "id": "m6",
+    "item_zh": "主要终点为安全性和耐受性；疗效、药代、药效为次要终点；2016 IMWG 评价疗效，ASTCT 分级 CRS/ICANS",
+    "status": "covered",
+    "covered_by": "CRS 和 ICANS 按 ASTCT 标准分级"
+   },
+   {
+    "id": "m7",
+    "item_zh": "全部患者 1–3 级双相 CRS 与 3–4 级血液学毒性（中性粒细胞减少 75%、白细胞减少 50%、血小板减少 50%、淋巴细胞减少 75%），1 个月时 3/4 恢复至 ≤2 级",
+    "status": "covered",
+    "covered_by": "中性粒细胞减少 75%、白细胞减少 50%、血小板减少 50%、淋巴细胞减少 75%"
+   },
+   {
+    "id": "m8",
+    "item_zh": "整合位点无克隆扩增：相关位点克隆 ≤3%，前 10 位克隆合计 <10%，呈多克隆模式",
+    "status": "covered",
+    "covered_by": "前 10 位克隆合计不足 10%"
+   },
+   {
+    "id": "m9",
+    "item_zh": "抗 CAR 抗体除 Patient 1 轻度升高外均较低；对照为 ITP 4 例、MM 5 例、健康供者 8 名；Patient 1、2 基线可检出抗 VSVG 抗体",
+    "status": "covered",
+    "covered_by": "抗 CAR 抗体除 Patient 1 轻度升高外均较低"
+   },
+   {
+    "id": "m10",
+    "item_zh": "Patient 3 BCMA 缺失（骨髓 0%、髓外 50%），接受体外 BCMA-GPRC5D CAR-T 1.5 × 10^6 个细胞/kg 达 VGPR；体外峰值 419 对体内 86 个细胞/μl；后死于 IEC-HS 相关颅内出血",
+    "status": "covered",
+    "covered_by": "体外 CAR-T 在第 16 天达峰，419 个细胞/μl"
+   },
+   {
+    "id": "m11",
+    "item_zh": "输注后数小时 CXCL9/10/11 等升高 100–1,000 倍，与淋巴细胞消失同步，提示趋化因子驱动的 T 细胞迁移；n=4、单次测量",
+    "status": "covered",
+    "covered_by": "多数细胞因子和趋化因子在输注后不久升高 100 至 1,000 倍"
+   },
+   {
+    "id": "m12",
+    "item_zh": "局限：样本小无假设检验，淋巴细胞消失和髓外复发机制不完整，多项事后分析；CAR-T 持久性有限需优化平台",
+    "status": "covered",
+    "covered_by": "原文自述对其及髓外复发的机制理解不完整"
+   }
+  ],
+  "title": "骨髓瘤体内 BCMA CAR-T 随访 15 个月：无新增重要 ESO-T01 相关不良事件，1 例持续 sCR，中位 PFS 4.0 个月",
+  "one_liner": "4 例复发难治骨髓瘤患者单次输注体内 BCMA CAR-T，随访最长 15 个月未见新增重要 ESO-T01 相关不良事件，1 例持续 sCR，中位 PFS 4.0 个月，另 3 例复发或进展后死亡。",
+  "datacard": {
+   "study_type": "1 期、单臂、开放标签临床研究的延长随访（ESO-T01，NCT06691685；已同行评审）",
+   "n": "筛选 6 例，2 例不符合入排标准，4 例入组并接受治疗；Patient 3 的体外 CAR-T 分析为 n=1",
+   "primary_endpoint": "方案预设主要终点：ESO-T01 的安全性和耐受性（含剂量限制性毒性、不良事件、实验室检查等）",
+   "primary_endpoint_result": "最长随访 15 个月，摘要称未见免疫原性或整合相关毒性，未见超出首次报道的重要 ESO-T01 相关不良事件；4 例均出现 3–4 级血液学毒性（中性粒细胞减少 75%、白细胞减少 50%、血小板减少 50%、淋巴细胞减少 75%）；未做推断统计",
+   "control": "无（单臂）；抗体分析另设 ITP 4 例、MM 5 例和健康供者作对照",
+   "intervention": "ESO-T01 单次静脉输注 0.2 × 10^9 转导单位，不做白细胞单采和淋巴细胞清除",
+   "followup": "数据截止 2026 年 3 月，最长随访 15 个月",
+   "statistics": "n=4，未做假设检验、效能计算或推断性统计，结果均为描述性；疗效按 2016 IMWG 标准，CRS/ICANS 按 ASTCT 标准",
+   "safety": "全部患者出现 1–3 级双相 CRS 与 3–4 级血液学毒性；Patient 4 出现 1 级 ICANS；整合位点分析未见克隆扩增",
+   "evidence_level": "全文",
+   "check_record": "读取 Nature Medicine 开放获取全文的 Abstract、Results（各小节）、Discussion、Methods、图注与 Extended Data 图注"
+  },
+  "background": [
+   "CAR-T 的可及性受制于生产、物流、等待时间和费用。美国一项真实世界研究显示，列入商业化 BCMA CAR-T 等候名单的复发难治多发性骨髓瘤（R/R MM）患者中，12 个月累计接受治疗的比例不足 40%，等待期间死亡率达 26%。",
+   "体内 CAR 技术用病毒或非病毒载体，把 CAR 直接递送到患者体内的内源 T 细胞，有望把个体化产品变为现成制剂，但临床数据仍然稀少。此前报道的首例人体研究 ESO-T01 只有 4 例患者、最长 3 个月随访。本文给出同一队列截至 2026 年 3 月的长期安全性与缓解持续性。"
+  ],
+  "design": [
+   "这是一项 1 期、单臂、开放标签研究。2024 年 11 月至 2025 年 2 月筛选 6 例 R/R MM 患者，2 例不符合入排标准，最终 4 例入组。ESO-T01 是编码抗 BCMA CAR 的自失活慢病毒载体，单次静脉输注 0.2 × 10^9 转导单位，不做白细胞单采，也不做淋巴细胞清除。主要终点为安全性和耐受性；疗效、药代和药效为次要终点。",
+   "入组患者中位年龄 63 岁，既往中位 4 线治疗；4 例均有髓外病灶且存在直径超过 5 cm 的大块浆细胞瘤，1 例五重难治，1 例曾接受 BCMA-GPRC5D CAR-T。疗效按 2016 年 IMWG 标准评价，CRS 和 ICANS 按 ASTCT 标准分级。因 n = 4，未做效能计算和假设检验，结果均为描述性，并非组间比较设计。试验在申办方 EsoBiotec 被阿斯利康收购后终止。"
+  ],
+  "results": [
+   {
+    "subhead": "主要终点：安全性与耐受性",
+    "text": "主要终点是安全性和耐受性。4 例患者均出现与载体相关的反应，表现为发热、低氧和低血压，对应 1–3 级双相 CRS；Patient 4 出现 1 级 ICANS。4 例均出现 3–4 级血液学毒性：中性粒细胞减少 75%、白细胞减少 50%、血小板减少 50%、淋巴细胞减少 75%。1 个月时 4 例中有 3 例恢复至 ≤2 级，其余 1 例基线即为 3 级中性粒细胞减少。"
+   },
+   {
+    "subhead": "疗效与缓解持续时间",
+    "text": "数据截止于 2026 年 3 月，最长随访 15 个月。客观缓解率 100%：2 例 sCR，2 例 PR。1 例（Patient 2，基线仅 2 处骨旁病灶）维持 sCR 15 个月。另 3 例分别在输注后 5、3、3 个月复发或进展，均有髓外受累；中位 PFS 为 4.0（范围 3.0–15.0）个月。"
+   },
+   {
+    "subhead": "复发后的转归",
+    "text": "3 例复发或进展者接受挽救治疗（2 例化疗、1 例 BCMA-GPRC5D 双特异性 CAR-T），最终均死亡，死因分别为感染、疾病进展和颅内出血，输注后总生存 5.5–10.9 个月。Patient 4 的脑脊液中 CAR-T 持续可检出，第 3 个月肿瘤细胞占有核细胞 98.78%，10.9 个月时死于疾病进展。"
+   },
+   {
+    "subhead": "Patient 3 的体外 CAR-T",
+    "text": "Patient 3 在第 3 个月进展，骨髓和髓外皮下病灶的 BCMA 阳性率分别为 0% 和 50%，随后在淋巴细胞清除化疗后输注 1.5 × 10^6 个细胞/kg 的体外 BCMA-GPRC5D CAR-T，达到 VGPR。体内 CAR-T 在第 10 天达峰，流式 86 个细胞/μl；体外 CAR-T 在第 16 天达峰，419 个细胞/μl。第 27 天她出现 IEC-HS 样综合征，第 32 天因颅内出血意识障碍，3 天后死亡。"
+   },
+   {
+    "subhead": "免疫原性与整合位点",
+    "text": "探索性分析中，Patient 1 和 2 基线即可检出抗 VSVG 抗体；抗 CAR 抗体除 Patient 1 轻度升高外均较低，对照为接受同一 VHH 的 ITP 患者 4 例、接受不同 scFv 的 MM 患者 5 例和 8 名健康供者。整合位点中，肿瘤或不良事件相关位点的克隆比例每例均不超过 3%，前 10 位克隆合计不足 10%，呈多克隆模式。"
+   }
+  ],
+  "mechanism_proven": [
+   "输注后数小时内，4 例患者均出现淋巴细胞骤降。Luminex 检测显示，包括 CXCL9、CXCL10、CXCL11 在内的多数细胞因子和趋化因子在输注后不久升高 100 至 1,000 倍，与淋巴细胞下降同步，第 2 天通常回落。该分析为 4 例患者、每例单次测量，属相关性观察。",
+   "整合位点分析在扩增高峰和输注后 3 个月均未检出高风险整合事件。Patient 1 和 3 复发时外周 CAR-T 已检测不到，而 Patient 4 脑脊液中的 CAR-T 持续存在却未能清除肿瘤，均为个案观察。"
+  ],
+  "mechanism_inferred": [
+   "作者推测，淋巴细胞消失主要源于趋化因子驱动的 T 细胞迁出循环，认为其比载体促黏附和病毒诱导凋亡更可能，但不能排除其他机制。三例早期复发者可能因髓外和脑脊液局部肿瘤负荷压倒 CAR-T，抑制性微环境和抗原下调也可能参与。",
+   "对 Patient 2 的持久 sCR，作者认为可能与基线肿瘤负荷最低、扩增期未用糖皮质激素、偏初始和中央记忆表型及年龄较轻等宿主因素有关，但无法归因于单一因素。"
+  ],
+  "limitations": [
+   "样本仅 4 例；原文未做假设检验、效能计算或推断性统计，ORR 100% 与中位 PFS 4.0 个月均为描述性，不能外推到其他人群、载体或靶点。",
+   "最长 15 个月随访仅来自 1 例，另 3 例在输注后 5.5–10.9 个月内死亡，且死亡均发生在多种挽救治疗之后，难以单独归因于 ESO-T01。",
+   "淋巴细胞骤降与趋化因子的关联基于 4 例、每例单次测量，无技术重复；原文自述对其及髓外复发的机制理解不完整，且多项分析为事后分析。BCMA 表达仅 Patient 3 有复发时数据，另 2 例未知，抗原逃逸的作用无法判断。",
+   "抗体对照组很小（ITP 4 例、MM 5 例、健康供者 6 名或 8 名），未做统计比较；整合位点仅在扩增高峰和 3 个月检测，更晚期克隆演变未知。"
+  ],
+  "significance": [
+   "若更大样本和更长随访能够确认，这些数据提示体内 CAR-T 无需单采和淋巴细胞清除，即可在重度经治、伴髓外病灶的患者中产生缓解，且随访期间未见免疫原性或整合相关毒性。",
+   "缓解持久性是主要短板，作者认为需优化平台、提高 CAR-T 持久性。若后续研究在复发时常规检测 BCMA 表达，才能厘清抗原逃逸的作用。Patient 3 的经历提示，体内 CAR-T 后再输注体外 BCMA-GPRC5D CAR-T 在个别患者可行，但该患者其后死亡，尚不足以支持一般性结论。"
+  ],
+  "citation": "Xu J, Liu L, Xie W, Su L, Wang W, Li C, et al. Extended follow-up of in vivo BCMA CAR-T therapy in relapsed/refractory multiple myeloma. Nat Med. 2026. doi:10.1038/s41591-026-04704-z. https://doi.org/10.1038/s41591-026-04704-z",
+  "data_points": [
+   {
+    "value": "4 例",
+    "meaning": "入组并接受 ESO-T01 治疗的患者数",
+    "source_quote": "Ultimately, four patients were enrolled and treated with ESO-T01",
+    "location": "Results: Patients and clinical outcomes"
+   },
+   {
+    "value": "2024 年 11 月至 2025 年 2 月；6 例",
+    "meaning": "筛选时间窗与筛选人数",
+    "source_quote": "From November 2024 to February 2025, six patients with R/R MM were screened.",
+    "location": "Results: Patients and clinical outcomes"
+   },
+   {
+    "value": "2 例",
+    "meaning": "不符合入排标准被排除的人数",
+    "source_quote": "Two individuals (both screened in February 2025) did not meet the inclusion or exclusion criteria and were excluded.",
+    "location": "Results: Patients and clinical outcomes"
+   },
+   {
+    "value": "1 期",
+    "meaning": "研究期别",
+    "source_quote": "This phase 1, single-arm, open-label study was conducted at Wuhan Union Hospital",
+    "location": "Methods: Clinical study design"
+   },
+   {
+    "value": "0.2 × 10^9 转导单位",
+    "meaning": "单次静脉输注剂量，无单采和淋巴细胞清除",
+    "source_quote": "ESO-T01 was intravenously administrated at a single dose of 0.2 × 10 9 transduction units, without leukapheresis and lymphodepletion.",
+    "location": "Results: Patients and clinical outcomes"
+   },
+   {
+    "value": "63 岁；4 线",
+    "meaning": "中位年龄与既往中位治疗线数",
+    "source_quote": "The median age was 63 years, and half of the patients were male. All patients had received a median of four prior treatment lines.",
+    "location": "Results: Patients and clinical outcomes"
+   },
+   {
+    "value": "5 cm；4 例",
+    "meaning": "4 例均有直径超过 5 cm 的大块浆细胞瘤",
+    "source_quote": "All four patients had bulky plasmacytoma with a diameter exceeding 5 cm.",
+    "location": "Results: Patients and clinical outcomes"
+   },
+   {
+    "value": "1 例",
+    "meaning": "1 例五重难治，1 例曾接受 BCMA-GPRC5D CAR-T",
+    "source_quote": "One patient had penta-refractory disease, and another had previously received BCMA-GPRC5D CAR-T before screening.",
+    "location": "Results: Patients and clinical outcomes"
+   },
+   {
+    "value": "2016 年",
+    "meaning": "疗效评价采用的 IMWG 标准年份",
+    "source_quote": "Efficacy evaluation was based on 2016 IMWG criteria.",
+    "location": "Methods: Study endpoints and assessment"
+   },
+   {
+    "value": "1–3 级",
+    "meaning": "双相 CRS 分级范围",
+    "source_quote": "All patients developed dual-phase cytokine release syndrome (grades 1–3) and hematotoxicities (grade ≥3).",
+    "location": "Abstract"
+   },
+   {
+    "value": "1 级 ICANS",
+    "meaning": "Patient 4 出现 1 级 ICANS",
+    "source_quote": "all patients developed grade 1 CRS, and Patient 4 developed grade 1 immune effector cell-associated neurotoxicity syndrome (ICANS)",
+    "location": "Results: Patients and clinical outcomes"
+   },
+   {
+    "value": "3–4 级；75%、50%、50%、75%",
+    "meaning": "3–4 级血液学毒性及各类占比",
+    "source_quote": "Grade 3 to 4 hematotoxicities occurred in all patients, including neutropenia (75%), leukopenia (50%), thrombocytopenia (50%) and lymphopenia (75%).",
+    "location": "Results: Patients and clinical outcomes"
+   },
+   {
+    "value": "1 个月时 4 例中 3 例",
+    "meaning": "恢复至 ≤2 级血液学毒性的人数",
+    "source_quote": "By 1 month, three out of the four patients had recovered to hematologic toxicity of grade ≤2.",
+    "location": "Results: Patients and clinical outcomes"
+   },
+   {
+    "value": "2026 年 3 月；15 个月",
+    "meaning": "数据截止时间与最长随访",
+    "source_quote": "As of the data cutoff in March 2026, the longest follow-up had reached 15 months following ESO-T01 infusion.",
+    "location": "Results: Patients and clinical outcomes"
+   },
+   {
+    "value": "100%；2 例 sCR、2 例 PR",
+    "meaning": "客观缓解率及构成",
+    "source_quote": "The objective response rate reached 100% (two stringent complete response and two partial response).",
+    "location": "Abstract"
+   },
+   {
+    "value": "15 个月",
+    "meaning": "1 例患者维持 sCR 的时间",
+    "source_quote": "Of the four patients, one maintained stringent complete response for 15 months.",
+    "location": "Abstract"
+   },
+   {
+    "value": "4.0（范围 3.0–15.0）个月",
+    "meaning": "中位无进展生存期",
+    "source_quote": "The median progression-free survival was 4.0 (range 3.0–15.0) months.",
+    "location": "Abstract"
+   },
+   {
+    "value": "2 处骨旁病灶",
+    "meaning": "Patient 2 基线肿瘤负荷最低",
+    "source_quote": "Patient 2 had the lowest tumor burden at baseline with only two paraskeletal lesions.",
+    "location": "Results: Individual patient outcomes"
+   },
+   {
+    "value": "5、3、3 个月",
+    "meaning": "3 例复发或进展的时间",
+    "source_quote": "Three patients relapsed or progressed at 5, 3 and 3 months after infusion",
+    "location": "Results: Patients and clinical outcomes"
+   },
+   {
+    "value": "2 例化疗、1 例双特异性 CAR-T",
+    "meaning": "挽救治疗构成",
+    "source_quote": "including chemotherapy in two patients and BCMA-GPRC5D bispecific CAR-T in one patient",
+    "location": "Results: Patients and clinical outcomes"
+   },
+   {
+    "value": "5.5–10.9 个月",
+    "meaning": "挽救治疗后输注起算总生存",
+    "source_quote": "After progression, diverse salvage therapies extended overall survival to 5.5–10.9 months after infusion.",
+    "location": "Abstract"
+   },
+   {
+    "value": "第 3 个月",
+    "meaning": "Patient 4 脑脊液肿瘤细胞明显增多的时间",
+    "source_quote": "By the third month, tumor cells in the CSF had substantially increased",
+    "location": "Results: Patients and clinical outcomes"
+   },
+   {
+    "value": "98.78%",
+    "meaning": "Patient 4 第 3 个月脑脊液肿瘤占有核细胞比例",
+    "source_quote": "accounting for 98.78% of nucleated cells",
+    "location": "Results: Individual patient outcomes"
+   },
+   {
+    "value": "10.9 个月",
+    "meaning": "Patient 4 死亡时间（ESO-T01 治疗后）",
+    "source_quote": "ultimately succumbing to progressive disease (PD) 10.9 months after the ESO-T01 treatment.",
+    "location": "Results: Individual patient outcomes"
+   },
+   {
+    "value": "第 3 个月",
+    "meaning": "Patient 3 疾病进展时间",
+    "source_quote": "Disease progression occurred at month 3, characterized by diffuse lesions throughout the body",
+    "location": "Results: Individual patient outcomes"
+   },
+   {
+    "value": "0% 和 50%",
+    "meaning": "Patient 3 骨髓与髓外皮下病灶 BCMA 阳性率",
+    "source_quote": "revealed 0% and 50% positivity of BCMA expression on tumor cells",
+    "location": "Results: Individual patient outcomes"
+   },
+   {
+    "value": "1.5 × 10^6 个细胞/kg",
+    "meaning": "Patient 3 体外 BCMA-GPRC5D CAR-T 剂量",
+    "source_quote": "at a dose of 1.5 × 10 6 cells per kg following lymphodepleting chemotherapy",
+    "location": "Results: Individual patient outcomes"
+   },
+   {
+    "value": "VGPR",
+    "meaning": "Patient 3 体外 CAR-T 后最佳缓解",
+    "source_quote": "culminating in a very good partial response (VGPR)",
+    "location": "Results: Individual patient outcomes"
+   },
+   {
+    "value": "第 10 天；86 个细胞/μl",
+    "meaning": "体内 CAR-T 达峰时间与流式峰值浓度",
+    "source_quote": "the initial in vivo CAR-T cells peaked on day 10, with a maximum concentration of 86 cells per μl by flow cytometry",
+    "location": "Results: Individual patient outcomes"
+   },
+   {
+    "value": "第 16 天；419 个细胞/μl",
+    "meaning": "体外 CAR-T 达峰时间与峰值浓度",
+    "source_quote": "while the ex vivo CAR-T cells peaked on day 16, reaching a maximum concentration of 419 cells per μl",
+    "location": "Results: Individual patient outcomes"
+   },
+   {
+    "value": "第 27 天",
+    "meaning": "IEC-HS 样综合征出现时间",
+    "source_quote": "However, on day 27, 4 days after CRS resolution, the patient developed",
+    "location": "Results: Individual patient outcomes"
+   },
+   {
+    "value": "第 32 天；3 天后",
+    "meaning": "颅内出血意识障碍时间及随后死亡间隔",
+    "source_quote": "she experienced acute disturbance of consciousness due to intracranial hemorrhage on day 32 and died 3 days later",
+    "location": "Results: Individual patient outcomes"
+   },
+   {
+    "value": "100 至 1,000 倍",
+    "meaning": "输注后不久细胞因子/趋化因子升高幅度",
+    "source_quote": "increased by a 100- to a 1,000-fold shortly after infusion. This surge coincided with the sharp decline in lymphocyte counts.",
+    "location": "Results: Adverse events and immune reconstitution"
+   },
+   {
+    "value": "基线、6 小时、2 天",
+    "meaning": "Luminex 血清采样时间点",
+    "source_quote": "we collected serum samples at baseline, 6 h and 2 days after infusion for Luminex multiplex cytokine assay",
+    "location": "Results: Adverse events and immune reconstitution"
+   },
+   {
+    "value": "4 例、单次测量",
+    "meaning": "细胞因子数据样本量，无技术重复",
+    "source_quote": "No technical replicates were performed; each value is derived from a single measurement per patient sample.",
+    "location": "Fig. 3 legend"
+   },
+   {
+    "value": "17 号染色体",
+    "meaning": "扩增高峰整合位点主要所在染色体",
+    "source_quote": "integration sites were predominantly located on chromosome 17",
+    "location": "Results: Exploratory analyses of immunogenicity and genotoxicity"
+   },
+   {
+    "value": "3 个月",
+    "meaning": "输注后 3 个月未检出高风险整合事件",
+    "source_quote": "Three months after infusion of ESO-T01, CAR-T cells remained at very low levels in the peripheral blood, and no high-risk integration events were detected.",
+    "location": "Results: Exploratory analyses of immunogenicity and genotoxicity"
+   },
+   {
+    "value": "不超过 3%",
+    "meaning": "肿瘤或不良事件相关整合位点克隆比例上限",
+    "source_quote": "The proportion of clones at integration sites associated with tumors or previously confirmed adverse events, did not exceed 3% in any case",
+    "location": "Results: Exploratory analyses of immunogenicity and genotoxicity"
+   },
+   {
+    "value": "不足 10%",
+    "meaning": "前 10 位克隆占总克隆比例",
+    "source_quote": "In all patients, the top 10 clones accounted for less than 10% of the total",
+    "location": "Results: Exploratory analyses of immunogenicity and genotoxicity"
+   },
+   {
+    "value": "Patient 1 和 2",
+    "meaning": "基线可检出抗 VSVG 抗体的患者",
+    "source_quote": "Patients 1 and 2 had detectable anti-vesicular stomatitis virus glycoprotein (VSVG) antibodies at baseline",
+    "location": "Results: Exploratory analyses of immunogenicity and genotoxicity"
+   },
+   {
+    "value": "除 Patient 1 外均较低",
+    "meaning": "抗 CAR 抗体水平",
+    "source_quote": "levels were relatively low in all but the first patient, who showed a slight elevation",
+    "location": "Results: Exploratory analyses of immunogenicity and genotoxicity"
+   },
+   {
+    "value": "MM 5 例",
+    "meaning": "抗 CAR 抗体对照：接受不同 scFv 体外 CAR-T 的 MM 患者",
+    "source_quote": "n = 5 patients with MM receiving ex vivo BCMA CAR-T with different anti-BCMA scFv",
+    "location": "Methods: Statistical analysis"
+   },
+   {
+    "value": "ITP 4 例",
+    "meaning": "抗 CAR 抗体对照：接受同一 VHH 体外 CAR-T 的 ITP 患者",
+    "source_quote": "n = 4 patients with ITP treated with CAR-T using the identical anti-BCMA VHH",
+    "location": "Methods: Statistical analysis"
+   },
+   {
+    "value": "健康供者 8 名",
+    "meaning": "抗 CAR 抗体对照健康供者",
+    "source_quote": "The dashed line indicates the mean value of eight healthy donors.",
+    "location": "Fig. 4 legend"
+   },
+   {
+    "value": "健康供者 6 名",
+    "meaning": "抗 VSVG 抗体对照健康供者",
+    "source_quote": "n = 4 patients (in vivo CAR-T) and n = 6 healthy donors",
+    "location": "Methods: Statistical analysis"
+   },
+   {
+    "value": "n = 4",
+    "meaning": "未做假设检验、效能计算或推断性统计",
+    "source_quote": "Because of the limited sample size ( n = 4), we did not perform formal hypothesis testing, power calculation or inferential statistics.",
+    "location": "Methods: Statistical analysis"
+   }
+  ],
+  "steps": [
+   "单次静脉输注 ESO-T01，不单采、不清淋",
+   "输注后数小时淋巴细胞骤降，趋化因子升高",
+   "4 例均获缓解，1 例 sCR 维持 15 个月",
+   "3 例于 5、3、3 个月复发或进展"
+  ],
+  "figure_caption": "单次静脉输注体内 CAR 载体后，患者出现淋巴细胞骤降与趋化因子升高；4 例均获缓解，1 例维持 sCR，3 例在数月内伴髓外受累复发或进展。示意图由 AI 生成，依据原文结果绘制，非期刊原图，不代表分子比例",
+  "image_story": {
+   "stages": [
+    {
+     "visual_en": "A translucent infusion bag and drip line releasing small spiky lentiviral vector particles into a blood vessel containing round T cells.",
+     "source_quote": "ESO-T01 was intravenously administrated at a single dose of 0.2 × 10 9 transduction units, without leukapheresis and lymphodepletion."
+    },
+    {
+     "visual_en": "Within the vessel, T cells carry receptor stalks; small chemokine dots surround the vessel wall while round lymphocytes leave through it.",
+     "source_quote": "increased by a 100- to a 1,000-fold shortly after infusion. This surge coincided with the sharp decline in lymphocyte counts."
+    },
+    {
+     "visual_en": "A small shrunken pale lesion beside bone contrasts with a large solid plasmacytoma mass pressing on bone with faded CAR T cells at its edge.",
+     "source_quote": "Three patients relapsed or progressed at 5, 3 and 3 months after infusion"
+    }
+   ],
+   "key_element_en": "a large solid plasmacytoma mass"
+  },
+  "image_subject_en": "A left-to-right process in three stages, drawn large. Stage 1 (left): a translucent mid-green infusion bag with a drip line feeding a deep green blood vessel segment; small pale mint spiky spherical lentiviral vector particles stream out of the line toward round deep green T cells floating in the vessel. Stage 2 (centre): the same vessel with several T cells now carrying short pale mint receptor stalks; light grey-green small chemokine dots cluster around the vessel wall, and a few round lymphocytes squeeze out through the vessel wall into the surrounding tissue. Stage 3 (right): two bone-and-tissue scenes stacked: upper, a small shrunken pale mint lesion beside a light grey-green bone with a few tiny CAR T cells; lower, a plasmacytoma mass pressing against the bone with tiny faded CAR T cells at its edge, drawn as one very large, solid, boldly filled terracotta #C0492F sphere-like mass. Semi-realistic 3D scientific illustration, soft studio lighting, pale mint-grey background, no text, no numbers, no symbols. Only the plasmacytoma mass is terracotta.",
+  "card_subject_en": "A single large deep green T cell studded with short pale mint receptor stalks, with one translucent mid-green spiky lentiviral vector particle docked against its surface, placed beside one very large, solid, boldly filled terracotta #C0492F spherical tumor mass with a smooth surface. Semi-realistic 3D scientific illustration in green tones, soft studio lighting, pale mint-grey background, compact two-object composition, large and centered. Only the tumor mass is terracotta. No text, no numbers, no symbols.",
+  "figure_labels": {
+   "heads": [
+    "单次静脉输注",
+    "趋化因子与淋巴细胞骤降",
+    "缓解与复发"
+   ],
+   "callouts": [
+    {
+     "t": "单次静脉输注\n无单采、无清淋",
+     "stage": 1,
+     "entity_en": "lentiviral vector particles"
+    },
+    {
+     "t": "输注后不久\n趋化因子升 100–1,000 倍",
+     "stage": 2,
+     "entity_en": "light grey-green small chemokine dots"
+    },
+    {
+     "t": "T 细胞迁出循环\n（作者推测）",
+     "stage": 2,
+     "entity_en": "round lymphocytes squeezing out through the vessel wall"
+    },
+    {
+     "t": "ORR 100%\n2 sCR + 2 PR",
+     "stage": 3,
+     "entity_en": "small shrunken pale mint lesion"
+    },
+    {
+     "t": "3 例于 5、3、3 个月\n复发或进展",
+     "stage": 3,
+     "entity_en": "plasmacytoma mass"
+    }
+   ],
+   "facts": [
+    [
+     "**4** 例入组",
+     "单次 0.2 × 10^9 TU"
+    ],
+    [
+     "ORR **100%**",
+     "2 sCR + 2 PR"
+    ],
+    [
+     "中位 PFS **4.0** 个月",
+     "1 例 sCR 维持 15 个月"
+    ]
+   ],
+   "note": "n=4，未做推断统计，均为描述性；数字取自 Results/摘要。示意图由 AI 生成，非期刊原图。"
+  },
+  "chart": {
+   "justified": false,
+   "note": "主要终点为安全性，n=4 单臂、无对照臂；仅有的并列数值（体外 419 对体内 86 个细胞/μl）来自 1 例患者且检测口径未明确同一，故不绘数据图。"
+  }
+ },
+ "images": {
+  "mech_raw": "c7-cell-2_mech_raw_r2.png",
+  "mech": "c7-cell-2_mech_r2.png",
+  "card": "c7-cell-2_card_r2.png",
+  "mech_raw_source": "c7-cell-2_mech.png",
+  "card_source": "c7-cell-2_cardsrc.png",
+  "card_placement": {
+   "axis": "h",
+   "line": 0.618
+  },
+  "generator": "gpt-image-2 (gen3.py), text-free, house green palette + terracotta"
+ },
+ "card_title": "1期延长随访：骨髓瘤体内BCMA CAR-T随访15个月，1例持续sCR",
+ "card_caption": "慢病毒同时连接深绿色T细胞与赤陶红肿瘤块。",
+ "mech_dropped_callouts": [],
+ "card_text_meta": {
+  "model": "gemini-3.1-pro-preview (OpenAI out of credits, Claude at usage limit)",
+  "gemini_caption_check": {
+   "match": false,
+   "problem": "左侧深绿色物体是病毒而非T细胞，中间的小颗粒是该病毒的剖面图。"
+  },
+  "caption_v1": "深绿色T细胞结合慢病毒，旁置赤陶红肿瘤块"
+ },
+ "judge": {
+  "judge": "gemini-3.1-pro-preview",
+  "blind_id": "4f472149",
+  "overall": 7,
+  "scores": {
+   "accuracy": 7,
+   "information": 7,
+   "understanding": 7,
+   "exposition": 6,
+   "figure_information": 6,
+   "significance": 6
+  },
+  "factual_errors": [],
+  "weaknesses": [
+   "图2缺乏文字标签和具体科学信息，仅为装饰性配图。"
+  ],
+  "note": "Claude second judge not run: Anthropic API usage limit (until 2026-11-01); Gemini only."
+ },
+ "files": {
+  "checks": "c7-cell-2_checks_r2.json",
+  "mech_raw": "c7-cell-2_mech_raw_r2.png",
+  "mech": "c7-cell-2_mech_r2.png",
+  "card": "c7-cell-2_card_r2.png",
+  "final_md": "c7-cell-2_final_r2.md",
+  "final_json": "c7-cell-2_final_r2.json"
+ },
+ "superseded_early_files": "c7-cell-2_final.json/.md, c7-cell-2_checks.json, c7-cell-2_mech_raw.png, c7-cell-2_card.png (first assembly, superseded by the _r2 files)"
+}

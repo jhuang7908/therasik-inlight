@@ -1,0 +1,611 @@
+{
+ "id": "c2-ai-2",
+ "round": "r4",
+ "text_from": "c2-ai-2_final_r3.json (unchanged in r4; images only)",
+ "drafter_of_edits": "grok-bot (self)",
+ "base_drafter_model": "gpt-5.5-2026-04-23",
+ "source_draft": "work/r3b/c2-ai-2/rw_c2-ai-2_draft_r3fix.json",
+ "edits_r3": [
+  "results[4] +1 sentence (481->503 字)"
+ ],
+ "status": "published-ready",
+ "status_reasons": [],
+ "preprint": false,
+ "writer_tags": [
+  "小分子结合蛋白",
+  "蛋白质设计",
+  "LASErMPNN",
+  "Boltz-2",
+  "解离常数",
+  "神经网络闭环"
+ ],
+ "tags_note": "editor related-field tags prepended; writer tags trimmed to 6 (metadata only)",
+ "article": {
+  "tier": "deep",
+  "field": "AI 药物设计",
+  "tags": [
+   "小分子结合蛋白",
+   "蛋白质设计",
+   "LASErMPNN",
+   "Boltz-2",
+   "解离常数",
+   "神经网络闭环"
+  ],
+  "primary_endpoint_basis": "本文不是临床试验，也未声明预设主要终点。按临床前方法论文处理：摘要和Results共同把体外设计成功率、结合亲和力与化学保护作为核心读出；其中标题取Results/Fig.6f有bootstrap置信区间的APEX-apixaban Kd=80 pM（95% CI 54–122 pM），不是未检验组间差异。",
+  "comparison_design": "非组间效能设计。NISE与COMBS、LigandMPNN/Rosetta、HSA等多为方法学、历史或体外对照，原文报告Kd拟合、bootstrap区间或描述性倍数，未对成功率差异进行正式假设检验；能量ISE对照报告四分位数，未给组间P值。",
+  "untested_comparisons": [
+   "exatecan任务中NISE 100%成功率对COMBS 3/16结合，未作正式成功率假设检验。",
+   "exatecan最紧NISE结合体相对下一领先方法70-fold、相对HSA 43 µM或COMBS 8 µM的差异，为描述性方法学比较。",
+   "apixaban任务中NISE 83%成功率和近10,000-fold亲和力差异，为摘要与讨论中的描述性比较。",
+   "APEX 13 kDa对factor Xa 43 kDa的大小比较，以及APEX Kd 80 pM对factor Xa Ki 80–700 pM的并列，不是效能设计的组间检验。"
+  ],
+  "number_basis_note": "未见摘要与正文核心数字冲突。正文与图采用Results和图注中的Kd、成功率与水解保护口径；摘要的70-fold与nearly 10,000-fold只作为摘要层面说明。",
+  "must_cover": [
+   {
+    "id": "m1",
+    "item_zh": "摘要头条：NISE产生exatecan和apixaban结合蛋白，成功率分别为100%和83%，最紧结合体相对下一领先方法分别超过70倍和近10,000倍。",
+    "status": "covered",
+    "covered_by": "摘要层面，NISE在exatecan和apixaban上的结合成功率分别为100%和83%，最紧结合体相对下一领先方法分别约70倍和近10,000倍。"
+   },
+   {
+    "id": "m2",
+    "item_zh": "exatecan测试中，4个NISE设计全部结合exatecan，Kd为0.12–17 µM（3个<10 µM），相比HSA为43 µM。",
+    "status": "covered",
+    "covered_by": "exatecan实验中，4个NISE设计全部结合，Kd为0.12–17 µM，其中3个低于10 µM；非特异性HSA为43 µM。"
+   },
+   {
+    "id": "m3",
+    "item_zh": "APEX是apixaban头部结合体：Kd=80 pM（95% CI 54–122 pM），可与factor Xa Ki=80–700 pM相比，尽管分子量13 kDa对43 kDa。",
+    "status": "covered",
+    "covered_by": "apixaban任务的头部结果是APEX：Kd=80 pM，95% CI为54–122 pM；factor Xa的Ki为80–700 pM，分子量13 kDa对43 kDa。"
+   },
+   {
+    "id": "m4",
+    "item_zh": "LASErMPNN神经校对使EPIC(Q51N/M97L)双突变体比EPIC紧100倍，Kd=1.2 nM，ΔΔG=−2.7 kcal mol−1。",
+    "status": "covered",
+    "covered_by": "LASErMPNN校对给出的EPIC(Q51N/M97L)把亲和力提高100倍，Kd=1.2 nM，ΔΔG=−2.7 kcal mol−1。"
+   },
+   {
+    "id": "m5",
+    "item_zh": "优化后的EPIC(Q51N/M97L)在化学上保护exatecan：PBS pH 7.4中至少50 h内>99%保持闭环，未检出主要水解产物。",
+    "status": "covered",
+    "covered_by": "在PBS pH 7.4中，EPIC(Q51N/M97L)使超过99%的exatecan至少50 h保持闭环，且未见主要水解产物。"
+   },
+   {
+    "id": "m6",
+    "item_zh": "exatecan NISE中，每轮按配体pLDDT选择top 3自洽结构，并为每个结构采样1,000条LASErMPNN序列扩展。",
+    "status": "covered",
+    "covered_by": "exatecan的NISE每轮按配体pLDDT选择top 3自洽结构，再为每个结构采样1,000条LASErMPNN序列。"
+   },
+   {
+    "id": "m7",
+    "item_zh": "exatecan搜索从40个AF2预测四螺旋束的聚焦库开始，每个结构至少8条序列通过置信阈值。",
+    "status": "covered",
+    "covered_by": "exatecan搜索先从40个AF2预测的四螺旋束库出发，每个结构至少有8条序列通过置信阈值。"
+   },
+   {
+    "id": "m8",
+    "item_zh": "apixaban任务中，NISE使用50个计算生成的NTF2折叠、刚体对接，并运行14–28轮NISE轨迹。",
+    "status": "covered",
+    "covered_by": "apixaban任务改用50个计算生成的NTF2折叠、刚体对接，并运行14–28轮NISE轨迹。"
+   },
+   {
+    "id": "m9",
+    "item_zh": "主要exatecan对照表现较弱：16个COMBS设计蛋白中只有3个结合，Kd为8、12和44 µM。",
+    "status": "covered",
+    "covered_by": "对照的16个COMBS设计中只有3个结合exatecan，Kd分别为8、12和44 µM。"
+   },
+   {
+    "id": "m10",
+    "item_zh": "APEX特异性图注限制：在50 nM exatecan下未见可观结合，连接线不是拟合。",
+    "status": "covered",
+    "covered_by": "特异性读出也有图例限制：APEX在50 nM exatecan下无可观结合，连接线不是拟合。"
+   },
+   {
+    "id": "m11",
+    "item_zh": "图注中的算法对照：与energy-based ISE不同，NISE同时优化配体pLDDT和序列NLL，四分位数基于每轮n=1,500个设计。",
+    "status": "covered",
+    "covered_by": "算法对照显示，NISE而非energy-based ISE同时提高配体pLDDT并降低序列NLL，图注四分位数来自每轮n=1,500个设计，第一轮为n=500。"
+   },
+   {
+    "id": "m12",
+    "item_zh": "局限/注意：模型依赖性；若用RFAA评估会丢弃apixaban结合蛋白，而Boltz-2对选择它们进入实验很重要。",
+    "status": "covered",
+    "covered_by": "模型选择仍是局限：作者写明，若用RFAA评估会丢弃apixaban结合蛋白，Boltz-2对实验选择很重要。"
+   }
+  ],
+  "title": "NISE零样本设计药物结合蛋白，APEX体外亲和力达到80 pM",
+  "one_liner": "在exatecan与apixaban体外任务中，NISE闭环神经网络从头设计结合蛋白并完成亲和力验证；APEX对apixaban的Kd为80 pM。",
+  "datacard": {
+   "study_type": "Nature全文；体外验证的零样本小分子结合蛋白设计研究",
+   "n": "exatecan：4个NISE设计、16个COMBS对照；apixaban：6个NISE设计。",
+   "control": "HSA、COMBS–Rosetta、energy-based ISE；APEX特异性对照含50 nM exatecan。",
+   "intervention": "NISE闭环；exatecan每轮top 3选择并各采样1,000条序列，apixaban用50个NTF2折叠和14–28轮轨迹。",
+   "followup": "水解保护吸收实验至少50 h。",
+   "primary_endpoint": "临床前方法研究未声明预设主要终点；主要读出为体外结合成功率、Kd亲和力、以及exatecan闭环保留。",
+   "primary_endpoint_result": "exatecan 100%结合、Kd 0.12–17 µM；apixaban 5/6结合，APEX Kd=80 pM（95% CI 54–122 pM）；EPIC(Q51N/M97L) Kd=1.2 nM，>99%闭环至少50 h。",
+   "statistics": "Kd多由1,000次bootstrap残差拟合给出区间；APEX Kd报告95% CI。",
+   "safety": "SEC显示所选设计或突变蛋白为单体。",
+   "evidence_level": "全文",
+   "check_record": "读了Europe PMC全文XML PMC13441969的Abstract、Results、Discussion、图注和Methods占位。"
+  },
+  "background": [
+   "从头设计能抓住小分子的蛋白，需要同时匹配序列、骨架和配体构象。以往成功多依赖高通量筛选，或把配体官能团简化成类似氨基酸的片段；一旦对象换成真实药物，搜索空间和化学表征都会放大。",
+   "Fry等在Nature提出的切口，是把“序列给定结构”和“结构给定序列”的神经网络接成闭环。NISE不先靠能量函数定稿，而在每轮保留蛋白骨架与配体姿态都自洽的候选，再扩展序列，目标是零样本得到可表达、可结合的药物结合蛋白。"
+  ],
+  "design": [
+   "exatecan搜索先从40个AF2预测的四螺旋束库出发，每个结构至少有8条序列通过置信阈值。作者先用COMBS把exatecan构象放入口袋，再以一个未实验表征的COMBS–Rosetta模型去掉序列后作为NISE输入。exatecan的NISE每轮按配体pLDDT选择top 3自洽结构，再为每个结构采样1,000条LASErMPNN序列。",
+   "apixaban任务改用50个计算生成的NTF2折叠、刚体对接，并运行14–28轮NISE轨迹。该任务把共结构预测器换成Boltz-2，并以配体pLDDT和P(bind)复合评分排序。研究不是组间效能设计；NISE、COMBS、历史LigandMPNN/Rosetta与HSA对照主要用于方法学比较，成功率差异未作正式假设检验。"
+  ],
+  "results": [
+   {
+    "subhead": "核心读出",
+    "text": "摘要层面，NISE在exatecan和apixaban上的结合成功率分别为100%和83%，最紧结合体相对下一领先方法分别约70倍和近10,000倍。正文随后用荧光偏振、竞争结合和吸收光谱验证候选，读出集中在Kd、结合比例和exatecan闭环状态。这些读出覆盖不同折叠和化学性质不同的药物。"
+   },
+   {
+    "subhead": "exatecan结合",
+    "text": "exatecan实验中，4个NISE设计全部结合，Kd为0.12–17 µM，其中3个低于10 µM；非特异性HSA为43 µM。对照的16个COMBS设计中只有3个结合exatecan，Kd分别为8、12和44 µM。EPIC作为最紧NISE结合体，也比HSA更紧。"
+   },
+   {
+    "subhead": "闭环对照",
+    "text": "算法对照显示，NISE而非energy-based ISE同时提高配体pLDDT并降低序列NLL，图注四分位数来自每轮n=1,500个设计，第一轮为n=500。传统能量最小化循环未让NLL下降，也未提高配体pLDDT，支持“神经网络闭环”而非单纯筛选是关键。"
+   },
+   {
+    "subhead": "apixaban亲和力",
+    "text": "apixaban任务的头部结果是APEX：Kd=80 pM，95% CI为54–122 pM；factor Xa的Ki为80–700 pM，分子量13 kDa对43 kDa。6个入选设计中5个结合apixaban，且Kd均低于50 nM。特异性读出也有图例限制：APEX在50 nM exatecan下无可观结合，连接线不是拟合。"
+   },
+   {
+    "subhead": "校对与保护",
+    "text": "LASErMPNN校对给出的EPIC(Q51N/M97L)把亲和力提高100倍，Kd=1.2 nM，ΔΔG=−2.7 kcal mol−1。单突变EPIC(Q51N)和EPIC(M97L)的Kd分别为8.0 nM和7.4 nM。在PBS pH 7.4中，EPIC(Q51N/M97L)使超过99%的exatecan至少50 h保持闭环，且未见主要水解产物。相比之下，游离exatecan在血浆中的水解半衰期约2 h。"
+   }
+  ],
+  "mechanism_proven": [
+   "计算链条直接显示，NISE在同一exatecan输入上让配体pLDDT升高、序列NLL降低；energy-based ISE没有同步改善。实验链条随后对应到体外Kd：NISE的4个exatecan设计全结合，而COMBS对照16个中只有3个结合。",
+   "结构层面，EPIC晶体分辨率为2.0 Å，EPIC(Q51N)为2.2 Å。EPIC骨架与NISE上游输入接近，Cα r.m.s.d.为0.8 Å；Q51N较短侧链让exatecan约0.5 Å更深入口袋，并形成双齿氢键，解释亲和力提升的结构基础。"
+  ],
+  "mechanism_inferred": [
+   "作者推测，NISE是在P(sequence, structure, ligand conformation)的联合分布中爬向高概率模态；这种说法来自互补条件分布和模型置信度的变化，不等同于直接观测到真实设计能量地形。作者还提出，未来可把正向pLDDT和脱靶pLDDT差距结合做负向设计。"
+  ],
+  "limitations": [
+   "外推性有限：实验目标集中在exatecan和apixaban，骨架也限于四螺旋束与NTF2。虽然成功率为100%和83%，这些结果不能自动外推到原文未测试的其他药物和骨架。",
+   "样本量仍小：真正订购并测试的NISE候选为exatecan 4个、apixaban 6个；COMBS对照为16个。Kd区间虽清楚，但这些不是为比较成功率而设计效能的随机实验。",
+   "终点停留在体外：水解保护最长展示至少50 h，并在PBS或HSA存在下完成；文章没有给出动物药代、免疫原性、组织分布或释放动力学数据。",
+   "模型选择仍是局限：作者写明，若用RFAA评估会丢弃apixaban结合蛋白，Boltz-2对实验选择很重要。APEX脱靶读出还限于50 nM exatecan且连接线不是拟合，不能替代系统脱靶谱。"
+  ],
+  "significance": [
+   "如果这种闭环在更多药物上保持稳定，NISE会把小分子结合蛋白设计从大库筛选推向少量候选的计算优先流程。对药物递送或药物清除概念，本文最直接的价值是能做出高亲和“海绵”或保护蛋白，而不是已经证明体内疗效。",
+   "产业上，结果提示LASErMPNN、RFAA或Boltz-2一类模型的组合可服务于药物载荷保护、传感和催化前体发现；但转化判断必须以表达、稳定性、选择性和体内暴露共同成立为条件。"
+  ],
+  "citation": "Fry B, Slaw K, Polizzi NF. Zero-shot design of drug-binding proteins via neural iterative selection−expansion. Nature. 2026 Jun 24. https://doi.org/10.1038/s41586-026-10670-w",
+  "data_points": [
+   {
+    "value": "80 pM",
+    "meaning": "标题、导语和APEX对apixaban的核心Kd读出",
+    "source_quote": "bound the drug extremely tightly ( K d = 80 pM; 95% confidence interval of 54–122 pM; Fig. 6e,f and Supplementary Fig. 34 )",
+    "location": "Results—Design of apixaban binders using NISE"
+   },
+   {
+    "value": "95% CI 54–122 pM",
+    "meaning": "APEX-apixaban Kd的置信区间",
+    "source_quote": "K d = 80 pM; 95% confidence interval of 54–122 pM; Fig. 6e,f and Supplementary Fig. 34",
+    "location": "Results—Design of apixaban binders using NISE"
+   },
+   {
+    "value": "80–700 pM",
+    "meaning": "factor Xa对apixaban的Ki范围",
+    "source_quote": "factor Xa (inhibition constant ( K i ) = 80–700 pM), at one-third the size (13 kDa compared with 43 kDa)",
+    "location": "Results—Design of apixaban binders using NISE"
+   },
+   {
+    "value": "13 kDa",
+    "meaning": "APEX分子量",
+    "source_quote": "at one-third the size (13 kDa compared with 43 kDa)",
+    "location": "Results—Design of apixaban binders using NISE"
+   },
+   {
+    "value": "43 kDa",
+    "meaning": "factor Xa分子量",
+    "source_quote": "at one-third the size (13 kDa compared with 43 kDa)",
+    "location": "Results—Design of apixaban binders using NISE"
+   },
+   {
+    "value": "100%",
+    "meaning": "exatecan任务NISE结合成功率",
+    "source_quote": "specifically bind to two chemically distinct small-molecule drugs, exatecan and apixaban, with success rates of 100% and 83%, respectively",
+    "location": "Abstract"
+   },
+   {
+    "value": "83%",
+    "meaning": "apixaban任务NISE结合成功率",
+    "source_quote": "specifically bind to two chemically distinct small-molecule drugs, exatecan and apixaban, with success rates of 100% and 83%, respectively",
+    "location": "Abstract"
+   },
+   {
+    "value": "70-fold",
+    "meaning": "exatecan最紧NISE结合体相对下一领先方法的描述性倍数",
+    "source_quote": "surpassing those of the next-leading method by 70-fold for exatecan and nearly 10,000-fold for apixaban",
+    "location": "Abstract"
+   },
+   {
+    "value": "nearly 10,000-fold",
+    "meaning": "apixaban最紧NISE结合体相对下一领先方法的描述性倍数",
+    "source_quote": "surpassing those of the next-leading method by 70-fold for exatecan and nearly 10,000-fold for apixaban",
+    "location": "Abstract"
+   },
+   {
+    "value": "4个NISE设计",
+    "meaning": "进入exatecan实验表征的NISE设计数",
+    "source_quote": "we selected four NISE designs (40% mean pairwise sequence identity) with the least number of buried, non-hydrogen-bonded, polar atoms",
+    "location": "Results—Design of exatecan binders using NISE"
+   },
+   {
+    "value": "0.12–17 µM",
+    "meaning": "四个exatecan NISE设计的Kd范围",
+    "source_quote": "with K d values ranging from 0.12 µM to 17 µM (three designs had a K d < 10 µM)",
+    "location": "Results—Characterization of exatecan binders"
+   },
+   {
+    "value": "3个低于10 µM",
+    "meaning": "exatecan NISE设计中Kd低于10 µM的数量",
+    "source_quote": "with K d values ranging from 0.12 µM to 17 µM (three designs had a K d < 10 µM)",
+    "location": "Results—Characterization of exatecan binders"
+   },
+   {
+    "value": "43 µM",
+    "meaning": "HSA对exatecan的Kd",
+    "source_quote": "In comparison, HSA, a non-specific binder of exatecan, had a K d of 43 µM",
+    "location": "Results—Characterization of exatecan binders"
+   },
+   {
+    "value": "16个COMBS设计",
+    "meaning": "exatecan COMBS对照设计数",
+    "source_quote": "We also expressed 16 COMBS-designed proteins. Only three were found to bind to exatecan",
+    "location": "Results—Characterization of exatecan binders"
+   },
+   {
+    "value": "3个COMBS结合",
+    "meaning": "exatecan COMBS对照中结合者数量",
+    "source_quote": "We also expressed 16 COMBS-designed proteins. Only three were found to bind to exatecan",
+    "location": "Results—Characterization of exatecan binders"
+   },
+   {
+    "value": "8、12、44 µM",
+    "meaning": "三个COMBS exatecan结合体的Kd",
+    "source_quote": "with K d values of 8 µM, 12 µM and 44 µM",
+    "location": "Results—Characterization of exatecan binders"
+   },
+   {
+    "value": "top three",
+    "meaning": "exatecan NISE每轮选择数量",
+    "source_quote": "selecting the top three self-consistent structures by ligand confidence (pLDDT) from each round",
+    "location": "Results—Design of exatecan binders using NISE"
+   },
+   {
+    "value": "1,000 sequences",
+    "meaning": "exatecan NISE每个结构下一轮采样序列数",
+    "source_quote": "expanded in the next round by sampling 1,000 sequences for each structure",
+    "location": "Results—Design of exatecan binders using NISE"
+   },
+   {
+    "value": "40 AF2-predicted four-helix bundles",
+    "meaning": "exatecan起始聚焦骨架库",
+    "source_quote": "The resulting focused library consisted of 40 AF2-predicted four-helix bundles with very high confidence (Cα pLDDT)",
+    "location": "Results—Design of exatecan binders using NISE"
+   },
+   {
+    "value": "at least eight sequences",
+    "meaning": "每个exatecan起始骨架通过阈值的序列下限",
+    "source_quote": "Each structure had at least eight different sequences that passed confidence thresholds",
+    "location": "Results—Design of exatecan binders using NISE"
+   },
+   {
+    "value": "50 NTF2 folds",
+    "meaning": "apixaban任务起始NTF2骨架数",
+    "source_quote": "An ensemble of 50 computationally generated NTF2 folds was used",
+    "location": "Fig. 6"
+   },
+   {
+    "value": "14–28 iterations",
+    "meaning": "apixaban NISE轨迹轮数",
+    "source_quote": "NISE trajectories (14–28 iterations each) were then run",
+    "location": "Fig. 6"
+   },
+   {
+    "value": "Boltz-2",
+    "meaning": "apixaban任务使用的共结构预测器",
+    "source_quote": "replaced RFAA with Boltz-2 for co-structure prediction",
+    "location": "Results—Design of apixaban binders using NISE"
+   },
+   {
+    "value": "Boltz-2",
+    "meaning": "模型依赖局限：RFAA会丢弃apixaban结合蛋白，Boltz-2对实验选择重要",
+    "source_quote": "Indeed, a RFAA-based assessment would have led us to discard our apixaban binders (Supplementary Fig. 36 ); the use of Boltz-2 was important to select binders for experimental testing",
+    "location": "Discussion"
+   },
+   {
+    "value": "6个NISE设计",
+    "meaning": "apixaban进入实验分析的NISE设计数",
+    "source_quote": "Six diverse NISE designs were chosen for experimental testing",
+    "location": "Fig. 6"
+   },
+   {
+    "value": "5/6",
+    "meaning": "apixaban设计中结合者比例",
+    "source_quote": "five of the six designs bound tightly to apixaban in competitive binding experiments",
+    "location": "Results—Design of apixaban binders using NISE"
+   },
+   {
+    "value": "<50 nM",
+    "meaning": "apixaban结合设计的Kd阈值",
+    "source_quote": "five of the six designs bound tightly to apixaban in competitive binding experiments ( K d < 50 nM, Fig. 6e,f and Extended Data Fig. 9 )",
+    "location": "Results—Design of apixaban binders using NISE"
+   },
+   {
+    "value": "EPIC(Q51N/M97L)",
+    "meaning": "exatecan亲和力成熟后的双突变体名称",
+    "source_quote": "EPIC(Q51N/M97L), and found that the substitutions are energetically additive",
+    "location": "Results—Neural proofreading of the EPIC sequence"
+   },
+   {
+    "value": "100-fold",
+    "meaning": "EPIC双突变体相对EPIC的亲和力提升",
+    "source_quote": "resulting in a 100-fold higher affinity than EPIC for exatecan",
+    "location": "Results—Neural proofreading of the EPIC sequence"
+   },
+   {
+    "value": "1.2 nM",
+    "meaning": "EPIC(Q51N/M97L)对exatecan的Kd",
+    "source_quote": "K d = 1.2 nM; ΔΔ G = −2.7 kcal mol −1",
+    "location": "Results—Neural proofreading of the EPIC sequence"
+   },
+   {
+    "value": "−2.7 kcal mol−1",
+    "meaning": "EPIC(Q51N/M97L)的结合自由能变化",
+    "source_quote": "K d = 1.2 nM; ΔΔ G = −2.7 kcal mol −1",
+    "location": "Results—Neural proofreading of the EPIC sequence"
+   },
+   {
+    "value": "8.0 nM",
+    "meaning": "EPIC(Q51N)对exatecan的Kd",
+    "source_quote": "K d values of 8.0 nM and 7.4 nM; ΔΔ G ≅ −1.6 kcal mol −1 ; Fig. 4c and Supplementary Fig. 19",
+    "location": "Results—Neural proofreading of the EPIC sequence"
+   },
+   {
+    "value": "7.4 nM",
+    "meaning": "EPIC(M97L)对exatecan的Kd",
+    "source_quote": "K d values of 8.0 nM and 7.4 nM; ΔΔ G ≅ −1.6 kcal mol −1 ; Fig. 4c and Supplementary Fig. 19",
+    "location": "Results—Neural proofreading of the EPIC sequence"
+   },
+   {
+    "value": ">99%",
+    "meaning": "EPIC(Q51N/M97L)保护下exatecan保持闭环比例",
+    "source_quote": "more than 99% of exatecan stayed in the ring-closed form in PBS (pH 7.4) at room temperature for at least 50 h",
+    "location": "Results—EPIC protects exatecan from hydrolysis"
+   },
+   {
+    "value": "pH 7.4",
+    "meaning": "exatecan水解保护实验PBS条件",
+    "source_quote": "in PBS (pH 7.4) at room temperature for at least 50 h",
+    "location": "Results—EPIC protects exatecan from hydrolysis"
+   },
+   {
+    "value": "50 h",
+    "meaning": "exatecan保持闭环的观察时长",
+    "source_quote": "at room temperature for at least 50 h; there was no major hydrolysis product detected during this time",
+    "location": "Results—EPIC protects exatecan from hydrolysis"
+   },
+   {
+    "value": "50 nM exatecan",
+    "meaning": "APEX脱靶exatecan结合图注条件",
+    "source_quote": "APEX shows no appreciable binding to exatecan (red; [exatecan] = 50 nM; the connecting line is not a fit",
+    "location": "Fig. 6"
+   },
+   {
+    "value": "n = 1,500",
+    "meaning": "NISE与energy-based ISE算法对照四分位数样本数，多数轮为每轮1,500个设计",
+    "source_quote": "Quartiles were produced from n = 1,500 designs per iteration ( n = 500 for the first round)",
+    "location": "Fig. 1"
+   },
+   {
+    "value": "n = 500",
+    "meaning": "NISE与energy-based ISE算法对照中第一轮四分位数样本数例外",
+    "source_quote": "Quartiles were produced from n = 1,500 designs per iteration ( n = 500 for the first round)",
+    "location": "Fig. 1"
+   },
+   {
+    "value": "2.0 Å",
+    "meaning": "EPIC-exatecan晶体结构分辨率",
+    "source_quote": "The structure of EPIC was determined at a resolution of 2.0 Å and showed strong density for bound exatecan",
+    "location": "Results—Crystal structures of EPIC and EPIC(Q51N)"
+   },
+   {
+    "value": "2.2 Å",
+    "meaning": "EPIC(Q51N)-exatecan晶体结构分辨率",
+    "source_quote": "The structure of exatecan-bound EPIC(Q51N) (2.2 Å resolution) provided insight",
+    "location": "Results—Crystal structures of EPIC and EPIC(Q51N)"
+   },
+   {
+    "value": "0.8 Å",
+    "meaning": "EPIC骨架与NISE上游输入的Cα r.m.s.d.",
+    "source_quote": "The backbone agreed closely with the input backbone to LASErMPNN that was used directly upstream in the NISE design cycle (Cα r.m.s.d. 0.8 Å)",
+    "location": "Results—Crystal structures of EPIC and EPIC(Q51N)"
+   },
+   {
+    "value": "约0.5 Å",
+    "meaning": "Q51N使exatecan更深入口袋的位移",
+    "source_quote": "draws exatecan slightly further into the pocket (by approximately 0.5 Å)",
+    "location": "Results—Crystal structures of EPIC and EPIC(Q51N)"
+   },
+   {
+    "value": "1,000 fits",
+    "meaning": "Kd bootstrap拟合次数",
+    "source_quote": "K d values are the mean of 1,000 fits performed by bootstrapping of the optimal-fit residuals",
+    "location": "Fig. 6"
+   },
+   {
+    "value": "three technical replicates",
+    "meaning": "荧光各向异性实验技术重复",
+    "source_quote": "Data in e and f are mean ± s.d. of three technical replicates",
+    "location": "Fig. 6"
+   },
+   {
+    "value": "0.12 ± 0.03 µM",
+    "meaning": "图注中EPIC对exatecan的Kd拟合值",
+    "source_quote": "EPIC, K d = 0.12 ± 0.03 µM",
+    "location": "Fig. 3"
+   },
+   {
+    "value": "8 ± 0.7 µM",
+    "meaning": "图注中最佳传统设计对exatecan的Kd拟合值",
+    "source_quote": "the highest-affinity traditional design ( K d = 8 ± 0.7 µM)",
+    "location": "Fig. 3"
+   },
+   {
+    "value": "43 ± 3 µM",
+    "meaning": "图注中HSA对exatecan的Kd拟合值",
+    "source_quote": "HSA ( K d = 43 ± 3 µM)",
+    "location": "Fig. 3"
+   },
+   {
+    "value": "PMC13441969",
+    "meaning": "全文来源编号",
+    "source_quote": "FULL-TEXT SOURCE: Europe PMC fullTextXML PMC13441969",
+    "location": "Full-text source metadata"
+   },
+   {
+    "value": "2026-06-24",
+    "meaning": "论文发布日期",
+    "source_quote": "PUBLICATION DATE: 2026-06-24",
+    "location": "Metadata"
+   },
+   {
+    "value": "10.1038/s41586-026-10670-w",
+    "meaning": "论文DOI",
+    "source_quote": "DOI: https://doi.org/10.1038/s41586-026-10670-w",
+    "location": "Metadata"
+   },
+   {
+    "value": "two neural networks",
+    "meaning": "NISE将成对神经网络用于闭环设计",
+    "source_quote": "by combining two neural networks in an iterative design algorithm",
+    "location": "Abstract"
+   }
+  ],
+  "steps": [
+   "放置药物并筛选口袋",
+   "LASErMPNN扩展序列",
+   "共结构预测选择自洽体",
+   "表达纯化后测定Kd",
+   "验证特异性与水解保护"
+  ],
+  "figure_caption": "图示NISE从可设计骨架和小分子姿态出发，经LASErMPNN与共结构预测器反复选择、扩展，得到体外验证的小分子结合蛋白；标签列出文中主要结合与化学保护读出。示意图由 AI 生成，依据原文结果绘制，非期刊原图，不代表分子比例",
+  "image_story": {
+   "stages": [
+    {
+     "visual_en": "Deep green four-helix and pale mint NTF2 scaffolds with preformed cavities receive small-molecule poses.",
+     "source_quote": "The resulting focused library consisted of 40 AF2-predicted four-helix bundles with very high confidence"
+    },
+    {
+     "visual_en": "A mid green neural loop alternates sequence expansion with co-structure prediction and confidence-based selection.",
+     "source_quote": "The NISE process iteratively applies neural-network-based sequence design (expansion) and co-structure prediction"
+    },
+    {
+     "visual_en": "Final binder complexes show EPIC-like protection of exatecan and APEX clasping a terracotta apixaban molecule.",
+     "source_quote": "bound the drug extremely tightly ( K d = 80 pM; 95% confidence interval of 54–122 pM"
+    }
+   ],
+   "key_element_en": "bound apixaban molecule"
+  },
+  "image_subject_en": "A left-to-right process in three stages, drawn large. Stage 1 shows a compact deep green four-helix bundle scaffold and a separate pale mint NTF2 pocket scaffold, both with softly shaded cavities, beside a small light grey-green drug shape approaching the pocket. Stage 2 shows a mid green neural-network loop as two rounded molecular machines exchanging a ribbon protein and a ligand pose, with many pale mint sequence beads expanding outward and a light grey-green co-structure model being selected. Stage 3 shows two final binder complexes: a pale mint helical binder clasping a light grey-green exatecan-like molecule, and a deep green NTF2-like APEX binder clasping the highlighted apixaban molecule. The bound apixaban molecule is drawn as one very large, solid, boldly filled terracotta #C0492F stick-and-surface hybrid in the final pocket, visually dominant. Use deep green, mid green, pale mint, and light grey-green materials, semi-realistic 3D, no text, no numbers, no symbols, no charts, no axes. Only the bound apixaban molecule is terracotta.",
+  "card_subject_en": "A compact semi-realistic 3D close-up of a deep green NTF2-like APEX protein pocket holding a single apixaban molecule. The protein surface is deep green with pale mint inner helices and beta strands, softly lit on a light grey-green background. The bound apixaban molecule is one very large, solid, boldly filled terracotta #C0492F stick-and-surface hybrid at the center of the pocket. No text, no numbers, no symbols. Only the bound apixaban molecule is terracotta.",
+  "figure_labels": {
+   "heads": [
+    "骨架与配体",
+    "闭环选择扩展",
+    "验证结合保护"
+   ],
+   "callouts": [
+    {
+     "t": "40个骨架\n至少8条序列",
+     "stage": 1,
+     "entity_en": "deep green four-helix bundle scaffold"
+    },
+    {
+     "t": "50个NTF2\n刚体对接",
+     "stage": 1,
+     "entity_en": "pale mint NTF2 pocket scaffold"
+    },
+    {
+     "t": "exatecan任务\ntop 3选择",
+     "stage": 2,
+     "entity_en": "mid green neural-network loop"
+    },
+    {
+     "t": "每结构采样\n1,000条序列",
+     "stage": 2,
+     "entity_en": "mid green neural-network loop"
+    },
+    {
+     "t": "APEX\nKd 80 pM",
+     "stage": 3,
+     "entity_en": "deep green NTF2-like APEX binder"
+    },
+    {
+     "t": "EPIC双突变保护\n>99%闭环50 h",
+     "stage": 3,
+     "entity_en": "light grey-green exatecan-like molecule"
+    }
+   ],
+   "facts": [
+    [
+     "exatecan成功率 **100%**",
+     "Kd 0.12–17 µM"
+    ],
+    [
+     "apixaban成功率 **83%**",
+     "APEX Kd 80 pM"
+    ],
+    [
+     "EPIC双突变",
+     "**>99%**闭环50 h"
+    ]
+   ],
+   "note": "保护限PBS pH 7.4、室温、至少50 h且未见主要水解物。示意图由 AI 生成，非期刊原图。"
+  },
+  "chart": {
+   "justified": true,
+   "title_zh": "exatecan结合Kd（越低亲和力越高）",
+   "unit": "µM",
+   "figure_source": "Fig. 3f",
+   "values": [
+    {
+     "label_zh": "NISE EPIC",
+     "value": 0.12,
+     "n": "three technical replicates",
+     "source_quote": "EPIC, K d = 0.12 ± 0.03 µM"
+    },
+    {
+     "label_zh": "COMBS最佳",
+     "value": 8,
+     "n": "three technical replicates",
+     "source_quote": "the highest-affinity traditional design ( K d = 8 ± 0.7 µM)"
+    },
+    {
+     "label_zh": "HSA",
+     "value": 43,
+     "n": "three technical replicates",
+     "source_quote": "HSA ( K d = 43 ± 3 µM)"
+    }
+   ],
+   "note": "数值来自原文图注拟合；未作正式组间检验。"
+  }
+ },
+ "images": {
+  "mech_raw": "work/r4/clean/c2-ai-2_mech_raw_r4c_clean.png",
+  "mech": "c2-ai-2_mech_r4c.png",
+  "card": "c2-ai-2_card_r4c.png",
+  "card_src": "work/r4/clean/c2-ai-2_card_raw_r4c_clean.png (cleanup 232/200/12/6), card_b22d TARGET=0.73",
+  "image_model": "mech + card: Grok drawings r4c (supplied by parent run)",
+  "note": "card passes under user edge rule (2026-10-09): 34 off-white px outside bbox, all within 2 px of subject ink, haze 0"
+ }
+}

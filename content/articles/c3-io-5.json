@@ -1,0 +1,576 @@
+{
+ "id": "c3-io-5",
+ "round": "r4",
+ "text_from": "c3-io-5_final_r3.json (unchanged in r4; images only)",
+ "drafter_of_edits": "grok-bot (self)",
+ "base_drafter_model": "gpt-5.5-2026-04-23",
+ "source_draft": "work/r3b/c3-io-5/rw_c3-io-5_draft_r3fix.json",
+ "edits_r3": [
+  "limitations[1] shortened",
+  "results[0] lengthened (r3a1) + '高体重类别'->'肥胖性饮食类别' (r3fix: paper reports no significant ICI–body-weight association)"
+ ],
+ "status": "published-ready",
+ "status_reasons": [],
+ "preprint": false,
+ "writer_tags": [
+  "抗PD-1",
+  "肠道菌群",
+  "饮食干预",
+  "Lactobacillus johnsonii",
+  "粪菌移植",
+  "DAT代谢物"
+ ],
+ "tags_note": "editor related-field tags prepended; writer tags trimmed to 6 (metadata only)",
+ "article": {
+  "tier": "deep",
+  "field": "肿瘤免疫与细胞治疗",
+  "tags": [
+   "动物模型",
+   "抗PD-1",
+   "肠道菌群",
+   "饮食干预",
+   "Lactobacillus johnsonii",
+   "粪菌移植"
+  ],
+  "primary_endpoint_basis": "本文为临床前机制研究，无方案预设临床主要终点。本文将主要核心读出认定为12种饮食模型中饮食类别与抗PD-1应答的对应关系，依据正文“The diet–gut axis and ICI efficacy”中“we found that among all obesogenic diets, 4 out of 6 (66.7%) were associated with ICI response, compared with only 2 out of 6 (33.3%) of the non-obesogenic diets”；该结果与摘要“obesity-associated ICI responses are poorly correlated with metabolic dysfunction and are instead dependent on the diet–gut axis”一致。标题数字来自这句正文结果；本文不把该比例写成经效能设计的优效比较。",
+  "comparison_design": "原文为多组小鼠饮食与抗PD-1/IgG对照的临床前研究；Methods写明“Sample size was determined by historical data (not by power calculation)”，因此不是按组间比较效能设计。关键肿瘤生长曲线用多重双侧Mann–Whitney检验，其他定量分析按正态性用t检验、ANOVA、Mann–Whitney或Kruskal–Wallis，LEfSe含Kruskal–Wallis，相关用Spearman；正文所述4/6与2/6为观察性汇总比例，未见该比例本身的统计检验。",
+  "untested_comparisons": [
+   "4/6（66.7%）肥胖性饮食关联ICI应答对2/6（33.3%）非肥胖性饮食关联ICI应答：原文作为比例汇总陈述，未见该比例本身统计检验；标题只写“关联”，不写优效。",
+   "高BMI供者FMT相较低BMI供者FMT增强ICI效应：原文报告高BMI臂有显著抗PD-1效应、低BMI臂无效应，但未声明该研究为高低BMI供者间比较设计效能。",
+   "Psyllium→High Fat与High Fat→Psyllium的双向饮食切换：各自与IgG/抗PD-1读出支持敏化或去敏化，但不作为标题中的正式组间优劣比较。",
+   "L. johnsonii加High Fat相较M. gordoncarteri或L. johnsonii加Psyllium：原文用对照支持协同，但样本量由历史数据而非效能计算确定。"
+  ],
+  "number_basis_note": "材料未提示摘要与正文数字口径冲突。正文、图注与机制图均采用Results/Methods中的12种饮食、4/6、2/6、3周、15周、48 h、10 mg kg−1、16–24天等口径；未混用摘要替代数字。",
+  "must_cover": [
+   {
+    "id": "m1",
+    "item_zh": "发现体系使用12种覆盖肥胖生物学谱系的小鼠饮食模型，考察饮食驱动的代谢、免疫和肠道菌群状态如何关联ICI敏感性。",
+    "status": "covered",
+    "covered_by": "发现体系先建立12种小鼠饮食模型"
+   },
+   {
+    "id": "m2",
+    "item_zh": "主要ICI试验中，抗PD-1或IgG每3天腹腔给药至16–24天终点，剂量10 mg kg−1，并在饮食继续期间用手动卡尺监测肿瘤。",
+    "status": "covered",
+    "covered_by": "抗PD-1或IgG按10 mg kg−1每3天腹腔给药"
+   },
+   {
+    "id": "m3",
+    "item_zh": "中心定量结果是：4/6（66.7%）肥胖性饮食关联ICI应答，而非肥胖性饮食为2/6（33.3%）。",
+    "status": "covered",
+    "covered_by": "肥胖性饮食中4/6（66.7%）关联ICI应答"
+   },
+   {
+    "id": "m4",
+    "item_zh": "ICI敏感性并不简单跟随代谢功能障碍：在12种饮食中，ICI评分与体重、脂肪量、糖耐量受损、胰岛素、瘦素或代谢评分均无显著关联。",
+    "status": "covered",
+    "covered_by": "ICI评分与体重、脂肪量、糖耐量、胰岛素、瘦素和代谢评分均未见显著关联"
+   },
+   {
+    "id": "m5",
+    "item_zh": "应答饮食显示富集Lactobacillaceae/Lactobacillus的肠道菌群模式；无应答饮食富集Bacteroidaceae/Sutterellaceae和Bacteroides。",
+    "status": "covered",
+    "covered_by": "菌群分析把应答饮食与Lactobacillaceae和Lactobacillus富集相连"
+   },
+   {
+    "id": "m6",
+    "item_zh": "菌群效应可早于肥胖：饮食驱动的菌群组成在3周时大体稳定，早于持续至15周的后续增重。",
+    "status": "covered",
+    "covered_by": "菌群组成在3周时已大体稳定"
+   },
+   {
+    "id": "m7",
+    "item_zh": "饮食切换具有因果性和双向性：Psyllium→High Fat使HKP1肿瘤对抗PD-1敏感，High Fat→Psyllium使其去敏感。",
+    "status": "covered",
+    "covered_by": "Psyllium→High Fat足以使HKP1肿瘤对抗PD-1敏感"
+   },
+   {
+    "id": "m8",
+    "item_zh": "来自同一ICI无应答肺癌供者的人源FMT，在Psyllium饮食下仍不应答，但在High Fat饮食下转为抗PD-1敏感。",
+    "status": "covered",
+    "covered_by": "同一ICI无应答肺癌供者的FMT在Psyllium下仍不敏感"
+   },
+   {
+    "id": "m9",
+    "item_zh": "最强细菌干预是L. johnsonii加High Fat饮食，其在所有抗PD-1治疗SPF小鼠中产生完全应答，并显示High Fat饮食效应依赖L. johnsonii。",
+    "status": "covered",
+    "covered_by": "L. johnsonii补充使抗PD-1治疗的全部小鼠完全应答"
+   },
+   {
+    "id": "m10",
+    "item_zh": "机制上，酪氨酸来源的desaminotyrosine（DAT）在功能上足以挽救Psyllium耐药模型，并使小鼠对抗PD-1敏感。",
+    "status": "covered",
+    "covered_by": "DAT补充足以逆转这一效应并使小鼠对抗PD-1敏感"
+   },
+   {
+    "id": "m11",
+    "item_zh": "人源FMT中，高BMI供者臂（6名供者，BMI≥25）出现显著抗PD-1效应，低BMI供者臂（3名供者，BMI<25）没有。",
+    "status": "covered",
+    "covered_by": "高BMI供者FMT臂含6名供者、BMI≥25"
+   },
+   {
+    "id": "m12",
+    "item_zh": "作者声明的局限是：概念验证肿瘤体系为可移植皮下模型，因此需要自发原位模型检验组织特异性微环境效应。",
+    "status": "covered",
+    "covered_by": "研究使用可移植皮下肿瘤作概念验证"
+   }
+  ],
+  "title": "12种饮食模型显示4/6肥胖性饮食关联抗PD-1应答",
+  "one_liner": "在12种小鼠饮食模型中，4/6肥胖性饮食关联抗PD-1应答，提示关键不在代谢评分而在饮食-肠道菌群轴。",
+  "datacard": {
+   "study_type": "小鼠多饮食临床前机制研究，结合16S测序、宏基因组、代谢组、单菌定植和人源/鼠源FMT",
+   "n": "12种饮食；15周模型中Japanese n=14，其余饮食n=15；主要ICI图中Psyllium抗PD-1 n=3，Ketogenic、Vegan、Pectin、Low Fat抗PD-1 n=4，多数组别n=5",
+   "control": "IgG同型对照；Psyllium或High Fat饮食、PBS灌胃、低/高BMI供者FMT等按实验设置作对照",
+   "intervention": "主要GCI ICI试验中抗PD-1为10 mg kg−1每3天腹腔给药；CRCHUM人源FMT、单菌补充和无菌模型等使用250 µg固定剂量；并结合饮食切换、FMT、L. johnsonii补充或单菌定植、DAT饮水补充",
+   "followup": "主要肿瘤试验16–24天；饮食暴露3周或15周；饮食切换在首次治疗前48 h",
+   "primary_endpoint": "临床前核心读出：各饮食中抗PD-1相对IgG是否显著降低终点肿瘤体积，并据此计算ICI应答/敏感性",
+   "primary_endpoint_result": "肥胖性饮食4/6（66.7%）关联ICI应答；非肥胖性饮食2/6（33.3%）关联ICI应答；12种饮食中ICI评分与体重、脂肪量、糖耐量、胰岛素、瘦素或代谢评分无显著关联",
+   "statistics": "样本量由历史数据确定而非效能计算；肿瘤生长曲线用多重双侧Mann–Whitney检验，相关为双侧Spearman",
+   "safety": "动物实验按人道终点执行：肿瘤溃疡、总体积超过2.5 cm3或出现不良临床体征时提前终止",
+   "evidence_level": "全文",
+   "check_record": "读了Europe PMC fullTextXML PMC13558080的Abstract、Results、Methods、图注、Discussion和Limitations"
+  },
+  "background": [
+   "高BMI在多癌种患者中与免疫检查点抑制剂疗效较好相关，但肥胖同时伴随糖脂代谢异常和菌群改变，单看体重难以拆分因果。常用高脂饲料模型也过于简化，往往只模拟45–60% kcal来自猪油的饮食，不能代表人群饮食差异。",
+   "Desharnais等在Nature提出的切口，是把“肥胖悖论”拆成饮食、宿主代谢、免疫状态和肠道菌群四个层面来测。研究重点不是建议患者长期肥胖性饮食，而是追问短期饮食调节、特定菌株或菌源代谢物能否重塑抗PD-1的宿主生态位。"
+  ],
+  "design": [
+   "发现体系先建立12种小鼠饮食模型，覆盖Low Fat、High Fat、Western、Mediterranean、Japanese、Vegan、American、Aspartame、Ketogenic及3种纤维替换饮食。4周龄雄性C57BL/6J小鼠喂养15周后接种HKP1肺癌细胞，并记录体重、脂肪量、糖耐量、胰岛素和免疫表型。",
+   "主要ICI试验中，抗PD-1或IgG按10 mg kg−1每3天腹腔给药，至16–24天终点，饮食持续、肿瘤用手动卡尺监测；“应答”定义为抗PD-1相对IgG显著降低肿瘤体积。3周饮食、48 h饮食切换、鼠源/人源FMT、无菌单菌定植和DAT饮水补充用于检验因果链。样本量由历史数据而非效能计算确定。"
+  ],
+  "results": [
+   {
+    "subhead": "应答随饮食变化",
+    "text": "核心读出来自12种饮食下HKP1抗PD-1试验：肥胖性饮食中4/6（66.7%）关联ICI应答，非肥胖性饮食中为2/6（33.3%）。这一结果说明肥胖性饮食类别可富集应答，但不是所有肥胖性饮食都有效，也不是所有瘦饮食都无效。"
+   },
+   {
+    "subhead": "代谢评分不解释",
+    "text": "反向对照显示，跨12种饮食，ICI评分与体重、脂肪量、糖耐量、胰岛素、瘦素和代谢评分均未见显著关联。代谢评分阈值以均值0.36分出6种高分和6种低分饮食，但抗PD-1敏感性没有简单跟随代谢功能障碍。"
+   },
+   {
+    "subhead": "菌群先于肥胖",
+    "text": "菌群分析把应答饮食与Lactobacillaceae和Lactobacillus富集相连，无应答饮食则富集Bacteroidaceae、Sutterellaceae和Bacteroides；该模式在肿瘤接种前和终点均可见。更关键的是，菌群组成在3周时已大体稳定，早于持续至15周的后续增重；3周High Fat与Psyllium模型仍能重现HKP1抗PD-1应答差异。"
+   },
+   {
+    "subhead": "切换与FMT支持因果",
+    "text": "饮食切换给出双向证据：Psyllium→High Fat足以使HKP1肿瘤对抗PD-1敏感，而High Fat→Psyllium使其去敏感，切换后48 h即可检测到Lactobacillus上升或Bacteroides下降。鼠源FMT中，High Fat受体即使接受Psyllium供体菌群，终点也向High Fat菌群聚类。"
+   },
+   {
+    "subhead": "单菌和代谢物闭环",
+    "text": "在抗生素处理SPF小鼠中，High Fat联合L. johnsonii补充使抗PD-1治疗的全部小鼠完全应答；PBS灌胃无此效应。同一ICI无应答肺癌供者的FMT在Psyllium下仍不敏感，在High Fat下转为敏感。DAT补充足以逆转这一效应并使小鼠对抗PD-1敏感。高BMI供者FMT臂含6名供者、BMI≥25，出现显著抗PD-1效应；低BMI臂含3名供者、BMI<25，未见效应。"
+   }
+  ],
+  "mechanism_proven": [
+   "原文直接证明了饮食可重塑菌群并改变抗PD-1结局：12种饮食产生不同菌群，应答饮食富集Lactobacillus；3周饮食足以建立菌群状态；Psyllium与High Fat双向切换分别造成敏化和去敏化；抗生素可削弱High Fat背景下的抗PD-1敏感性。",
+   "原文还直接证明了菌株和代谢物的功能环节。L. johnsonii在High Fat背景下的单菌定植或补充增强抗PD-1，并在SPF小鼠中产生全部完全应答；L. johnsonii加Psyllium或M. gordoncarteri加High Fat只呈部分敏感。DAT在血清和菌上清实验中与该轴相连，DAT饮水补充能挽救Psyllium耐药模型。"
+  ],
+  "mechanism_inferred": [
+   "作者推测，更保守的决定因素可能不是单一L. johnsonii菌种，而是饮食条件下的菌群生态和芳香族氨基酸代谢功能。Discussion提出，DAT相关的酪氨酸来源phenylpropionate通路、ILA等吲哚类色氨酸通路可能互补或协同；这些通路可能通过增强T细胞效应功能来提高抗PD-1敏感性，但复杂菌群中的具体贡献仍未完全拆开。"
+  ],
+  "limitations": [
+   "第一，4/6（66.7%）对2/6（33.3%）是12种饮食中的比例汇总；Methods写明样本量由历史数据确定，而非power calculation。因此它更适合作为临床前核心观察，不应写成正式优效结论。",
+   "第二，研究使用可移植皮下肿瘤作概念验证；作者明确指出，需要用自发原位模型检验组织特异性微环境如何与宿主菌群和代谢状态相互作用。",
+   "第三，人源证据仍是供者到小鼠的桥接实验。高BMI供者为6名、低BMI供者为3名；低BMI组中少数应答小鼠来自同一BMI 24.95的供者，接近BMI≥25阈值，还不能证明改变BMI会获益。",
+   "第四，机制并未收敛到单一分子。ILA在肥胖性应答饮食中升高，却在L. johnsonii无菌定植模型血清中不可检测；DAT更接近功能介质，但其他菌种或菌群组合也可能参与。"
+  ],
+  "significance": [
+   "如果这些小鼠结果能在更贴近临床的原位模型和患者干预研究中复现，肥胖悖论可被重新理解为“饮食—菌群—代谢物”轴，而不是单纯由高BMI或代谢功能障碍驱动。这会把可干预对象从体重本身转向短期饮食调节、FMT前后饮食配伍、特定菌株和菌源代谢物。",
+   "但转化边界同样清楚：作者不主张患者长期采用肥胖性饮食，因为其健康风险已知。更可行的方向，是在抗PD-1治疗或FMT策略中测试短期饮食窗口、L. johnsonii样菌株、DAT或相关phenylpropionate代谢轴。"
+  ],
+  "citation": "Desharnais L, Swaby A, Messaoudene M, Doré S, Yu MW, Fiset B, 等. Diet–microbiome synergy underlies obesity-associated immunotherapy efficacy. Nature. 2026. https://doi.org/10.1038/s41586-026-10750-x",
+  "data_points": [
+   {
+    "value": "12种",
+    "meaning": "标题、导语、设计和结果中使用的饮食模型数量",
+    "source_quote": "using 12 mouse diet models that reflect a spectrum of obesity biology",
+    "location": "Abstract"
+   },
+   {
+    "value": "4/6",
+    "meaning": "肥胖性饮食中关联ICI应答的饮食数",
+    "source_quote": "among all obesogenic diets, 4 out of 6 (66.7%) were associated with ICI response",
+    "location": "Results: The diet–gut axis and ICI efficacy"
+   },
+   {
+    "value": "66.7%",
+    "meaning": "肥胖性饮食中关联ICI应答的比例",
+    "source_quote": "4 out of 6 (66.7%) were associated with ICI response",
+    "location": "Results: The diet–gut axis and ICI efficacy"
+   },
+   {
+    "value": "2/6",
+    "meaning": "非肥胖性饮食中关联ICI应答的饮食数",
+    "source_quote": "compared with only 2 out of 6 (33.3%) of the non-obesogenic diets",
+    "location": "Results: The diet–gut axis and ICI efficacy"
+   },
+   {
+    "value": "33.3%",
+    "meaning": "非肥胖性饮食中关联ICI应答的比例",
+    "source_quote": "2 out of 6 (33.3%) of the non-obesogenic diets",
+    "location": "Results: The diet–gut axis and ICI efficacy"
+   },
+   {
+    "value": "45–60%",
+    "meaning": "常用高脂肥胖模型中来自猪油脂肪的能量比例范围",
+    "source_quote": "most commonly relying on a diet of 45–60% kcal of fat from lard",
+    "location": "Results: Diet shapes metabolic and immune states"
+   },
+   {
+    "value": "4周龄",
+    "meaning": "15周饮食模型小鼠购入年龄",
+    "source_quote": "15-week diet experiments were performed at the GCI with 4-week-old male C57BL/6J mice",
+    "location": "Methods: In vivo experimental models"
+   },
+   {
+    "value": "15周",
+    "meaning": "长期饮食暴露时长",
+    "source_quote": "were then switched to a special diet for 15 weeks (ad libitum)",
+    "location": "Methods: In vivo experimental models"
+   },
+   {
+    "value": "10 mg kg−1",
+    "meaning": "主要GCI ICI试验抗PD-1或IgG按体重给药剂量",
+    "source_quote": "Weight-adjusted dosing was used to account for differences in body weight and blood volume (10 mg kg −1 per mouse",
+    "location": "Methods: In vivo experimental models"
+   },
+   {
+    "value": "250 µg",
+    "meaning": "CRCHUM人源FMT、单菌补充和无菌模型等使用的抗PD-1或IgG固定剂量",
+    "source_quote": "mice were randomized to anti-PD-1 (clone RMPI-14, Bio X Cell) or IgG (clone 2A3, Bio X Cell) at a fixed dose of 250 µg per mouse intraperitoneally every 3 days",
+    "location": "Methods: In vivo experimental models"
+   },
+   {
+    "value": "每3天",
+    "meaning": "主要ICI试验腹腔给药频率",
+    "source_quote": "administered intraperitoneally every 3 days until the end-point (16–24 days)",
+    "location": "Methods: In vivo experimental models"
+   },
+   {
+    "value": "16–24天",
+    "meaning": "主要ICI试验终点窗口",
+    "source_quote": "administered intraperitoneally every 3 days until the end-point (16–24 days)",
+    "location": "Methods: In vivo experimental models"
+   },
+   {
+    "value": "3周",
+    "meaning": "短期饮食模型时长及菌群稳定时点",
+    "source_quote": "microbiome composition was largely stabilized after short-term diet exposure (by 3 weeks)",
+    "location": "Results: Early microbial correlates of ICI response"
+   },
+   {
+    "value": "15周",
+    "meaning": "后续长期暴露导致体重继续增加的时长",
+    "source_quote": "prior to subsequent weight gain from longer-term exposure (up to 15 weeks)",
+    "location": "Results: Early microbial correlates of ICI response"
+   },
+   {
+    "value": "0.36",
+    "meaning": "用来划分高低代谢评分饮食的均值",
+    "source_quote": "resulting in 6 diets above the mean (0.36) and 6 below the mean",
+    "location": "Results: The diet–gut axis and ICI efficacy"
+   },
+   {
+    "value": "6种",
+    "meaning": "代谢评分均值以上的饮食数量",
+    "source_quote": "resulting in 6 diets above the mean (0.36) and 6 below the mean",
+    "location": "Results: The diet–gut axis and ICI efficacy"
+   },
+   {
+    "value": "6种",
+    "meaning": "代谢评分均值以下的饮食数量",
+    "source_quote": "resulting in 6 diets above the mean (0.36) and 6 below the mean",
+    "location": "Results: The diet–gut axis and ICI efficacy"
+   },
+   {
+    "value": "48 h",
+    "meaning": "饮食切换至首次抗PD-1前以及菌群改变可检测的时间",
+    "source_quote": "switched to High Fat diet (top ICI-responder diet) 48 h prior to anti-PD-1 treatment",
+    "location": "Results: Diet remodels the microbiome to shape ICI response"
+   },
+   {
+    "value": "48 h",
+    "meaning": "饮食切换后粪便菌群变化可检测时间",
+    "source_quote": "detectable as early as 48 h after the diet switch",
+    "location": "Results: Diet remodels the microbiome to shape ICI response"
+   },
+   {
+    "value": "Japanese n=14",
+    "meaning": "15周饮食模型中Japanese组体重曲线样本量",
+    "source_quote": "Japanese: n = 14 mice; all other diets: n = 15 mice",
+    "location": "Fig. 1 caption"
+   },
+   {
+    "value": "n=15",
+    "meaning": "15周饮食模型中除Japanese外各饮食体重曲线样本量",
+    "source_quote": "Japanese: n = 14 mice; all other diets: n = 15 mice",
+    "location": "Fig. 1 caption"
+   },
+   {
+    "value": "n=3",
+    "meaning": "主要ICI图中Psyllium抗PD-1组样本量",
+    "source_quote": "anti-PD-1 (Psyllium): n = 3 mice",
+    "location": "Fig. 2 caption"
+   },
+   {
+    "value": "n=5",
+    "meaning": "主要ICI图中多数组别的样本量",
+    "source_quote": "n = 5 mice; IgG (Mediterranean, Japanese, Vegan, Western, Inulin and High Fat)",
+    "location": "Fig. 2 caption"
+   },
+   {
+    "value": "n=4",
+    "meaning": "主要ICI图中部分组别的样本量",
+    "source_quote": "anti-PD-1 (Ketogenic, Vegan, Pectin and Low Fat): n = 4 mice",
+    "location": "Fig. 2 caption"
+   },
+   {
+    "value": "n=10",
+    "meaning": "Psyllium到High Fat饮食切换实验每组样本量",
+    "source_quote": "following a switch from the Psy to HF diet. n = 10 mice per group",
+    "location": "Fig. 4 caption"
+   },
+   {
+    "value": "IgG n=8",
+    "meaning": "High Fat到Psyllium饮食切换实验IgG组样本量",
+    "source_quote": "following a switch from HF to Psy diet. IgG: n = 8 mice",
+    "location": "Fig. 4 caption"
+   },
+   {
+    "value": "抗PD-1 n=10",
+    "meaning": "High Fat到Psyllium饮食切换实验抗PD-1组样本量",
+    "source_quote": "IgG: n = 8 mice; anti-PD-1: n = 10 mice",
+    "location": "Fig. 4 caption"
+   },
+   {
+    "value": "n=10",
+    "meaning": "L. johnsonii无菌单菌定植模型每组样本量",
+    "source_quote": "L. johnsonii ( Lj ): n = 10 mice per group",
+    "location": "Fig. 5 caption"
+   },
+   {
+    "value": "n=9",
+    "meaning": "PBS无菌模型每组样本量",
+    "source_quote": "PBS: n = 9 mice per group",
+    "location": "Fig. 5 caption"
+   },
+   {
+    "value": "n=5",
+    "meaning": "SPF单菌补充模型每组样本量",
+    "source_quote": "in the single-strain supplementation model. n = 5 mice per group",
+    "location": "Fig. 5 caption"
+   },
+   {
+    "value": "6名",
+    "meaning": "高BMI人源FMT供者人数",
+    "source_quote": "3 low-BMI donors (BMI < 25) and 6 high-BMI donors (BMI ≥ 25)",
+    "location": "Results: Microbial metabolites link diet to ICI"
+   },
+   {
+    "value": "BMI≥25",
+    "meaning": "高BMI供者定义",
+    "source_quote": "6 high-BMI donors (BMI ≥ 25) into mice treated with antibiotics",
+    "location": "Results: Microbial metabolites link diet to ICI"
+   },
+   {
+    "value": "3名",
+    "meaning": "低BMI人源FMT供者人数",
+    "source_quote": "3 low-BMI donors (BMI < 25) and 6 high-BMI donors",
+    "location": "Results: Microbial metabolites link diet to ICI"
+   },
+   {
+    "value": "BMI<25",
+    "meaning": "低BMI供者定义",
+    "source_quote": "3 low-BMI donors (BMI < 25) and 6 high-BMI donors",
+    "location": "Results: Microbial metabolites link diet to ICI"
+   },
+   {
+    "value": "BMI 24.95",
+    "meaning": "低BMI组中产生少数应答小鼠的供者BMI",
+    "source_quote": "whose BMI (24.95) was near the threshold for overweight classification",
+    "location": "Results: Microbial metabolites link diet to ICI"
+   },
+   {
+    "value": "2.5 cm3",
+    "meaning": "动物实验提前人道终点的肿瘤总体积阈值",
+    "source_quote": "including development of tumour ulceration, total volume exceeding 2.5 cm 3",
+    "location": "Methods: Animal ethics statement"
+   },
+   {
+    "value": "100 mM",
+    "meaning": "DAT饮水补充实验中DAT储备/配制浓度",
+    "source_quote": "prepared using 100 mM 3-(4-Hydroxyphenyl)-propionic acid (DAT",
+    "location": "Methods: In vivo experimental models"
+   },
+   {
+    "value": "day 20",
+    "meaning": "DAT补充体内实验抗PD-1给药终点",
+    "source_quote": "administered intraperitoneally every 3 days until the end-point (day 20)",
+    "location": "Methods: In vivo experimental models"
+   },
+   {
+    "value": "53",
+    "meaning": "NSCLC患者血浆代谢组队列人数",
+    "source_quote": "plasma samples from a cohort of 53 patients with NSCLC treated with ICI",
+    "location": "Results: Microbial metabolites link diet to ICI"
+   },
+   {
+    "value": "n=32",
+    "meaning": "人血浆代谢组中ICI应答患者数量",
+    "source_quote": "in plasma of ICI responders ( n = 32 patients) and non-responders (n = 21 patients)",
+    "location": "Fig. 5 caption"
+   },
+   {
+    "value": "n=21",
+    "meaning": "人血浆代谢组中ICI无应答患者数量",
+    "source_quote": "responders ( n = 32 patients) and non-responders (n = 21 patients)",
+    "location": "Fig. 5 caption"
+   },
+   {
+    "value": "5名小鼠/供者",
+    "meaning": "高低BMI供者FMT中每名人类供者转移至小鼠的数量",
+    "source_quote": "donor material from 1 patient was transferred to 5 mice each",
+    "location": "Extended Data Fig. 10 caption"
+   },
+   {
+    "value": "500,000",
+    "meaning": "HKP1肿瘤细胞接种量",
+    "source_quote": "mice were injected subcutaneously with 500,000 HKP1 tumour cells",
+    "location": "Methods: In vivo experimental models"
+   },
+   {
+    "value": "2个",
+    "meaning": "图1 15周饮食体重实验独立队列数",
+    "source_quote": "all other diets: n = 15 mice; 2 independent cohorts",
+    "location": "Fig. 1 caption"
+   },
+   {
+    "value": "2个",
+    "meaning": "饮食切换Psyllium到High Fat实验独立队列数",
+    "source_quote": "n = 10 mice per group, 2 independent cohorts",
+    "location": "Fig. 4 caption"
+   },
+   {
+    "value": "2个",
+    "meaning": "无菌L. johnsonii模型独立队列数",
+    "source_quote": "PBS: n = 9 mice per group; 2 independent cohorts",
+    "location": "Fig. 5 caption"
+   },
+   {
+    "value": "3种",
+    "meaning": "设计中纤维替换饮食数量",
+    "source_quote": "we also designed three diets in which cellulose was replaced",
+    "location": "Results: Diet shapes metabolic and immune states"
+   }
+  ],
+  "steps": [
+   "多饮食塑造菌群生态",
+   "Lactobacillus在应答饮食富集",
+   "L. johnsonii在肥胖性应答饮食中富集",
+   "DAT增强T细胞效应功能",
+   "抗PD-1敏感性被恢复"
+  ],
+  "figure_caption": "机制图概括饮食-菌群-代谢物链条：High Fat等背景富集Lactobacillus/L. johnsonii，并支持DAT相关菌群酪氨酸代谢轴；DAT增强肿瘤T细胞效应功能，使抗PD-1更易控制HKP1肿瘤。示意图由 AI 生成，依据原文结果绘制，非期刊原图，不代表分子比例",
+  "image_story": {
+   "stages": [
+    {
+     "visual_en": "diet bowls feeding mice, one high fat diet bowl and one psyllium diet bowl, leading to distinct gut microbiome communities",
+     "source_quote": "Dietary nutrients shape the gut microbiome, which is known to have immunomodulatory effects"
+    },
+    {
+     "visual_en": "intestinal lumen with Lactobacillus johnsonii enriched within a mixed microbiome community and a nearby DAT-related metabolite field, without showing direct release from one bacterial cell",
+     "source_quote": "serum levels of desaminotyrosine (3-(4-hydroxyphenyl)propionic acid; DAT) were significantly higher in L. johnsonii- monocolonized mice consuming High Fat diet compared with those consuming the Psyllium diet"
+    },
+    {
+     "visual_en": "tumour microenvironment with activated CD8 T cells attacking tumour cells under anti-PD-1 antibody treatment",
+     "source_quote": "DAT supplementation was sufficient to reverse this effect and sensitize mice to therapy"
+    }
+   ],
+   "key_element_en": "one large desaminotyrosine metabolite particle"
+  },
+  "image_subject_en": "A left-to-right process in three stages, drawn large. Stage 1 shows two laboratory mice beside two simple diet bowls, one deep green bowl representing a favourable obesogenic diet and one pale mint bowl representing a psyllium diet, with a soft light grey-green gut silhouette behind them. Stage 2 shows an enlarged intestinal lumen in mid green, filled with rounded Lactobacillus johnsonii bacteria in deep green and other commensal bacteria in pale mint and light grey-green; a diffuse metabolite field sits across the mixed microbiome community, not emerging from a single bacterial cell. Drawn as one very large, solid, boldly filled terracotta #C0492F desaminotyrosine metabolite particle positioned within the mixed microbiome metabolite field and pointing toward the tumour. Stage 3 shows a compact tumour nest in light grey-green with activated CD8 T cells in deep green contacting tumour cells, and pale mint anti-PD-1 antibodies around them. Use semi-realistic 3D scientific illustration, no text, no numbers, no symbols, no charts, no axes. Only the desaminotyrosine metabolite particle is terracotta.",
+  "card_subject_en": "A compact semi-realistic 3D subject for a science card: an enlarged intestinal lumen arc in mid green containing a dense cluster of Lactobacillus johnsonii rods in deep green plus other commensal bacteria in pale mint, with a nearby activated CD8 T cell reaching toward a small tumour-cell cluster in light grey-green. One very large, solid, boldly filled terracotta #C0492F desaminotyrosine metabolite particle sits in a mixed microbiome metabolite field between the bacteria and the T cell, not being secreted by one cell. No text, no numbers, no symbols, no charts. Only the desaminotyrosine metabolite particle is terracotta.",
+  "figure_labels": {
+   "heads": [
+    "饮食塑菌群",
+    "DAT相关代谢",
+    "恢复抗PD-1"
+   ],
+   "callouts": [
+    {
+     "t": "12种饮食\n建立差异生态",
+     "stage": 1,
+     "entity_en": "two laboratory mice beside two simple diet bowls"
+    },
+    {
+     "t": "3周菌群\n大体稳定",
+     "stage": 1,
+     "entity_en": "soft light grey-green gut silhouette"
+    },
+    {
+     "t": "肥胖性应答饮食\n富集L. johnsonii",
+     "stage": 2,
+     "entity_en": "Lactobacillus johnsonii bacteria"
+    },
+    {
+     "t": "DAT\n功能性挽救",
+     "stage": 2,
+     "entity_en": "desaminotyrosine metabolite particle"
+    },
+    {
+     "t": "CD8 T细胞\n效应增强",
+     "stage": 3,
+     "entity_en": "activated CD8 T cells"
+    },
+    {
+     "t": "4/6肥胖性饮食\n关联ICI应答",
+     "stage": 3,
+     "entity_en": "compact tumour nest"
+    }
+   ],
+   "facts": [
+    [
+     "肥胖性饮食",
+     "**4/6**应答"
+    ],
+    [
+     "非肥胖性饮食",
+     "**2/6**应答"
+    ],
+    [
+     "高BMI FMT",
+     "6名供者，BMI≥25"
+    ]
+   ],
+   "note": "4/6与2/6为比例汇总，非效能设计比较。示意图由 AI 生成，非期刊原图。"
+  },
+  "chart": {
+   "justified": true,
+   "title_zh": "饮食类别与ICI应答饮食比例",
+   "unit": "应答饮食比例（%）",
+   "figure_source": "Results: The diet–gut axis and ICI efficacy; Extended Data Fig. 4h",
+   "values": [
+    {
+     "label_zh": "肥胖性饮食",
+     "value": 66.7,
+     "n": "4/6种饮食",
+     "source_quote": "among all obesogenic diets, 4 out of 6 (66.7%) were associated with ICI response"
+    },
+    {
+     "label_zh": "非肥胖性饮食",
+     "value": 33.3,
+     "n": "2/6种饮食",
+     "source_quote": "compared with only 2 out of 6 (33.3%) of the non-obesogenic diets"
+    }
+   ],
+   "note": "比例来自原文汇总；原文未声明该比例比较按效能设计。"
+  }
+ },
+ "images": {
+  "mech_raw": "work/r4/clean/c3-io-5_mech_raw_r4c_clean.png",
+  "mech": "c3-io-5_mech_r4c.png",
+  "card": "c3-io-5_card.png",
+  "card_src": "r3 card (passed)",
+  "image_model": "mech: Grok drawing (r4/r4b/r4c, supplied by parent run); card: gpt-image-2 (earlier rounds)",
+  "note": "mech: larger fonts HS=38 FACT_FS=34 (mech_r4f.py; default fonts gave 2 labels <50%); OCR soft gate: 1 label <50% (12种饮食 建立差异生态, 0.44), numbers 16/16"
+ }
+}

@@ -1,0 +1,496 @@
+{
+ "id": "c3-io-2",
+ "round": "r5img",
+ "drafter_model": "grok-bot (self)",
+ "drafter_of_edits": "grok-bot (self)",
+ "verifier_model": "grok-bot (self): scripted audit_rw + verbatim-quote claim check (no external verifier model available)",
+ "mustcover_frozen_by": "gpt-5.5-2026-04-23",
+ "mustcover_file": "work/r5/mc/mc_c3-io-2_frozen.json",
+ "source_draft": "work/r5/c3-io-2/rw_c3-io-2_draft_v3.json",
+ "edits_r5": [
+  "v1 drafted by grok-bot (self) from full text",
+  "v2: significance +23 字 (author rationale for patient stratification); limitations[1] Wilcoxon statement restricted to Fig. 3/4 legends; claim quotes fixed (P1, n=61)",
+  "v3: figure_caption shortened to 80-120 字"
+ ],
+ "text_status": "text-pass",
+ "status": "published-ready",
+ "status_reasons": [],
+ "preprint": false,
+ "writer_tags": [
+  "瘤内给药",
+  "抗CTLA4",
+  "黑色素瘤",
+  "调节性T细胞",
+  "FcγR",
+  "新鲜活检生物标志物"
+ ],
+ "tags_note": "editor related-field tags prepended; writer tags trimmed to 6 (metadata only)",
+ "article": {
+  "tier": "deep",
+  "field": "肿瘤免疫与细胞治疗",
+  "tags": [
+   "瘤内给药",
+   "抗CTLA4",
+   "黑色素瘤",
+   "调节性T细胞",
+   "FcγR",
+   "新鲜活检生物标志物"
+  ],
+  "primary_endpoint_basis": "方案预设主要终点：6个月治疗相关3–4级毒性无事件生存（Fleming两阶段设计，判定阈值30%）。标题数字24.3%来自Results主要终点分析（37例可评估中9例），与一句话结论和数据卡同一口径；摘要另报22.6%对57.1%，在正文中标注为摘要口径并列。",
+  "comparison_design": "单组判定设计：Fleming两阶段（α 10%、把握度90%，P0=50%、P1=70%），实验组需38例可评估。Methods明确未做两组正式比较，IV组仅作P0假设的内部对照；Results与Discussion多次说明未为疗效比较设计效能。PFS/OS的log-rank P值为描述性报告。",
+  "untested_comparisons": [
+   "IT组与IV组6个月无≥3级毒性比例75.7%对42.9%（IV组仅作内部对照，未做正式比较）",
+   "全程累计3–4级治疗相关不良事件32.5%对66.6%",
+   "未注射靶病灶客观缓解率IT组50%对IV组65%",
+   "注射病灶65.7%对未注射病灶50%的缓解率差异"
+  ],
+  "number_basis_note": "主要终点：摘要与讨论写6个月3–4级事件发生率22.6%（IV组57.1%），Results写37例可评估中9例（24.3%）、无事件75.7%对42.9%。正文、数据卡和图标签用Results口径24.3%，摘要口径在结果段标「摘要」并列。未注射病灶缓解率：Results给出完全25%、部分20%，摘要与讨论给50%，两者分别标注。Results称IT组中位总生存50个月而Fig. 2图注称两组均未达到，存在冲突，正文不写中位总生存。",
+  "must_cover": [
+   {
+    "id": "m1",
+    "item_zh": "摘要：6个月3–4级治疗相关不良事件IT组22.6%、IV组57.1%，主要终点达成，相当于抗PD1单药水平。",
+    "status": "covered",
+    "covered_by": "摘要口径为6个月3–4级事件发生率22.6%对57.1%"
+   },
+   {
+    "id": "m2",
+    "item_zh": "61例患者在4个中心按2:1随机至IT组40例、IV组21例。",
+    "status": "covered",
+    "covered_by": "在4个中心按2:1随机至瘤内（IT）组40例或静脉（IV）组21例"
+   },
+   {
+    "id": "m3",
+    "item_zh": "静脉纳武利尤单抗1 mg/kg联合静脉伊匹木单抗3 mg/kg或瘤内0.3 mg/kg，每3周共4次，之后纳武利尤单抗3 mg/kg每2周、最长12个月。",
+    "status": "covered",
+    "covered_by": "每3周1次共4次，随后纳武利尤单抗3 mg/kg每2周1次，最长12个月"
+   },
+   {
+    "id": "m4",
+    "item_zh": "37例可评估IT患者中9例（24.3%）6个月内发生3–4级事件，低于30% Fleming阈值。",
+    "status": "covered",
+    "covered_by": "9例（24.3%）在6个月内发生治疗相关3–4级不良事件，低于预设30% Fleming阈值"
+   },
+   {
+    "id": "m5",
+    "item_zh": "RECIST最佳客观缓解率：注射病灶65.7%、未注射病灶50%。",
+    "status": "covered",
+    "covered_by": "摘要报告注射病灶65.7%、未注射病灶50%"
+   },
+   {
+    "id": "m6",
+    "item_zh": "全程累计3–4级治疗相关不良事件IT组32.5%、IV组66.6%。",
+    "status": "covered",
+    "covered_by": "整个随访期累计3–4级治疗相关不良事件IT组32.5%、IV组66.6%"
+   },
+   {
+    "id": "m7",
+    "item_zh": "伊匹木单抗平均峰浓度2.2±1.7对42.2±12.3 μg/ml，谷浓度0.9±0.5对8.4±10 μg/ml。",
+    "status": "covered",
+    "covered_by": "IT组伊匹木单抗平均峰浓度2.2±1.7 μg/ml，IV组42.2±12.3 μg/ml"
+   },
+   {
+    "id": "m8",
+    "item_zh": "瘤内注射操作未引起≥3级不良事件。",
+    "status": "covered",
+    "covered_by": "注射操作本身未引起≥3级不良事件"
+   },
+   {
+    "id": "m9",
+    "item_zh": "PFS与OS无显著差异（log-rank P=0.2315和0.1808），IT组中位PFS 13.8个月[4.4–27.7]，IV组未达到。",
+    "status": "covered",
+    "covered_by": "两组PFS（log-rank P=0.2315）和总生存（P=0.1808）均无统计学差异"
+   },
+   {
+    "id": "m10",
+    "item_zh": "M2巨噬细胞预测持久临床获益且与给药途径无关；活化Treg减少只见于DCB且FcγR高表达的患者。",
+    "status": "covered",
+    "covered_by": "无论伊匹木单抗经何种途径给药，基线活化Treg和M2巨噬细胞更多都预示持久临床获益"
+   },
+   {
+    "id": "m11",
+    "item_zh": "DCB患者CD8+CD39+细胞与CD4+CD25+CD39+细胞之比治疗后中位升高三倍，无DCB者不变。",
+    "status": "covered",
+    "covered_by": "CD8+CD39+细胞与该类Treg之比中位数增加三倍，无DCB患者不变"
+   },
+   {
+    "id": "m12",
+    "item_zh": "未为疗效比较设计效能；未注射靶病灶ORR与总生存IT组低于IV组（50%对65%）。",
+    "status": "covered",
+    "covered_by": "IT组未注射靶病灶客观缓解率50%、总生存均低于IV组（缓解率65%）"
+   }
+  ],
+  "title": "NIVIPIT 1b期：瘤内低剂量抗CTLA4联合抗PD1，6个月3–4级治疗相关毒性24.3%",
+  "one_liner": "在61例初治转移性黑色素瘤中，瘤内伊匹木单抗0.3 mg/kg联合静脉纳武利尤单抗，6个月3–4级治疗相关不良事件为24.3%，低于30%阈值。",
+  "datacard": {
+   "study_type": "随机、多中心1b期临床试验（NIVIPIT，NCT02857569）",
+   "n": "61例初治转移性黑色素瘤，2:1随机：IT组40例、IV组21例；IT组37例可评估主要终点",
+   "control": "静脉伊匹木单抗3 mg/kg联合纳武利尤单抗（IV组，仅作内部对照）",
+   "intervention": "静脉纳武利尤单抗1 mg/kg＋瘤内伊匹木单抗0.3 mg/kg，每3周共4次；随后纳武利尤单抗3 mg/kg每2周，最长12个月",
+   "followup": "中位随访55.5个月（IQR 48.2–62.8）",
+   "primary_endpoint": "6个月治疗相关3–4级毒性无事件生存（CTCAE v4.0）",
+   "primary_endpoint_result": "IT组37例可评估中9例（24.3%）发生3–4级治疗相关不良事件，低于30% Fleming阈值；摘要口径22.6%（IV组57.1%）",
+   "statistics": "Fleming两阶段设计，α 10%、把握度90%（P0=50%、P1=70%）；两组未做正式比较",
+   "safety": "注射操作未引起≥3级不良事件；IT组仅1例4级事件",
+   "evidence_level": "全文",
+   "check_record": "Europe PMC全文XML（PMC13323097）：Abstract、Results、Discussion、Methods统计部分及Fig. 1–5图注"
+  },
+  "background": [
+   "静脉联合抗CTLA4与抗PD1能带来持久缓解，但约60%患者出现≥3级治疗相关不良事件，真实世界中1–4%致死，临床上只有约一半适用患者使用。抗PD1是不清除型IgG4，受体饱和（约0.3 mg/kg）后加量不再增效；伊匹木单抗则是未修饰的IgG1，可结合FcγR并介导ADCC和吞噬，疗效与毒性都随剂量上升。",
+   "Tselikas等在Nature报告的NIVIPIT试验检验一个假设：把伊匹木单抗总剂量降低十倍至0.3 mg/kg、以5 mg/ml浓度直接注入肿瘤，能否保留局部高暴露的抗肿瘤作用、同时减轻全身毒性，并借新鲜肿瘤活检寻找持久获益的生物标志物。"
+  ],
+  "design": [
+   "这是一项随机、多中心1b期试验，纳入61例初治转移性黑色素瘤患者，在4个中心按2:1随机至瘤内（IT）组40例或静脉（IV）组21例，按转移分期、BRAF状态和PD-L1表达分层。两组均静脉给予纳武利尤单抗1 mg/kg，IT组加瘤内伊匹木单抗0.3 mg/kg，IV组加静脉3 mg/kg，每3周1次共4次，随后纳武利尤单抗3 mg/kg每2周1次，最长12个月。",
+   "主要终点为6个月治疗相关3–4级毒性无事件生存，采用Fleming两阶段设计（α 10%、把握度90%），实验组需38例可评估患者。IV组只作内部对照，原文未做两组正式比较，也未为疗效比较设计效能。共对46个病灶完成162次瘤内注射，并在基线和第3周采集新鲜活检与血样。"
+  ],
+  "results": [
+   {
+    "subhead": "主要终点达成",
+    "text": "IT组40例中37例可评估，9例（24.3%）在6个月内发生治疗相关3–4级不良事件，低于预设30% Fleming阈值；IT组75.7%未发生≥3级毒性，IV组为42.9%。摘要口径为6个月3–4级事件发生率22.6%对57.1%，作者称与抗PD1单药相当。注射操作本身未引起≥3级不良事件。"
+   },
+   {
+    "subhead": "全程毒性与药代",
+    "text": "整个随访期累计3–4级治疗相关不良事件IT组32.5%、IV组66.6%，12个月后进入平台；IT组仅1例4级事件，IV组3级占52%、4级占14%。在24例有连续样本者中，IT组伊匹木单抗平均峰浓度2.2±1.7 μg/ml，IV组42.2±12.3 μg/ml；谷浓度0.9±0.5对8.4±10 μg/ml（P<0.0001）。"
+   },
+   {
+    "subhead": "注射病灶缓解更深",
+    "text": "按RECIST v1.1，IT组可评估注射病灶最佳总缓解率65.7%，35例中完全缓解11例（31.4%）、部分缓解12例（34.3%）；同批患者基线未注射靶病灶完全和部分缓解分别为25%（10/40）和20%（8/40），摘要报告注射病灶65.7%、未注射病灶50%。IV组最佳总缓解率为62%。"
+   },
+   {
+    "subhead": "生存未见差异",
+    "text": "中位随访55.5个月（IQR 48.2–62.8）后，两组PFS（log-rank P=0.2315）和总生存（P=0.1808）均无统计学差异；IT组中位PFS 13.8个月[4.4–27.7]，IV组未达到。持久临床获益（DCB，缓解或稳定维持超过6个月）与生存延长相关，且不论抗CTLA4给药途径。"
+   },
+   {
+    "subhead": "活化Treg只在DCB减少",
+    "text": "无论伊匹木单抗经何种途径给药，基线活化Treg和M2巨噬细胞更多都预示持久临床获益。第3周时，只有DCB患者的CD4+CD25+CD39+活化Treg比例显著下降，CD8+CD39+细胞与该类Treg之比中位数增加三倍，无DCB患者不变；DCB肿瘤的FCGR1A、FCGR3A和FCGR3B基线表达也更高。"
+   }
+  ],
+  "mechanism_proven": [
+   "药效学上两组都有靶点结合证据：注射病灶浸润淋巴细胞膜PD1下降，可溶性PD1在肿瘤分泌组和血浆升高；低剂量瘤内伊匹木单抗同样使可溶性CD25升高、循环CD4+和CD8+T细胞ICOS上调。CD8+T细胞CD25及CD4+T细胞CD69、OX40等外周活化主要见于静脉高剂量组。",
+   "肿瘤层面，DCB与基线MHC-I和MHC-II介导的适应性免疫相关：CD8+PD1+T细胞、HLA-II蛋白、TH1和TFH标志及B细胞特征更高，肿瘤突变负荷在DCB与无DCB间无明显差异；肿瘤内T细胞、Treg和CD68表达在IT与IV组间相近。这些均为关联证据。"
+  ],
+  "mechanism_inferred": [
+   "作者推测，与小鼠一致，Fc完整的IgG1抗CTLA4在人体内也能清除活化、肿瘤特异的Treg，但只发生在同时含活化Treg和FcγR阳性效应细胞的肿瘤中。IT组峰浓度约低20倍而剂量低十倍，作者认为提示药物部分滞留于注射肿瘤和/或引流淋巴结；IV组更强的外周活化可能解释其更高毒性。"
+  ],
+  "limitations": [
+   "疗效比较受设计限制：试验未为疗效比较设计效能，讨论中IT组未注射靶病灶客观缓解率50%、总生存均低于IV组（缓解率65%）；作者把IV组高于历史基准（50.6%至58%）部分归因于组别小和分层后残余不平衡。",
+   "样本小且分层分析更小：IV组仅21例，IT组37例可评估主要终点；基线流式Treg比较只有DCB 13例、无DCB 7例，Fig. 3和Fig. 4的组间比较为未做多重比较校正的双侧Wilcoxon检验。",
+   "外推有边界：注射病灶多为淋巴结和皮肤或皮下转移，深部病灶有限；新鲜活检标志物需独立队列前瞻验证。Results称IT组中位总生存50个月，而图注称两组均未达到，口径不一。"
+  ],
+  "significance": [
+   "如果后续试验证实，瘤内低剂量伊匹木单抗可为局部控制关键的场景（作者点名寡转移和新辅助）提供一种保留注射病灶活性、同时降低全身毒性的双检查点给药方式。",
+   "结果还提示疗效主要取决于既有肿瘤免疫而非给药途径。新鲜活检流式测CD4+CD25+CD39+细胞和分泌组颗粒酶可在数小时内完成；作者认为这为未来前瞻试验按肿瘤生物学筛选和分层患者提供依据，但仍需独立队列前瞻验证。"
+  ],
+  "citation": "Tselikas L, Susini S, Texier M, Yurchenko A, Routier E, Amini-Adle M, et al. Safety and efficacy of intratumoural anti-CTLA4 with intravenous anti-PD1. Nature. 2026 Apr 29. doi: https://doi.org/10.1038/s41586-026-10341-w",
+  "data_points": [
+   {
+    "value": "24.3%",
+    "meaning": "IT组6个月3–4级治疗相关不良事件（Results主要终点口径）",
+    "source_quote": "37 were evaluable for the primary end-point, from whom 9 (24.3%) experienced a treatment-related grade 3 or 4 adverse event within 6 months",
+    "location": "Results: Safety profile of intratumoural anti-CTLA4"
+   },
+   {
+    "value": "30%",
+    "meaning": "预设Fleming阈值",
+    "source_quote": "below the pre-specified 30% Fleming threshold",
+    "location": "Results: Safety profile"
+   },
+   {
+    "value": "37例/9例",
+    "meaning": "可评估人数与发生事件人数",
+    "source_quote": "Among the 40 patients treated in the IT arm, 37 were evaluable for the primary end-point, from whom 9 (24.3%)",
+    "location": "Results: Safety profile"
+   },
+   {
+    "value": "75.7%对42.9%",
+    "meaning": "6个月无≥3级毒性比例IT对IV",
+    "source_quote": "75.7% of patients in the IT arm remained free of grade 3 or higher toxicity compared with 42.9% in the IV arm",
+    "location": "Results: Safety profile"
+   },
+   {
+    "value": "22.6%对57.1%",
+    "meaning": "摘要口径6个月3–4级事件发生率",
+    "source_quote": "grade 3 or 4 treatment-related adverse events at 6 months in the intratumoural versus intravenous arm (22.6% versus 57.1%)",
+    "location": "Abstract"
+   },
+   {
+    "value": "61例；40例/21例；2:1；4个中心",
+    "meaning": "入组与随机",
+    "source_quote": "Sixty-one patients were enrolled across 4 clinical sites and randomized in a 2:1 ratio to the IT arm ( n = 40) or the IV arm ( n = 21)",
+    "location": "Main"
+   },
+   {
+    "value": "1 mg/kg；3 mg/kg；0.3 mg/kg；每3周4次；每2周；12个月",
+    "meaning": "给药方案",
+    "source_quote": "intravenous nivolumab (1 mg kg −1 ) combined with either intravenous ipilimumab at 3 mg kg −1 (IV arm) or intratumoural ipilimumab at 0.3 mg kg −1 (IT arm), administered every 3 weeks for 4 doses, followed by nivolumab 3 mg kg −1 every 2 weeks for up to 12 months",
+    "location": "Main"
+   },
+   {
+    "value": "5 mg/ml",
+    "meaning": "瘤内注射浓度",
+    "source_quote": "directly into tumours at the highest commercially available concentration (5 mg ml −1 )",
+    "location": "Main"
+   },
+   {
+    "value": "α 10%；把握度90%；38例",
+    "meaning": "Fleming两阶段设计参数与所需例数",
+    "source_quote": "α type 1 error rate of 10% and power of 90%",
+    "location": "Methods: Statistical methods"
+   },
+   {
+    "value": "38",
+    "meaning": "实验组所需可评估人数",
+    "source_quote": "A total of 38 evaluable patients were required in the experimental arm.",
+    "location": "Methods: Statistical methods"
+   },
+   {
+    "value": "162次；46个病灶",
+    "meaning": "瘤内注射次数与病灶数",
+    "source_quote": "A total of 162 intratumoural injections were performed across 46 tumour lesions",
+    "location": "Main"
+   },
+   {
+    "value": "32.5%对66.6%",
+    "meaning": "全程累计3–4级治疗相关不良事件",
+    "source_quote": "the cumulative incidence of grade 3 or 4 treatment-related adverse events was 32.5% in the IT arm and 66.6% in the IV arm, reaching a plateau beyond 12 months",
+    "location": "Results: Safety profile"
+   },
+   {
+    "value": "52%；14%",
+    "meaning": "IV组3级与4级事件比例",
+    "source_quote": "including grade 3 events in 52% of cases and grade 4 events in 14% of cases",
+    "location": "Results: Safety profile"
+   },
+   {
+    "value": "24例",
+    "meaning": "药代分析人数",
+    "source_quote": "serum concentrations of ipilimumab and nivolumab were measured in 24 patients with serial samples available",
+    "location": "Results: Safety profile"
+   },
+   {
+    "value": "2.2±1.7对42.2±12.3 μg/ml；0.9±0.5对8.4±10 μg/ml；P<0.0001",
+    "meaning": "伊匹木单抗峰/谷浓度IT对IV",
+    "source_quote": "with mean peak concentrations of 2.2 ± 1.7 µg ml −1 versus 42.2 ± 12.3 µg ml −1 and mean trough concentrations of 0.9 ± 0.5 µg ml −1 versus 8.4 ± 10 µg ml −1 in the IT and IV arms",
+    "location": "Results: Safety profile"
+   },
+   {
+    "value": "65.7%；11例（31.4%）；12例（34.3%）；35例",
+    "meaning": "注射病灶最佳总缓解率及构成",
+    "source_quote": "the BORR on evaluable injected lesions was 65.7%, including complete responses in 11 out of 35 patients (31.4%) and partial responses in 12 out of 35 patients (34.3%)",
+    "location": "Results: Intratumoural anti-CTLA4 increases local efficacy"
+   },
+   {
+    "value": "25%（10/40）；20%（8/40）",
+    "meaning": "未注射靶病灶完全与部分缓解",
+    "source_quote": "complete and partial responses were observed in 25% (10 out of 40) and 20% (8 out of 40) of patients",
+    "location": "Results: local efficacy"
+   },
+   {
+    "value": "50%",
+    "meaning": "摘要：未注射病灶缓解率",
+    "source_quote": "best objective response rate reached 65.7% for anti-CTLA4 injected lesions and 50% for uninjected lesions",
+    "location": "Abstract"
+   },
+   {
+    "value": "62%",
+    "meaning": "IV组最佳总缓解率",
+    "source_quote": "In the IV arm, the BORR was 62%",
+    "location": "Results: local efficacy"
+   },
+   {
+    "value": "55.5个月（IQR 48.2–62.8）",
+    "meaning": "中位随访",
+    "source_quote": "After a median follow-up of 55.5 months (interquartile range (IQR): 48.2–62.8)",
+    "location": "Results: local efficacy"
+   },
+   {
+    "value": "P=0.2315；P=0.1808",
+    "meaning": "PFS与OS log-rank P",
+    "source_quote": "Progression-free survival (PFS) ( i ; log-rank test, P = 0.2315) and overall survival ( j ; log-rank test, P = 0.1808)",
+    "location": "Fig. 2 legend"
+   },
+   {
+    "value": "13.8个月[4.4–27.7]",
+    "meaning": "IT组中位PFS",
+    "source_quote": "The median PFS for the IT arm was 13.8 months [4.4–27.7]",
+    "location": "Fig. 2 legend"
+   },
+   {
+    "value": "6个月",
+    "meaning": "DCB定义",
+    "source_quote": "defined as maintenance of RECIST response or stable disease beyond 6 months",
+    "location": "Results: local efficacy"
+   },
+   {
+    "value": "三倍",
+    "meaning": "DCB患者CD8+CD39+/活化Treg比值中位变化",
+    "source_quote": "increased a median of threefold upon treatment in patients with DCB but remained unchanged in patients with no DCB",
+    "location": "Results: Selective depletion of activated T reg cells in DCB"
+   },
+   {
+    "value": "第3周",
+    "meaning": "治疗中活检时间点",
+    "source_quote": "between baseline (BL) and week 3 of treatment (W3)",
+    "location": "Fig. 3 legend"
+   },
+   {
+    "value": "约20倍；十倍",
+    "meaning": "峰浓度差异与剂量差异",
+    "source_quote": "peak serum ipilimumab concentrations were approximately 20-fold lower in the IT arm despite a tenfold lower administered dose",
+    "location": "Discussion"
+   },
+   {
+    "value": "60%；1–4%",
+    "meaning": "静脉联合方案≥3级毒性与致死比例",
+    "source_quote": "treatment-related adverse events in approximately 60% of patients, some of which are irreversible and 1–4% of which are fatal in real-world settings",
+    "location": "Main"
+   },
+   {
+    "value": "50%对65%；50.6%至58%",
+    "meaning": "讨论中未注射靶病灶ORR对比及历史基准",
+    "source_quote": "lower in the IT arm (overall response rate 50%) than in the IV arm (overall response rate 65%)",
+    "location": "Discussion"
+   },
+   {
+    "value": "50.6%；58%",
+    "meaning": "历史基准客观缓解率",
+    "source_quote": "the overall response rate was between 50.6% (Checkmate 511 trial) and 58% (phase 3 registration trial)",
+    "location": "Discussion"
+   },
+   {
+    "value": "13例；7例",
+    "meaning": "基线流式活化Treg比较样本",
+    "source_quote": "Proportion of CD39 + CD25 + cells among CD4 + T cells (identified by flow cytometry) in baseline biopsies (DCB, n = 13; no DCB, n = 7)",
+    "location": "Fig. 5 legend"
+   },
+   {
+    "value": "50个月",
+    "meaning": "Results中IT组中位总生存（与图注冲突，仅在局限中指出）",
+    "source_quote": "median overall survival was estimated to be 50 months in the IT arm and was not reached in the IV arm",
+    "location": "Results: local efficacy"
+   },
+   {
+    "value": "1例4级",
+    "meaning": "IT组4级事件数",
+    "source_quote": "where only one grade 4 event was reported",
+    "location": "Results: Safety profile"
+   }
+  ],
+  "steps": [
+   "瘤内注射低剂量伊匹木单抗",
+   "全身药物暴露显著降低",
+   "注射病灶缓解更深",
+   "DCB患者活化Treg减少"
+  ],
+  "figure_caption": "示意图概括试验主线：伊匹木单抗以十分之一剂量注入黑色素瘤病灶，血清峰浓度远低于静脉给药；获益者肿瘤富含活化Treg与FcγR阳性M2巨噬细胞，治疗后活化Treg选择性减少。示意图由 AI 生成，依据原文结果绘制，非期刊原图，不代表分子比例",
+  "image_story": {
+   "stages": [
+    {
+     "visual_en": "A melanoma metastasis nodule in a lymph node receiving a fine injection of antibody molecules directly into the tumour.",
+     "source_quote": "A total of 162 intratumoural injections were performed across 46 tumour lesions, most frequently lymph node and cutaneous or subcutaneous metastases"
+    },
+    {
+     "visual_en": "A blood vessel beside the nodule carrying only a few antibody molecules, showing low systemic exposure.",
+     "source_quote": "Ipilimumab peak and trough levels were significantly lower in the IT arm"
+    },
+    {
+     "visual_en": "Inside the tumour, an activated regulatory T cell is engaged by an Fc-receptor-rich M2 macrophage while CD8 T cells expand.",
+     "source_quote": "we found a significant decrease in their proportions either within the CD4 + subset or within the total CD45 + subset"
+    }
+   ],
+   "key_element_en": "activated CD25+CD39+ regulatory T cell"
+  },
+  "image_subject_en": "A left-to-right process in three stages, drawn large. Stage 1 shows a rounded melanoma metastasis nodule inside a pale mint lymph node, its tumour cells in mid green with deep green nuclei, and a slender light grey-green injection needle releasing a small cloud of deep green Y-shaped antibody molecules directly into the nodule core. Stage 2 shows a cross-section of a nearby blood vessel in pale mint with light grey-green red-cell outlines, carrying only two or three sparse deep green antibody molecules, while the vessel wall stays calm and smooth. Stage 3 shows the tumour microenvironment in close-up: a large mid green M2 macrophage with many deep green Fc receptor stubs on its surface reaching toward one very large, solid, boldly filled terracotta #C0492F activated regulatory T cell that is beginning to fragment, with several pale mint CD8 T cells gathering nearby and dark green antibody molecules bridging the macrophage and the regulatory T cell. Only the activated regulatory T cell is terracotta.",
+  "card_subject_en": "A compact hero subject: one rounded melanoma tumour nodule in mid green and pale mint, cut open to show its interior, with a slender light grey-green injection needle entering from the upper left and releasing deep green Y-shaped antibody molecules. Inside the nodule, a large deep green Fc-receptor-rich macrophage wraps around one very large, solid, boldly filled terracotta #C0492F activated regulatory T cell, while small pale mint CD8 T cells cluster at the edge. No text, no numbers, no symbols. Only the activated regulatory T cell is terracotta.",
+  "figure_labels": {
+   "heads": [
+    "瘤内低剂量注射",
+    "全身暴露降低",
+    "活化Treg减少"
+   ],
+   "callouts": [
+    {
+     "t": "伊匹木单抗0.3 mg/kg\n直接注入病灶",
+     "stage": 1,
+     "entity_en": "melanoma metastasis nodule"
+    },
+    {
+     "t": "注射病灶缓解率\n65.7%",
+     "stage": 1,
+     "entity_en": "deep green Y-shaped antibody molecules"
+    },
+    {
+     "t": "峰浓度2.2对42.2\nμg/ml（IT对IV）",
+     "stage": 2,
+     "entity_en": "blood vessel"
+    },
+    {
+     "t": "FcγR高表达\nM2巨噬细胞",
+     "stage": 3,
+     "entity_en": "M2 macrophage"
+    },
+    {
+     "t": "仅DCB患者\n活化Treg下降",
+     "stage": 3,
+     "entity_en": "activated regulatory T cell"
+    },
+    {
+     "t": "作者推测\nFc介导清除Treg",
+     "stage": 3,
+     "entity_en": "antibody molecules bridging the macrophage and the regulatory T cell"
+    }
+   ],
+   "facts": [
+    [
+     "6个月3–4级毒性",
+     "**24.3%**（阈值30%）"
+    ],
+    [
+     "累计3–4级毒性",
+     "IT 32.5%对IV 66.6%"
+    ],
+    [
+     "CD8+CD39+/活化Treg",
+     "DCB中位增加三倍"
+    ]
+   ],
+   "note": "两组未做正式比较；用Results口径。示意图由 AI 生成，非期刊原图。"
+  },
+  "chart": {
+   "justified": true,
+   "title_zh": "6个月无≥3级治疗相关毒性比例",
+   "unit": "%",
+   "figure_source": "Results / Fig. 1a",
+   "values": [
+    {
+     "label_zh": "瘤内（IT）组",
+     "value": 75.7,
+     "n": "n=37可评估",
+     "source_quote": "75.7% of patients in the IT arm remained free of grade 3 or higher toxicity"
+    },
+    {
+     "label_zh": "静脉（IV）组",
+     "value": 42.9,
+     "n": "n=21",
+     "source_quote": "compared with 42.9% in the IV arm"
+    }
+   ],
+   "note": "IV组仅作内部对照，原文未做两组正式比较。"
+  }
+ },
+ "images": {
+  "mech_raw": "work/r5img/clean/c3-io-2_mech_raw_r5_clean.png",
+  "mech": "c3-io-2_mech_r5.png",
+  "card": "c3-io-2_card_r5.png",
+  "image_model": "mech + card: Grok drawings r5 (supplied by parent run)",
+  "note": "raw backgrounds cleaned (work/r4/clean_r4b.py); QC rules per user decision 2026-10-09"
+ },
+ "card_title": "瘤内低剂量抗CTLA4联合抗PD1：6个月3–4级毒性24.3%",
+ "card_caption": "巨噬细胞包裹赤陶红调节性T细胞，旁有注射针",
+ "card_text_meta": {
+  "model": "grok-bot (self)",
+  "card_title_chars": 22,
+  "card_caption_chars": 21
+ },
+ "notes": "Abstract (22.6%) vs Results (24.3%) primary-endpoint basis differ; Results median OS 50 months conflicts with Fig. 2 legend (not reached) - OS median not used in body, flagged in limitations.",
+ "text_from": "c3-io-2_final_r5.json (text unchanged)"
+}

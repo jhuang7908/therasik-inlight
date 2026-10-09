@@ -1,0 +1,657 @@
+{
+ "articles": [
+  {
+   "id": "a-trap",
+   "slug": "a-trap",
+   "source_file": "a-trap_final_v3",
+   "title": "合成TCR库规模化验证显示所测VDJdb TCR中平均仅56%复现原注释反应性",
+   "card_title": "合成TCR库：VDJdb TCR平均仅56%复现原注释反应性",
+   "card_caption": "绿色TCR结合浅色MHC，红色串珠为呈递肽段",
+   "cover_caption": "封面示意：绿色的 T 细胞受体（TCR）结合在浅色 MHC 分子上，红色串珠代表被呈递的肽段，左侧多孔板寓意汇集功能筛选。图片由 AI 生成，非原文图片。",
+   "field": "肿瘤免疫与细胞治疗",
+   "field_label": "肿瘤免疫与细胞治疗",
+   "field_color": "#6E3F7A",
+   "related": [
+    {
+     "field": "AI 药物设计",
+     "label": "AI药物设计",
+     "color": "#44489A"
+    }
+   ],
+   "preprint": false,
+   "card_image": "img/a-trap_card.webp",
+   "card_px": [
+    1600,
+    1000
+   ],
+   "mech_image": "img/a-trap_mech.webp",
+   "mech_px": [
+    1600,
+    928
+   ]
+  },
+  {
+   "id": "c1-org-2",
+   "slug": "c1-org-2",
+   "source_file": "c1-org-2_final_v1",
+   "title": "256 例肿瘤类器官生物样本库建成，162 例完成全基因组 CRISPR 筛选并绘制基因依赖图谱",
+   "card_title": "256例肿瘤类器官库，162例完成全基因组CRISPR筛选",
+   "card_caption": "放大的赤陶色肿瘤类器官与成簇绿色类器官",
+   "cover_caption": "封面示意：前景是一枚放大的肿瘤类器官（赤陶色），身后是成簇的绿色类器官，寓意大规模类器官样本库。图片由 AI 生成，非原文图片。",
+   "field": "精准肿瘤与临床转化",
+   "field_label": "精准肿瘤与临床转化",
+   "field_color": "#5A5F66",
+   "related": [
+    {
+     "field": "类器官",
+     "label": "类器官",
+     "color": "#2E6B4F"
+    }
+   ],
+   "preprint": false,
+   "card_image": "img/c1-org-2_card.webp",
+   "card_px": [
+    1600,
+    1000
+   ],
+   "mech_image": "img/c1-org-2_mech.webp",
+   "mech_px": [
+    1600,
+    880
+   ]
+  },
+  {
+   "id": "c9-rna-5",
+   "slug": "c9-rna-5",
+   "source_file": "c9-rna-5_final_v2",
+   "title": "电荷可切换脂质纳米颗粒在 LPS 预处理小鼠中未升高 IL-6、IL-1β 和 MIP-2",
+   "card_title": "电荷可切换LNP在LPS预处理小鼠中未升高IL-6等炎症因子",
+   "card_caption": "剖开的赤陶色脂质纳米颗粒与绿色内体样囊泡",
+   "cover_caption": "封面示意：左为剖开的赤陶色脂质纳米颗粒，右为剖开的绿色内体样囊泡（内含多个小泡），寓意 LNP 进入细胞后的内体环节。图片由 AI 生成，非原文图片。",
+   "field": "核酸与基因治疗（含 LNP 递送）",
+   "field_label": "核酸与基因治疗",
+   "field_color": "#8A6212",
+   "related": [],
+   "preprint": false,
+   "card_image": "img/c9-rna-5_card.webp",
+   "card_px": [
+    1600,
+    1000
+   ],
+   "mech_image": "img/c9-rna-5_mech.webp",
+   "mech_px": [
+    1600,
+    922
+   ]
+  },
+  {
+   "id": "c8-vac-3",
+   "slug": "c8-vac-3",
+   "source_file": "c8-vac-3_final_v2",
+   "title": "观察性研究：mRNA-1010接种者记忆B细胞增幅更高，5/13人生发中心持续至26周",
+   "card_title": "观察性研究：mRNA-1010接种者记忆B细胞增幅更高",
+   "card_caption": "剖开的绿色淋巴结，中央红球寓意生发中心",
+   "cover_caption": "封面示意：剖开的绿色淋巴结，中央红色球体寓意生发中心，右下细针寓意淋巴结细针穿刺取样。图片由 AI 生成，非原文图片。",
+   "field": "疫苗与感染免疫",
+   "field_label": "疫苗与感染免疫",
+   "field_color": "#1F6F78",
+   "related": [],
+   "preprint": false,
+   "card_image": "img/c8-vac-3_card.webp",
+   "card_px": [
+    1600,
+    1000
+   ],
+   "mech_image": "img/c8-vac-3_mech.webp",
+   "mech_px": [
+    1600,
+    908
+   ]
+  },
+  {
+   "id": "c7-cell-2",
+   "slug": "c7-cell-2",
+   "source_file": "c7-cell-2_final_r2",
+   "title": "骨髓瘤体内 BCMA CAR-T 随访 15 个月：无新增重要 ESO-T01 相关不良事件，1 例持续 sCR，中位 PFS 4.0 个月",
+   "card_title": "体内BCMA CAR-T 1期：随访15个月，1例持续sCR",
+   "card_caption": "慢病毒同时连接深绿色T细胞与赤陶红肿瘤块。",
+   "cover_caption": "封面示意：慢病毒同时连接深绿色T细胞与赤陶红肿瘤块。图片由 AI 生成，非原文图片。",
+   "field": "肿瘤免疫与细胞治疗",
+   "field_label": "肿瘤免疫与细胞治疗",
+   "field_color": "#6E3F7A",
+   "related": [],
+   "preprint": false,
+   "card_image": "img/c7-cell-2_card.webp",
+   "card_px": [
+    1600,
+    1000
+   ],
+   "mech_image": "img/c7-cell-2_mech.webp",
+   "mech_px": [
+    1600,
+    938
+   ]
+  },
+  {
+   "id": "c5-am-2",
+   "slug": "c5-am-2",
+   "source_file": "c5-am-2_final_r2",
+   "title": "人皮质类器官移植入无皮质小鼠：移植物占皮质体积91.9%，2至3个月约增长4.7倍",
+   "card_title": "人皮质类器官移植入无皮质小鼠：移植物占皮质体积91.9%",
+   "card_caption": "绿色小鼠大脑，背侧砖红色圆块寓意类器官。",
+   "cover_caption": "封面示意：绿色小鼠大脑，背侧砖红色圆块寓意类器官。图片由 AI 生成，非原文图片。",
+   "field": "类器官",
+   "field_label": "类器官",
+   "field_color": "#2E6B4F",
+   "related": [
+    {
+     "field": "动物模型",
+     "label": "动物模型",
+     "color": "#5E6624"
+    }
+   ],
+   "preprint": false,
+   "card_image": "img/c5-am-2_card.webp",
+   "card_px": [
+    1600,
+    1000
+   ],
+   "mech_image": "img/c5-am-2_mech.webp",
+   "mech_px": [
+    1600,
+    959
+   ]
+  },
+  {
+   "id": "c1-org-1",
+   "slug": "c1-org-1",
+   "source_file": "c1-org-1_final_r2",
+   "title": "人脑皮层类器官体外培养5年，甲基化时钟预测年龄与培养时间相关（r = 0.88–0.90）",
+   "card_title": "皮层类器官5年：甲基化时钟与时间相关r=0.88–0.90",
+   "card_caption": "剖开的绿色类器官，切面浮现砖红色神经元。",
+   "cover_caption": "封面示意：剖开的绿色类器官，切面浮现砖红色神经元。图片由 AI 生成，非原文图片。",
+   "field": "类器官",
+   "field_label": "类器官",
+   "field_color": "#2E6B4F",
+   "related": [],
+   "preprint": false,
+   "card_image": "img/c1-org-1_card.webp",
+   "card_px": [
+    1600,
+    1000
+   ],
+   "mech_image": "img/c1-org-1_mech.webp",
+   "mech_px": [
+    1600,
+    955
+   ]
+  },
+  {
+   "id": "c2-ai-1",
+   "slug": "c2-ai-1",
+   "source_file": "c2-ai-1_final_r2",
+   "title": "AIntibody 盲评：511 个 AI 抗体在亲和力成熟中最佳达 95 pM，跨任务表现不一",
+   "card_title": "511个AI抗体盲评：挑战2仅9.8–13.8%优于对照",
+   "card_caption": "层析柱顶有赤陶红抗体，右侧是巨大绿色抗体。",
+   "cover_caption": "封面示意：层析柱顶有赤陶红抗体，右侧是巨大绿色抗体。图片由 AI 生成，非原文图片。",
+   "field": "AI 药物设计",
+   "field_label": "AI药物设计",
+   "field_color": "#44489A",
+   "related": [
+    {
+     "field": "抗体工程",
+     "label": "抗体工程",
+     "color": "#3A6489"
+    }
+   ],
+   "preprint": false,
+   "card_image": "img/c2-ai-1_card.webp",
+   "card_px": [
+    1600,
+    1000
+   ],
+   "mech_image": "img/c2-ai-1_mech.webp",
+   "mech_px": [
+    1600,
+    940
+   ]
+  },
+  {
+   "id": "c2-ai-4",
+   "slug": "c2-ai-4",
+   "source_file": "c2-ai-4_final",
+   "title": "探索性蛋白质组附属分析中Rentosertib衰老钟21项显著",
+   "card_title": "Rentosertib 2a期：21/54项衰老钟比较显著",
+   "card_caption": "深绿液滴前悬浮砖红分子，伴浅绿表盘与肺影。",
+   "cover_caption": "封面示意：深绿液滴前悬浮砖红分子，伴浅绿表盘与肺影。图片由 AI 生成，非原文图片。",
+   "field": "AI 药物设计",
+   "field_label": "AI药物设计",
+   "field_color": "#44489A",
+   "related": [],
+   "preprint": false,
+   "card_image": "img/c2-ai-4_card.webp",
+   "card_px": [
+    1600,
+    1000
+   ],
+   "mech_image": "img/c2-ai-4_mech.webp",
+   "mech_px": [
+    1600,
+    940
+   ]
+  },
+  {
+   "id": "c3-io-4",
+   "slug": "c3-io-4",
+   "source_file": "c3-io-4_final",
+   "title": "靶向ZMYND8重塑小鼠耗竭T细胞并增强免疫治疗反应",
+   "card_title": "靶向ZMYND8增加小鼠效应样耗竭T细胞并增强免疫治疗反应",
+   "card_caption": "剖开的白色T细胞，赤陶红元素为ZMYND8蛋白",
+   "cover_caption": "封面示意：剖开的白色T细胞，赤陶红元素为ZMYND8蛋白。图片由 AI 生成，非原文图片。",
+   "field": "肿瘤免疫与细胞治疗",
+   "field_label": "肿瘤免疫与细胞治疗",
+   "field_color": "#6E3F7A",
+   "related": [],
+   "preprint": false,
+   "card_image": "img/c3-io-4_card.webp",
+   "card_px": [
+    1600,
+    1000
+   ],
+   "mech_image": "img/c3-io-4_mech.webp",
+   "mech_px": [
+    1600,
+    940
+   ]
+  },
+  {
+   "id": "c5-am-5",
+   "slug": "c5-am-5",
+   "source_file": "c5-am-5_final_r3",
+   "title": "72小时三联治疗后，8只幼猴停药6个月无病毒血症",
+   "card_title": "72小时三联治疗：8只幼猴停药6个月无病毒血症",
+   "card_caption": "淡绿CD4 T细胞上，赤陶红抗体封住CCR5受体",
+   "cover_caption": "封面示意：淡绿CD4 T细胞上，赤陶红抗体封住CCR5受体。图片由 AI 生成，非原文图片。",
+   "field": "疫苗与感染免疫",
+   "field_label": "疫苗与感染免疫",
+   "field_color": "#1F6F78",
+   "related": [],
+   "preprint": false,
+   "card_image": "img/c5-am-5_card.webp",
+   "card_px": [
+    1600,
+    1000
+   ],
+   "mech_image": "img/c5-am-5_mech.webp",
+   "mech_px": [
+    1600,
+    959
+   ]
+  },
+  {
+   "id": "c1-org-3",
+   "slug": "c1-org-3",
+   "source_file": "c1-org-3_final_r3",
+   "title": "HCMI资源：421对肿瘤与模型配对中97.8%保留至少两类DNA特征",
+   "card_title": "HCMI资源：421对配对中97.8%保留至少两类DNA特征",
+   "card_caption": "培养皿中肿瘤组织块旁，赤陶红类器官为焦点",
+   "cover_caption": "封面示意：培养皿中肿瘤组织块旁，赤陶红类器官为焦点。图片由 AI 生成，非原文图片。",
+   "field": "精准肿瘤与临床转化",
+   "field_label": "精准肿瘤与临床转化",
+   "field_color": "#5A5F66",
+   "related": [
+    {
+     "field": "类器官",
+     "label": "类器官",
+     "color": "#2E6B4F"
+    }
+   ],
+   "preprint": false,
+   "card_image": "img/c1-org-3_card.webp",
+   "card_px": [
+    1600,
+    1000
+   ],
+   "mech_image": "img/c1-org-3_mech.webp",
+   "mech_px": [
+    1600,
+    960
+   ]
+  },
+  {
+   "id": "c4-ai-6",
+   "slug": "c4-ai-6",
+   "source_file": "c4-ai-6_final_r4",
+   "title": "GPR15归巢轴定位肠道CD8调节T细胞，散发性UC减少42%",
+   "card_title": "GPR15引导CD8调节T细胞归巢结肠，散发性UC减少42%",
+   "card_caption": "深绿CD8调节T细胞紧贴赤陶红炎性巨噬细胞",
+   "cover_caption": "封面示意：深绿CD8调节T细胞紧贴赤陶红炎性巨噬细胞。图片由 AI 生成，非原文图片。",
+   "field": "自身免疫与移植免疫",
+   "field_label": "自身免疫与移植",
+   "field_color": "#8E4F5A",
+   "related": [],
+   "preprint": false,
+   "card_image": "img/c4-ai-6_card.webp",
+   "card_px": [
+    1600,
+    1000
+   ],
+   "mech_image": "img/c4-ai-6_mech.webp",
+   "mech_px": [
+    1600,
+    917
+   ]
+  },
+  {
+   "id": "c2-ai-5",
+   "slug": "c2-ai-5",
+   "source_file": "c2-ai-5_final_r4",
+   "title": "Germinal低通量验证：43–101个设计覆盖4个抗体靶点生成抗体",
+   "card_title": "Germinal验证：43–101个设计覆盖4个抗体靶点",
+   "card_caption": "抗体片段夹住抗原，赤陶红CDR环嵌入表位",
+   "cover_caption": "封面示意：抗体片段夹住抗原，赤陶红CDR环嵌入表位。图片由 AI 生成，非原文图片。",
+   "field": "AI 药物设计",
+   "field_label": "AI药物设计",
+   "field_color": "#44489A",
+   "related": [
+    {
+     "field": "抗体工程",
+     "label": "抗体工程",
+     "color": "#3A6489"
+    }
+   ],
+   "preprint": false,
+   "card_image": "img/c2-ai-5_card.webp",
+   "card_px": [
+    1600,
+    1000
+   ],
+   "mech_image": "img/c2-ai-5_mech.webp",
+   "mech_px": [
+    1600,
+    898
+   ]
+  },
+  {
+   "id": "c6-ab-4",
+   "slug": "c6-ab-4",
+   "source_file": "c6-ab-4_final_r4",
+   "title": "160个双抗库揭示表面性质可由亲本预测ρ至0.95",
+   "card_title": "160个双抗库：表面性质可由亲本预测，ρ至0.95",
+   "card_caption": "绿色双特异抗体，一侧为赤陶红风险标记云",
+   "cover_caption": "封面示意：绿色双特异抗体，一侧为赤陶红风险标记云。图片由 AI 生成，非原文图片。",
+   "field": "抗体工程",
+   "field_label": "抗体工程",
+   "field_color": "#3A6489",
+   "related": [],
+   "preprint": true,
+   "card_image": "img/c6-ab-4_card.webp",
+   "card_px": [
+    1600,
+    1000
+   ],
+   "mech_image": "img/c6-ab-4_mech.webp",
+   "mech_px": [
+    1600,
+    888
+   ]
+  },
+  {
+   "id": "c1-org-4",
+   "slug": "c1-org-4",
+   "source_file": "c1-org-4_final_r4",
+   "title": "TSC2缺失使类器官3个时点均出现星形胶质反应",
+   "card_title": "TSC2缺失使类器官3个时点均出现星形胶质反应",
+   "card_caption": "放大的反应性星形胶质细胞，内有赤陶红光团",
+   "cover_caption": "封面示意：放大的反应性星形胶质细胞，内有赤陶红光团。图片由 AI 生成，非原文图片。",
+   "field": "类器官",
+   "field_label": "类器官",
+   "field_color": "#2E6B4F",
+   "related": [],
+   "preprint": false,
+   "card_image": "img/c1-org-4_card.webp",
+   "card_px": [
+    1600,
+    1000
+   ],
+   "mech_image": "img/c1-org-4_mech.webp",
+   "mech_px": [
+    1600,
+    915
+   ]
+  },
+  {
+   "id": "c3-io-5",
+   "slug": "c3-io-5",
+   "source_file": "c3-io-5_final_r4",
+   "title": "12种饮食模型显示4/6肥胖性饮食关联抗PD-1应答",
+   "card_title": "12种饮食模型：4/6肥胖性饮食关联抗PD-1应答",
+   "card_caption": "肠道菌群与CD8 T细胞间，赤陶红为代谢物DAT",
+   "cover_caption": "封面示意：肠道菌群与CD8 T细胞间，赤陶红为代谢物DAT。图片由 AI 生成，非原文图片。",
+   "field": "肿瘤免疫与细胞治疗",
+   "field_label": "肿瘤免疫与细胞治疗",
+   "field_color": "#6E3F7A",
+   "related": [],
+   "preprint": false,
+   "card_image": "img/c3-io-5_card.webp",
+   "card_px": [
+    1600,
+    1000
+   ],
+   "mech_image": "img/c3-io-5_mech.webp",
+   "mech_px": [
+    1600,
+    918
+   ]
+  },
+  {
+   "id": "c8-vac-2",
+   "slug": "c8-vac-2",
+   "source_file": "c8-vac-2_final_r4",
+   "title": "序贯HIV疫苗完整方案后44%恒河猴出现血清bnAb活性",
+   "card_title": "序贯HIV疫苗完整方案后44%恒河猴出现血清bnAb活性",
+   "card_caption": "深绿HIV Env三聚体，赤陶红bnAb结合V3聚糖区",
+   "cover_caption": "封面示意：深绿HIV Env三聚体，赤陶红bnAb结合V3聚糖区。图片由 AI 生成，非原文图片。",
+   "field": "疫苗与感染免疫",
+   "field_label": "疫苗与感染免疫",
+   "field_color": "#1F6F78",
+   "related": [],
+   "preprint": false,
+   "card_image": "img/c8-vac-2_card.webp",
+   "card_px": [
+    1600,
+    1000
+   ],
+   "mech_image": "img/c8-vac-2_mech.webp",
+   "mech_px": [
+    1600,
+    905
+   ]
+  },
+  {
+   "id": "c1-org-5",
+   "slug": "c1-org-5",
+   "source_file": "c1-org-5_final_r4",
+   "title": "暂限培养使小肠类器官早期移植达到100%植入率",
+   "card_title": "暂限培养使小肠类器官早期移植达到100%植入率",
+   "card_caption": "赤陶红小肠类器官移植物，外绕淡绿神经丛",
+   "cover_caption": "封面示意：赤陶红小肠类器官移植物，外绕淡绿神经丛。图片由 AI 生成，非原文图片。",
+   "field": "类器官",
+   "field_label": "类器官",
+   "field_color": "#2E6B4F",
+   "related": [],
+   "preprint": false,
+   "card_image": "img/c1-org-5_card.webp",
+   "card_px": [
+    1600,
+    1000
+   ],
+   "mech_image": "img/c1-org-5_mech.webp",
+   "mech_px": [
+    1600,
+    910
+   ]
+  },
+  {
+   "id": "c2-ai-2",
+   "slug": "c2-ai-2",
+   "source_file": "c2-ai-2_final_r4",
+   "title": "NISE零样本设计药物结合蛋白，APEX体外亲和力达到80 pM",
+   "card_title": "NISE零样本设计药物结合蛋白：APEX亲和力80 pM",
+   "card_caption": "深绿蛋白口袋中，赤陶红药物分子居中",
+   "cover_caption": "封面示意：深绿蛋白口袋中，赤陶红药物分子居中。图片由 AI 生成，非原文图片。",
+   "field": "AI 药物设计",
+   "field_label": "AI药物设计",
+   "field_color": "#44489A",
+   "related": [],
+   "preprint": false,
+   "card_image": "img/c2-ai-2_card.webp",
+   "card_px": [
+    1600,
+    1000
+   ],
+   "mech_image": "img/c2-ai-2_mech.webp",
+   "mech_px": [
+    1600,
+    920
+   ]
+  },
+  {
+   "id": "c3-io-2",
+   "slug": "c3-io-2",
+   "source_file": "c3-io-2_final_r5img",
+   "title": "NIVIPIT 1b期：瘤内低剂量抗CTLA4联合抗PD1，6个月3–4级治疗相关毒性24.3%",
+   "card_title": "瘤内抗CTLA4+抗PD1：6个月3–4级毒性24.3%",
+   "card_caption": "巨噬细胞包裹赤陶红调节性T细胞，旁有注射针",
+   "cover_caption": "封面示意：巨噬细胞包裹赤陶红调节性T细胞，旁有注射针。图片由 AI 生成，非原文图片。",
+   "field": "肿瘤免疫与细胞治疗",
+   "field_label": "肿瘤免疫与细胞治疗",
+   "field_color": "#6E3F7A",
+   "related": [],
+   "preprint": false,
+   "card_image": "img/c3-io-2_card.webp",
+   "card_px": [
+    1600,
+    1000
+   ],
+   "mech_image": "img/c3-io-2_mech.webp",
+   "mech_px": [
+    1600,
+    915
+   ]
+  },
+  {
+   "id": "c6-ab-6",
+   "slug": "c6-ab-6",
+   "source_file": "c6-ab-6_final_r5img",
+   "title": "SEZ6靶向ADC ABBV-706 1期：复发难治SCLC客观缓解率52%，推荐剂量1.8 mg/kg",
+   "card_title": "SEZ6靶向ADC 1期：复发难治SCLC缓解率52%",
+   "card_caption": "赤陶红抗体偶联药物结合绿色肺癌细胞表面",
+   "cover_caption": "封面示意：赤陶红抗体偶联药物结合绿色肺癌细胞表面。图片由 AI 生成，非原文图片。",
+   "field": "精准肿瘤与临床转化",
+   "field_label": "精准肿瘤与临床转化",
+   "field_color": "#5A5F66",
+   "related": [
+    {
+     "field": "抗体工程",
+     "label": "抗体工程",
+     "color": "#3A6489"
+    }
+   ],
+   "preprint": false,
+   "card_image": "img/c6-ab-6_card.webp",
+   "card_px": [
+    1600,
+    1000
+   ],
+   "mech_image": "img/c6-ab-6_mech.webp",
+   "mech_px": [
+    1600,
+    917
+   ]
+  },
+  {
+   "id": "c6-ab-5",
+   "slug": "c6-ab-5",
+   "source_file": "c6-ab-5_final_r5img",
+   "title": "智能体引导从头设计纳米抗体：116个候选中46个经SPR确认，最佳KD 0.66 nM",
+   "card_title": "智能体设计纳米抗体：46个确认，最佳KD 0.66 nM",
+   "card_caption": "赤陶红纳米抗体结合绿色抗原表面",
+   "cover_caption": "封面示意：赤陶红纳米抗体结合绿色抗原表面。图片由 AI 生成，非原文图片。",
+   "field": "AI 药物设计",
+   "field_label": "AI药物设计",
+   "field_color": "#44489A",
+   "related": [
+    {
+     "field": "抗体工程",
+     "label": "抗体工程",
+     "color": "#3A6489"
+    }
+   ],
+   "preprint": true,
+   "card_image": "img/c6-ab-5_card.webp",
+   "card_px": [
+    1600,
+    1000
+   ],
+   "mech_image": "img/c6-ab-5_mech.webp",
+   "mech_px": [
+    1600,
+    917
+   ]
+  },
+  {
+   "id": "c8-vac-4",
+   "slug": "c8-vac-4",
+   "source_file": "c8-vac-4_final_r5img",
+   "title": "真菌甘露聚糖佐剂加入新冠mRNA疫苗：小鼠中和抗体广度与持续期延长至第500天",
+   "card_title": "真菌糖类佐剂延长新冠mRNA疫苗保护至第500天",
+   "card_caption": "赤陶红糖类佐剂颗粒旁有两枚绿色脂质纳米颗粒",
+   "cover_caption": "封面示意：赤陶红糖类佐剂颗粒旁有两枚绿色脂质纳米颗粒。图片由 AI 生成，非原文图片。",
+   "field": "疫苗与感染免疫",
+   "field_label": "疫苗与感染免疫",
+   "field_color": "#1F6F78",
+   "related": [],
+   "preprint": false,
+   "card_image": "img/c8-vac-4_card.webp",
+   "card_px": [
+    1600,
+    1000
+   ],
+   "mech_image": "img/c8-vac-4_mech.webp",
+   "mech_px": [
+    1600,
+    914
+   ]
+  },
+  {
+   "id": "c4-ai-5",
+   "slug": "c4-ai-5",
+   "source_file": "c4-ai-5_final_r5img",
+   "title": "甲状腺自身免疫中B细胞多克隆获得检查点突变：单例检出135种TNFRSF14突变",
+   "card_title": "桥本甲状腺炎：单例供者检出135种TNFRSF14突变",
+   "card_caption": "甲状腺淋巴聚集区里的一个赤陶红突变B细胞",
+   "cover_caption": "封面示意：甲状腺淋巴聚集区里的一个赤陶红突变B细胞。图片由 AI 生成，非原文图片。",
+   "field": "自身免疫与移植免疫",
+   "field_label": "自身免疫与移植",
+   "field_color": "#8E4F5A",
+   "related": [],
+   "preprint": false,
+   "card_image": "img/c4-ai-5_card.webp",
+   "card_px": [
+    1600,
+    1000
+   ],
+   "mech_image": "img/c4-ai-5_mech.webp",
+   "mech_px": [
+    1600,
+    915
+   ]
+  }
+ ],
+ "order": "as listed (same as preview index)",
+ "hidden_excluded": [
+  "c7-cell-5",
+  "c5-am-6"
+ ]
+}

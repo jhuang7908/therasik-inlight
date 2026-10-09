@@ -1,0 +1,600 @@
+{
+ "id": "a-trap",
+ "final_version": 3,
+ "drafter_model": "claude-sonnet-5-5",
+ "drafter_note": "claude-opus-5-5 refused (stop_reason=refusal, stop_details.category=bio); identical request re-sent on claude-sonnet-5-5",
+ "selected_from_versions": [
+  1,
+  2,
+  3
+ ],
+ "remaining_failures_n": 0,
+ "remaining_failures": [],
+ "tags_note": "editor tags prepended; writer tags trimmed to 6 (metadata only)",
+ "writer_tags": [
+  "TCR-pMHC 反应性预测",
+  "AlphaFold3",
+  "合成TCR文库（T-RAP）",
+  "汇集功能筛选",
+  "VDJdb 数据质量",
+  "新抗原特异性TCR"
+ ],
+ "article": {
+  "tier": "deep",
+  "field": "肿瘤免疫与细胞治疗",
+  "tags": [
+   "AI 药物设计",
+   "TCR-pMHC 反应性预测",
+   "AlphaFold3",
+   "合成TCR文库（T-RAP）",
+   "汇集功能筛选",
+   "VDJdb 数据质量"
+  ],
+  "primary_endpoint_basis": "临床前研究，无方案预设终点。核心读出取摘要与正文一致、并有统计推断的结果：汇集功能筛选（PyDESeq2 Wald 检验，以468个阴性对照TCR的第5百分位P值为阈值）中VDJdb注释TCR的验证率。正文口径平均56%（n=2,667），摘要写作约50%；标题数字来自Results。",
+  "comparison_design": "临床前方法学与计算评估研究，不涉及组间比较的效能设计。验证/非验证TCR的判定用DESeq2 Wald检验；图5C与图5E用Mann-Whitney U检验；新抗原检验给出P值。tcrdist3与AlphaFold3的平均AUROC之间、各表位验证率之间均未做正式统计比较。",
+  "untested_comparisons": [
+   "tcrdist3平均AUROC 0.80对AlphaFold3 min-PAE平均AUROC 0.74（未做模型间检验）",
+   "NLV表位验证率28.3%对CIN表位验证率76.3%（描述性比例）",
+   "GLC与YLQ多聚体验证率64.7%、41.9%与功能筛选验证率的比较（未检验）",
+   "阵列库均一性约7.5倍高于汇集装配（原文为描述，未给检验）"
+  ],
+  "number_basis_note": "摘要写“约50%”的TCR复现原反应性，Results写平均56%（n=2,667）。正文、图与标题均用Results的56%，摘要口径仅在正文并列标注。图1E图注给出五个库的平均值（96.9%、74.2%、5.6倍），与VDJdb-10库的96.2%、79%、6.1倍不同；正文与图一律用VDJdb-10库口径。",
+  "must_cover": [
+   {
+    "id": "m1",
+    "item_zh": "汇集功能筛选中平均仅56%（n=2,667）的VDJdb TCR复现原注释反应性，验证率从NLV的28.3%（91/322）到CIN的76.3%（174/228）",
+    "status": "covered",
+    "covered_by": "平均仅56%的被评估TCR（n=2,667）复现了原注释反应性"
+   },
+   {
+    "id": "m2",
+    "item_zh": "tcrdist3（平均AUROC 0.80）与AlphaFold3 min-PAE（平均AUROC 0.74）均可区分验证与非验证TCR，但tcrdist3需要已知反应性的参考TCR",
+    "status": "covered",
+    "covered_by": "两者平均AUROC分别为0.80和0.74，但tcrdist3需已知反应性的参考TCR"
+   },
+   {
+    "id": "m3",
+    "item_zh": "AlphaFold3 RTR评分对全部8个表位均将验证TCR与同源pMHC配对排得更高，GIL与LTD的AUROC为0.83–0.90，CIN与NLV为0.65–0.66",
+    "status": "covered",
+    "covered_by": "GIL与LTD的AUROC为0.83–0.90，CIN与NLV为0.65–0.66"
+   },
+   {
+    "id": "m4",
+    "item_zh": "黑色素瘤患者197个TIL TCR的零样本新抗原检验：AUROC 0.79（p=5.5×10⁻³）与0.76（p=3.3×10⁻³），AUC PR 0.20对随机0.04、0.28对随机0.06",
+    "status": "covered",
+    "covered_by": "AUC PR为0.20（随机0.04）与0.28（随机0.06）"
+   },
+   {
+    "id": "m5",
+    "item_zh": "T-RAP装配12,078个TCR（五轮合成）；VDJdb-10库96.2%成功装配、约79%分子序列完全正确、第5与第95百分位丰度仅相差6.1倍",
+    "status": "covered",
+    "covered_by": "96.2%的TCR成功装配，平均79%的分子序列完全正确"
+   },
+   {
+    "id": "m6",
+    "item_zh": "汇集筛选在TCR缺失的CD8+ Jurkat中进行，与表位+HLA+ B细胞共培养，分选CD69最高10%，以468个阴性对照TCR为基准经DESeq2判定，三次重复、500x覆盖",
+    "status": "covered",
+    "covered_by": "分选CD69最高10%的细胞"
+   },
+   {
+    "id": "m7",
+    "item_zh": "对照阵列检测77个TCR：汇集筛选一致率96.1%，假阴性率3.9%，无假阳性；49个TCR的CD69与CD137读出完全一致",
+    "status": "covered",
+    "covered_by": "汇集筛选与之一致率为96.1%，假阴性率3.9%，无假阳性"
+   },
+   {
+    "id": "m8",
+    "item_zh": "各来源研究的验证率从<10%到>95%，VDJdb置信分仅显示中等精确度和低敏感度",
+    "status": "covered",
+    "covered_by": "按来源研究，验证率从<10%到>95%"
+   },
+   {
+    "id": "m9",
+    "item_zh": "YLQ与GLC多聚体筛选验证率（GLC 64.7%、YLQ 41.9%），与功能筛选一致性93%；18个不一致TCR中15个为假阴性，无假阳性，3个YLQ TCR能结合但不信号",
+    "status": "covered",
+    "covered_by": "与功能筛选一致性93%"
+   },
+   {
+    "id": "m10",
+    "item_zh": "对照：未验证的YLQ、GLC注释TCR无RTR表现；有PDB结构的TCR评分未高于平均；LTD与LLW训练集无结构仍有表现，不支持数据泄漏",
+    "status": "covered",
+    "covered_by": "训练集无结构的LTD与LLW仍有表现"
+   },
+   {
+    "id": "m11",
+    "item_zh": "作者指出AlphaFold3预测性能需进一步提高才能广泛用于临床，可能受模型准确性、评分准确性、模型相关性限制",
+    "status": "covered",
+    "covered_by": "作者也指出AlphaFold3性能需进一步提高才能广泛用于临床"
+   },
+   {
+    "id": "m12",
+    "item_zh": "阵列T-RAP库比汇集装配约均一7.5倍但规模受限；TCRvdb仅覆盖八个研究充分的病毒表位",
+    "status": "covered",
+    "covered_by": "阵列库的均一性比汇集装配（Rootpath、TCRAFT）约高7.5倍"
+   }
+  ],
+  "title": "合成TCR库规模化验证显示所测VDJdb TCR中平均仅56%复现原注释反应性",
+  "one_liner": "T-RAP合成TCR库经汇集筛选检验VDJdb注释，平均仅56%（n=2,667）复现原反应性；在验证集上tcrdist3与AlphaFold3平均AUROC分别为0.80、0.74。",
+  "datacard": {
+   "study_type": "临床前方法学与计算评估研究（合成TCR库、汇集功能筛选与模型评估；Immunity，同行评审）",
+   "n": "功能筛选评估注释反应性的TCR 2,667个；阵列共培养验证77个TCR；多聚体筛选聚焦YLQ与GLC；新抗原检验为1名黑色素瘤患者的197个TIL来源TCR",
+   "primary_endpoint": "汇集功能筛选中VDJdb注释TCR复现原注释表位反应性的比例（验证率；CD69高表达富集，PyDESeq2 Wald检验，阈值为468个阴性对照TCR第5百分位P值）",
+   "primary_endpoint_result": "平均56%（n=2,667；摘要写作约50%）；NLV 28.3%（91/322）至CIN 76.3%（174/228）；以阵列共培养为真值，一致率96.1%，假阴性率3.9%，无假阳性",
+   "control": "468个阴性对照TCR（注释于无关表位）；阵列共培养真值；非同源pMHC与未验证TCR作为模型对照",
+   "intervention": "T-RAP装配VDJdb-10 TCR库（3,693个TCR），导入TCR缺失的CD8αβ+ Jurkat，与表达表位的HLA+ B细胞共培养，分选CD69最高10%；三次技术重复，覆盖500x",
+   "statistics": "PyDESeq2 Wald检验；Mann-Whitney U检验（RTR与新抗原比较）；AUROC与AUC PR评估模型；新抗原检验p=5.5×10⁻³与3.3×10⁻³",
+   "evidence_level": "全文",
+   "check_record": "读取Cell Press开放获取HTML全文：Summary、Introduction、Results（五个小节）、Discussion、Limitations of the study、图1–5图注与STAR Methods"
+  },
+  "background": [
+   "预测TCR对pMHC的反应性是免疫学的长期目标，但进展有限。训练与评估所依赖的VDJdb、IEDB数据来自多种实验方法与样本来源；VDJdb虽有置信分，其价值不明，各库中真正反应的TCR-pMHC所占比例也从未被评估。",
+   "作者推测数据集质量本身可能构成限制。为此，研究先建立可规模化装配合成TCR的平台T-RAP，在统一条件下功能验证数千个已报道的TCR-pMHC配对，再用验证后的数据评估tcrdist3与AlphaFold3，并在一例黑色素瘤患者的新抗原TCR上做零样本检验。"
+  ],
+  "design": [
+   "临床前方法学与计算评估研究，无患者分组，各比较为描述性或单独检验，无组间效能设计。VDJdb经过滤保留6,307条条目，取注释到密度最高的10个表位的TCR构建VDJdb-10库（3,693个TCR），其中八个表位（HLA-A*01:01或A*02:01限制）用于筛选。T-RAP在384孔板中逐个装配TCR并保留阵列存档。",
+   "TCR库导入TCR缺失的CD8αβ+ Jurkat细胞，与表达表位及对应HLA的永生化B细胞共培养，分选CD69最高10%的细胞，三次技术重复，库覆盖500x。用PyDESeq2的Wald检验比较各表位CD69+组的富集，P值低于468个阴性对照TCR第5百分位者判为验证，另设零假设判定非验证，其余为不明确。模型以AUROC与AUC PR评估。"
+  ],
+  "results": [
+   {
+    "subhead": "平台与库质量",
+    "text": "T-RAP在五轮合成中装配了12,078个TCR，其中TCR-s1至TCR-s4共8,385个，覆盖肿瘤来源与设计TCR。VDJdb-10库（3,693个TCR）经UMI-ONT分析，96.2%的TCR成功装配，平均79%的分子序列完全正确，第5与第95百分位的TCR丰度仅相差6.1倍。每个库随机抽取82个装配做Sanger测序，>98%以目标TCR为主导序列。"
+   },
+   {
+    "subhead": "主要读出：注释验证率",
+    "text": "在功能筛选中，平均仅56%的被评估TCR（n=2,667）复现了原注释反应性（摘要写作约50%，此处用正文口径）。按表位，验证率从NLV的28.3%（91/322）到CIN的76.3%（174/228）；按来源研究，验证率从<10%到>95%。VDJdb自身置信分仅显示中等精确度、低敏感度。以上均为描述性比例，未做组间检验。"
+   },
+   {
+    "subhead": "筛选准确性与读出一致性",
+    "text": "以77个TCR的阵列共培养为真值，汇集筛选与之一致率为96.1%，假阴性率3.9%，无假阳性；49个TCR在Jurkat的CD69与原代CD8+ T细胞的CD137两种读出下完全一致。GLC与YLQ的多聚体汇集筛选验证率分别为64.7%和41.9%，与功能筛选一致性93%；18个不一致TCR中15个为假阴性（多聚体6个、功能9个），无假阳性，另3个YLQ TCR能结合但不引起信号。"
+   },
+   {
+    "subhead": "两种模型的区分能力",
+    "text": "tcrdist3在GIL与YLQ表位的AUROC为0.87–0.93，AlphaFold3 min-PAE在LLW与YLQ为0.84–0.88、在CIN与LTD仅0.58–0.61；两者平均AUROC分别为0.80和0.74，但tcrdist3需已知反应性的参考TCR。AlphaFold3 RTR评分对全部8个表位均将验证TCR与同源pMHC配对的排序高于与非同源pMHC配对，GIL与LTD的AUROC为0.83–0.90，CIN与NLV为0.65–0.66。"
+   },
+   {
+    "subhead": "对照与新抗原零样本检验",
+    "text": "对照中，未验证的YLQ、GLC注释TCR无RTR表现；有PDB结构的TCR评分未高于平均，训练集无结构的LTD与LLW仍有表现。在一名黑色素瘤患者197个TIL TCR中，AlphaFold3零样本对TNFAIP2 P>A（8个反应性TCR）与CCSER2 P>L（11个）的AUROC为0.79（p=5.5×10⁻³）与0.76（p=3.3×10⁻³），AUC PR为0.20（随机0.04）与0.28（随机0.06）。"
+   }
+  ],
+  "mechanism_proven": [
+   "在阵列检测的77个TCR中，汇集筛选未见假阳性，另18个不一致TCR的个体检测亦未见假阳性；功能信号与多聚体结合的一致性为93%，因此低验证率不能简单归因于读出方式。在验证集中，tcrdist3与AlphaFold3 min-PAE均可区分验证与非验证TCR（平均AUROC分别0.80、0.74）。",
+   "对照实验中，未验证的YLQ、GLC注释TCR没有RTR表现；有PDB复合物结构的TCR并无高于平均的RTR，LTD与LLW训练集无结构仍有表现，不支持数据泄漏为成因。"
+  ],
+  "mechanism_inferred": [
+   "作者推测，VDJdb错误可能来自多聚体非特异结合与双TCRα细胞的α链误判；只结合不信号的3个YLQ TCR可能与反向对接或缺乏catch bond有关。AlphaFold3表现可能受模型准确性、评分准确性、模型相关性三因素限制；两个表位上多聚体预测未优于信号预测，作者据此认为力诱导构象不太可能是主因。"
+  ],
+  "limitations": [
+   "TCRvdb仅覆盖八个研究最充分的病毒表位，限于HLA-A*01:01与A*02:01，并在Jurkat报告细胞中测定；作者指出需扩展到更多表位。",
+   "新抗原检验仅来自一名患者的197个TIL TCR（反应性8个与11个），AUC PR为0.20与0.28，虽高于随机的0.04与0.06，绝对水平仍低；作者也指出AlphaFold3性能需进一步提高才能广泛用于临床，CIN与LTD的AUROC仅0.58–0.61。",
+   "阵列库的均一性比汇集装配（Rootpath、TCRAFT）约高7.5倍，但汇集法可不借助机器人生成更大的库，多样性与灵敏度需权衡；验证集含3.9%假阴性率，使第一类任务的性能被略微低估；tcrdist3与AlphaFold3的平均AUROC未做正式比较。"
+  ],
+  "significance": [
+   "若这些结果在更多表位与HLA背景中成立，公共TCR数据库中相当比例的注释可能需在统一条件下重新验证，此前对预测模型性能的估计也可能偏低。不同来源研究的验证率差异很大，提示数据质量本身会影响对模型的评价。",
+   "TCRvdb可作为评估与改进模型的验证集，T-RAP可仅凭序列装配任意TCR库。若结构预测经进一步改进，或可为患者特异性新抗原TCR提供初筛；但目前仅有一名患者的零样本检验，尚非临床验证。VDJdb的置信分仅显示中等精确度，提示其之外仍需标准化验证。"
+  ],
+  "citation": "Messemaker M, Kwee BPY, Moravec Ž, Paauw Sd, Urbanus J, Álvarez-Salmoral D, et al. Functional evaluation of TCR-pMHC pairs at scale allows in silico TCR reactivity prediction. Immunity. 2026. https://doi.org/10.1016/j.immuni.2026.09.007",
+  "data_points": [
+   {
+    "value": "56%",
+    "meaning": "功能筛选中复现原注释反应性的TCR平均比例",
+    "source_quote": "on average only 56% of the evaluated TCRs",
+    "location": "Results: Functional validation of TCR reactivity at scale"
+   },
+   {
+    "value": "n=2,667",
+    "meaning": "评估其注释反应性的TCR数",
+    "source_quote": "n = 2,667 TCRs assessed for their annotated reactivity",
+    "location": "Results: Functional validation of TCR reactivity at scale"
+   },
+   {
+    "value": "约50%",
+    "meaning": "摘要口径：复现原反应性的TCR比例",
+    "source_quote": "only ∼50% of these TCRs showed the previously reported TCR reactivity",
+    "location": "Abstract"
+   },
+   {
+    "value": "28.3%（91/322）",
+    "meaning": "NLV注释TCR验证率",
+    "source_quote": "Validation rates ranged from 28.3% (91 out of 322) for NLVPMVATV (NLV)-annotated TCRs",
+    "location": "Results: Functional validation of TCR reactivity at scale"
+   },
+   {
+    "value": "76.3%（174/228）",
+    "meaning": "CIN注释TCR验证率",
+    "source_quote": "to 76.3% (174 out of 228) for CINGVCWTV (CIN)-annotated TCRs",
+    "location": "Results: Functional validation of TCR reactivity at scale"
+   },
+   {
+    "value": "12,078",
+    "meaning": "T-RAP装配的TCR总数",
+    "source_quote": "we created a diverse set of 12,078 MHC class I- and II-restricted TCRs in five synthesis runs",
+    "location": "Results: Scalable synthetic TCR library assembly"
+   },
+   {
+    "value": "五轮",
+    "meaning": "合成轮次",
+    "source_quote": "12,078 MHC class I- and II-restricted TCRs in five synthesis runs",
+    "location": "Results: Scalable synthetic TCR library assembly"
+   },
+   {
+    "value": "8,385",
+    "meaning": "TCR-s1至TCR-s4库TCR数",
+    "source_quote": "the TCR-s1–TCR-s4 libraries (8,385 TCRs)",
+    "location": "Results: Scalable synthetic TCR library assembly"
+   },
+   {
+    "value": "3,693",
+    "meaning": "VDJdb-10库TCR数",
+    "source_quote": "the VDJdb-10 library that covers about half of VDJdb entries (3,693 TCRs)",
+    "location": "Results: Scalable synthetic TCR library assembly"
+   },
+   {
+    "value": "96.2%",
+    "meaning": "VDJdb-10库成功装配的TCR比例",
+    "source_quote": "showed successful assembly of 96.2% of all TCRs",
+    "location": "Results: Scalable synthetic TCR library assembly"
+   },
+   {
+    "value": "79%",
+    "meaning": "序列完全正确的分子平均比例",
+    "source_quote": "with on average 79% of individual molecules being sequence perfect",
+    "location": "Results: Scalable synthetic TCR library assembly"
+   },
+   {
+    "value": "6.1倍",
+    "meaning": "第5与第95百分位TCR丰度差",
+    "source_quote": "percentiles in the VDJdb-10 library varying only 6.1-fold",
+    "location": "Results: Scalable synthetic TCR library assembly"
+   },
+   {
+    "value": "82",
+    "meaning": "每库Sanger测序的随机装配数",
+    "source_quote": "Sanger sequencing of full-length synthesis products of 82 randomly selected individual TCR assemblies",
+    "location": "Results: Scalable synthetic TCR library assembly"
+   },
+   {
+    "value": ">98%",
+    "meaning": "以目标TCR为主导序列的装配比例",
+    "source_quote": "revealed the intended TCR as the dominant sequence for >98% of TCR assemblies",
+    "location": "Results: Scalable synthetic TCR library assembly"
+   },
+   {
+    "value": "6,307",
+    "meaning": "过滤后VDJdb条目数",
+    "source_quote": "contained 6,307 entries",
+    "location": "Methods: Creation of the VDJdb-10 dataset"
+   },
+   {
+    "value": "10个表位",
+    "meaning": "构建VDJdb-10库所取的最密集注释表位数",
+    "source_quote": "annotated as reactive to the top 10 most densely sampled epitopes in VDJdb",
+    "location": "Methods: Creation of the VDJdb-10 dataset"
+   },
+   {
+    "value": "八个表位",
+    "meaning": "用于功能筛选的表位数",
+    "source_quote": "against eight of the most densely covered epitopes",
+    "location": "Results: Functional validation of TCR reactivity at scale"
+   },
+   {
+    "value": "384孔板",
+    "meaning": "TCR逐个装配的板型",
+    "source_quote": "in separate wells of 384-well plates",
+    "location": "Methods: T-RAP robotics-assisted Golden Gate cloning"
+   },
+   {
+    "value": "10%",
+    "meaning": "分选的CD69表达最高细胞比例",
+    "source_quote": "Jurkat cells with the highest 10% of CD69 expression were isolated",
+    "location": "Methods: Functional TCR reactivity screens"
+   },
+   {
+    "value": "三次技术重复",
+    "meaning": "筛选重复数",
+    "source_quote": "Functional genetic screens were performed in triplicate",
+    "location": "Methods: Functional TCR reactivity screens"
+   },
+   {
+    "value": "500x",
+    "meaning": "每个重复的TCR库覆盖度",
+    "source_quote": "with a TCR library coverage of 500x for each of the three technical replicates",
+    "location": "Methods: Functional TCR reactivity screens"
+   },
+   {
+    "value": "468",
+    "meaning": "用于设定阈值的阴性对照TCR数",
+    "source_quote": "we compared the log 2 fold enrichment of TCRs for an epitope to a set of 468 detected negative control TCRs",
+    "location": "Methods: Validating and non-validating TCR identification using DESeq2"
+   },
+   {
+    "value": "第5百分位",
+    "meaning": "判定验证的P值阈值",
+    "source_quote": "have a P value lower than the 5 th percentile of the 468 negative control TCRs",
+    "location": "Methods: Validating and non-validating TCR identification using DESeq2"
+   },
+   {
+    "value": "77",
+    "meaning": "阵列共培养检测的TCR数",
+    "source_quote": "we selected a total of 77 TCRs for which the screen did or did not validate",
+    "location": "Results: Functional validation of TCR reactivity at scale"
+   },
+   {
+    "value": "96.1%",
+    "meaning": "汇集筛选与阵列共培养的一致率",
+    "source_quote": "matched the result from the individual co-cultures with 96.1% concordance",
+    "location": "Results: Functional validation of TCR reactivity at scale"
+   },
+   {
+    "value": "3.9%",
+    "meaning": "汇集筛选假阴性率",
+    "source_quote": "the pooled genetic screens yielded a low false negative rate (3.9%)",
+    "location": "Results: Functional validation of TCR reactivity at scale"
+   },
+   {
+    "value": "49",
+    "meaning": "CD69与CD137读出比较的TCR数",
+    "source_quote": "for a subset of 49 TCRs for which this was evaluated",
+    "location": "Results: Functional validation of TCR reactivity at scale"
+   },
+   {
+    "value": "<10%到>95%",
+    "meaning": "不同来源研究的验证率范围",
+    "source_quote": "with validation rates ranging from <10% to >95% across studies",
+    "location": "Results: Functional validation of TCR reactivity at scale"
+   },
+   {
+    "value": "GLC 64.7%与YLQ 41.9%",
+    "meaning": "GLC与YLQ多聚体筛选验证率（依次对应）",
+    "source_quote": "validation rates of 64.7% and 41.9%, respectively",
+    "location": "Results: Concordance between TCR signaling and pMHC binding"
+   },
+   {
+    "value": "93%",
+    "meaning": "功能筛选与多聚体筛选的一致性",
+    "source_quote": "concordance between the pooled functional screening data and pooled pMHC binding data was high (93%",
+    "location": "Results: Concordance between TCR signaling and pMHC binding"
+   },
+   {
+    "value": "18个不一致TCR中15个",
+    "meaning": "不一致TCR中为假阴性者",
+    "source_quote": "We evaluated a set of 18 discordant TCRs individually and found most of these (15 out of 18)",
+    "location": "Results: Concordance between TCR signaling and pMHC binding"
+   },
+   {
+    "value": "18个",
+    "meaning": "个体检测的不一致TCR数；个体检测未见假阳性",
+    "source_quote": "We evaluated a set of 18 discordant TCRs individually",
+    "location": "Results: Concordance between TCR signaling and pMHC binding"
+   },
+   {
+    "value": "6个与9个",
+    "meaning": "多聚体与功能筛选中的假阴性TCR数",
+    "source_quote": "(6 TCRs) or pooled functional screen (9 TCRs)",
+    "location": "Results: Concordance between TCR signaling and pMHC binding"
+   },
+   {
+    "value": "3个",
+    "meaning": "能结合但不信号的YLQ TCR数",
+    "source_quote": "Three discordant TCRs remained",
+    "location": "Results: Concordance between TCR signaling and pMHC binding"
+   },
+   {
+    "value": "0.87–0.93",
+    "meaning": "tcrdist3在GIL与YLQ的AUROC",
+    "source_quote": "(area under the ROC curve [AUROC] 0.87–0.93)",
+    "location": "Results: TCRvdb improves TCR-pMHC reactivity model evaluation"
+   },
+   {
+    "value": "0.84–0.88",
+    "meaning": "AlphaFold3在LLW与YLQ的AUROC",
+    "source_quote": "AlphaFold3 showed high performance for the LLW and YLQ epitopes (AUROC 0.84–0.88)",
+    "location": "Results: TCRvdb improves TCR-pMHC reactivity model evaluation"
+   },
+   {
+    "value": "0.58–0.61",
+    "meaning": "AlphaFold3在CIN与LTD的AUROC",
+    "source_quote": "only modest performance for the CIN and LTD epitopes (AUROC 0.58–0.61)",
+    "location": "Results: TCRvdb improves TCR-pMHC reactivity model evaluation"
+   },
+   {
+    "value": "0.80",
+    "meaning": "tcrdist3平均AUROC",
+    "source_quote": "tcrdist3 (average AUROC 0.80)",
+    "location": "Results: TCRvdb improves TCR-pMHC reactivity model evaluation"
+   },
+   {
+    "value": "0.74",
+    "meaning": "AlphaFold3 min-PAE平均AUROC",
+    "source_quote": "AlphaFold3 min-PAE (average AUROC 0.74)",
+    "location": "Results: TCRvdb improves TCR-pMHC reactivity model evaluation"
+   },
+   {
+    "value": "8个表位",
+    "meaning": "RTR评分对其均把验证TCR与同源pMHC排得更高的表位数",
+    "source_quote": "for all 8 epitopes, AlphaFold3 RTR scores ranked validating TCRs paired to their cognate pMHC higher",
+    "location": "Results: AlphaFold3 can pair validating TCRs to their cognate pMHC"
+   },
+   {
+    "value": "0.83–0.90",
+    "meaning": "GIL与LTD的RTR AUROC",
+    "source_quote": "with high performance for GIL-HLA-A ∗ 02:01 and LTD-HLA-A ∗ 01:01 (AUROC 0.83–0.90)",
+    "location": "Results: AlphaFold3 can pair validating TCRs to their cognate pMHC"
+   },
+   {
+    "value": "0.65–0.66",
+    "meaning": "CIN与NLV的RTR AUROC",
+    "source_quote": "modest performance for CIN-HLA-A ∗ 02:01 and NLV-HLA-A ∗ 02:01 (AUROC 0.65–0.66)",
+    "location": "Results: AlphaFold3 can pair validating TCRs to their cognate pMHC"
+   },
+   {
+    "value": "197",
+    "meaning": "黑色素瘤患者TIL来源TCR总数",
+    "source_quote": "among a total of 197 tumor-infiltrating CD8 + T cell-derived TCRs from a melanoma patient",
+    "location": "Results: AlphaFold3 can shortlist TCRs for reactivity against cancer patient-specific neoantigens"
+   },
+   {
+    "value": "一名患者",
+    "meaning": "新抗原零样本检验的TCR来源患者数",
+    "source_quote": "from a melanoma patient",
+    "location": "Results: AlphaFold3 can shortlist TCRs for reactivity against cancer patient-specific neoantigens"
+   },
+   {
+    "value": "8个与11个",
+    "meaning": "TNFAIP2 P>A与CCSER2 P>L反应性TCR数",
+    "source_quote": "identified eight TCRs reactive to the HLA-B",
+    "location": "Results: AlphaFold3 can shortlist TCRs for reactivity against cancer patient-specific neoantigens"
+   },
+   {
+    "value": "p=5.5×10⁻³",
+    "meaning": "TNFAIP2 P>A反应性与非反应性TCR的评分差异P值",
+    "source_quote": "p = 5.5 × 10 −3",
+    "location": "Results: AlphaFold3 can shortlist TCRs for reactivity against cancer patient-specific neoantigens"
+   },
+   {
+    "value": "p=3.3×10⁻³",
+    "meaning": "CCSER2 P>L的P值",
+    "source_quote": "p = 3.3 × 10 −3",
+    "location": "Results: AlphaFold3 can shortlist TCRs for reactivity against cancer patient-specific neoantigens"
+   },
+   {
+    "value": "0.79与0.76",
+    "meaning": "新抗原零样本AUROC",
+    "source_quote": "AUROC 0.79 and 0.76",
+    "location": "Results: AlphaFold3 can shortlist TCRs for reactivity against cancer patient-specific neoantigens"
+   },
+   {
+    "value": "0.20（随机0.04）",
+    "meaning": "TNFAIP2 P>A的AUC PR",
+    "source_quote": "(AUC PR 0.20, random 0.04)",
+    "location": "Results: AlphaFold3 can shortlist TCRs for reactivity against cancer patient-specific neoantigens"
+   },
+   {
+    "value": "0.28（随机0.06）",
+    "meaning": "CCSER2 P>L的AUC PR",
+    "source_quote": "(AUC PR 0.28, random 0.06)",
+    "location": "Results: AlphaFold3 can shortlist TCRs for reactivity against cancer patient-specific neoantigens"
+   },
+   {
+    "value": "7.5倍",
+    "meaning": "阵列库相对汇集装配的均一性",
+    "source_quote": "the arrayed libraries created here are approximately 7.5-fold more uniform",
+    "location": "Limitations of the study"
+   }
+  ],
+  "steps": [
+   "机器人在384孔板装配12,078个TCR",
+   "Jurkat与B细胞共培养，分选CD69最高10%",
+   "平均仅56%的TCR复现原注释反应性",
+   "AlphaFold3 min-PAE评分，平均AUROC 0.74"
+  ],
+  "figure_caption": "机器人在孔板中逐个装配合成TCR，形成均一文库；文库转入报告细胞与抗原提呈细胞共培养，经汇集功能筛选得到验证TCR（平均仅56%复现原注释）；再以AlphaFold3界面置信度评分。示意图由 AI 生成，依据原文结果绘制，非期刊原图，不代表分子比例",
+  "image_story": {
+   "stages": [
+    {
+     "visual_en": "A robotic arm over a multi-well plate dispensing into small wells, with a uniform pool of TCR plasmid rings below.",
+     "source_quote": "UMI-based ONT analysis of the VDJdb-10 TCR library showed successful assembly of 96.2% of all TCRs, with on average 79% of individual molecules being sequence perfect"
+    },
+    {
+     "visual_en": "Round reporter cells carrying receptors meeting round antigen-presenting cells; a subset of activated cells is sorted into a separate tube.",
+     "source_quote": "Jurkat cells with the highest 10% of CD69 expression were isolated using a FACSAria Fusion cell sorter"
+    },
+    {
+     "visual_en": "A ribbon-style predicted structure of a TCR docked on a peptide-MHC, with a confident interface contact at the peptide.",
+     "source_quote": "AlphaFold3 assigned a significantly higher inverse min-PAE score to reactive TCRs as compared to non-reactive TCRs"
+    }
+   ],
+   "key_element_en": "the peptide sitting in the MHC groove at the centre of the predicted TCR–pMHC complex"
+  },
+  "image_subject_en": "A left-to-right process in three stages, drawn large. Stage 1 (left): a semi-realistic 3D robotic dispensing arm in light grey-green hovers above a rectangular multi-well plate in pale mint; beneath it, a tidy, evenly sized cluster of small deep green plasmid rings, representing a uniform synthetic TCR library. Stage 2 (centre): a cluster of mid green round reporter cells, each with tiny receptor stalks, meeting pale mint round antigen-presenting cells; from this crowd a small subset of brighter cells is funnelled into a small light grey-green collection tube, while the remaining cells stay behind in lighter tone. Stage 3 (right): a large ribbon-style 3D protein complex in deep green and mid green, a T cell receptor docked on an MHC molecule in pale mint, with soft translucent contact ribbons linking receptor loops to the groove. The peptide in the MHC groove is drawn as one very large, solid, boldly filled terracotta #C0492F elongated bead chain, placed on the 0.618 line of the frame. Soft studio lighting, clean off-white #EEF2F0 background, subtle depth of field, no labels. Only the peptide is terracotta.",
+  "card_subject_en": "A compact single subject: a large ribbon-style 3D model of a T cell receptor in deep green and mid green docked onto an MHC molecule in pale mint, seen slightly from above, with translucent light grey-green contact ribbons connecting the receptor loops to the groove. The peptide lying in the MHC groove is drawn as one very large, solid, boldly filled terracotta #C0492F bead chain, the single accent of the image. Behind it, a small partial multi-well plate in light grey-green is softly blurred. Semi-realistic 3D scientific illustration, soft studio light, clean off-white #EEF2F0 background, no text, no numbers, no symbols. Only the peptide is terracotta.",
+  "figure_labels": {
+   "heads": [
+    "合成装配TCR库",
+    "汇集筛选验证",
+    "结构模型评分"
+   ],
+   "callouts": [
+    {
+     "t": "12,078 个 TCR\n五轮合成",
+     "stage": 1,
+     "entity_en": "multi-well plate under robotic dispensing arm"
+    },
+    {
+     "t": "VDJdb-10 库\n96.2% 成功装配",
+     "stage": 1,
+     "entity_en": "uniform cluster of plasmid rings"
+    },
+    {
+     "t": "CD69 最高 10%\n分选后测序",
+     "stage": 2,
+     "entity_en": "collection tube with sorted reporter cells"
+    },
+    {
+     "t": "平均 56% 复现\n原注释（n=2,667）",
+     "stage": 2,
+     "entity_en": "reporter cells meeting antigen-presenting cells"
+    },
+    {
+     "t": "min-PAE 平均\nAUROC 0.74",
+     "stage": 3,
+     "entity_en": "ribbon-style TCR docked on MHC"
+    },
+    {
+     "t": "新抗原零样本(一名患者)\nAUROC 0.79/0.76",
+     "stage": 3,
+     "entity_en": "peptide in the MHC groove"
+    }
+   ],
+   "facts": [
+    [
+     "**56%** 复现原注释",
+     "n=2,667 个 TCR"
+    ],
+    [
+     "**96.1%** 与阵列一致",
+     "77 个 TCR，无假阳性"
+    ],
+    [
+     "**0.74** AF3 平均 AUROC",
+     "tcrdist3 为 0.80",
+     "tcrdist3 需参考TCR"
+    ]
+   ],
+   "note": "56%为正文口径（摘要约50%）；AUROC均值未做模型间检验。示意图由 AI 生成，非期刊原图。"
+  },
+  "chart": {
+   "justified": true,
+   "title_zh": "汇集功能筛选中VDJdb注释TCR的验证率",
+   "unit": "%",
+   "figure_source": "Figure 2D / Results: Functional validation of TCR reactivity at scale",
+   "note": "为描述性比例，未做组间检验；平均值与单表位值分母不同。",
+   "values": [
+    {
+     "label_zh": "NLV 表位",
+     "value": 28.3,
+     "n": "91/322",
+     "source_quote": "Validation rates ranged from 28.3% (91 out of 322) for NLVPMVATV (NLV)-annotated TCRs"
+    },
+    {
+     "label_zh": "平均（所评估TCR，n=2,667）",
+     "value": 56,
+     "n": "n=2,667",
+     "source_quote": "on average only 56% of the evaluated TCRs"
+    },
+    {
+     "label_zh": "CIN 表位",
+     "value": 76.3,
+     "n": "174/228",
+     "source_quote": "to 76.3% (174 out of 228) for CINGVCWTV (CIN)-annotated TCRs"
+    }
+   ]
+  }
+ },
+ "images": {
+  "mech_raw": "a-trap_mech_raw.png",
+  "mech_labeled": "a-trap_mech_labeled.png",
+  "card": "a-trap_card.png",
+  "mech_raw_source": "a-trap_mech.png",
+  "card_source": "a-trap_cardsrc.png"
+ }
+}

@@ -1,0 +1,73 @@
+{
+ "fields": [
+  {
+   "field": "类器官",
+   "label": "类器官",
+   "color": "#2E6B4F",
+   "contrast_vs_white": 6.3
+  },
+  {
+   "field": "动物模型",
+   "label": "动物模型",
+   "color": "#5E6624",
+   "contrast_vs_white": 6.17
+  },
+  {
+   "field": "AI 药物设计",
+   "label": "AI药物设计",
+   "color": "#44489A",
+   "contrast_vs_white": 7.96
+  },
+  {
+   "field": "肿瘤免疫与细胞治疗",
+   "label": "肿瘤免疫与细胞治疗",
+   "color": "#6E3F7A",
+   "contrast_vs_white": 7.91
+  },
+  {
+   "field": "自身免疫与移植免疫",
+   "label": "自身免疫与移植",
+   "color": "#8E4F5A",
+   "contrast_vs_white": 6.15
+  },
+  {
+   "field": "疫苗与感染免疫",
+   "label": "疫苗与感染免疫",
+   "color": "#1F6F78",
+   "contrast_vs_white": 5.83
+  },
+  {
+   "field": "抗体工程",
+   "label": "抗体工程",
+   "color": "#3A6489",
+   "contrast_vs_white": 6.24
+  },
+  {
+   "field": "核酸与基因治疗（含 LNP 递送）",
+   "label": "核酸与基因治疗",
+   "color": "#8A6212",
+   "contrast_vs_white": 5.47
+  },
+  {
+   "field": "精准肿瘤与临床转化",
+   "label": "精准肿瘤与临床转化",
+   "color": "#5A5F66",
+   "contrast_vs_white": 6.43
+  }
+ ],
+ "chip_style": {
+  "primary": "solid fill colour, white text, bold",
+  "related": "1px outline + text in colour on white",
+  "preprint": {
+   "text": "#5F5F5F",
+   "border": "#8A8A8A",
+   "bg": "#F3F3F3"
+  },
+  "card_chip_px": {
+   "desktop": "10.5px/16px, pad 0 6px",
+   "mobile<=720": "9.5px/15px, pad 0 5px; related hidden when 预印本 present"
+  },
+  "header_chip": "12px/20px pad 0 9px"
+ },
+ "terracotta_reserved": "#C0492F (image focus only)"
+}

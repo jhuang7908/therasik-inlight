@@ -77,6 +77,7 @@ python publish_wechat.py --week 2026-10-07
 
 1. `content/latest.json` 里的文章和动态 URL
 2. `index.html` 里 CAT 数组中的 DOI 链接
+3. `content/catalog.json` 里已收录条目的 URL（含 hidden / excluded，避免把它们再抓回来）
 
 这样避免重复抓取同一篇论文。如果一篇文章从不同来源抓到（例如 Nature RSS 和 PubMed），会保留先到的那条。
 
@@ -87,21 +88,18 @@ python publish_wechat.py --week 2026-10-07
 
 ## 静态文章页面（社交分享）
 
-生成带 Open Graph 标签的静态 HTML 页面，便于社交媒体分享时显示正确的标题、摘要和缩略图：
-
 ```bash
-python build_pages.py          # 写入 pages/article/*.html
+python build_pages.py          # 写入 pages/article/*.html、sitemap.xml，并回写首页目录
 python build_pages.py --dry-run  # 预览，不写文件
 ```
 
-每篇文章会生成一个对应的 HTML 页面：
-- 包含 og:title、og:description、og:image 等 Open Graph 标签
-- 包含 Twitter Card 标签
-- 访问时自动跳转到主站对应的文章 hash 路由
+25 篇 r8 结构化解读是一等内容：`content/catalog.json` 里 `curated` + `locked`，正文在 `content/articles/<id>.json` 与 `.md`（不要改写）。`build_pages.py` 据此生成完整文章页（机制图、卡片图、领域色标），并只把这 25 篇写进首页 CAT / `sitemap.xml`。
 
-页面会检测 `img/{article-id}.webp`，如果存在则使用文章配图作为 og:image，否则使用默认图片。
+没有完整正文的条目，以及排除的 `c7-cell-5`、`c5-am-6`，状态为 `no_fulltext` / `excluded`。数据留在 catalog 里，不出现在首页、领域页、latest feed 和 sitemap。
 
-分享链接格式：`https://inlight.therasik.com/pages/article/{article-id}.html`
+分享链接：`https://inlight.therasik.com/pages/article/{article-id}.html`
+
+每周 `python run_weekly.py` 不会覆盖 locked 解读，也不会把 hidden id 重新显示。`update_latest` 在写出 `content/latest.json` 前调用 `inlight_catalog.protect_latest_payload`；保护失败则拒绝写文件（fail-closed）。首页 `mergeWeekly` 同样跳过 `LOCKED` / `HIDDEN`。回归：`python -m unittest tests.test_r8_golive`。
 
 ## 出错时看哪里
 
