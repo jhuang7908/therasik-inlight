@@ -149,7 +149,45 @@ class R8GoLiveTests(unittest.TestCase):
         self.assertNotIn("c7-cell-5", ids)
         self.assertNotIn("c4-ai-4", ids)
         self.assertIn("w-20990101-newitem", ids)
+        weekly = next(a for a in merged["articles"] if a["id"] == "w-20990101-newitem")
+        self.assertEqual(weekly["f"], "ai")
+        self.assertEqual(weekly["field"], "AI 药物设计")
+        self.assertTrue(weekly["field_color"].startswith("#"))
         self.assertEqual(merged["deals"], incoming["deals"])
+
+    def test_weekly_card_cover_uses_img_then_papers(self):
+        weekly = {"id": "w-20990101-newitem", "img": "content/weekly/2099-01-01/images/w.jpg"}
+        self.assertEqual(cat.card_cover_src(weekly), weekly["img"])
+        no_img = {"id": "w-20990101-newitem"}
+        self.assertEqual(cat.card_cover_src(no_img), "img/papers/w-20990101-newitem.jpg?v=5")
+        curated = {"id": "a-trap", "card_img": "img/a-trap_card.webp", "img": "img/papers/a-trap.jpg"}
+        self.assertEqual(cat.card_cover_src(curated), "img/a-trap_card.webp")
+        src = (ROOT / "index.html").read_text(encoding="utf-8")
+        self.assertIn("function cardCoverSrc", src)
+        self.assertIn("a.img", src)
+        self.assertIn("img/papers/", src)
+
+    def test_normalize_f_when_field_set_but_old_code(self):
+        row = cat.normalize_article_fields({
+            "id": "w-x",
+            "f": "c2",
+            "field": "AI 药物设计",
+            "t": "weekly",
+        })
+        self.assertEqual(row["f"], "ai")
+        self.assertEqual(row["field_label"], "AI药物设计")
+        self.assertEqual(row["field_color"], "#44489A")
+
+    def test_hidden_stub_title_is_neutral(self):
+        html = (ROOT / "pages" / "article" / "c7-cell-5.html").read_text(encoding="utf-8")
+        self.assertIn("noindex", html)
+        self.assertIn("<title>未作为完整解读发布 · InLight</title>", html)
+        self.assertNotIn("帕金森", html)
+
+    def test_build_accepts_catalog_count_not_fixed_25(self):
+        src = (ROOT / "build_pages.py").read_text(encoding="utf-8")
+        self.assertIn("if len(published) < 1", src)
+        self.assertNotIn("!= 25", src)
 
     def test_article_pages_and_images_resolve(self):
         for a in cat.published_articles(self.catalog):

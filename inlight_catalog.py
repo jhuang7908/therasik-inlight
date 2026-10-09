@@ -189,6 +189,54 @@ def map_weekly_field(code: str) -> str:
     return WEEKLY_FIELD_MAP.get(code, code)
 
 
+def card_cover_src(article: dict) -> str:
+    """Cover path for a catalog / weekly card.
+
+    Curated r8 rows use card_img. Weekly rows still carry the picture in
+    ``img`` (same as main: ``a.img || img/papers/<id>.jpg``). The webp
+    default is last so a Sunday piece does not point at a missing
+    ``<id>_card.webp``.
+    """
+    aid = article.get("id") or ""
+    return (
+        article.get("card_img")
+        or article.get("img")
+        or (f"img/papers/{aid}.jpg?v=5" if aid else "")
+        or (f"img/{aid}_card.webp" if aid else "")
+    )
+
+
+def normalize_article_fields(row: dict) -> dict:
+    """Ensure f is an r8 field key and colour/label are filled.
+
+    Weekly writers may set ``field`` (Chinese name) while leaving ``f`` as
+    an old c1–c9 code, or set only ``f``. Either way the live CAT / field
+    sections need the nine-field key + hex.
+    """
+    out = dict(row)
+    f = out.get("f")
+    field = out.get("field")
+    rec = None
+    if field:
+        try:
+            rec = field_record(field)
+        except KeyError:
+            rec = None
+    if rec is None and f in WEEKLY_FIELD_MAP:
+        rec = field_record(WEEKLY_FIELD_MAP[f])
+    if rec is None and f:
+        rec = field_by_key().get(f)
+    if rec:
+        out["f"] = rec["k"]
+        out["field"] = rec["field"]
+        out["field_label"] = rec["n"]
+        out["field_color"] = rec["color"]
+        tags = out.get("tags")
+        if not tags or tags == [f] or (isinstance(tags, list) and tags and tags[0] in WEEKLY_FIELD_MAP):
+            out["tags"] = [rec["k"]]
+    return out
+
+
 def public_article_urls(catalog: dict | None = None) -> set[str]:
     urls: set[str] = set()
     for a in articles(catalog):
@@ -242,16 +290,10 @@ def protect_latest_payload(previous: dict, incoming: dict, catalog: dict | None 
             continue
         if aid in locked or aid in curated:
             continue
-        row = dict(a)
+        row = normalize_article_fields(a)
         row.setdefault("curated", False)
         row.setdefault("locked", False)
         row.setdefault("status", STATUS_WEEKLY)
-        if row.get("f") in WEEKLY_FIELD_MAP and not row.get("field"):
-            row["field"] = map_weekly_field(row["f"])
-            rec = field_record(row["field"])
-            row["f"] = rec["k"]
-            row["field_label"] = rec["n"]
-            row["field_color"] = rec["color"]
         merged.append(row)
         seen.add(aid)
 
@@ -263,7 +305,7 @@ def protect_latest_payload(previous: dict, incoming: dict, catalog: dict | None 
             continue
         if a.get("status") in {STATUS_NO_FULLTEXT, STATUS_EXCLUDED}:
             continue
-        merged.append(a)
+        merged.append(normalize_article_fields(a))
         seen.add(aid)
 
     return {

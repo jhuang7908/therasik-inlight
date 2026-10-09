@@ -197,15 +197,13 @@ def build_article_page(article: dict, body_root: str, inner: dict, data: dict) -
 
 def hidden_stub_page(article: dict) -> str:
     """Keep a share URL for hidden ids but do not list them publicly."""
-    aid = article["id"]
-    title = article.get("title") or article.get("t") or aid
     return f"""<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
 <meta name="robots" content="noindex,nofollow,noarchive">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{html.escape(title)} - 前沿追踪</title>
+<title>未作为完整解读发布 · InLight</title>
 <link rel="canonical" href="{SITE_URL}/">
 </head>
 <body>
@@ -264,8 +262,8 @@ def main() -> None:
     hidden = [a for a in cat.articles(catalog) if a["id"] in set(cat.hidden_ids(catalog))]
 
     print(f"Published {len(published)} · hidden {len(hidden)}")
-    if len(published) != 25:
-        raise SystemExit(f"expected 25 published articles, found {len(published)}")
+    if len(published) < 1:
+        raise SystemExit("catalog has no published articles")
 
     bodies: dict[str, str] = {}
     generated = 0

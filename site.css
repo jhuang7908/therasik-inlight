@@ -43,9 +43,10 @@ nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:color-
 .nav-in a.on{background:var(--accent);color:var(--bg);max-height:36px}
 .navsub{flex-shrink:0!important;background:var(--accent);color:var(--bg)!important;font-weight:700}
 
-.wrap{max-width:1060px;margin:0 auto;padding:22px 16px 52px;display:grid;gap:24px}
+.wrap{max-width:1100px;margin:0 auto;padding:22px 16px 52px;display:grid;gap:24px}
 .wrap>*{min-width:0}
 @media (min-width:1100px){.wrap{max-width:none;padding-left:4px;padding-right:4px}}
+@media (max-width:720px){.wrap{padding-left:10px;padding-right:10px}}
 .hero{display:grid;gap:9px}
 .hero h1{font-size:clamp(21px,3vw,28px);font-weight:800}
 .hero p{color:var(--muted);font-size:13.5px}
@@ -177,14 +178,11 @@ svg text{font-family:var(--body)}
 .tile{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--tkc,var(--accent));border-radius:9px;padding:10px 12px;display:grid;gap:1px}
 .tile .tv{font-size:19px;font-weight:800;font-family:var(--display);font-variant-numeric:tabular-nums;line-height:1.25}
 .tile .tk{font-size:11.5px;color:var(--muted)}
-/* 两侧广告位：双栏从 1100px 起显示，随屏宽放大；窄屏折叠到正文下方 */
-.shell,.navshell,.footshell{max-width:1060px;margin:0 auto}
-@media (min-width:1100px){
-  .navshell,.footshell{display:grid;grid-template-columns:124px minmax(0,1fr) 124px;gap:14px;max-width:1340px;padding:0 10px}
-  .navshell>*,.footshell>*{grid-column:2;padding-left:4px;padding-right:4px}
-}
+/* 两侧广告位：从 1400px 起显示，这样 1280 与 r8 预览同宽（pv-shell 1100）。 */
+.shell,.navshell,.footshell{max-width:1100px;margin:0 auto}
 @media (min-width:1400px){
-  .navshell,.footshell{grid-template-columns:168px minmax(0,1fr) 168px;gap:18px;max-width:1480px}
+  .navshell,.footshell{display:grid;grid-template-columns:168px minmax(0,1fr) 168px;gap:18px;max-width:1480px;padding:0 10px}
+  .navshell>*,.footshell>*{grid-column:2;padding-left:4px;padding-right:4px}
 }
 @media (min-width:1700px){
   .navshell,.footshell{grid-template-columns:176px minmax(0,1fr) 312px;max-width:1700px}
@@ -192,15 +190,11 @@ svg text{font-family:var(--body)}
 .col{min-width:0}
 .view{min-height:62vh;align-content:start;min-width:0}
 .rail{display:none}
-@media (min-width:1100px){
-  .shell{display:grid;grid-template-columns:124px minmax(0,1fr) 124px;gap:14px;max-width:1340px;padding:0 10px}
+@media (min-width:1400px){
+  .shell{display:grid;grid-template-columns:168px minmax(0,1fr) 168px;gap:18px;max-width:1480px;padding:0 10px}
   /* 广告栏高度跟随正文：绝对定位不参与撑高，超出正文的广告位被裁掉，页尾不留空白 */
   .rail{display:block;position:relative;overflow:hidden}
-  .railin{position:absolute;inset:0;display:grid;gap:10px;align-content:start;padding-top:30px}
-}
-@media (min-width:1400px){
-  .shell{grid-template-columns:168px minmax(0,1fr) 168px;gap:18px;max-width:1480px}
-  .railin{gap:12px}
+  .railin{position:absolute;inset:0;display:grid;gap:12px;align-content:start;padding-top:30px}
 }
 @media (min-width:1700px){
   .shell{grid-template-columns:176px minmax(0,1fr) 312px;max-width:1700px}
@@ -229,7 +223,7 @@ svg text{font-family:var(--body)}
 .srnote:hover{color:var(--accent)}
 .ad-inline{min-height:110px}
 .adslot-mobile{display:grid;gap:14px;margin-top:6px}
-@media (min-width:1100px){.adslot-mobile{display:none}}
+@media (min-width:1400px){.adslot-mobile{display:none}}
 .sponsored{border:1px solid var(--line);border-left:3px solid var(--c4);border-radius:10px;background:var(--surface);padding:13px 15px;display:grid;gap:5px}
 .sponsored .slabel{font-size:11px;letter-spacing:.1em;font-weight:700;color:var(--c4)}
 .sponsored h3{font-size:16px}
