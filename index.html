@@ -203,8 +203,13 @@ a.tile:hover{border-color:var(--tkc,var(--accent));box-shadow:0 2px 10px rgba(46
 a.tile:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 a.tile[aria-current="true"]{background:color-mix(in srgb,var(--tkc,var(--accent)) 9%,var(--surface));border-color:var(--tkc,var(--accent))}
 a.tile .tk::after{content:" →";opacity:.55}
-#dealfeed,#articles{scroll-margin-top:80px}
-#dealcount .clearf{margin-left:2px;white-space:nowrap}
+#dealfeed,#articles,#fieldfeed{scroll-margin-top:80px}
+#dealcount .clearf,#fieldcount .clearf{margin-left:2px;white-space:nowrap}
+/* 筛选后卡片少时页面也能滚到网格顶部（与商业化动态一致） */
+#fieldfeed{min-height:calc(100vh - 80px)}
+/* 领域页追踪器：0 篇的领域保留卡片但置灰、不可点 */
+.tile.nil{color:var(--muted);border-left-color:color-mix(in srgb,var(--tkc,var(--accent)) 40%,var(--line));background:var(--raise)}
+.tile.nil .tv{color:var(--muted)}
 /* 两侧广告位：从 1400px 起显示，这样 1280 与 r8 预览同宽（pv-shell 1100）。 */
 .shell,.navshell,.footshell{max-width:1100px;margin:0 auto}
 @media (min-width:1400px){
@@ -615,7 +620,17 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 <!-- ============ FIELDS ============ -->
 <div class="wrap view" id="v-fields" hidden>
   <header class="hero"><h1>九个领域</h1><p>每篇解读只出现在它的主领域下。相关领域以描边标签标出，不重复进其他栏目。</p></header>
-  <div id="fieldsections"></div>
+
+  <section>
+    <div class="sechead"><h2>追踪器</h2><span>各领域收录的解读篇数，随每周更新变化</span></div>
+    <div class="tracker" id="ftracker"></div>
+  </section>
+
+  <section id="fieldfeed">
+    <div class="sechead"><h2>全部解读</h2><span id="fieldcount"></span></div>
+    <div class="chips" id="fchips"></div>
+    <div class="pgrid" id="fieldgrid"></div>
+  </section>
 </div>
 
 <!-- ============ ARCHIVE ============ -->
@@ -977,7 +992,7 @@ function renderPaper(id){
   const open=a.lead||bits[0]||a.sum||'';
   const walk=a.body||bits.slice(1,Math.max(1,bits.length-1)).join('');
   const close=a.discuss||(bits.length>1?bits[bits.length-1]:'');
-  el.innerHTML=`<a class="back" href="#fields">← 返回领域</a>
+  el.innerHTML=`<a class="back" href="#fields?f=${a.f}">← 返回领域</a>
     <article>
       <div class="ahead">
         <div class="eyebrow">${label}${a.ds?' · '+cnDate(a.ds):''}</div>
@@ -1166,17 +1181,10 @@ function repaintCatalog(){
   const fl=document.getElementById('fieldlist');
   fl.innerHTML=FIELDS.map(f=>{
     const n=artsOf(f.k).length;
-    return `<a class="fcard" style="--dc:${f.color||'var(--accent)'}" href="#fields">${fieldThumb(f)}<div class="cbody"><b>${f.n}</b><span>${f.d||''}</span><em>${n} 篇</em></div></a>`;
+    return `<a class="fcard" style="--dc:${f.color||'var(--accent)'}" href="#fields?f=${f.k}">${fieldThumb(f)}<div class="cbody"><b>${f.n}</b><span>${f.d||''}</span><em>${n} 篇</em></div></a>`;
   }).join('');
   document.getElementById('fieldlist2').innerHTML=fl.innerHTML;
-  const fsec=document.getElementById('fieldsections');
-  fsec.innerHTML=FIELDS.map(f=>{
-    const arts=artsOf(f.k);
-    return `<section style="margin-bottom:34px">
-      <div class="sechead"><h2 style="color:${f.color||'var(--accent)'}">${f.n}</h2><span>${f.d||''} · ${arts.length} 篇</span></div>
-      <div class="pgrid">${arts.map(a=>catCard(a)).join('')}</div>
-    </section>`;
-  }).join('');
+  renderFields();
   renderTracker();
   renderChips();
   fitCardChips();
@@ -1187,6 +1195,37 @@ function repaintCatalog(){
   if(hd)hd.textContent=deepCount;
   if(hs)hs.textContent=surveyCount;
   if(hb)hb.textContent=DEALS.length;
+}
+// 领域页：版式照搬商业化动态（追踪器卡片 + 筛选条 + 一个统一卡片网格）。只按主领域筛选，#fields?f=organoid 可分享、可后退
+let ffilter='all';
+function fieldArts(){
+  return visibleCat().map((a,i)=>[a,i]).sort((x,y)=>(y[0].ds||'').localeCompare(x[0].ds||'')||x[1]-y[1]).map(x=>x[0]);
+}
+function renderFieldTracker(all){
+  const el=document.getElementById('ftracker'); if(!el) return;
+  const tiles=[['全部解读',all.length,'var(--accent)','all'],...FIELDS.map(f=>[f.n,all.filter(a=>a.f===f.k).length,f.color||'var(--accent)',f.k])];
+  el.innerHTML=tiles.map(([k,n,c,fk])=>n||fk==='all'
+    ?`<a class="tile" href="#fields?f=${fk}" style="--tkc:${c}"${fk===ffilter?' aria-current="true"':''} aria-label="${k} ${n} 篇，${fk==='all'?'查看全部解读':'只看'+k}"><span class="tv">${n} 篇</span><span class="tk">${k}</span></a>`
+    :`<span class="tile nil" style="--tkc:${c}" aria-disabled="true" title="暂无解读"><span class="tv">0 篇</span><span class="tk">${k}</span></span>`).join('');
+}
+function renderFields(){
+  const grid=document.getElementById('fieldgrid'); if(!grid) return;
+  const all=fieldArts();
+  if(ffilter!=='all'&&!FIELDS.some(f=>f.k===ffilter)) ffilter='all';
+  const rows=ffilter==='all'?all:all.filter(a=>a.f===ffilter);
+  const fn=k=>(FIELDS.find(f=>f.k===k)||{}).n||k;
+  document.getElementById('fieldcount').innerHTML=ffilter==='all'?`共 ${rows.length} 篇，按时间倒序`:`已筛选「${fn(ffilter)}」${rows.length} 篇 · <a class="clearf" href="#fields?f=all">显示全部 ×</a>`;
+  const fc=document.getElementById('fchips');
+  fc.innerHTML=[['all','全部',all.length],...FIELDS.map(f=>[f.k,f.n,all.filter(a=>a.f===f.k).length])].filter(x=>x[0]==='all'||x[2])
+    .map(([k,label,n])=>`<button class="chip" type="button" data-f="${k}" aria-pressed="${ffilter===k}">${label} ${n}</button>`).join('');
+  fc.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{ffilter=b.dataset.f;history.pushState(null,'','#fields?f='+ffilter);renderFields()});
+  renderFieldTracker(all);
+  grid.innerHTML=rows.length?rows.map(a=>catCard(a)).join(''):'';
+  grid.hidden=!rows.length;
+  let em=document.getElementById('fieldempty');
+  if(!rows.length){ if(!em){em=document.createElement('div');em.className='empty';em.id='fieldempty';grid.after(em);} em.textContent='这个领域暂无解读。只收录有全文、核对过的论文，有合适的条目时再补。'; }
+  else if(em) em.remove();
+  if(!document.getElementById('v-fields').hidden) fitCardChips(grid.parentNode);
 }
 function renderFeed(){
   const rows=DEALS.filter(x=>filter==='all'||x.kinds.includes(filter));
@@ -1232,7 +1271,7 @@ function route(){
       return;
     }
   }
-  // 查询参数：#deals?kind=acq 筛选交易类型；#home?sec=articles 跳到解读区
+  // 查询参数：#deals?kind=acq 筛选交易类型；#fields?f=organoid 筛选主领域；#home?sec=articles 跳到解读区
   const qi=h.indexOf('?'), q=new URLSearchParams(qi<0?'':h.slice(qi+1));
   if(qi>=0) h=h.slice(0,qi);
   let target=document.getElementById('v-'+h)?h:'home';
@@ -1250,10 +1289,11 @@ function route(){
   document.title=pageTitle;
   views.forEach(v=>{v.hidden = v.id!=='v-'+target});
   if(target==='deals'){ const k=q.get('kind'); filter=(k&&KINDS[k])?k:'all'; renderChips(); renderFeed(); }
+  if(target==='fields'){ const f=q.get('f'); ffilter=(f&&FIELDS.some(x=>x.k===f))?f:'all'; renderFields(); }
   if(target==='home') refit();
   /* Grid columns now controlled purely by CSS */
   document.querySelectorAll('.nav-in a').forEach(a=>a.classList.toggle('on',a.dataset.v===target));
-  const jump=target==='deals'&&q.has('kind')?'dealfeed':(target==='home'&&q.get('sec')==='articles'?'articles':'');
+  const jump=target==='deals'&&q.has('kind')?'dealfeed':target==='fields'&&q.has('f')?'fieldfeed':(target==='home'&&q.get('sec')==='articles'?'articles':'');
   const je=jump&&document.getElementById(jump);
   if(je) je.scrollIntoView({block:'start'}); else window.scrollTo(0,0);
 }
