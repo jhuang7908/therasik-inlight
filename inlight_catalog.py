@@ -533,8 +533,14 @@ def inline_markup(s: str) -> str:
     return s
 
 
-def render_structured_md(md: str, article_id: str, cover_caption: str) -> str:
-    """Render r8 markdown to the live article body (hero + sections)."""
+def render_structured_md(md: str, article_id: str, cover_caption: str, mech_image: str | None = None) -> str:
+    """Render r8 markdown to the live article body (hero + sections).
+    
+    Args:
+        mech_image: Optional override for the mechanism figure path (e.g. "img/c1-org-1_mech_v2.webp").
+                    If not provided, defaults to "img/{article_id}_mech.webp".
+    """
+    mech_src = mech_image or f"img/{article_id}_mech.webp"
     lines = md.split("\n")
     out: list[str] = []
     sec_open = False
@@ -575,7 +581,7 @@ def render_structured_md(md: str, article_id: str, cover_caption: str) -> str:
             else:
                 out.append(
                     f'<div class="fig paperfig"><div class="fig-scroll">'
-                    f'<img src="img/{article_id}_mech.webp" alt="机制示意图" loading="lazy"></div>'
+                    f'<img src="{mech_src}" alt="机制示意图" loading="lazy"></div>'
                 )
                 out.append("__FIGCAP__")
             continue
