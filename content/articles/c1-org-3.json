@@ -806,7 +806,9 @@
     }
    ],
    "note": "三项为不同分析集和操作定义，不作互相优劣检验。"
-  }
+  },
+  "quick_look": "HCMI国际多中心从2,780名供者建立665个患者来源癌症模型，覆盖25种癌，其中78%为3D类器官、6%为球体、16%为2D贴壁细胞系。421对匹配肿瘤–模型中97.8%至少保留驱动突变、突变特征、WGD和倍性四项DNA特征中的两项；201对甲基化配对中190对（95%）比随机配对更接近（FDR<0.1）。临床数据覆盖522个模型，包括治疗史与生存结局。模型经ATCC和EMD Millipore分发，数据经Cancer Models公开。",
+  "author_intro": "通讯作者Jesse S. Boehm任职Broad研究所及MIT科赫综合癌症研究所。共同通讯还包括Louis M. Staudt（NCI）与Keith L. Ligon（Dana-Farber）。第一作者Dina ElHarouni任职Broad与Dana-Farber病理系。"
  },
  "images": {
   "mech_raw": "c1-org-3_mech_raw.png",
@@ -814,5 +816,7 @@
   "card": "c1-org-3_card.png",
   "image_model": "gpt-image-2 (earlier rounds)",
   "note": "card source QC off-warm 6.8% (>5%) was not a gate in earlier assembly; composed card passed"
- }
+ },
+ "quick_look": "HCMI国际多中心从2,780名供者建立665个患者来源癌症模型，覆盖25种癌，其中78%为3D类器官、6%为球体、16%为2D贴壁细胞系。421对匹配肿瘤–模型中97.8%至少保留驱动突变、突变特征、WGD和倍性四项DNA特征中的两项；201对甲基化配对中190对（95%）比随机配对更接近（FDR<0.1）。临床数据覆盖522个模型，包括治疗史与生存结局。模型经ATCC和EMD Millipore分发，数据经Cancer Models公开。",
+ "author_intro": "通讯作者Jesse S. Boehm任职Broad研究所及MIT科赫综合癌症研究所。共同通讯还包括Louis M. Staudt（NCI）与Keith L. Ligon（Dana-Farber）。第一作者Dina ElHarouni任职Broad与Dana-Farber病理系。"
 }

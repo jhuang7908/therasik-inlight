@@ -565,7 +565,9 @@
     }
    ],
    "note": "该图仅展示筛选覆盖度，不代表功能效应大小。"
-  }
+  },
+  "quick_look": "在LCMV与B16-OVA模型中，靶向ZMYND8使P14 CD8+ T细胞偏向效应样耗竭状态、减少终末耗竭。体内scCRISPR筛选检出19,032个P14细胞；效应样/Tex term验证n=7/组，肿瘤治疗n=5–8/组。ZMYND8缺失增强IL-2R–STAT5信号通路。敲除ZMYND8的CD8+ T细胞在慢性感染中更好控制病毒，在肿瘤中产生更强抗瘤效应。效应样耗竭与终末耗竭的表型可通过流式与转录组区分。",
+  "author_intro": "通讯作者Hongbo Chi（迟洪波）任职美国圣裘德儿童研究医院（St. Jude Children's Research Hospital）免疫学系，孟菲斯。第一作者Yan Wang同属该系。"
  },
  "images": {
   "mech_raw": "c3-io-4_mech_raw.png",
@@ -597,5 +599,7 @@
   "card": "c3-io-4_card.png",
   "final_md": "c3-io-4_final.md",
   "final_json": "c3-io-4_final.json"
- }
+ },
+ "quick_look": "在LCMV与B16-OVA模型中，靶向ZMYND8使P14 CD8+ T细胞偏向效应样耗竭状态、减少终末耗竭。体内scCRISPR筛选检出19,032个P14细胞；效应样/Tex term验证n=7/组，肿瘤治疗n=5–8/组。ZMYND8缺失增强IL-2R–STAT5信号通路。敲除ZMYND8的CD8+ T细胞在慢性感染中更好控制病毒，在肿瘤中产生更强抗瘤效应。效应样耗竭与终末耗竭的表型可通过流式与转录组区分。",
+ "author_intro": "通讯作者Hongbo Chi（迟洪波）任职美国圣裘德儿童研究医院（St. Jude Children's Research Hospital）免疫学系，孟菲斯。第一作者Yan Wang同属该系。"
 }

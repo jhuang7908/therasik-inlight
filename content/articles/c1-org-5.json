@@ -25,7 +25,7 @@
   "tier": "deep",
   "field": "类器官",
   "tags": [
-   "动物模型",
+   "疾病模型",
    "肠道类器官",
    "肠神经系统",
    "移植成熟",
@@ -436,7 +436,9 @@
   "chart": {
    "justified": false,
    "note": "主要终点有SI CCS 100%和组间P值，但提供材料未包含d14 HIO对照百分比；不绘制数据图。"
-  }
+  },
+  "quick_look": "限位培养系统让约4000个小肠球体暂限融合，第6天取出、续培至第14天再移植到肠系膜，植入率100%，高于同日龄常规人小肠类器官（精确检验P为9.25×10−7）。全研究使用183只动物，移植后随访10周，形成可收缩并带人源肠神经的肠组织。常规同日龄小肠类器官植入率显著更低。",
+  "author_intro": "通讯作者Maxime M. Mahe任职南特大学/Inserm TENS UMR1235，并兼辛辛那提儿童医院小儿普外胸外科及干细胞与类器官医学中心。共同通讯Michael A. Helmrath任职辛辛那提儿童医院。第一作者Holly M. Poling任职该院。"
  },
  "images": {
   "mech_raw": "work/r4/clean/c1-org-5_mech_raw_r4c_clean.png",
@@ -445,5 +447,7 @@
   "card_src": "work/r4/clean/c1-org-5_card_raw_r4c_clean.png (cleanup 232/200/12/6)",
   "image_model": "mech + card: Grok drawings r4c (supplied by parent run)",
   "note": "mech strict pass; card raw warm 8.7% -> 1.9% under rule (b)"
- }
+ },
+ "quick_look": "限位培养系统让约4000个小肠球体暂限融合，第6天取出、续培至第14天再移植到肠系膜，植入率100%，高于同日龄常规人小肠类器官（精确检验P为9.25×10−7）。全研究使用183只动物，移植后随访10周，形成可收缩并带人源肠神经的肠组织。常规同日龄小肠类器官植入率显著更低。",
+ "author_intro": "通讯作者Maxime M. Mahe任职南特大学/Inserm TENS UMR1235，并兼辛辛那提儿童医院小儿普外胸外科及干细胞与类器官医学中心。共同通讯Michael A. Helmrath任职辛辛那提儿童医院。第一作者Holly M. Poling任职该院。"
 }

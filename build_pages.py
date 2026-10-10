@@ -140,9 +140,23 @@ def build_article_page(article: dict, body_root: str, inner: dict, data: dict) -
     og_image = f"{SITE_URL}/img/{aid}_card.webp"
     page_url = f"{SITE_URL}/pages/article/{aid}.html"
     body = rebase_img_paths(body_root, "../../")
+    parts = cat.split_structured_body(body)
+    quick_look = article.get("quick_look") or inner.get("quick_look") or data.get("quick_look") or ""
+    author_intro = article.get("author_intro") or inner.get("author_intro") or data.get("author_intro") or ""
+    rail = cat.render_article_rail(
+        article,
+        parts,
+        journal=journal,
+        date_cn=date_cn,
+        url=article.get("url") or doi,
+        field_label=rec["n"],
+        related=cat.related_labels(article),
+        quick_look=quick_look,
+        author_intro=author_intro,
+    )
     preprint_bit = " · 预印本（未经同行评审）" if article.get("preprint") else ""
     og_title = html.escape(f"{title} - 前沿追踪")
-    og_desc = html.escape(one[:200] if one else rec["n"])
+    og_desc = html.escape((quick_look or one)[:200] if (quick_look or one) else rec["n"])
     return f"""<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -179,12 +193,9 @@ def build_article_page(article: dict, body_root: str, inner: dict, data: dict) -
   {chips}
  </div>
  <div class="abody">
-  <aside class="meta">
-   <div><span class="k">文献出处</span><p><b>{html.escape(journal)}</b>{('<br>' + html.escape(date_cn)) if date_cn else ''}<br>{f'<a href="{html.escape(doi)}" target="_blank" rel="noopener">原文</a>' if doi else ''}</p></div>
-   <div><span class="k">主领域</span><p>{html.escape(rec['n'])}</p></div>
-  </aside>
+  {rail}
   <div class="amain">
-{body}
+{parts['body']}
   </div>
  </div>
 </article>

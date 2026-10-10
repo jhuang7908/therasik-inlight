@@ -503,7 +503,9 @@
   },
   "chart": {
    "justified": false
-  }
+  },
+  "quick_look": "第8天用重组酶慢病毒诱导结节性硬化复合体2双等位缺失后，人脑类器官中缺失细胞在第50、120、220天相对同一类器官内对照细胞均显著提高反应性星形胶质模块评分。处理后39,539个细胞映射到胎脑图谱。纯化星形胶质细胞接受50 nM雷帕霉素或100 nM托林。反应性表型由细胞自主的雷帕霉素靶蛋白复合物驱动。",
+  "author_intro": "通讯作者Helen S. Bateup任职加州大学伯克利分校分子与细胞生物学系及神经科学系（Berkeley, CA, USA）。第一作者Thomas L. Li同属上述两系。"
  },
  "images": {
   "mech_raw": "work/r4/clean/c1-org-4_mech_raw_r4c_clean.png",
@@ -512,5 +514,7 @@
   "card_src": "r3 card (passed)",
   "image_model": "mech: Grok drawing (r4/r4b/r4c, supplied by parent run); card: gpt-image-2 (earlier rounds)",
   "note": "mech strict pass"
- }
+ },
+ "quick_look": "第8天用重组酶慢病毒诱导结节性硬化复合体2双等位缺失后，人脑类器官中缺失细胞在第50、120、220天相对同一类器官内对照细胞均显著提高反应性星形胶质模块评分。处理后39,539个细胞映射到胎脑图谱。纯化星形胶质细胞接受50 nM雷帕霉素或100 nM托林。反应性表型由细胞自主的雷帕霉素靶蛋白复合物驱动。",
+ "author_intro": "通讯作者Helen S. Bateup任职加州大学伯克利分校分子与细胞生物学系及神经科学系（Berkeley, CA, USA）。第一作者Thomas L. Li同属上述两系。"
 }

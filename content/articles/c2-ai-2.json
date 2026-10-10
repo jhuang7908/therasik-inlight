@@ -598,7 +598,9 @@
     }
    ],
    "note": "数值来自原文图注拟合；未作正式组间检验。"
-  }
+  },
+  "quick_look": "NISE闭环神经网络在exatecan与apixaban体外任务中从头设计药物结合蛋白，把配体pLDDT和序列NLL联合优化。exatecan 4个NISE设计全部结合（Kd 0.12–17 µM），对照COMBS 16个设计中仅3个结合（Kd 8–44 µM），非特异性HSA为43 µM；apixaban 6个设计中5个结合，APEX Kd=80 pM（95% CI 54–122 pM），factor Xa的Ki为80–700 pM。LASErMPNN校对的EPIC(Q51N/M97L)使exatecan至少50 h保持>99%闭环状态（PBS pH 7.4），Kd=1.2 nM，较EPIC提高100倍。晶体结构EPIC 2.0 Å，骨架与NISE输入Cα r.m.s.d.为0.8 Å。游离exatecan在血浆中水解半衰期约2 h。",
+  "author_intro": "通讯作者Nicholas F. Polizzi任职Dana-Farber癌症研究所癌症生物学系及哈佛医学院生物化学与分子药理学系。第一作者Benjamin Fry任职哈佛生物物理研究生项目及上述两系。"
  },
  "images": {
   "mech_raw": "work/r4/clean/c2-ai-2_mech_raw_r4c_clean.png",
@@ -607,5 +609,7 @@
   "card_src": "work/r4/clean/c2-ai-2_card_raw_r4c_clean.png (cleanup 232/200/12/6), card_b22d TARGET=0.73",
   "image_model": "mech + card: Grok drawings r4c (supplied by parent run)",
   "note": "card passes under user edge rule (2026-10-09): 34 off-white px outside bbox, all within 2 px of subject ink, haze 0"
- }
+ },
+ "quick_look": "NISE闭环神经网络在exatecan与apixaban体外任务中从头设计药物结合蛋白，把配体pLDDT和序列NLL联合优化。exatecan 4个NISE设计全部结合（Kd 0.12–17 µM），对照COMBS 16个设计中仅3个结合（Kd 8–44 µM），非特异性HSA为43 µM；apixaban 6个设计中5个结合，APEX Kd=80 pM（95% CI 54–122 pM），factor Xa的Ki为80–700 pM。LASErMPNN校对的EPIC(Q51N/M97L)使exatecan至少50 h保持>99%闭环状态（PBS pH 7.4），Kd=1.2 nM，较EPIC提高100倍。晶体结构EPIC 2.0 Å，骨架与NISE输入Cα r.m.s.d.为0.8 Å。游离exatecan在血浆中水解半衰期约2 h。",
+ "author_intro": "通讯作者Nicholas F. Polizzi任职Dana-Farber癌症研究所癌症生物学系及哈佛医学院生物化学与分子药理学系。第一作者Benjamin Fry任职哈佛生物物理研究生项目及上述两系。"
 }

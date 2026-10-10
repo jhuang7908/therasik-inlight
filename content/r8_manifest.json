@@ -145,8 +145,8 @@
    "field_color": "#2E6B4F",
    "related": [
     {
-     "field": "动物模型",
-     "label": "动物模型",
+     "field": "疾病模型",
+     "label": "疾病模型",
      "color": "#5E6624"
     }
    ],
@@ -646,6 +646,318 @@
    "mech_px": [
     1600,
     915
+   ]
+  },
+  {
+   "id": "c6-ab-9",
+   "slug": "c6-ab-9",
+   "source_file": "c6-ab-9_final_v1",
+   "title": "pIgR双抗在食蟹猴BAL中暴露提高5.5倍",
+   "card_title": "pIgR双抗使食蟹猴BAL暴露提高5.5倍",
+   "card_caption": "赤陶红双抗经pIgR转入肺黏膜",
+   "cover_caption": "封面示意：赤陶红双抗经上皮pIgR从血液转入肺黏膜腔。图片由 AI 生成，非原文图片。",
+   "field": "抗体工程",
+   "field_label": "抗体工程",
+   "field_color": "#3A6489",
+   "related": [
+    {
+     "field": "疾病模型",
+     "label": "疾病模型",
+     "color": "#5E6624"
+    }
+   ],
+   "preprint": false,
+   "card_image": "img/c6-ab-9_card.webp",
+   "card_px": [
+    1600,
+    1000
+   ],
+   "mech_image": "img/c6-ab-9_mech.webp",
+   "mech_px": [
+    1600,
+    900
+   ]
+  },
+  {
+   "id": "c5-am-8",
+   "slug": "c5-am-8",
+   "source_file": "c5-am-8_final_v1",
+   "title": "人源化小鼠中敲除DPP9经CARD8焦亡导致造血干细胞耗竭与全血细胞减少",
+   "card_title": "人DPP9缺失经CARD8焦亡致HSPC耗竭",
+   "card_caption": "赤陶色CARD8在绿色HSPC中激活焦亡",
+   "cover_caption": "封面示意：绿色人造血干细胞内，赤陶色CARD8炎性体被激活并导向焦亡，寓意DPP9缺失后门控失效。图片由 AI 生成，非原文图片。",
+   "field": "疾病模型",
+   "field_label": "疾病模型",
+   "field_color": "#5E6624",
+   "related": [
+    {
+     "field": "自身免疫与移植免疫",
+     "label": "自身免疫与移植",
+     "color": "#8E4F5A"
+    }
+   ],
+   "preprint": false,
+   "card_image": "img/c5-am-8_card.webp",
+   "card_px": [
+    1600,
+    1000
+   ],
+   "mech_image": "img/c5-am-8_mech.webp",
+   "mech_px": [
+    1600,
+    900
+   ]
+  },
+  {
+   "id": "c9-rna-9",
+   "slug": "c9-rna-9",
+   "source_file": "c9-rna-9_final_v1",
+   "title": "吸入ARO-RAGE在健康人与哮喘患者中可耐受，184 mg单剂BALF sRAGE降90.2%",
+   "card_title": "吸入ARO-RAGE单剂使BALF sRAGE降90.2%",
+   "card_caption": "赤陶红吸入siRNA贴在绿色肺泡上皮",
+   "cover_caption": "封面示意：雾化的赤陶红色siRNA贴在绿色肺泡上皮表面，远处是淡绿支气管树，寓意吸入递送到肺。图片由 AI 生成，非原文图片。",
+   "field": "核酸与基因治疗（含 LNP 递送）",
+   "field_label": "核酸与基因治疗",
+   "field_color": "#8A6212",
+   "related": [],
+   "preprint": false,
+   "card_image": "img/c9-rna-9_card.webp",
+   "card_px": [
+    1600,
+    1000
+   ],
+   "mech_image": "img/c9-rna-9_mech.webp",
+   "mech_px": [
+    1600,
+    900
+   ]
+  },
+  {
+   "id": "c5-am-9",
+   "slug": "c5-am-9",
+   "source_file": "c5-am-9_final_v1",
+   "title": "4个人源化DMD小鼠模型携带外显子44、45、51或53缺失，侧翼外显子跳跃可恢复抗肌萎缩蛋白",
+   "card_title": "4株人源化DMD小鼠：缺外显子44、45、51或53",
+   "card_caption": "绿色肌纤维上赤陶色抗肌萎缩蛋白缺口",
+   "cover_caption": "封面示意：绿色肌纤维膜上的赤陶色抗肌萎缩蛋白出现缺口，寓意人DMD外显子缺失后的蛋白中断。图片由 AI 生成，非原文图片。",
+   "field": "疾病模型",
+   "field_label": "疾病模型",
+   "field_color": "#5E6624",
+   "related": [
+    {
+     "field": "核酸与基因治疗（含 LNP 递送）",
+     "label": "核酸与基因治疗",
+     "color": "#8A6212"
+    }
+   ],
+   "preprint": false,
+   "card_image": "img/c5-am-9_card.webp",
+   "card_px": [
+    1600,
+    1000
+   ],
+   "mech_image": "img/c5-am-9_mech.webp",
+   "mech_px": [
+    1600,
+    900
+   ]
+  },
+  {
+   "id": "c4-ai-8",
+   "slug": "c4-ai-8",
+   "source_file": "c4-ai-8_final_v1",
+   "title": "难治性重症肌无力抗CD19 CAR-T个案随访：3例均维持停药临床缓解至少19个月",
+   "card_title": "难治MG抗CD19 CAR-T：3例停药缓解至少19个月",
+   "card_caption": "深绿CAR-T细胞贴近赤陶红自身反应B细胞",
+   "cover_caption": "封面示意：深绿CAR-T细胞贴近赤陶红自身反应B细胞。图片由 AI 生成，非原文图片。",
+   "field": "自身免疫与移植免疫",
+   "field_label": "自身免疫与移植",
+   "field_color": "#8E4F5A",
+   "related": [
+    {
+     "field": "肿瘤免疫与细胞治疗",
+     "label": "肿瘤免疫与细胞治疗",
+     "color": "#6E3F7A"
+    }
+   ],
+   "preprint": false,
+   "card_image": "img/c4-ai-8_card.webp",
+   "card_px": [
+    1600,
+    1000
+   ],
+   "mech_image": "img/c4-ai-8_mech.webp",
+   "mech_px": [
+    1600,
+    900
+   ]
+  },
+  {
+   "id": "c6-ab-7",
+   "slug": "c6-ab-7",
+   "source_file": "c6-ab-7_final_v1",
+   "title": "156个巨噬激活双抗筛出WTa2d1xCD38，IC50低至18.0 pM",
+   "card_title": "156个双抗筛出低亲和SIRPα×CD38",
+   "card_caption": "赤陶红双抗桥接巨噬与淋巴瘤细胞",
+   "cover_caption": "封面示意：赤陶红双抗同时抓住巨噬细胞与淋巴瘤细胞，寓意低亲和SIRPα诱饵与CD38臂的桥接杀伤。图片由 AI 生成，非原文图片。",
+   "field": "抗体工程",
+   "field_label": "抗体工程",
+   "field_color": "#3A6489",
+   "related": [
+    {
+     "field": "肿瘤免疫与细胞治疗",
+     "label": "肿瘤免疫与细胞治疗",
+     "color": "#6E3F7A"
+    }
+   ],
+   "preprint": false,
+   "card_image": "img/c6-ab-7_card.webp",
+   "card_px": [
+    1600,
+    1000
+   ],
+   "mech_image": "img/c6-ab-7_mech.webp",
+   "mech_px": [
+    1600,
+    900
+   ]
+  },
+  {
+   "id": "c9-rna-7",
+   "slug": "c9-rna-7",
+   "source_file": "c9-rna-7_final_v1",
+   "title": "鞘内RAG-17在6例SOD1-ALS中达可接受安全，队列1第240天脑脊液SOD1降69%",
+   "card_title": "RAG-17一期6例：脑脊液SOD1降69%与56%",
+   "card_caption": "赤陶红siRNA双链连着绿色辅助寡核苷酸",
+   "cover_caption": "封面示意：赤陶红色的siRNA双链经接头连着一段绿色辅助寡核苷酸，旁边是腰椎穿刺针与淡绿脊髓轮廓，寓意鞘内递送。图片由 AI 生成，非原文图片。",
+   "field": "核酸与基因治疗（含 LNP 递送）",
+   "field_label": "核酸与基因治疗",
+   "field_color": "#8A6212",
+   "related": [],
+   "preprint": false,
+   "card_image": "img/c9-rna-7_card.webp",
+   "card_px": [
+    1600,
+    1000
+   ],
+   "mech_image": "img/c9-rna-7_mech.webp",
+   "mech_px": [
+    1600,
+    900
+   ]
+  },
+  {
+   "id": "c6-ab-8",
+   "slug": "c6-ab-8",
+   "source_file": "c6-ab-8_final_v1",
+   "title": "三特异IL-2R抗体αβγVHH-48的EC50达0.015 nM",
+   "card_title": "三特异IL-2R抗体EC50达0.015 nM并偏Treg",
+   "card_caption": "赤陶红三抗把IL-2R三链拉在一起",
+   "cover_caption": "封面示意：赤陶红三特异抗体把Treg表面的IL-2Rα/β/γ拉成可信号的三聚体。图片由 AI 生成，非原文图片。",
+   "field": "抗体工程",
+   "field_label": "抗体工程",
+   "field_color": "#3A6489",
+   "related": [
+    {
+     "field": "自身免疫与移植免疫",
+     "label": "自身免疫与移植",
+     "color": "#8E4F5A"
+    }
+   ],
+   "preprint": false,
+   "card_image": "img/c6-ab-8_card.webp",
+   "card_px": [
+    1600,
+    1000
+   ],
+   "mech_image": "img/c6-ab-8_mech.webp",
+   "mech_px": [
+    1600,
+    900
+   ]
+  },
+  {
+   "id": "c5-am-7",
+   "slug": "c5-am-7",
+   "source_file": "c5-am-7_final_v1",
+   "title": "11个单基因ASD小鼠模型共251个样本：放射状胶质谱系短暂延迟，P4层II/IV神经元715个DEG",
+   "card_title": "11个ASD小鼠251样本：放射胶质短暂延迟",
+   "card_caption": "绿色放射状胶质滞留，赤陶神经元后移",
+   "cover_caption": "封面示意：绿色放射状胶质细胞滞留于增殖态，赤陶色新生神经元位置后移，寓意发育延迟而非谱系错指定。图片由 AI 生成，非原文图片。",
+   "field": "疾病模型",
+   "field_label": "疾病模型",
+   "field_color": "#5E6624",
+   "related": [],
+   "preprint": false,
+   "card_image": "img/c5-am-7_card.webp",
+   "card_px": [
+    1600,
+    1000
+   ],
+   "mech_image": "img/c5-am-7_mech.webp",
+   "mech_px": [
+    1600,
+    900
+   ]
+  },
+  {
+   "id": "c9-rna-8",
+   "slug": "c9-rna-8",
+   "source_file": "c9-rna-8_final_v1",
+   "title": "优化PE-LNP单剂2 mg/kg使小鼠全肝平均prime editing达49%",
+   "card_title": "单剂PE-LNP使小鼠全肝精准编辑达49%",
+   "card_caption": "赤陶红脂质纳米颗粒进入绿色肝细胞",
+   "cover_caption": "封面示意：一枚剖开的赤陶红色脂质纳米颗粒贴近绿色肝细胞，颗粒内可见RNA链，寓意非病毒递送prime editor。图片由 AI 生成，非原文图片。",
+   "field": "核酸与基因治疗（含 LNP 递送）",
+   "field_label": "核酸与基因治疗",
+   "field_color": "#8A6212",
+   "related": [
+    {
+     "field": "疾病模型",
+     "label": "疾病模型",
+     "color": "#5E6624"
+    }
+   ],
+   "preprint": false,
+   "card_image": "img/c9-rna-8_card.webp",
+   "card_px": [
+    1600,
+    1000
+   ],
+   "mech_image": "img/c9-rna-8_mech.webp",
+   "mech_px": [
+    1600,
+    900
+   ]
+  },
+  {
+   "id": "c4-ai-9",
+   "slug": "c4-ai-9",
+   "source_file": "c4-ai-9_final_v1",
+   "title": "双靶CD19/BCMA CAR-T脱敏后肾移植：2例cPRA≥99.9%安全导入队列均完成移植",
+   "card_title": "双靶CAR-T脱敏后2例高致敏患者完成肾移植",
+   "card_caption": "深绿双靶CAR-T环绕赤陶红HLA浆细胞",
+   "cover_caption": "封面示意：深绿双靶CAR-T环绕赤陶红HLA浆细胞。图片由 AI 生成，非原文图片。",
+   "field": "自身免疫与移植免疫",
+   "field_label": "自身免疫与移植",
+   "field_color": "#8E4F5A",
+   "related": [
+    {
+     "field": "肿瘤免疫与细胞治疗",
+     "label": "肿瘤免疫与细胞治疗",
+     "color": "#6E3F7A"
+    }
+   ],
+   "preprint": false,
+   "card_image": "img/c4-ai-9_card.webp",
+   "card_px": [
+    1600,
+    1000
+   ],
+   "mech_image": "img/c4-ai-9_mech.webp",
+   "mech_px": [
+    1600,
+    900
    ]
   }
  ],

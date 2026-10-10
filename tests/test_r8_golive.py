@@ -55,10 +55,23 @@ class R8GoLiveTests(unittest.TestCase):
         cls.manifest = json.loads((ROOT / "content" / "r8_manifest.json").read_text(encoding="utf-8"))
         cls.sitemap = (ROOT / "sitemap.xml").read_text(encoding="utf-8") if (ROOT / "sitemap.xml").exists() else ""
 
-    def test_twenty_five_published(self):
+    def test_thirty_six_published(self):
         ids = cat.published_ids(self.catalog)
-        self.assertEqual(len(ids), 25)
+        self.assertEqual(len(ids), 36)
         self.assertEqual(ids, [a["id"] for a in self.manifest["articles"]])
+        labels = [a.get("field_label") or a.get("field") for a in cat.published_articles(self.catalog)]
+        from collections import Counter
+        counts = Counter(labels)
+        self.assertEqual(counts["类器官"], 4)
+        self.assertEqual(counts["疾病模型"], 3)
+        self.assertEqual(counts["AI药物设计"], 5)
+        self.assertEqual(counts["肿瘤免疫与细胞治疗"], 5)
+        self.assertEqual(counts["自身免疫与移植"], 4)
+        self.assertEqual(counts["疫苗与感染免疫"], 4)
+        self.assertEqual(counts["抗体工程"], 4)
+        self.assertEqual(counts["核酸与基因治疗"], 4)
+        self.assertEqual(counts["精准肿瘤与临床转化"], 3)
+        self.assertNotIn("动物模型", labels)
 
     def test_card_titles_at_most_30(self):
         for a in cat.published_articles(self.catalog):
@@ -82,7 +95,7 @@ class R8GoLiveTests(unittest.TestCase):
         hidden = set(cat.hidden_ids(self.catalog))
         self.assertTrue({"c7-cell-5", "c5-am-6"} <= hidden)
         cat_ids = {a["id"] for a in cat.extract_cat_array(self.index)}
-        self.assertEqual(len(cat_ids), 25)
+        self.assertEqual(len(cat_ids), 36)
         for hid in HIDDEN_SAMPLE:
             self.assertIn(hid, hidden)
             self.assertNotIn(hid, cat_ids)
@@ -219,6 +232,91 @@ class R8GoLiveTests(unittest.TestCase):
         for a in cat.published_articles(self.catalog):
             self.assertTrue(cat.article_json_path(a["id"]).exists())
             self.assertTrue(cat.article_md_path(a["id"]).exists())
+
+    def test_disease_model_label_shown_animal_id_stable(self):
+        self.assertIn('"animal": "疾病模型"', self.index)
+        self.assertNotIn('"animal": "动物模型"', self.index)
+        fields = cat.load_fields()
+        animal = next(f for f in fields if f["k"] == "animal")
+        self.assertEqual(animal["n"], "疾病模型")
+        self.assertEqual(animal["field"], "疾病模型")
+        self.assertEqual(cat.FIELD_KEYS["疾病模型"], "animal")
+        self.assertEqual(cat.FIELD_KEYS["动物模型"], "animal")
+
+    def test_article_rail_quick_look_author_and_coop(self):
+        """Left rail: 速览 100–200 han chars, 作者介绍 present, 合作 box; 作者节已移出正文."""
+        expected = [
+            "研究背景与待解问题",
+            "研究设计",
+            "核心结果",
+            "机制解读",
+            "局限与不确定",
+            "临床/产业意义",
+        ]
+        for a in cat.published_articles(self.catalog):
+            page = (ROOT / "pages" / "article" / f"{a['id']}.html").read_text(encoding="utf-8")
+            self.assertIn('class="meta side2"', page, a["id"])
+            look = re.search(r'<section class="sbox look">.*?<p>(.*?)</p>', page, re.S)
+            self.assertIsNotNone(look, a["id"])
+            text = re.sub(r"<[^>]+>", "", look.group(1))
+            # Count only CJK han characters (not Latin letters, digits, units, symbols, punctuation)
+            han_chars = len(re.findall(r'[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]', text))
+            self.assertGreaterEqual(han_chars, 100, (a["id"], han_chars))
+            self.assertLessEqual(han_chars, 200, (a["id"], han_chars))
+            self.assertIn('<span class="k">作者介绍</span>', page, a["id"])
+            self.assertTrue((a.get("author_intro") or "").strip(), a["id"])
+            self.assertIn("InSynBio · 前沿追踪", page, a["id"])
+            self.assertIn("contact@therasik.com", page, a["id"])
+            self.assertIn("科技新闻实时更新", page, a["id"])
+            self.assertIn('class="sbox coop"', page, a["id"])
+            amain = re.search(r'<div class="amain">(.*)</div>\s*</div>\s*</article>', page, re.S)
+            self.assertIsNotNone(amain, a["id"])
+            body = amain.group(1)
+            self.assertNotIn("作者、出处与核对", body, a["id"])
+            self.assertNotIn('class="pv-card"', body, a["id"])
+            secs = re.findall(r'<div class="sec"><h2>([^<]+)</h2>', body)
+            self.assertEqual(secs, expected, a["id"])
+            self.assertIn("研究设计", body, a["id"])
+            self.assertIn("局限与不确定", body, a["id"])
+        src = (ROOT / "index.html").read_text(encoding="utf-8")
+        self.assertIn("function renderPaper", src)
+        self.assertIn("sbox look", src)
+        self.assertIn("COOP_AD", src)
+        self.assertIn("作者、出处与核对", src)
+
+    def test_quick_look_han_char_count_in_catalog(self):
+        """Every published article's quick_look must have 100–200 CJK han characters."""
+        for a in cat.published_articles(self.catalog):
+            ql = a.get("quick_look") or ""
+            han_chars = len(re.findall(r'[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]', ql))
+            self.assertGreaterEqual(han_chars, 100, f"{a['id']}: {han_chars} han chars (need ≥100)")
+            self.assertLessEqual(han_chars, 200, f"{a['id']}: {han_chars} han chars (need ≤200)")
+
+    def test_coop_border_rule_exists(self):
+        """The .side2 .sbox.coop rule must apply border-top:3px solid #C0492F."""
+        src = (ROOT / "index.html").read_text(encoding="utf-8")
+        # The specific rule that overrides .side2 .sbox{border:1px solid var(--line)}
+        self.assertIn(".side2 .sbox.coop{border-top:3px solid #C0492F}", src)
+
+    def test_quick_look_no_spelled_out_numbers(self):
+        """quick_look must use Arabic numerals, not spelled-out Chinese numbers."""
+        # Patterns that indicate spelled-out numbers instead of Arabic digits
+        spelled_out_patterns = [
+            r'百分之',  # "percent" spelled out (e.g., 百分之五十)
+            r'零点',    # decimal point spelled out (e.g., 零点五)
+        ]
+        for a in cat.published_articles(self.catalog):
+            ql = a.get("quick_look") or ""
+            for pattern in spelled_out_patterns:
+                self.assertIsNone(
+                    re.search(pattern, ql),
+                    f"{a['id']}: quick_look contains spelled-out number pattern '{pattern}'"
+                )
+            # Check that quick_look contains digits (should have numbers)
+            self.assertTrue(
+                re.search(r'\d', ql),
+                f"{a['id']}: quick_look contains no digits; expected Arabic numerals"
+            )
 
 
 if __name__ == "__main__":

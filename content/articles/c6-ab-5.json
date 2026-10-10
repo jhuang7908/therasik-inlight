@@ -456,7 +456,9 @@
     }
    ],
    "note": "低信号候选的KD按原文只作暂定估计。"
-  }
+  },
+  "quick_look": "针对一个无结构、无既有抗体的促结缔组织增生性小圆细胞瘤新靶点，智能体引导从头生成288,000个纳米抗体设计，覆盖8个表位热点。帕累托过滤后100,000个进入酵母表面展示，两轮分选后116个进入表面等离子共振，46个（39.7%）获可靠动力学，平衡解离常数0.66至305 nM，中位31.7 nM。该文为未经同行评审的预印本。",
+  "author_intro": "通讯作者Xinyun (Nina) Cheng任职Amazon Web Services Applied AI Solutions, Life Sciences。第一作者Yue Zhao。"
  },
  "images": {
   "mech_raw": "work/r5img/clean/c6-ab-5_mech_raw_r5_clean.png",
@@ -473,5 +475,7 @@
   "card_caption_chars": 15
  },
  "notes": "Frozen must-cover list for c6-ab-5 has 11 items (m9 was dropped as non-verbatim when the list was frozen by gpt-5.5), so coverage is 11/11, not 12/12. Preprint: 预印本 stated in datacard study_type and in background[1]. The first assembly (c6-ab-5_final_r5.json) carries a figure-label entity_en that did not match image_subject_en verbatim; corrected files are *_r5b (nothing overwritten).",
- "text_from": "c6-ab-5_final_r5b.json (text unchanged)"
+ "text_from": "c6-ab-5_final_r5b.json (text unchanged)",
+ "quick_look": "针对一个无结构、无既有抗体的促结缔组织增生性小圆细胞瘤新靶点，智能体引导从头生成288,000个纳米抗体设计，覆盖8个表位热点。帕累托过滤后100,000个进入酵母表面展示，两轮分选后116个进入表面等离子共振，46个（39.7%）获可靠动力学，平衡解离常数0.66至305 nM，中位31.7 nM。该文为未经同行评审的预印本。",
+ "author_intro": "通讯作者Xinyun (Nina) Cheng任职Amazon Web Services Applied AI Solutions, Life Sciences。第一作者Yue Zhao。"
 }

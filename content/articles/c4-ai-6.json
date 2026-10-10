@@ -529,7 +529,9 @@
     }
    ],
    "note": "仅展示样本量；42%为UC中CD8+TIGR相对减少，Crohn病原文仅写显著减少。"
-  }
+  },
+  "quick_look": "发现队列含4个无关家系7名IBD个体，证实GPR15双等位失功能变异导致严重结肠炎。小鼠2.5% DSS模型验证GPR15引导CD8+ TIGR归巢结肠并限制肠炎。散发性UC结肠活检中该细胞群减少42%（HC n=8，UC n=7）。GPR15缺失小鼠肠道CD8+ T细胞减少，DSS后结肠炎加重。人类遗传学与小鼠模型共同支持GPR15–TIGR轴在结肠免疫稳态中的保护作用。主要小鼠实验多为n=11/组。",
+  "author_intro": "通讯作者Michael J. Lenardo任职NIAID免疫系统生物学实验室免疫发育分子学部、NIAID临床基因组学项目及Calico Life Sciences（South San Francisco）。共同通讯Chuan Wu任职NCI实验免疫学部。第一作者Jing Cui同属NIAID上述单位。"
  },
  "images": {
   "mech_raw": "c4-ai-6_mech_raw_r4.jpg",
@@ -538,5 +540,7 @@
   "card_src": "work/r4/clean/c4-ai-6_card_raw_r4_clean_t215.png (cleanup T1=215,T2=200,S=20,G=6)",
   "image_model": "mech: Grok drawing (r4/r4b/r4c, supplied by parent run); card: Grok drawing r4",
   "note": "mech OCR soft gate: 1 label <50% (head 归巢信号), numbers 14/14"
- }
+ },
+ "quick_look": "发现队列含4个无关家系7名IBD个体，证实GPR15双等位失功能变异导致严重结肠炎。小鼠2.5% DSS模型验证GPR15引导CD8+ TIGR归巢结肠并限制肠炎。散发性UC结肠活检中该细胞群减少42%（HC n=8，UC n=7）。GPR15缺失小鼠肠道CD8+ T细胞减少，DSS后结肠炎加重。人类遗传学与小鼠模型共同支持GPR15–TIGR轴在结肠免疫稳态中的保护作用。主要小鼠实验多为n=11/组。",
+ "author_intro": "通讯作者Michael J. Lenardo任职NIAID免疫系统生物学实验室免疫发育分子学部、NIAID临床基因组学项目及Calico Life Sciences（South San Francisco）。共同通讯Chuan Wu任职NCI实验免疫学部。第一作者Jing Cui同属NIAID上述单位。"
 }

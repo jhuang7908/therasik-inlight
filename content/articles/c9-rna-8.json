@@ -1,0 +1,22 @@
+{
+ "id": "c9-rna-8",
+ "status": "published-ready",
+ "preprint": false,
+ "writer_tags": [],
+ "article": {
+  "tier": "deep",
+  "field": "核酸与基因治疗（含 LNP 递送）",
+  "tags": [
+   "疾病模型"
+  ],
+  "title": "优化PE-LNP单剂2 mg/kg使小鼠全肝平均prime editing达49%",
+  "one_liner": "系统优化三组分prime editor的脂质纳米颗粒后，单剂总RNA 2 mg/kg在小鼠全肝实现平均49%无插入缺失的精准编辑，较初始方案提高63倍。",
+  "citation": "Jiang AY, Cristian A, Brooks DL, Feierman ER, Chen PZ, Whittaker MN, et al. Efficient prime editing in vivo and in vitro using lipid nanoparticles. Nat Nanotechnol. 2026 Jun 15. https://doi.org/10.1038/s41565-026-02200-6",
+  "quick_look": "系统优化三组分引导编辑器的脂质纳米颗粒后，单剂总核糖核酸2毫克每千克于7天在小鼠全肝达平均49%无插入缺失精准编辑，较最初配方提高63倍、较次级配方提高13倍；8周时44%，与双载体腺相关病毒的46%相近。苯丙酮尿症小鼠使血清苯丙氨酸3天内降90%，第7天低于360微摩尔。4毫克每千克饱和剂量全肝编辑53%，血清前蛋白转化酶最多降94%。",
+  "author_intro": "通讯作者David R. Liu为Broad研究所Merkin讲席教授、哈佛大学化学与化学生物学系教授及HHMI研究员，实验室开发碱基编辑与prime editing。第一作者Allen Y. Jiang任职Broad与哈佛化学系。"
+ },
+ "pmcid": "PMC13379318",
+ "license": "cc by",
+ "quick_look": "系统优化三组分引导编辑器的脂质纳米颗粒后，单剂总核糖核酸2毫克每千克于7天在小鼠全肝达平均49%无插入缺失精准编辑，较最初配方提高63倍、较次级配方提高13倍；8周时44%，与双载体腺相关病毒的46%相近。苯丙酮尿症小鼠使血清苯丙氨酸3天内降90%，第7天低于360微摩尔。4毫克每千克饱和剂量全肝编辑53%，血清前蛋白转化酶最多降94%。",
+ "author_intro": "通讯作者David R. Liu为Broad研究所Merkin讲席教授、哈佛大学化学与化学生物学系教授及HHMI研究员，实验室开发碱基编辑与prime editing。第一作者Allen Y. Jiang任职Broad与哈佛化学系。"
+}

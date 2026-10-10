@@ -28,7 +28,7 @@
   "field": "疫苗与感染免疫",
   "tags": [
    "抗体工程",
-   "动物模型",
+   "疾病模型",
    "HIV Env",
    "广谱中和抗体",
    "生发系靶向",
@@ -641,7 +641,9 @@
     }
    ],
    "note": "两项单位不同，若绘图需分面或双轴；不用于比较优劣。"
-  }
+  },
+  "quick_look": "24只恒河猴分4组各6只，接受HIV包膜N332-GT5起始免疫及后续异源蛋白加强。摘要称44%出现血清广谱中和抗体活性。8只最佳动物在第7次加强后，相对BG18广度平均41%，几何均数ID50范围为52–481、总体107。免疫原针对HIV包膜N332糖基表位，以BG18类抗体为读出。该工作在非人灵长类诱导HIV广谱中和抗体。",
+  "author_intro": "通讯作者William R. Schief任职Scripps Research免疫与微生物学系及IAVI中和抗体中心，并任职Moderna。共同通讯Shane Crotty任职La Jolla免疫学研究所。第一作者Jon M. Steichen同属Scripps与IAVI NAC。"
  },
  "images": {
   "mech_raw": "work/r4/clean/c8-vac-2_mech_raw_r4c_clean.png",
@@ -650,5 +652,7 @@
   "card_src": "r3 card (passed)",
   "image_model": "mech: Grok drawing (r4/r4b/r4c, supplied by parent run); card: gpt-image-2 (earlier rounds)",
   "note": "mech: 1 callout dropped to fit one row (第12周boost结合表位特异Bmem / G1 vs G2–4 P<0.0001), same as r3; all 6 only fit in 2 rows"
- }
+ },
+ "quick_look": "24只恒河猴分4组各6只，接受HIV包膜N332-GT5起始免疫及后续异源蛋白加强。摘要称44%出现血清广谱中和抗体活性。8只最佳动物在第7次加强后，相对BG18广度平均41%，几何均数ID50范围为52–481、总体107。免疫原针对HIV包膜N332糖基表位，以BG18类抗体为读出。该工作在非人灵长类诱导HIV广谱中和抗体。",
+ "author_intro": "通讯作者William R. Schief任职Scripps Research免疫与微生物学系及IAVI中和抗体中心，并任职Moderna。共同通讯Shane Crotty任职La Jolla免疫学研究所。第一作者Jon M. Steichen同属Scripps与IAVI NAC。"
 }

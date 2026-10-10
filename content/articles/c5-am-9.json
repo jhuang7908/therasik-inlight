@@ -1,0 +1,22 @@
+{
+ "id": "c5-am-9",
+ "status": "published-ready",
+ "preprint": false,
+ "writer_tags": [],
+ "article": {
+  "tier": "deep",
+  "field": "疾病模型",
+  "tags": [
+   "核酸与基因治疗"
+  ],
+  "title": "4个人源化DMD小鼠模型携带外显子44、45、51或53缺失，侧翼外显子跳跃可恢复抗肌萎缩蛋白",
+  "one_liner": "在mdx背景下构建人DMD外显子44、45、51或53缺失的4个小鼠模型；8周龄雄鼠腓肠肌缺乏或仅有痕量抗肌萎缩蛋白，肌内注射vivo-morpholino跳跃侧翼外显子可恢复蛋白。",
+  "citation": "van Putten M, Linssen M, Tanganyika-de Winter C, Brouwers CM, Claassens JWC, Verwey N, et al. Four new mouse models of Duchenne muscular dystrophy with clinically relevant exon deletions in the human DMD gene. Dis Model Mech. 2026 Aug 28. https://doi.org/10.1242/dmm.052875",
+  "quick_look": "在mdx背景下构建人DMD外显子44、45、51或53缺失的4个小鼠模型。hDMDdel44/mdx与hDMDdel53/mdx完全缺失抗肌萎缩蛋白，hDMDdel45/mdx与hDMDdel51/mdx为痕量。8周龄雄鼠腓肠肌与肱三头肌连续两日肌内注射vivo-morpholino（外显子43/44为100 µg/块肌，外显子50/52为50 µg/块肌），可检出目标外显子跳跃并在Western印迹恢复截短蛋白。四种模型腓肠肌均见变性、再生、炎症与纤维化。",
+  "author_intro": "通讯作者Annemieke Aartsma-Rus任职莱顿大学医学中心转基因设施；Peter Hohenstein任职该校人类遗传学系并兼转基因设施。第一作者Maaike van Putten任职人类遗传学系。"
+ },
+ "pmcid": "PMC13580558",
+ "license": "cc by",
+ "quick_look": "在mdx背景下构建人DMD外显子44、45、51或53缺失的4个小鼠模型。hDMDdel44/mdx与hDMDdel53/mdx完全缺失抗肌萎缩蛋白，hDMDdel45/mdx与hDMDdel51/mdx为痕量。8周龄雄鼠腓肠肌与肱三头肌连续两日肌内注射vivo-morpholino（外显子43/44为100 µg/块肌，外显子50/52为50 µg/块肌），可检出目标外显子跳跃并在Western印迹恢复截短蛋白。四种模型腓肠肌均见变性、再生、炎症与纤维化。",
+ "author_intro": "通讯作者Annemieke Aartsma-Rus任职莱顿大学医学中心转基因设施；Peter Hohenstein任职该校人类遗传学系并兼转基因设施。第一作者Maaike van Putten任职人类遗传学系。"
+}

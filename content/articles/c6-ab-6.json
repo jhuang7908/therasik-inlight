@@ -547,7 +547,9 @@
     }
    ],
    "note": "描述性数据，未做组间检验。"
-  }
+  },
+  "quick_look": "SEZ6靶向ADC ABBV-706首次人体1期：入组288例，单药240例，其中复发/难治小细胞肺癌（R/R SCLC）124例，中位随访16.9月。第2a部分随机剂量优化后确定推荐2期剂量1.8 mg/kg Q3W，R/R SCLC队列确认ORR 52%（65/124），中位缓解持续时间5.3月，中位PFS 5.4月，中位OS 11.3月。1.8与2.5 mg/kg组ORR分别为56%和59%，≥3级不良事件54%对77%。单药240例中≥3级TRAE 61%，最常见为贫血（61%）和乏力（38%）；裁定肺炎/间质性肺病10例（4%）。",
+  "author_intro": "通讯作者Lauren Averett Byers任职德克萨斯大学MD安德森癌症中心。末位作者Sreenivasa Chandana任职START Midwest（Grand Rapids, MI）。"
  },
  "images": {
   "mech_raw": "work/r5img/clean/c6-ab-6_mech_raw_r5_clean.png",
@@ -564,5 +566,7 @@
   "card_caption_chars": 19
  },
  "notes": "≥3级TRAE at 1.8 mg/kg: Abstract 39% vs Results dose list 40%; SEZ6 evaluable n: Fig. 2 legend 38/47, 37/42 vs Results 38/48, 37/44 (flagged in limitations). Discussion calls the study non-randomized although part 2a was randomized; written as the authors state ('总体非随机').",
- "text_from": "c6-ab-6_final_r5.json (text unchanged)"
+ "text_from": "c6-ab-6_final_r5.json (text unchanged)",
+ "quick_look": "SEZ6靶向ADC ABBV-706首次人体1期：入组288例，单药240例，其中复发/难治小细胞肺癌（R/R SCLC）124例，中位随访16.9月。第2a部分随机剂量优化后确定推荐2期剂量1.8 mg/kg Q3W，R/R SCLC队列确认ORR 52%（65/124），中位缓解持续时间5.3月，中位PFS 5.4月，中位OS 11.3月。1.8与2.5 mg/kg组ORR分别为56%和59%，≥3级不良事件54%对77%。单药240例中≥3级TRAE 61%，最常见为贫血（61%）和乏力（38%）；裁定肺炎/间质性肺病10例（4%）。",
+ "author_intro": "通讯作者Lauren Averett Byers任职德克萨斯大学MD安德森癌症中心。末位作者Sreenivasa Chandana任职START Midwest（Grand Rapids, MI）。"
 }

@@ -455,7 +455,9 @@
     }
    ],
    "note": "为稀释化后WA1mRNA+MA相对WA1mRNA的增量。"
-  }
+  },
+  "quick_look": "小鼠将甘露聚糖铝佐剂（明矾100 µg加甘露聚糖500 µg）混入WA1刺突信使核糖核酸（1 µg），把对BA.5与XBB.1.5假病毒的中和延长至第500天，而单用信使核糖核酸或再加明矾则不能。食蟹猴10只给予30 µg疫苗后，刺突抗体与三种假病毒中和升至第180天。人源化小鼠第56天攻毒后，加佐剂组肺内检测不到病毒。该糖基佐剂扩大疫苗广度与持续时间。",
+  "author_intro": "通讯作者Ivan Zanoni任职哈佛医学院及波士顿儿童医院免疫科与消化科。共同通讯Yi Wu任职西安交通大学第二附属医院肾内科。第一作者Kautilya K. Jena同属哈佛医学院与波士顿儿童医院免疫科。"
  },
  "images": {
   "mech_raw": "work/r5img/clean/c8-vac-4_mech_raw_r5_clean.png",
@@ -472,5 +474,7 @@
   "card_caption_chars": 21
  },
  "notes": "Mouse and NHP doses differ and are labelled separately; Results median OS-type conflicts none. Abstract gives only qualitative claims, numbers taken from Results/Methods/figure legends.",
- "text_from": "c8-vac-4_final_r5.json (text unchanged)"
+ "text_from": "c8-vac-4_final_r5.json (text unchanged)",
+ "quick_look": "小鼠将甘露聚糖铝佐剂（明矾100 µg加甘露聚糖500 µg）混入WA1刺突信使核糖核酸（1 µg），把对BA.5与XBB.1.5假病毒的中和延长至第500天，而单用信使核糖核酸或再加明矾则不能。食蟹猴10只给予30 µg疫苗后，刺突抗体与三种假病毒中和升至第180天。人源化小鼠第56天攻毒后，加佐剂组肺内检测不到病毒。该糖基佐剂扩大疫苗广度与持续时间。",
+ "author_intro": "通讯作者Ivan Zanoni任职哈佛医学院及波士顿儿童医院免疫科与消化科。共同通讯Yi Wu任职西安交通大学第二附属医院肾内科。第一作者Kautilya K. Jena同属哈佛医学院与波士顿儿童医院免疫科。"
 }

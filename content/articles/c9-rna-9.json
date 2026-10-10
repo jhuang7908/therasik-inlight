@@ -1,0 +1,20 @@
+{
+ "id": "c9-rna-9",
+ "status": "published-ready",
+ "preprint": false,
+ "writer_tags": [],
+ "article": {
+  "tier": "deep",
+  "field": "核酸与基因治疗（含 LNP 递送）",
+  "tags": [],
+  "title": "吸入ARO-RAGE在健康人与哮喘患者中可耐受，184 mg单剂BALF sRAGE降90.2%",
+  "one_liner": "随机双盲试验中，吸入靶向肺上皮RAGE的siRNA达到可耐受安全；健康志愿者单剂184 mg后支气管肺泡灌洗可溶性RAGE平均最多下降90.2%。",
+  "citation": "O’Carroll M, Kasahara D, Huetsch J, Reed T, Perkins TN, Zhou R, et al. Inhaled siRNA therapy targeting RAGE for pulmonary inflammation: a first-in-human randomized trial. Nat Med. 2026 Sep 9. https://doi.org/10.1038/s41591-026-04607-z",
+  "quick_look": "1/2a期随机双盲安慰剂对照试验，吸入靶向肺上皮RAGE的siRNA ARO-RAGE；健康志愿者n=58、哮喘n=19，单次10–184 mg。健康志愿者184 mg后支气管肺泡灌洗液可溶性RAGE平均最多降90.2%，血清sRAGE降76.6%±6.5%。无导致停药的不良事件。治疗期不良事件健康志愿者单次队列86.7%对安慰剂60.0%。唯一严重不良事件为1级子痫前期，末剂后263天发病，判为与药物无关。",
+  "author_intro": "通讯作者Matthias Salathe任职堪萨斯大学医学中心内科。第一作者Mark O’Carroll任职奥克兰市立医院呼吸科。作者Nicholas J. Leeper任职斯坦福大学医学院外科血管外科。"
+ },
+ "pmcid": "PMC13577916",
+ "license": "cc by-nc-nd",
+ "quick_look": "1/2a期随机双盲安慰剂对照试验，吸入靶向肺上皮RAGE的siRNA ARO-RAGE；健康志愿者n=58、哮喘n=19，单次10–184 mg。健康志愿者184 mg后支气管肺泡灌洗液可溶性RAGE平均最多降90.2%，血清sRAGE降76.6%±6.5%。无导致停药的不良事件。治疗期不良事件健康志愿者单次队列86.7%对安慰剂60.0%。唯一严重不良事件为1级子痫前期，末剂后263天发病，判为与药物无关。",
+ "author_intro": "通讯作者Matthias Salathe任职堪萨斯大学医学中心内科。第一作者Mark O’Carroll任职奥克兰市立医院呼吸科。作者Nicholas J. Leeper任职斯坦福大学医学院外科血管外科。"
+}
