@@ -914,7 +914,8 @@ function cover(kind,cvar,img,fb){
       ${ICONS[kind]||ICONS.cell}</g></svg></div>`;
 }
 function icon(kind,cvar,cls){
-  const c=(cvar&&String(cvar).startsWith('#'))?cvar:`var(--${cvar})`;
+  const s=String(cvar||'');
+  const c=s.startsWith('#')||s.startsWith('var(')?s:`var(--${cvar})`;
   return `<span class="ic ${cls||''}" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none"
     stroke="${c}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
     <rect x="1.5" y="1.5" width="45" height="45" rx="11" fill="${c}" fill-opacity=".09" stroke="none"/>
