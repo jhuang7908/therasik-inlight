@@ -347,6 +347,36 @@ class R8GoLiveTests(unittest.TestCase):
                 f"Old company name '{old_name}' still appears in build_pages.py"
             )
 
+    def test_source_logos_valid_image_magic_bytes(self):
+        """All logo files in assets/sources/ must be valid images (PNG, JPEG, ICO, WebP)."""
+        sources_dir = ROOT / "assets" / "sources"
+        if not sources_dir.exists():
+            self.skipTest("assets/sources directory does not exist")
+        
+        MAGIC_BYTES = {
+            b'\x89PNG\r\n\x1a\n': 'PNG',
+            b'\xff\xd8\xff': 'JPEG',
+            b'\x00\x00\x01\x00': 'ICO',
+            b'RIFF': 'WebP',
+        }
+        
+        for logo_file in sources_dir.glob("*"):
+            if logo_file.suffix.lower() in ('.png', '.jpg', '.jpeg', '.ico', '.webp'):
+                with open(logo_file, 'rb') as f:
+                    header = f.read(16)
+                
+                is_valid = False
+                for magic, fmt in MAGIC_BYTES.items():
+                    if header.startswith(magic):
+                        is_valid = True
+                        break
+                
+                self.assertTrue(
+                    is_valid,
+                    f"Logo file {logo_file.name} has invalid magic bytes (starts with {header[:8]!r}). "
+                    f"File may be corrupted or an HTML 404 page."
+                )
+
 
 if __name__ == "__main__":
     unittest.main()
