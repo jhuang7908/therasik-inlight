@@ -1228,10 +1228,10 @@ function groupCount(kinds){return DEALS.filter(x=>kinds.some(k=>k==='all'||x.kin
 function renderTracker(){
   const el=document.getElementById('tracker');
   if(!el) return;
-  el.innerHTML=DISPLAY_GROUPS.filter(([key])=>key!=='all').map(([key,name,color,desc,kinds])=>{
-    const n=groupCount(kinds);
-    const active=kinds.includes(filter);
-    if(!n) return `<span class="trkcard art" style="--dc:${color};opacity:.5" aria-disabled="true">
+  el.innerHTML=DISPLAY_GROUPS.map(([key,name,color,desc,kinds])=>{
+    const n=key==='all'?DEALS.length:groupCount(kinds);
+    const active=kinds.includes(filter)||(key==='all'&&filter==='all');
+    if(!n&&key!=='all') return `<span class="trkcard art" style="--dc:${color};opacity:.5" aria-disabled="true">
       ${kindArt(key,color)}<div class="cbody"><b>${name}</b><span>${desc}</span><em>0 条</em></div></span>`;
     return `<a class="trkcard art" href="#deals?kind=${key}" style="--dc:${color}"${active?' aria-current="true"':''}>
       ${kindArt(key,color)}<div class="cbody"><b>${name}</b><span>${desc}</span><em>${n} 条</em></div></a>`;
