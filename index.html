@@ -117,6 +117,17 @@ nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:color-
 .fcard b{font-family:var(--display);font-size:15px;color:var(--dc)}
 .fcard span{font-size:11.5px;color:var(--muted);line-height:1.45}
 .fcard em{font-size:11px;color:var(--muted);font-style:normal}
+/* Tracker cards: fcard style for fields and deals trackers */
+.trkgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+@media (max-width:900px){.trkgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.trkgrid{grid-template-columns:1fr}}
+.trkcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;grid-template-columns:40px minmax(0,1fr);gap:10px;align-items:center;color:inherit;text-decoration:none}
+.trkcard:hover{border-color:color-mix(in srgb,var(--dc,var(--accent)) 45%,var(--line))}
+.trkcard[aria-current="true"]{background:color-mix(in srgb,var(--dc,var(--accent)) 9%,var(--surface));border-color:var(--dc,var(--accent))}
+.trkcard .cbody{display:grid;gap:1px;padding:0}
+.trkcard b{font-family:var(--display);font-size:14px;color:var(--dc,var(--fg))}
+.trkcard span{font-size:10.5px;color:var(--muted);line-height:1.4}
+.trkcard em{font-size:11px;color:var(--muted);font-style:normal;font-weight:700}
 /* 文本型页面（关于、订阅）：容器定宽，段落与列表共用同一换行宽度 */
 .textpage{max-width:940px}
 @media (min-width:1100px){.textpage{margin-left:0;margin-right:auto}}
@@ -510,10 +521,8 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
   </a>
   <div class="nav-tabs">
     <a href="#home" data-v="home">首页</a>
-    <a href="#fields" data-v="fields">领域</a>
-    <a href="#deals" data-v="deals">动态</a>
-    <a href="#archive" data-v="archive">存档</a>
-    <a href="#about" data-v="about">关于</a>
+    <a href="#fields" data-v="fields">学术进展</a>
+    <a href="#deals" data-v="deals">经济动态</a>
   </div>
   <a class="navsub" href="#support">订阅</a>
 </div></div></nav>
@@ -653,11 +662,11 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 
 <!-- ============ FIELDS ============ -->
 <div class="wrap view" id="v-fields" hidden>
-  <header class="hero"><h1>九个领域</h1><p>每篇解读只出现在它的主领域下。相关领域以描边标签标出，不重复进其他栏目。</p></header>
+  <header class="hero"><h1>学术进展</h1><p>九个领域的一手论文解读，每篇只出现在主领域下，相关领域以描边标签标出。</p></header>
 
   <section>
-    <div class="sechead"><h2>追踪器</h2><span>各领域收录的解读篇数，随每周更新变化</span></div>
-    <div class="tracker" id="ftracker"></div>
+    <div class="sechead"><h2>按领域浏览</h2><span>点击筛选</span></div>
+    <div class="trkgrid" id="ftracker"></div>
   </section>
 
   <section id="fieldfeed">
@@ -676,13 +685,13 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 <!-- ============ DEALS ============ -->
 <div class="wrap view" id="v-deals" hidden>
   <header class="hero">
-    <h1>投资与商业化动态</h1>
-    <p>论文说一条路线成立，交易说有人愿意为它掏钱，两头都记一下。最新的在上面，下面的分类只是筛选器。只收公开披露或双方确认的，传闻不收；来源是公司公告、各家季报和 Endpoints、Fierce 这类行业媒体，每条都挂原链接。</p>
+    <h1>经济动态</h1>
+    <p>收购、授权、融资、临床进展、监管政策——论文说一条路线成立，交易说有人愿意为它掏钱。只收公开披露或双方确认的，来源是公司公告和行业媒体，每条都挂原链接。</p>
   </header>
 
   <section>
-    <div class="sechead"><h2>追踪器</h2><span>本站收录条目的统计，随每周更新变化</span></div>
-    <div class="tracker" id="tracker"></div>
+    <div class="sechead"><h2>按类型浏览</h2><span>点击筛选</span></div>
+    <div class="trkgrid" id="tracker"></div>
   </section>
 
   <section id="dealfeed">
@@ -853,7 +862,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
       <p>TheraSik · 启曜生科 出品。九个领域的前沿进展与商业化动态，中文整理。</p>
     </div>
     <div class="footnav">
-      <a href="#home">首页</a><a href="#fields">领域</a><a href="#deals">商业化动态</a><a href="#archive">存档</a><a href="#about">关于</a><a href="#services">服务</a><a href="#support">订阅</a>
+      <a href="#home">首页</a><a href="#fields">学术进展</a><a href="#deals">经济动态</a><a href="#archive">存档</a><a href="#about">关于</a><a href="#services">服务</a><a href="#support">订阅</a>
     </div>
     <p class="footmail">广告、赞助、纠错都写 <a href="mailto:contact@therasik.com">contact@therasik.com</a></p>
     <p class="footnote">如所报道公司为本站客户，将在文首标注。赞助内容会明确标注「由某方支持」，并与编辑内容分开排版。</p>
@@ -878,6 +887,13 @@ const ICONS={
   cell:'<circle cx="24" cy="26" r="12"/><circle cx="20" cy="23" r="4.5"/><path d="M24 14V8M24 8l-2.5-3M24 8l2.5-3M14 18l-4-4M10 14l-4 .5M10 14l.5-4M34 18l4-4M38 14l4 .5M38 14l-.5-4"/>',
   antibody:'<path d="M24 40V22M24 22L13 10M24 22l11-12"/><circle cx="13" cy="8" r="3"/><circle cx="35" cy="8" r="3"/>',
   lnp:'<circle cx="24" cy="24" r="14"/><path d="M16 20c3 3 5-2 8 0s4 3 7 1M16 29c3 3 5-2 8 0s4 3 7 1"/>',
+  all:'<rect x="10" y="10" width="28" height="28" rx="4"/><path d="M18 24h12M24 18v12"/>',
+  acq:'<path d="M12 32V16a4 4 0 014-4h16a4 4 0 014 4v16a4 4 0 01-4 4H16a4 4 0 01-4-4z"/><path d="M18 24h12M24 18v12"/>',
+  lic:'<path d="M14 12h20v24H14z"/><path d="M18 18h12M18 24h12M18 30h8"/>',
+  newco:'<circle cx="24" cy="20" r="8"/><path d="M16 32h16M20 32v-4M28 32v-4"/>',
+  clin:'<path d="M16 12v24M32 12v24"/><circle cx="24" cy="20" r="6"/><path d="M24 26v6"/>',
+  inv:'<path d="M12 36l8-12 6 6 10-18"/><circle cx="36" cy="12" r="3"/>',
+  policy:'<rect x="14" y="10" width="20" height="28" rx="2"/><path d="M18 18h12M18 24h12M18 30h8"/>',
   vaccine:'<rect x="12" y="18" width="22" height="11" rx="2.5"/><path d="M34 23.5h7M41 23.5l4-3M12 23.5H7M9 19v9M18 18v11M24 18v11M30 18v11"/>',
   model:'<ellipse cx="24" cy="30" rx="15" ry="6"/><path d="M24 24V15"/><path d="M11 16c4-5 9-5 13 0 4-5 9-5 13 0"/>',
   acq:'<circle cx="18" cy="24" r="10"/><circle cx="30" cy="24" r="10"/>',
@@ -1083,7 +1099,7 @@ document.querySelectorAll('.tabs .chip').forEach(b=>b.onclick=()=>{
   document.getElementById('tab-byfield').hidden = b.dataset.tab!=='byfield';
 });
 
-const KINDS={acq:['收购','var(--c3)'],lic:['授权交易','var(--c2)'],newco:['NewCo','var(--c7)'],clin:['临床进展','var(--c1)'],inv:['投资融资','var(--c5)'],policy:['监管政策','var(--c6)']};
+const KINDS={acq:['收购','var(--c3)','公司或资产的整体并购'],lic:['授权交易','var(--c2)','药物或技术权益的许可合作'],newco:['NewCo','var(--c7)','分拆或新设公司持有特定资产'],clin:['临床进展','var(--c1)','临床试验数据读出或推进'],inv:['投资融资','var(--c5)','风险投资、IPO、定增等'],policy:['监管政策','var(--c6)','FDA/EMA等监管机构政策变化']};
 const DEALS=[
  {d:'2026-10',kinds:['lic'],t:'诺华拿下艾博生物 mRNA 体内 T 细胞衔接器 ABO2203 全球权益',m:'首付 5.75 亿美元，总额至多约 78 亿美元',ms:'首付 5.75 亿 + 里程碑至多约 72 亿（含全部期权行权）+ 销售提成',why:'ABO2203 不是体内 CAR-T，而是用脂质纳米颗粒把编码 CD19×CD3 T 细胞衔接器的 mRNA 送进体内，让患者自己的细胞“生产”双抗去清除 B 细胞。目前在难治性自身免疫病的一期研究中，首批公开的是 3 例难治性继发性免疫性血小板减少症患者。诺华另获艾博 mRNA/LNP 平台下一代资产的独家期权。值得注意的是，首付 5.75 亿美元对一个早期一期资产相当高，说明大药企愿意为“体内生成生物药”这条路线提前下注，且 mRNA 公司在疫苗之外找到了自身免疫这一新出口。',src:'AllSci（2026-10-02）',url:'https://allsci.com/news/licensing-and-partnerships/abogen-novartis-deal-secures-usd-575m-upfront/'},
  {d:'2026-09',kinds:['inv'],t:'AI 制药公司 Enveda 完成 3.11 亿美元 E 轮融资',m:'3.11 亿美元',ms:'E 轮；Catalio 领投，另有 16 家机构跟投，含一家主权基金',why:'Enveda 用 AI 从植物和微生物等天然来源中识别分子、预测结构和功能，再交给化学家优化成候选药，累计融资已超 8 亿美元。三款药物在人体试验中：ENV-294 是口服“分子胶”，小型 1b 期显示可能减轻湿疹，正在做湿疹和哮喘二期；ENV-308 模拟运动或进食后分泌的激素，计划研究停用 GLP-1 后维持减重；ENV-6949 靶向 TL1A 通路治疗炎症性肠病。资本市场对 AI 制药的态度已转向看临床管线，Enveda 有三款临床分子是能拿到大额融资的关键。',src:'BioPharma Dive（2026-09-23）',url:'https://www.biopharmadive.com/news/enveda-ai-drug-discovery-series-e/831161/'},
@@ -1111,26 +1127,24 @@ const DEALS=[
 
 
 
-// 八格追踪器：数字全部由数据算出，不手写
+// 追踪器：数字全部由数据算出，不手写
 function renderTracker(){
   const el=document.getElementById('tracker');
   if(!el) return;
   const kindCount=k=>DEALS.filter(x=>x.kinds.includes(k)).length;
-  const srcs=new Set(DEALS.map(x=>x.src)).size;
-  const tiles=[
-    ['收录动态',DEALS.length+' 条','var(--accent)','#deals?kind=all','all'],
-    ['收购',kindCount('acq')+' 条',KINDS.acq[1],'#deals?kind=acq','acq'],
-    ['授权交易',kindCount('lic')+' 条',KINDS.lic[1],'#deals?kind=lic','lic'],
-    ['NewCo',kindCount('newco')+' 条',KINDS.newco[1],'#deals?kind=newco','newco'],
-    ['临床进展',kindCount('clin')+' 条',KINDS.clin[1],'#deals?kind=clin','clin'],
-    ['投资融资',kindCount('inv')+' 条',KINDS.inv[1],'#deals?kind=inv','inv'],
-    ['监管政策',kindCount('policy')+' 条',KINDS.policy[1],'#deals?kind=policy','policy'],
-    ['收录解读',visibleCat().length+' 篇','var(--c6)','#home?sec=articles',''],
-  ];
-  // 每格都是链接：交易类筛选下方“最新更新”（#deals?kind=xx，可分享、可后退），收录解读跳到首页解读区
-  el.innerHTML=tiles.map(([k,v,c,href,fk])=>`<a class="tile" href="${href}" style="--tkc:${c}"${fk&&fk===filter?' aria-current="true"':''} aria-label="${k} ${v}，${fk?(fk==='all'?'查看全部动态':'只看'+k):'查看解读'}"><span class="tv">${v}</span><span class="tk">${k}</span></a>`).join('');
+  const allCard=`<a class="trkcard" href="#deals?kind=all" style="--dc:var(--accent)"${filter==='all'?' aria-current="true"':''}>
+    ${icon('all','accent')}<div class="cbody"><b>全部动态</b><span>所有类型的交易与政策</span><em>${DEALS.length} 条</em></div></a>`;
+  const kindCards=Object.entries(KINDS).map(([k,[name,color,desc]])=>{
+    const n=kindCount(k);
+    if(!n) return `<span class="trkcard" style="--dc:${color};opacity:.5" aria-disabled="true">
+      ${icon(k,color)}<div class="cbody"><b>${name}</b><span>${desc}</span><em>0 条</em></div></span>`;
+    return `<a class="trkcard" href="#deals?kind=${k}" style="--dc:${color}"${filter===k?' aria-current="true"':''}>
+      ${icon(k,color)}<div class="cbody"><b>${name}</b><span>${desc}</span><em>${n} 条</em></div></a>`;
+  }).join('');
+  const articlesCard=`<a class="trkcard" href="#home?sec=articles" style="--dc:var(--c6)">
+    ${icon('cell','c6')}<div class="cbody"><b>收录解读</b><span>九个领域的论文解读</span><em>${visibleCat().length} 篇</em></div></a>`;
+  el.innerHTML=allCard+kindCards+articlesCard;
 }
-
 let filter='all';
 const chips=document.getElementById('chips'), feed=document.getElementById('feed'), dc=document.getElementById('dealcount');
 function renderChips(){
@@ -1253,10 +1267,17 @@ function fieldArts(){
 }
 function renderFieldTracker(all){
   const el=document.getElementById('ftracker'); if(!el) return;
-  const tiles=[['全部解读',all.length,'var(--accent)','all'],...FIELDS.map(f=>[f.n,all.filter(a=>a.f===f.k).length,f.color||'var(--accent)',f.k])];
-  el.innerHTML=tiles.map(([k,n,c,fk])=>n||fk==='all'
-    ?`<a class="tile" href="#fields?f=${fk}" style="--tkc:${c}"${fk===ffilter?' aria-current="true"':''} aria-label="${k} ${n} 篇，${fk==='all'?'查看全部解读':'只看'+k}"><span class="tv">${n} 篇</span><span class="tk">${k}</span></a>`
-    :`<span class="tile nil" style="--tkc:${c}" aria-disabled="true" title="暂无解读"><span class="tv">0 篇</span><span class="tk">${k}</span></span>`).join('');
+  const allCard=`<a class="trkcard" href="#fields?f=all" style="--dc:var(--accent)"${ffilter==='all'?' aria-current="true"':''}>
+    ${icon('all','accent')}<div class="cbody"><b>全部解读</b><span>所有领域的论文解读</span><em>${all.length} 篇</em></div></a>`;
+  const fieldCards=FIELDS.map(f=>{
+    const n=all.filter(a=>a.f===f.k).length;
+    const motif=FIELD_MOTIF[f.k]||'cell';
+    if(!n) return `<span class="trkcard" style="--dc:${f.color||'var(--accent)'};opacity:.5" aria-disabled="true">
+      ${icon(motif,f.color||'accent')}<div class="cbody"><b>${f.n}</b><span>${f.d||''}</span><em>0 篇</em></div></span>`;
+    return `<a class="trkcard" href="#fields?f=${f.k}" style="--dc:${f.color||'var(--accent)'}"${ffilter===f.k?' aria-current="true"':''}>
+      ${icon(motif,f.color||'accent')}<div class="cbody"><b>${f.n}</b><span>${f.d||''}</span><em>${n} 篇</em></div></a>`;
+  }).join('');
+  el.innerHTML=allCard+fieldCards;
 }
 function renderFields(){
   const grid=document.getElementById('fieldgrid'); if(!grid) return;
@@ -1308,7 +1329,7 @@ addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{
 
 const views=[...document.querySelectorAll('.view')];
 const REDIRECTS={'c9-rna-4':'c7-cell-2','c9-rna-1':'c8-vac-5','c4-ai-3':'c7-cell-1','c6-ab-1':'c2-ai-1','c5-am-4':'c8-vac-2','c6-ab-2':'c2-ai-5'};
-const TITLES={home:'前沿追踪 - 中文生物医药前沿资讯',fields:'领域浏览 - 前沿追踪',deals:'商业化动态 - 前沿追踪',archive:'存档 - 前沿追踪',about:'关于我们 - 前沿追踪',support:'订阅 - 前沿追踪',services:'服务 - 前沿追踪'};
+const TITLES={home:'前沿追踪 - 中文生物医药前沿资讯',fields:'学术进展 - 前沿追踪',deals:'经济动态 - 前沿追踪',archive:'存档 - 前沿追踪',about:'关于我们 - 前沿追踪',support:'订阅 - 前沿追踪',services:'服务 - 前沿追踪'};
 function route(){
   let h=(location.hash||'#home').slice(1);
   // Handle /a/{id} format from static share pages

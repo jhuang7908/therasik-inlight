@@ -97,6 +97,17 @@ nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:color-
 .fcard b{font-family:var(--display);font-size:15px;color:var(--dc)}
 .fcard span{font-size:11.5px;color:var(--muted);line-height:1.45}
 .fcard em{font-size:11px;color:var(--muted);font-style:normal}
+/* Tracker cards: fcard style for fields and deals trackers */
+.trkgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+@media (max-width:900px){.trkgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.trkgrid{grid-template-columns:1fr}}
+.trkcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;grid-template-columns:40px minmax(0,1fr);gap:10px;align-items:center;color:inherit;text-decoration:none}
+.trkcard:hover{border-color:color-mix(in srgb,var(--dc,var(--accent)) 45%,var(--line))}
+.trkcard[aria-current="true"]{background:color-mix(in srgb,var(--dc,var(--accent)) 9%,var(--surface));border-color:var(--dc,var(--accent))}
+.trkcard .cbody{display:grid;gap:1px;padding:0}
+.trkcard b{font-family:var(--display);font-size:14px;color:var(--dc,var(--fg))}
+.trkcard span{font-size:10.5px;color:var(--muted);line-height:1.4}
+.trkcard em{font-size:11px;color:var(--muted);font-style:normal;font-weight:700}
 /* 文本型页面（关于、订阅）：容器定宽，段落与列表共用同一换行宽度 */
 .textpage{max-width:940px}
 @media (min-width:1100px){.textpage{margin-left:0;margin-right:auto}}
