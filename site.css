@@ -104,12 +104,29 @@ nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:color-
 .trkcard:hover{border-color:color-mix(in srgb,var(--dc,var(--accent)) 45%,var(--line))}
 .trkcard[aria-current="true"]{background:color-mix(in srgb,var(--dc,var(--accent)) 9%,var(--surface));border-color:var(--dc,var(--accent))}
 .trkcard .cbody{display:grid;gap:1px;padding:0}
+/* 大配图版追踪卡：左侧插画占满卡片高度，文字不再漂在空白里 */
+.trkcard.art{grid-template-columns:92px minmax(0,1fr);gap:14px;padding:10px 14px 10px 10px;min-height:112px}
+.trkcard.art .cbody{gap:4px}
+.trkcard.art b{font-size:16px}
+.trkcard.art span{font-size:12px}
+.trkcard.art em{font-size:12px}
+.artthumb{position:relative;display:block;width:92px;height:92px;border-radius:12px;overflow:hidden;background:#f6f4ef}
+.artthumb>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.artthumb>.ic{position:absolute;inset:0;width:100%;height:100%}
+.artthumb.mosaic{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:2px;background:#fff}
+.artthumb.mosaic>img{position:static;width:100%;height:100%;object-fit:cover}
+.fcard.art{grid-template-columns:92px minmax(0,1fr);gap:14px;padding:10px 14px 10px 10px;min-height:112px}
+.fcard.art .fthumb{width:92px;height:92px;border-radius:12px}
+.fcard.art .fthumb .ic{width:100%;height:100%}
+.fcard.art b{font-size:16px}
+.fcard.art span{font-size:12px}
 .trkcard b{font-family:var(--display);font-size:14px;color:var(--dc,var(--fg))}
 .trkcard span{font-size:10.5px;color:var(--muted);line-height:1.4}
 .trkcard em{font-size:11px;color:var(--muted);font-style:normal;font-weight:700}
 /* 文本型页面（关于、订阅）：容器定宽，段落与列表共用同一换行宽度 */
-.textpage{max-width:940px}
-@media (min-width:1100px){.textpage{margin-left:0;margin-right:auto}}
+/* 文字页（关于/服务/订阅）与其他页面同宽，不再单独收窄到 940px */
+.textpage{max-width:1100px}
+@media (min-width:1100px){.textpage{max-width:none}}
 .textpage p,.textpage li,.textpage .note{max-width:none}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:17px 19px;display:grid;gap:11px}
 .panel ol,.panel ul{margin:0;padding-left:22px;display:grid;gap:7px;font-size:14px}
@@ -200,10 +217,10 @@ a.tile .tk::after{content:" →";opacity:.55}
 /* 领域页追踪器：0 篇的领域保留卡片但置灰、不可点 */
 .tile.nil{color:var(--muted);border-left-color:color-mix(in srgb,var(--tkc,var(--accent)) 40%,var(--line));background:var(--raise)}
 .tile.nil .tv{color:var(--muted)}
-/* 两侧广告位：从 1400px 起显示，这样 1280 与 r8 预览同宽（pv-shell 1100）。 */
+/* 两侧广告位：从 1440px 起显示，banner cards 需要更宽的栏位。 */
 .shell,.navshell,.footshell{max-width:1100px;margin:0 auto}
-@media (min-width:1400px){
-  .navshell,.footshell{display:grid;grid-template-columns:168px minmax(0,1fr) 168px;gap:18px;max-width:1480px;padding:0 10px}
+@media (min-width:1440px){
+  .navshell,.footshell{display:grid;grid-template-columns:200px minmax(0,1fr) 200px;gap:18px;max-width:1560px;padding:0 10px}
   .navshell>*,.footshell>*{grid-column:2;padding-left:4px;padding-right:4px}
 }
 @media (min-width:1700px){
@@ -212,9 +229,9 @@ a.tile .tk::after{content:" →";opacity:.55}
 .col{min-width:0}
 .view{min-height:62vh;align-content:start;min-width:0}
 .rail{display:none}
-@media (min-width:1400px){
-  .shell{display:grid;grid-template-columns:180px minmax(0,1fr) 180px;gap:18px;max-width:1520px;padding:0 10px}
-  .rail{display:block;position:sticky;top:60px;height:calc(100vh - 80px);overflow-y:auto;background:color-mix(in srgb,var(--surface) 60%,var(--bg));border-radius:12px;padding:12px}
+@media (min-width:1440px){
+  .shell{display:grid;grid-template-columns:200px minmax(0,1fr) 200px;gap:18px;max-width:1560px;padding:0 10px}
+  .rail{display:block;position:sticky;top:60px;height:calc(100vh - 80px);overflow-y:auto;background:color-mix(in srgb,var(--surface) 60%,var(--bg));border-radius:12px;padding:10px}
   .railin{display:grid;gap:10px;align-content:start}
   .rail-l{border-right:1px solid var(--line)}
   .rail-r{border-left:1px solid var(--line)}
@@ -228,19 +245,27 @@ a.tile .tk::after{content:" →";opacity:.55}
 .ad-tall{min-height:300px}
 .ad-med{min-height:150px}
 .ad-small{min-height:70px}
-@media (min-width:1400px){.ad-tall{min-height:360px}.ad-med{min-height:180px}}
+@media (min-width:1440px){.ad-tall{min-height:360px}.ad-med{min-height:180px}}
 @media (min-width:1700px){.rail-r .ad-tall{min-height:430px}.rail-r .ad-med{min-height:215px}}
 .adtext{border:1px dashed var(--line);border-radius:9px;background:var(--surface);padding:9px 10px;display:grid;gap:5px}
 .adtext b{font-size:11px;letter-spacing:.05em;color:var(--accent);font-weight:700}
 .adtext span{font-size:11px;color:var(--muted);border-bottom:1px dotted var(--line);padding-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .adtext span:last-child{border-bottom:0;padding-bottom:0}
-.srcard{display:grid;grid-template-columns:24px 1fr;gap:6px;padding:8px;border:1px solid var(--line);border-radius:9px;background:var(--surface);text-decoration:none;color:inherit;min-width:0;align-items:start}
+.srcard{display:grid;grid-template-rows:auto 1fr;gap:0;border:1px solid var(--line);border-radius:9px;background:var(--surface);text-decoration:none;color:inherit;min-width:0;overflow:hidden}
 .srcard:hover{border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
-.srcard .srclogo{width:24px;height:24px;border-radius:4px;object-fit:contain;background:#fff}
-.srcard .srcbody{display:grid;gap:2px;min-width:0}
-.srcard b{font-size:12px;line-height:1.25;font-family:var(--display);font-weight:800}
-.srcard .dom{font-size:10px;color:var(--accent);font-weight:700;overflow-wrap:anywhere}
-.srcard em{font-size:11px;line-height:1.35;color:var(--muted);font-style:normal}
+.srcard .srcbanner{width:100%;aspect-ratio:16/9;background:#f8f9fa;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.srcard .srcbanner img{width:100%;height:100%;object-fit:contain;background:#fff}
+.srcard .srcbanner svg{width:70%;height:70%;max-width:140px}
+.srcard .srcbody{display:grid;gap:3px;padding:10px 12px;min-width:0}
+.srcard b{font-size:13px;line-height:1.25;font-family:var(--display);font-weight:800}
+.srcard .dom{font-size:12px;color:var(--accent);font-weight:700;overflow-wrap:anywhere}
+.srcard em{font-size:12px;line-height:1.4;color:var(--muted);font-style:normal}
+.srcbanner.txtbanner{background:var(--raise);font-size:28px;font-weight:800;color:var(--muted);letter-spacing:.05em}
+.srcbanner.fdabanner{background:#006db6}
+.srcard .srcbanner.coverbanner{aspect-ratio:440/584;background:#111}
+.srcard .srcbanner.coverbanner img{object-fit:contain;background:transparent}
+.srcard .srcbanner.logobanner{background:#fff}
+.srcard .srcbanner.logobanner img{width:86%;height:auto;max-height:80%}
 .railhead{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:4px 0 6px;border-bottom:1px solid var(--line);margin-bottom:4px}
 .srgroup{border:1px solid var(--line);border-radius:9px;background:var(--surface);padding:7px 8px 8px;display:grid;gap:3px;min-width:0}
 .srgroup .k{font-size:10px;letter-spacing:.08em;font-weight:700;color:var(--muted)}
@@ -249,7 +274,9 @@ a.tile .tk::after{content:" →";opacity:.55}
 .srnote:hover{color:var(--accent)}
 .ad-inline{min-height:110px}
 .adslot-mobile{display:grid;gap:14px;margin-top:6px}
-@media (min-width:1400px){.adslot-mobile{display:none}}
+@media (min-width:1440px){.adslot-mobile{display:none}}
+.srcrow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+@media (min-width:640px){.srcrow{grid-template-columns:repeat(4,minmax(0,1fr))}}
 .sponsored{border:1px solid var(--line);border-left:3px solid var(--c4);border-radius:10px;background:var(--surface);padding:13px 15px;display:grid;gap:5px}
 .sponsored .slabel{font-size:11px;letter-spacing:.1em;font-weight:700;color:var(--c4)}
 .sponsored h3{font-size:16px}
@@ -292,6 +319,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 .foot-in div p{max-width:none}
 .foot-in b{font-family:var(--display);font-size:15px}
 .foot-in p{font-size:13px;color:var(--muted)}
+.coblock .colockup{display:block;height:64px;width:auto;margin:4px 0 2px}
 .footnav{display:flex;gap:16px;flex-wrap:wrap}
 .footnav a{font-size:13.5px}
 .footmail{font-size:13px;color:var(--muted)}
@@ -488,3 +516,24 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 .feed .cover,.fthumb{background:#fff}
 /* style_unify_v6: deal covers rotate through ten illustrations per deal type (img/pal/kinds/v6/), off-white ground. */
 .feed .cover{background:#F6F4EE}
+
+/* ===== Calm palette variant (r11) ===== */
+/* 1) 侧栏：白卡片，来源 logo 统一 44px 高度、留白、contain；期刊封面改小缩略图 */
+.srcard{background:#fff}
+.srcard .srcbanner,.srcard .srcbanner.logobanner,.srcard .srcbanner.fdabanner,.srcard .srcbanner.txtbanner{aspect-ratio:auto;height:44px;padding:8px 12px 0;background:#fff;justify-content:flex-start}
+.srcard .srcbanner img,.srcard .srcbanner.logobanner img{width:100%;height:100%;max-height:none;object-fit:contain;object-position:left center;background:transparent}
+.srcard .srcbanner.txtbanner{font-size:18px}
+/* og:image 横幅里 logo 只占中间一小块：裁到 logo 区域（cover），不再整幅铺满 */
+.srcard .srcbanner{padding:6px 10px 0;box-sizing:border-box}
+.srcard .srcbanner img[src*="biopharmadive_banner"],.srcard .srcbanner img[src*="biospace_banner"]{object-fit:cover;object-position:center;border-radius:5px}
+.srcard .srcbody{padding:8px 12px 10px}
+.srcard:has(.coverbanner){grid-template-columns:68px minmax(0,1fr);grid-template-rows:auto;align-items:center;gap:10px;padding:10px}
+.srcard .srcbanner.coverbanner{width:68px;height:auto;aspect-ratio:440/584;padding:0;background:#fff;border-radius:4px;box-shadow:0 0 0 1px var(--line)}
+.srcard .srcbanner.coverbanner img{object-fit:cover;object-position:center}
+.srcard:has(.coverbanner) .srcbody{padding:0}
+/* 2) 标签统一：深绿描边；金额保留橙红为唯一强调色 */
+.tag,.kind,.feed .kind,.feed-details-panel .kind{border-color:#2f5d46!important;color:#2f5d46!important;background:transparent!important}
+.pv-chip,.pv-chip.pri,.pv-chip.rel{border-color:#2f5d46!important;color:#2f5d46!important;background:transparent!important}
+.pv-chip.pri{background:rgba(47,93,70,.07)!important}
+/* 分类卡片标题统一深绿（覆盖逐领域/逐类型颜色） */
+.trkcard,.fcard{--dc:#2f5d46!important}
