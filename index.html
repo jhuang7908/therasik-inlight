@@ -124,6 +124,22 @@ nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:color-
 .trkcard:hover{border-color:color-mix(in srgb,var(--dc,var(--accent)) 45%,var(--line))}
 .trkcard[aria-current="true"]{background:color-mix(in srgb,var(--dc,var(--accent)) 9%,var(--surface));border-color:var(--dc,var(--accent))}
 .trkcard .cbody{display:grid;gap:1px;padding:0}
+/* 大配图版追踪卡：左侧插画占满卡片高度，文字不再漂在空白里 */
+.trkcard.art{grid-template-columns:92px minmax(0,1fr);gap:14px;padding:10px 14px 10px 10px;min-height:112px}
+.trkcard.art .cbody{gap:4px}
+.trkcard.art b{font-size:16px}
+.trkcard.art span{font-size:12px}
+.trkcard.art em{font-size:12px}
+.artthumb{position:relative;display:block;width:92px;height:92px;border-radius:12px;overflow:hidden;background:#f6f4ef}
+.artthumb>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.artthumb>.ic{position:absolute;inset:0;width:100%;height:100%}
+.artthumb.mosaic{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:2px;background:#fff}
+.artthumb.mosaic>img{position:static;width:100%;height:100%;object-fit:cover}
+.fcard.art{grid-template-columns:92px minmax(0,1fr);gap:14px;padding:10px 14px 10px 10px;min-height:112px}
+.fcard.art .fthumb{width:92px;height:92px;border-radius:12px}
+.fcard.art .fthumb .ic{width:100%;height:100%}
+.fcard.art b{font-size:16px}
+.fcard.art span{font-size:12px}
 .trkcard b{font-family:var(--display);font-size:14px;color:var(--dc,var(--fg))}
 .trkcard span{font-size:10.5px;color:var(--muted);line-height:1.4}
 .trkcard em{font-size:11px;color:var(--muted);font-style:normal;font-weight:700}
@@ -976,6 +992,19 @@ function fieldThumb(f){
   const color=(f&&f.color)||key;
   return `<span class="fthumb">${icon(FIELD_MOTIF[key]||'cell',color)}<img src="img/pal/fields/${FIELD_IMG[key]||FIELD_IMG.organoid}?v=1" alt="" loading="lazy" onerror="this.remove()"></span>`;
 }
+function fieldArt(f){
+  const key=(f&&f.k)||f, color=(f&&f.color)||key;
+  return `<span class="artthumb">${icon(FIELD_MOTIF[key]||'cell',color)}<img src="img/pal/fields/${FIELD_IMG[key]||FIELD_IMG.organoid}?v=1" alt="" loading="lazy" onerror="this.remove()"></span>`;
+}
+// 交易类型卡配图：取自 img/pal/kinds/v6 现有插画、裁成方图（img/pal/kinds/tiles/）
+const KIND_TILE={acq:'acq_tile_v1.jpg',lic:'lic_tile_v1.jpg',inv:'inv_tile_v1.jpg',clin:'clin_tile_v1.jpg',policy:'policy_tile_v1.jpg'};
+function kindArt(key,color){
+  if(key==='all') return mosaicArt(['acq','lic','inv','clin'].map(k=>`img/pal/kinds/tiles/${KIND_TILE[k]}?v=1`));
+  return `<span class="artthumb">${icon(key,color)}${KIND_TILE[key]?`<img src="img/pal/kinds/tiles/${KIND_TILE[key]}?v=1" alt="" loading="lazy" onerror="this.remove()">`:''}</span>`;
+}
+function mosaicArt(srcs){
+  return `<span class="artthumb mosaic" aria-hidden="true">${srcs.map(u=>`<img src="${u}" alt="" loading="lazy">`).join('')}</span>`;
+}
 const FIELD_MOTIF={organoid:'organoid',ai:'net',immuno:'cell',autoimm:'antibody',animal:'model',antibody:'antibody',vaccine:'vaccine',nucleic:'lnp',precision:'cell',
   c1:'organoid',c2:'net',c3:'cell',c4:'antibody',c5:'model',c6:'antibody',c7:'cell',c8:'vaccine',c9:'lnp'};
 const KIND_MOTIF={acq:'acq',lic:'lic',newco:'newco',clin:'clin',inv:'inv',policy:'model'};
@@ -1188,10 +1217,10 @@ function renderTracker(){
   el.innerHTML=DISPLAY_GROUPS.map(([key,name,color,desc,kinds])=>{
     const n=key==='all'?DEALS.length:groupCount(kinds);
     const active=kinds.includes(filter)||(key==='all'&&filter==='all');
-    if(!n&&key!=='all') return `<span class="trkcard" style="--dc:${color};opacity:.5" aria-disabled="true">
-      ${icon(key,color)}<div class="cbody"><b>${name}</b><span>${desc}</span><em>0 条</em></div></span>`;
-    return `<a class="trkcard" href="#deals?kind=${key}" style="--dc:${color}"${active?' aria-current="true"':''}>
-      ${icon(key,color)}<div class="cbody"><b>${name}</b><span>${desc}</span><em>${n} 条</em></div></a>`;
+    if(!n&&key!=='all') return `<span class="trkcard art" style="--dc:${color};opacity:.5" aria-disabled="true">
+      ${kindArt(key,color)}<div class="cbody"><b>${name}</b><span>${desc}</span><em>0 条</em></div></span>`;
+    return `<a class="trkcard art" href="#deals?kind=${key}" style="--dc:${color}"${active?' aria-current="true"':''}>
+      ${kindArt(key,color)}<div class="cbody"><b>${name}</b><span>${desc}</span><em>${n} 条</em></div></a>`;
   }).join('');
 }
 let filter='all';
@@ -1298,7 +1327,7 @@ function repaintCatalog(){
   const fl=document.getElementById('fieldlist');
   fl.innerHTML=FIELDS.map(f=>{
     const n=artsOf(f.k).length;
-    return `<a class="fcard" style="--dc:${f.color||'var(--accent)'}" href="#fields?f=${f.k}">${fieldThumb(f)}<div class="cbody"><b>${f.n}</b><span>${f.d||''}</span><em>${n} 篇</em></div></a>`;
+    return `<a class="fcard art" style="--dc:${f.color||'var(--accent)'}" href="#fields?f=${f.k}">${fieldThumb(f)}<div class="cbody"><b>${f.n}</b><span>${f.d||''}</span><em>${n} 篇</em></div></a>`;
   }).join('');
   renderFields();
   renderTracker();
@@ -1316,15 +1345,15 @@ function fieldArts(){
 }
 function renderFieldTracker(all){
   const el=document.getElementById('ftracker'); if(!el) return;
-  const allCard=`<a class="trkcard" href="#fields?f=all" style="--dc:var(--accent)"${ffilter==='all'?' aria-current="true"':''}>
-    ${icon('all','accent')}<div class="cbody"><b>全部解读</b><span>所有领域的论文解读</span><em>${all.length} 篇</em></div></a>`;
+  const allCard=`<a class="trkcard art" href="#fields?f=all" style="--dc:var(--accent)"${ffilter==='all'?' aria-current="true"':''}>
+    ${mosaicArt(['organoid','immuno','antibody','nucleic'].map(k=>`img/pal/fields/${FIELD_IMG[k]}?v=1`))}<div class="cbody"><b>全部解读</b><span>所有领域的论文解读</span><em>${all.length} 篇</em></div></a>`;
   const fieldCards=FIELDS.map(f=>{
     const n=all.filter(a=>a.f===f.k).length;
     const motif=FIELD_MOTIF[f.k]||'cell';
-    if(!n) return `<span class="trkcard" style="--dc:${f.color||'var(--accent)'};opacity:.5" aria-disabled="true">
-      ${icon(motif,f.color||'accent')}<div class="cbody"><b>${f.n}</b><span>${f.d||''}</span><em>0 篇</em></div></span>`;
-    return `<a class="trkcard" href="#fields?f=${f.k}" style="--dc:${f.color||'var(--accent)'}"${ffilter===f.k?' aria-current="true"':''}>
-      ${icon(motif,f.color||'accent')}<div class="cbody"><b>${f.n}</b><span>${f.d||''}</span><em>${n} 篇</em></div></a>`;
+    if(!n) return `<span class="trkcard art" style="--dc:${f.color||'var(--accent)'};opacity:.5" aria-disabled="true">
+      ${fieldArt(f)}<div class="cbody"><b>${f.n}</b><span>${f.d||''}</span><em>0 篇</em></div></span>`;
+    return `<a class="trkcard art" href="#fields?f=${f.k}" style="--dc:${f.color||'var(--accent)'}"${ffilter===f.k?' aria-current="true"':''}>
+      ${fieldArt(f)}<div class="cbody"><b>${f.n}</b><span>${f.d||''}</span><em>${n} 篇</em></div></a>`;
   }).join('');
   el.innerHTML=allCard+fieldCards;
 }

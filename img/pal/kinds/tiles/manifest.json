@@ -1,0 +1,15 @@
+{
+  "description": "Square 256x256 tiles for the 经济动态 按类型浏览 cards. Cropped/padded (no new content) from existing AI-generated decorative illustrations already in the repo at img/pal/kinds/v6/. Not source/journal logos.",
+  "ai_generated_origin": true,
+  "tiles": [
+    {"file": "acq_tile_v1.jpg", "kind": "收购", "derived_from": "img/pal/kinds/v6/acq_7.jpg"},
+    {"file": "lic_tile_v1.jpg", "kind": "授权交易", "derived_from": "img/pal/kinds/v6/lic_1.jpg"},
+    {"file": "inv_tile_v1.jpg", "kind": "投资融资", "derived_from": "img/pal/kinds/v6/inv_1.jpg"},
+    {"file": "clin_tile_v1.jpg", "kind": "临床进展", "derived_from": "img/pal/kinds/v6/clin_1.jpg"},
+    {"file": "policy_tile_v1.jpg", "kind": "监管政策", "derived_from": "img/pal/kinds/v6/policy_2.jpg"}
+  ],
+  "composites": {
+    "全部动态": "CSS 2x2 mosaic of acq/lic/inv/clin tiles (no image file)",
+    "全部解读": "CSS 2x2 mosaic of img/pal/fields organoid/tumor-immunology/antibody-engineering/lnp-oligo _v6 (no image file)"
+  }
+}
