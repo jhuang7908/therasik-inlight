@@ -318,6 +318,65 @@ class R8GoLiveTests(unittest.TestCase):
                 f"{a['id']}: quick_look contains no digits; expected Arabic numerals"
             )
 
+    def test_old_company_name_removed(self):
+        """启曜生科 must not appear outside DEALS data block."""
+        old_name = "启曜生科"
+        index_html = ROOT / "index.html"
+        content = index_html.read_text(encoding="utf-8")
+        
+        # Extract DEALS block to exclude it from the check
+        deals_match = re.search(r'const DEALS\s*=\s*\[(.*?)\];', content, re.DOTALL)
+        deals_block = deals_match.group(0) if deals_match else ""
+        
+        # Remove DEALS block from content for checking
+        content_without_deals = content.replace(deals_block, "")
+        
+        self.assertNotIn(
+            old_name,
+            content_without_deals,
+            f"Old company name '{old_name}' still appears in index.html outside DEALS"
+        )
+        
+        # Check build_pages.py
+        build_py = ROOT / "build_pages.py"
+        if build_py.exists():
+            build_content = build_py.read_text(encoding="utf-8")
+            self.assertNotIn(
+                old_name,
+                build_content,
+                f"Old company name '{old_name}' still appears in build_pages.py"
+            )
+
+    def test_source_logos_valid_image_magic_bytes(self):
+        """All logo files in assets/sources/ must be valid images (PNG, JPEG, ICO, WebP)."""
+        sources_dir = ROOT / "assets" / "sources"
+        if not sources_dir.exists():
+            self.skipTest("assets/sources directory does not exist")
+        
+        MAGIC_BYTES = {
+            b'\x89PNG\r\n\x1a\n': 'PNG',
+            b'\xff\xd8\xff': 'JPEG',
+            b'\x00\x00\x01\x00': 'ICO',
+            b'RIFF': 'WebP',
+        }
+        
+        for logo_file in sources_dir.glob("*"):
+            if logo_file.suffix.lower() in ('.png', '.jpg', '.jpeg', '.ico', '.webp'):
+                with open(logo_file, 'rb') as f:
+                    header = f.read(16)
+                
+                is_valid = False
+                for magic, fmt in MAGIC_BYTES.items():
+                    if header.startswith(magic):
+                        is_valid = True
+                        break
+                
+                self.assertTrue(
+                    is_valid,
+                    f"Logo file {logo_file.name} has invalid magic bytes (starts with {header[:8]!r}). "
+                    f"File may be corrupted or an HTML 404 page."
+                )
+
 
 if __name__ == "__main__":
     unittest.main()

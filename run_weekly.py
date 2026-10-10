@@ -839,7 +839,7 @@ def wechat_html(articles: list[dict], deals: list[dict], week: str) -> str:
     
     parts = [
         '<section style="font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,sans-serif;font-size:16px;line-height:1.75;color:#333;">',
-        f'<p style="font-size:14px;color:#666;">前沿追踪 · {week} · TheraSik 出品</p>',
+        f'<p style="font-size:14px;color:#666;">前沿追踪 · {week} · 启元智研 出品</p>',
         '<p style="margin:1em 0;">本期内容均基于原始来源核对，配图由 AI 生成（示意图，非期刊原图）。</p>',
     ]
     

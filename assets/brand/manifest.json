@@ -1,0 +1,13 @@
+{
+  "description": "启元智研 (Qiyuan Intelligent Research) company logo, concept A 'Origin Sunrise', chosen by Jing. Copied from /workspace/inlight_review/qiyuan_logo/. Text in the lockup is outlined to paths.",
+  "files": {
+    "qiyuan_logo_A.svg": "full lockup (verbatim copy of qiyuan_logo_A_origin_sunrise.svg, 1200x420 canvas)",
+    "qiyuan_mark_A.svg": "icon only (verbatim copy of qiyuan_logo_A_origin_sunrise_mark.svg)",
+    "qiyuan_logo_A_tight.svg": "same lockup artwork, viewBox tightened to the artwork bounds (194 115 846 216) for inline use",
+    "qiyuan_mark_A_tight.svg": "same mark artwork, viewBox tightened (32 50 248 228) for inline use",
+    "qiyuan_logo_A.png": "verbatim copy of qiyuan_logo_A_origin_sunrise.png",
+    "qiyuan_mark_A_32.png": "verbatim copy of qiyuan_logo_A_origin_sunrise_mark_32.png",
+    "qiyuan_mark_A_512.png": "verbatim copy of qiyuan_logo_A_origin_sunrise_mark_512.png"
+  },
+  "used_in": ["index.html footer (mark)", "index.html 关于 page 出品方 block (lockup)", "index.html 服务 page hero (mark)", "pages/article/*.html footer (mark)", "build_pages.py ARTICLE_FOOT"]
+}

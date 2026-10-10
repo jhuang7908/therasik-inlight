@@ -103,7 +103,7 @@ ARTICLE_FOOT = f"""<footer>
   <div class="footshell"><div class="foot-in">
     <div class="fbrand">
       <b>前沿追踪</b>
-      <p>TheraSik · 启曜生科 出品。九个领域的前沿进展与商业化动态，中文整理。</p>
+      <p class="fco" style="display:flex;align-items:center;gap:8px"><img src="../../assets/brand/qiyuan_mark_A_tight.svg" alt="" aria-hidden="true" width="28" height="26" style="display:block;height:26px;width:auto;flex:none"><span>启元智研 出品。九个领域的前沿进展与经济动态，中文整理。</span></p>
     </div>
     <div class="footnav">
       <a href="{SITE_URL}/#home">首页</a><a href="{SITE_URL}/#fields">领域</a><a href="{SITE_URL}/#deals">商业化动态</a><a href="{SITE_URL}/#archive">存档</a><a href="{SITE_URL}/#about">关于</a><a href="{SITE_URL}/#support">订阅</a>

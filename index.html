@@ -11,7 +11,7 @@ img{max-width:100%}
 </style>
 <title>前沿追踪 - 中文生物医药前沿资讯</title>
 <meta name="description" content="中文生物医药前沿资讯，每周整理九个领域的研究进展与商业化动态。类器官、AI药物设计、肿瘤免疫、细胞治疗、疫苗、自身免疫病、小核酸与LNP、疾病模型、抗体工程。">
-<meta name="author" content="TheraSik · 启曜生科 / 前沿追踪">
+<meta name="author" content="启元智研 / 前沿追踪">
 <meta property="og:title" content="前沿追踪 - 中文生物医药前沿资讯">
 <meta property="og:description" content="每周整理九个领域的研究进展与商业化动态：类器官、AI药物设计、肿瘤免疫、细胞治疗、疫苗、自身免疫病、小核酸与LNP、疾病模型、抗体工程。">
 <meta property="og:type" content="website">
@@ -50,7 +50,7 @@ nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:color-
 .nav-in{padding:8px 12px;display:flex;align-items:center;gap:4px;flex-wrap:nowrap;max-height:56px}
 .nav-tabs{display:flex;align-items:center;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;flex:1;min-width:0;scrollbar-width:none;-ms-overflow-style:none}
 .nav-tabs::-webkit-scrollbar{display:none}
-.brand{display:flex;align-items:center;gap:10px;flex-shrink:0;padding:2px 0}
+.brand{display:flex;align-items:center;gap:10px;flex-shrink:0;padding:2px 0;margin-right:8px}
 .brand:hover{background:none}
 .bmark{width:40px;height:40px;flex:none}
 .bmark-wrap{position:relative;display:block;width:38px;height:38px;flex:none;border-radius:10px;overflow:hidden}
@@ -58,12 +58,12 @@ nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:color-
 .btext{display:grid;gap:1px;line-height:1.15}
 .brand .bn{font-family:var(--display);font-weight:800;font-size:21px;color:var(--fg)}
 .brand .bs{font-size:10px;letter-spacing:.2em;color:var(--muted);font-weight:700}
-.nav-in a{font-size:13px;padding:8px 12px;height:36px;display:inline-flex;align-items:center;justify-content:center;border-radius:999px;color:var(--muted);white-space:nowrap;flex-shrink:0}
+.nav-in a{font-size:13px;padding:0 14px;height:36px;display:inline-flex;align-items:center;justify-content:center;border-radius:18px;color:var(--muted);white-space:nowrap;flex-shrink:0}
 .nav-in a:hover{background:var(--raise);color:var(--fg)}
-.nav-in a.on{background:var(--accent);color:var(--bg);max-height:36px}
-.navsub{flex-shrink:0!important;background:var(--accent);color:var(--bg)!important;font-weight:700}
+.nav-in a.on{background:var(--accent);color:var(--bg)}
+.navsub{flex-shrink:0!important;background:var(--accent);color:var(--bg)!important;font-weight:700;padding:0 14px;height:36px;border-radius:18px}
 
-.wrap{max-width:1100px;margin:0 auto;padding:22px 16px 52px;display:grid;gap:24px}
+.wrap{max-width:1100px;margin:0 auto;padding:16px 16px 40px;display:grid;gap:16px}
 .wrap>*{min-width:0}
 @media (min-width:1100px){.wrap{max-width:none;padding-left:4px;padding-right:4px}}
 @media (max-width:720px){.wrap{padding-left:10px;padding-right:10px}}
@@ -74,12 +74,12 @@ nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:color-
 .btn{font-size:14px;padding:9px 18px;border-radius:999px;background:var(--accent);color:var(--bg);font-weight:700}
 .btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
 
-.sechead{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:7px;margin-bottom:12px}
-.sechead h2{font-size:18px}
-.sechead span{font-size:12.5px;color:var(--muted)}
+.sechead{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:5px;margin-bottom:10px}
+.sechead h2{font-size:17px}
+.sechead span{font-size:12px;color:var(--muted)}
 
 /* Unified card grid: 4 cols ≥1024px, 3 cols 769-1023, 2 cols ≤768 */
-.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;align-items:stretch}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;align-items:stretch}
 @media (max-width:1023px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (max-width:768px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
@@ -117,9 +117,36 @@ nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:color-
 .fcard b{font-family:var(--display);font-size:15px;color:var(--dc)}
 .fcard span{font-size:11.5px;color:var(--muted);line-height:1.45}
 .fcard em{font-size:11px;color:var(--muted);font-style:normal}
+/* Tracker cards: fcard style for fields and deals trackers */
+.trkgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+@media (max-width:900px){.trkgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.trkcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;grid-template-columns:40px minmax(0,1fr);gap:10px;align-items:center;color:inherit;text-decoration:none}
+.trkcard:hover{border-color:color-mix(in srgb,var(--dc,var(--accent)) 45%,var(--line))}
+.trkcard[aria-current="true"]{background:color-mix(in srgb,var(--dc,var(--accent)) 9%,var(--surface));border-color:var(--dc,var(--accent))}
+.trkcard .cbody{display:grid;gap:1px;padding:0}
+/* 大配图版追踪卡：左侧插画占满卡片高度，文字不再漂在空白里 */
+.trkcard.art{grid-template-columns:92px minmax(0,1fr);gap:14px;padding:10px 14px 10px 10px;min-height:112px}
+.trkcard.art .cbody{gap:4px}
+.trkcard.art b{font-size:16px}
+.trkcard.art span{font-size:12px}
+.trkcard.art em{font-size:12px}
+.artthumb{position:relative;display:block;width:92px;height:92px;border-radius:12px;overflow:hidden;background:#f6f4ef}
+.artthumb>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.artthumb>.ic{position:absolute;inset:0;width:100%;height:100%}
+.artthumb.mosaic{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:2px;background:#fff}
+.artthumb.mosaic>img{position:static;width:100%;height:100%;object-fit:cover}
+.fcard.art{grid-template-columns:92px minmax(0,1fr);gap:14px;padding:10px 14px 10px 10px;min-height:112px}
+.fcard.art .fthumb{width:92px;height:92px;border-radius:12px}
+.fcard.art .fthumb .ic{width:100%;height:100%}
+.fcard.art b{font-size:16px}
+.fcard.art span{font-size:12px}
+.trkcard b{font-family:var(--display);font-size:14px;color:var(--dc,var(--fg))}
+.trkcard span{font-size:10.5px;color:var(--muted);line-height:1.4}
+.trkcard em{font-size:11px;color:var(--muted);font-style:normal;font-weight:700}
 /* 文本型页面（关于、订阅）：容器定宽，段落与列表共用同一换行宽度 */
-.textpage{max-width:940px}
-@media (min-width:1100px){.textpage{margin-left:0;margin-right:auto}}
+/* 文字页（关于/服务/订阅）与其他页面同宽，不再单独收窄到 940px */
+.textpage{max-width:1100px}
+@media (min-width:1100px){.textpage{max-width:none}}
 .textpage p,.textpage li,.textpage .note{max-width:none}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:17px 19px;display:grid;gap:11px}
 .panel ol,.panel ul{margin:0;padding-left:22px;display:grid;gap:7px;font-size:14px}
@@ -210,10 +237,10 @@ a.tile .tk::after{content:" →";opacity:.55}
 /* 领域页追踪器：0 篇的领域保留卡片但置灰、不可点 */
 .tile.nil{color:var(--muted);border-left-color:color-mix(in srgb,var(--tkc,var(--accent)) 40%,var(--line));background:var(--raise)}
 .tile.nil .tv{color:var(--muted)}
-/* 两侧广告位：从 1400px 起显示，这样 1280 与 r8 预览同宽（pv-shell 1100）。 */
+/* 两侧广告位：从 1440px 起显示，banner cards 需要更宽的栏位。 */
 .shell,.navshell,.footshell{max-width:1100px;margin:0 auto}
-@media (min-width:1400px){
-  .navshell,.footshell{display:grid;grid-template-columns:168px minmax(0,1fr) 168px;gap:18px;max-width:1480px;padding:0 10px}
+@media (min-width:1440px){
+  .navshell,.footshell{display:grid;grid-template-columns:200px minmax(0,1fr) 200px;gap:18px;max-width:1560px;padding:0 10px}
   .navshell>*,.footshell>*{grid-column:2;padding-left:4px;padding-right:4px}
 }
 @media (min-width:1700px){
@@ -222,14 +249,15 @@ a.tile .tk::after{content:" →";opacity:.55}
 .col{min-width:0}
 .view{min-height:62vh;align-content:start;min-width:0}
 .rail{display:none}
-@media (min-width:1400px){
-  .shell{display:grid;grid-template-columns:168px minmax(0,1fr) 168px;gap:18px;max-width:1480px;padding:0 10px}
-  /* 广告栏高度跟随正文：绝对定位不参与撑高，超出正文的广告位被裁掉，页尾不留空白 */
-  .rail{display:block;position:relative;overflow:hidden}
-  .railin{position:absolute;inset:0;display:grid;gap:12px;align-content:start;padding-top:30px}
+@media (min-width:1440px){
+  .shell{display:grid;grid-template-columns:200px minmax(0,1fr) 200px;gap:18px;max-width:1560px;padding:0 10px}
+  .rail{display:block;position:sticky;top:60px;height:calc(100vh - 80px);overflow-y:auto;background:color-mix(in srgb,var(--surface) 60%,var(--bg));border-radius:12px;padding:10px}
+  .railin{display:grid;gap:10px;align-content:start}
+  .rail-l{border-right:1px solid var(--line)}
+  .rail-r{border-left:1px solid var(--line)}
 }
 @media (min-width:1700px){
-  .shell{grid-template-columns:176px minmax(0,1fr) 312px;max-width:1700px}
+  .shell{grid-template-columns:220px minmax(0,1fr) 220px;max-width:1780px}
 }
 .adbox{border:1px dashed var(--line);border-radius:9px;background:var(--surface);display:grid;place-content:center;gap:3px;text-align:center;padding:8px 6px}
 .adbox b{font-size:11.5px;letter-spacing:.05em;color:var(--accent);font-weight:700}
@@ -237,17 +265,28 @@ a.tile .tk::after{content:" →";opacity:.55}
 .ad-tall{min-height:300px}
 .ad-med{min-height:150px}
 .ad-small{min-height:70px}
-@media (min-width:1400px){.ad-tall{min-height:360px}.ad-med{min-height:180px}}
+@media (min-width:1440px){.ad-tall{min-height:360px}.ad-med{min-height:180px}}
 @media (min-width:1700px){.rail-r .ad-tall{min-height:430px}.rail-r .ad-med{min-height:215px}}
 .adtext{border:1px dashed var(--line);border-radius:9px;background:var(--surface);padding:9px 10px;display:grid;gap:5px}
 .adtext b{font-size:11px;letter-spacing:.05em;color:var(--accent);font-weight:700}
 .adtext span{font-size:11px;color:var(--muted);border-bottom:1px dotted var(--line);padding-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .adtext span:last-child{border-bottom:0;padding-bottom:0}
-.srcard{display:grid;gap:1px;padding:7px 8px 8px;border:1px solid var(--line);border-radius:9px;background:var(--surface);text-decoration:none;color:inherit;min-width:0}
+.srcard{display:grid;grid-template-rows:auto 1fr;gap:0;border:1px solid var(--line);border-radius:9px;background:var(--surface);text-decoration:none;color:inherit;min-width:0;overflow:hidden}
 .srcard:hover{border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
-.srcard b{font-size:12px;line-height:1.25;font-family:var(--display);font-weight:800}
-.srcard .dom{font-size:10px;color:var(--accent);font-weight:700;overflow-wrap:anywhere}
-.srcard em{font-size:11px;line-height:1.35;color:var(--muted);font-style:normal}
+.srcard .srcbanner{width:100%;aspect-ratio:16/9;background:#f8f9fa;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.srcard .srcbanner img{width:100%;height:100%;object-fit:contain;background:#fff}
+.srcard .srcbanner svg{width:70%;height:70%;max-width:140px}
+.srcard .srcbody{display:grid;gap:3px;padding:10px 12px;min-width:0}
+.srcard b{font-size:13px;line-height:1.25;font-family:var(--display);font-weight:800}
+.srcard .dom{font-size:12px;color:var(--accent);font-weight:700;overflow-wrap:anywhere}
+.srcard em{font-size:12px;line-height:1.4;color:var(--muted);font-style:normal}
+.srcbanner.txtbanner{background:var(--raise);font-size:28px;font-weight:800;color:var(--muted);letter-spacing:.05em}
+.srcbanner.fdabanner{background:#006db6}
+.srcard .srcbanner.coverbanner{aspect-ratio:440/584;background:#111}
+.srcard .srcbanner.coverbanner img{object-fit:contain;background:transparent}
+.srcard .srcbanner.logobanner{background:#fff}
+.srcard .srcbanner.logobanner img{width:86%;height:auto;max-height:80%}
+.railhead{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:4px 0 6px;border-bottom:1px solid var(--line);margin-bottom:4px}
 .srgroup{border:1px solid var(--line);border-radius:9px;background:var(--surface);padding:7px 8px 8px;display:grid;gap:3px;min-width:0}
 .srgroup .k{font-size:10px;letter-spacing:.08em;font-weight:700;color:var(--muted)}
 .srgroup a{font-size:11.5px;font-weight:700;line-height:1.3}
@@ -255,7 +294,9 @@ a.tile .tk::after{content:" →";opacity:.55}
 .srnote:hover{color:var(--accent)}
 .ad-inline{min-height:110px}
 .adslot-mobile{display:grid;gap:14px;margin-top:6px}
-@media (min-width:1400px){.adslot-mobile{display:none}}
+@media (min-width:1440px){.adslot-mobile{display:none}}
+.srcrow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+@media (min-width:640px){.srcrow{grid-template-columns:repeat(4,minmax(0,1fr))}}
 .sponsored{border:1px solid var(--line);border-left:3px solid var(--c4);border-radius:10px;background:var(--surface);padding:13px 15px;display:grid;gap:5px}
 .sponsored .slabel{font-size:11px;letter-spacing:.1em;font-weight:700;color:var(--c4)}
 .sponsored h3{font-size:16px}
@@ -263,24 +304,24 @@ a.tile .tk::after{content:" →";opacity:.55}
 .navsub{background:var(--accent);color:var(--bg)!important;font-weight:700}
 .navsub:hover{background:var(--accent);opacity:.9}
 /* hero 大图 */
-.hero-band{position:relative;border-radius:16px;overflow:hidden;min-height:300px;display:grid;align-items:end;isolation:isolate}
+.hero-band{position:relative;border-radius:12px;overflow:hidden;min-height:160px;display:grid;align-items:end;isolation:isolate}
 .hb-art{position:absolute;inset:0;z-index:0}
 .hb-art svg,.hb-art img{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:cover}
 .hero-band{border:1px solid var(--line)}
-.hero-band::after{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(100deg,rgba(255,255,255,.92) 0%,rgba(255,255,255,.8) 44%,rgba(255,255,255,.1) 100%)}
-.hb-text{position:relative;z-index:2;padding:30px 28px 26px;display:grid;gap:11px;max-width:640px;color:var(--fg)}
-.hb-kicker{font-size:11.5px;letter-spacing:.14em;font-weight:700;color:var(--accent)}
-.hb-text h1{font-family:var(--display);font-size:clamp(28px,4.4vw,44px);font-weight:800;line-height:1.1;letter-spacing:.01em;color:var(--fg)}
-.hb-text p{font-size:14px;line-height:1.7;color:var(--muted);max-width:none}
-.hb-cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:3px}
-.hb-cta .btn{font-weight:800}
+.hero-band::after{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(95deg,rgba(255,255,255,.96) 0%,rgba(255,255,255,.92) 50%,rgba(255,255,255,.3) 100%)}
+.hb-text{position:relative;z-index:2;padding:16px 20px 14px;display:grid;gap:6px;max-width:520px;color:var(--fg)}
+.hb-kicker{font-size:11px;letter-spacing:.12em;font-weight:700;color:var(--accent)}
+.hb-text h1{font-family:var(--display);font-size:clamp(22px,3.2vw,32px);font-weight:800;line-height:1.1;letter-spacing:.01em;color:var(--fg)}
+.hb-text p{font-size:13px;line-height:1.55;color:var(--muted);max-width:none}
+.hb-cta{display:flex;gap:8px;flex-wrap:wrap;margin-top:2px}
+.hb-cta .btn{font-weight:800;padding:6px 12px;font-size:13px}
 .hb-cta .btn.ghost{background:transparent;color:var(--accent);border:1px solid color-mix(in srgb,var(--accent) 40%,var(--line))}
-.hb-stats{display:flex;gap:20px;flex-wrap:wrap;margin-top:6px;font-size:12px;color:var(--muted)}
-.hb-stats b{font-family:var(--display);font-size:17px;color:var(--accent);margin-right:4px}
-@media (max-width:620px){.hero-band{min-height:260px}.hb-text{padding:22px 18px 20px}}
+.hb-stats{display:flex;gap:14px;flex-wrap:wrap;margin-top:3px;font-size:11px;color:var(--muted)}
+.hb-stats b{font-family:var(--display);font-size:14px;color:var(--accent);margin-right:3px}
+@media (max-width:620px){.hero-band{min-height:120px}.hb-text{padding:12px 14px 10px}}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .hero-band::after{background:linear-gradient(100deg,rgba(17,23,21,.93) 0%,rgba(17,23,21,.8) 44%,rgba(17,23,21,.25) 100%)}}
 :root[data-theme="dark"] .hero-band::after{background:linear-gradient(100deg,rgba(17,23,21,.93) 0%,rgba(17,23,21,.8) 44%,rgba(17,23,21,.25) 100%)}
-.lead{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--c3);border-radius:12px;padding:18px 20px;display:grid;gap:8px}
+.lead{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--c3);border-radius:10px;padding:14px 16px;display:grid;gap:6px}
 .leadtag{font-size:11px;letter-spacing:.08em;font-weight:700;color:var(--c3)}
 .lead h1{font-size:clamp(19px,2.6vw,25px);font-weight:800}
 .lead p{font-size:13.5px;color:var(--muted);max-width:none}
@@ -288,7 +329,7 @@ a.tile .tk::after{content:" →";opacity:.55}
 .tabs{display:flex;gap:7px;margin-left:auto}
 .sechead{align-items:center}
 .sechead span a{font-size:13px}
-.subblock{background:var(--accent);color:var(--bg);border-radius:11px;padding:15px 19px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.subblock{background:var(--accent);color:var(--bg);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .subblock h2{font-size:17px}
 .subblock p{font-size:14px;opacity:.9;margin-top:4px}
 .subblock .btn{background:var(--bg);color:var(--accent);margin-left:auto}
@@ -298,6 +339,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 .foot-in div p{max-width:none}
 .foot-in b{font-family:var(--display);font-size:15px}
 .foot-in p{font-size:13px;color:var(--muted)}
+.coblock .colockup{display:block;height:64px;width:auto;margin:4px 0 2px}
 .footnav{display:flex;gap:16px;flex-wrap:wrap}
 .footnav a{font-size:13.5px}
 .footmail{font-size:13px;color:var(--muted)}
@@ -315,7 +357,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 .chip:hover{color:var(--fg)}
 .chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--bg);font-weight:700}
 /* Feed grid: same breakpoints as .grid for consistency */
-.feed{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;align-items:stretch}
+.feed{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;align-items:stretch}
 @media (max-width:1023px){.feed{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (max-width:768px){.feed{grid-template-columns:repeat(2,minmax(0,1fr))}}
 /* Details panel inserted after the row containing the expanded card */
@@ -355,10 +397,11 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
   nav{max-height:56px}
   .nav-in{gap:3px;padding:4px 8px}
   .nav-tabs{gap:2px}
-  .nav-in a{font-size:13px;padding:0 10px;height:44px;min-height:44px}
+  .nav-in a{font-size:13px;padding:0 12px;height:40px;min-height:40px;border-radius:20px}
   .brand .btext{display:none}
+  .brand{margin-right:4px}
   .bmark,.bmark-wrap{width:32px;height:32px}
-  .navsub{padding:0 12px;height:44px;min-height:44px;margin-left:auto;font-size:13px}
+  .navsub{padding:0 12px;height:40px;min-height:40px;margin-left:auto;font-size:13px;border-radius:20px}
   .btn{min-height:44px;padding:0 20px;display:inline-flex;align-items:center;justify-content:center}
   .chip{min-height:44px;padding:0 16px;display:inline-flex;align-items:center}
   .sec p{font-size:15px}
@@ -377,7 +420,8 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 }
 /* Compact 2-col grid on phone (≤480px) */
 @media (max-width:480px){
-  .nav-in a{padding:0 8px;font-size:13px}
+  .nav-in a{padding:0 10px;height:36px;min-height:36px;font-size:12px;border-radius:18px}
+  .navsub{padding:0 10px;height:36px;min-height:36px;font-size:12px;border-radius:18px}
   .grid,.feed{gap:8px}
   /* Compact cards */
   .grid .item,.grid .card{grid-template-rows:auto 1fr}
@@ -416,8 +460,8 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 .sec h3{font-size:16px;font-weight:800;margin-top:6px}
 .sec ul{margin:0;padding-left:1.2em;display:grid;gap:6px}
 .sec li{font-size:16px;line-height:1.8}
-.pgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;align-items:stretch}
-@media (max-width:860px){.pgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}}
+.pgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;align-items:stretch}
+@media (max-width:860px){.pgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}}
 .pgrid .item{display:flex!important;flex-direction:column;height:100%}
 .pgrid .item>a{display:block}
 .pgrid .item .cbody{display:flex;flex-direction:column;gap:3px;flex:1 1 auto;min-width:0;padding:7px 10px 8px}
@@ -428,6 +472,12 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 .pgrid .metarow{margin-top:auto;gap:6px;min-height:0;flex-wrap:nowrap}
 .pgrid .jname{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .pgrid .metarow .expbtn{min-height:0;padding:0;font-size:12px}
+/* Homepage 'latest' grid: show max 3 rows, then reveal via button */
+.pgrid.limited .item:nth-child(n+13){display:none!important}
+@media (max-width:860px){.pgrid.limited .item:nth-child(n+7){display:none!important}}
+.showallbtn{display:block;margin:16px auto 0;font-size:14px;font-weight:700;color:var(--accent);background:var(--surface);border:1px solid var(--accent);border-radius:999px;padding:10px 24px;cursor:pointer;font-family:inherit}
+.showallbtn:hover{background:var(--accent);color:var(--bg)}
+.pgrid:not(.limited)+.showallbtn{display:none}
 .pv-chips{display:flex;gap:4px;flex-wrap:nowrap;overflow:hidden;white-space:nowrap;min-width:0}
 .pv-chip{flex:0 0 auto;font-size:10.5px;line-height:16px;padding:0 6px;border-radius:999px;border:1px solid #2f7d6d;color:#2f7d6d;background:#fff;font-weight:700}
 .pv-chip.pri,.pv-chip.rel{border-color:var(--fc)!important}
@@ -486,6 +536,27 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 .feed .cover,.fthumb{background:#fff}
 /* style_unify_v6: deal covers rotate through ten illustrations per deal type (img/pal/kinds/v6/), off-white ground. */
 .feed .cover{background:#F6F4EE}
+
+/* ===== Calm palette variant (r11) ===== */
+/* 1) 侧栏：白卡片，来源 logo 统一 44px 高度、留白、contain；期刊封面改小缩略图 */
+.srcard{background:#fff}
+.srcard .srcbanner,.srcard .srcbanner.logobanner,.srcard .srcbanner.fdabanner,.srcard .srcbanner.txtbanner{aspect-ratio:auto;height:44px;padding:8px 12px 0;background:#fff;justify-content:flex-start}
+.srcard .srcbanner img,.srcard .srcbanner.logobanner img{width:100%;height:100%;max-height:none;object-fit:contain;object-position:left center;background:transparent}
+.srcard .srcbanner.txtbanner{font-size:18px}
+/* og:image 横幅里 logo 只占中间一小块：裁到 logo 区域（cover），不再整幅铺满 */
+.srcard .srcbanner{padding:6px 10px 0;box-sizing:border-box}
+.srcard .srcbanner img[src*="biopharmadive_banner"],.srcard .srcbanner img[src*="biospace_banner"]{object-fit:cover;object-position:center;border-radius:5px}
+.srcard .srcbody{padding:8px 12px 10px}
+.srcard:has(.coverbanner){grid-template-columns:68px minmax(0,1fr);grid-template-rows:auto;align-items:center;gap:10px;padding:10px}
+.srcard .srcbanner.coverbanner{width:68px;height:auto;aspect-ratio:440/584;padding:0;background:#fff;border-radius:4px;box-shadow:0 0 0 1px var(--line)}
+.srcard .srcbanner.coverbanner img{object-fit:cover;object-position:center}
+.srcard:has(.coverbanner) .srcbody{padding:0}
+/* 2) 标签统一：深绿描边；金额保留橙红为唯一强调色 */
+.tag,.kind,.feed .kind,.feed-details-panel .kind{border-color:#2f5d46!important;color:#2f5d46!important;background:transparent!important}
+.pv-chip,.pv-chip.pri,.pv-chip.rel{border-color:#2f5d46!important;color:#2f5d46!important;background:transparent!important}
+.pv-chip.pri{background:rgba(47,93,70,.07)!important}
+/* 分类卡片标题统一深绿（覆盖逐领域/逐类型颜色） */
+.trkcard,.fcard{--dc:#2f5d46!important}
 </style>
 </head>
 <body>
@@ -502,35 +573,40 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
   </a>
   <div class="nav-tabs">
     <a href="#home" data-v="home">首页</a>
-    <a href="#fields" data-v="fields">领域</a>
-    <a href="#deals" data-v="deals">动态</a>
-    <a href="#archive" data-v="archive">存档</a>
-    <a href="#about" data-v="about">关于</a>
+    <a href="#fields" data-v="fields">学术进展</a>
+    <a href="#deals" data-v="deals">经济动态</a>
+    <a href="#services" data-v="services">服务</a>
+    <a href="#about" data-v="about">关于我们</a>
   </div>
   <a class="navsub" href="#support">订阅</a>
 </div></div></nav>
 
 <div class="shell">
 <aside class="rail rail-l" aria-label="左侧信息来源"><div class="railin">
-<!-- L1（原 160×600 广告位，宽屏 300×600）：有赞助商时替换这一块 -->
-<a class="srcard" href="https://acir.org" target="_blank" rel="noopener"><b>ACIR 周报</b><span class="dom">acir.org</span><em>肿瘤免疫周报，本站的起点。</em></a>
-<!-- L2（原 300×250 广告位）：有赞助商时替换这一块 -->
-<a class="srcard" href="https://endpts.com" target="_blank" rel="noopener"><b>Endpoints News</b><span class="dom">endpts.com</span><em>生物技术公司、临床和交易。</em></a>
-<!-- L3（原 300×250 广告位）：有赞助商时替换这一块 -->
-<a class="srcard" href="https://www.fiercebiotech.com" target="_blank" rel="noopener"><b>Fierce Biotech</b><span class="dom">fiercebiotech.com</span><em>管线与临床试验新闻。</em></a>
-<!-- L4（原 300×250 广告位）：有赞助商时替换这一块 -->
-<a class="srcard" href="https://www.biopharmadive.com" target="_blank" rel="noopener"><b>BioPharma Dive</b><span class="dom">biopharmadive.com</span><em>制药业新闻，含交易与监管。</em></a>
-<!-- L5（原 160×600 广告位，宽屏 300×600）：有赞助商时替换这一块 -->
-<a class="srcard" href="https://www.statnews.com" target="_blank" rel="noopener"><b>STAT News</b><span class="dom">statnews.com</span><em>医药与健康报道。</em></a>
-<!-- 文字链（原 6 个赞助链接位）：有赞助商时替换这一块 -->
+<div class="railhead">交易动态来源</div>
+<a class="srcard" href="https://www.biopharmadive.com" target="_blank" rel="noopener">
+  <div class="srcbanner"><img src="assets/sources/biopharmadive_banner.jpg" alt="BioPharma Dive"></div>
+  <div class="srcbody"><b>BioPharma Dive</b><em>生物制药交易、监管和临床新闻</em></div>
+</a>
+<a class="srcard" href="https://www.biospace.com" target="_blank" rel="noopener">
+  <div class="srcbanner"><img src="assets/sources/biospace_banner.png" alt="BioSpace"></div>
+  <div class="srcbody"><b>BioSpace</b><em>生命科学招聘与新闻平台</em></div>
+</a>
+<a class="srcard" href="https://www.fiercebiotech.com" target="_blank" rel="noopener">
+  <div class="srcbanner"><img src="assets/sources/fiercebiotech_banner.png" alt="Fierce Biotech"></div>
+  <div class="srcbody"><b>Fierce Biotech</b><em>生物技术研发、融资和监管</em></div>
+</a>
+<a class="srcard" href="https://www.fda.gov" target="_blank" rel="noopener">
+  <div class="srcbanner"><img src="assets/sources/fda_logo.svg" alt="FDA"></div>
+  <div class="srcbody"><b>FDA</b><em>美国食品药品监督管理局</em></div>
+</a>
+<!-- 文字链 -->
 <div class="srgroup"><span class="k">常用来源</span>
 <a href="https://www.pharmcube.com" target="_blank" rel="noopener">医药魔方</a>
 <a href="https://pubmed.ncbi.nlm.nih.gov/" target="_blank" rel="noopener">PubMed</a>
-<a href="https://www.fda.gov/news-events/fda-newsroom/press-announcements" target="_blank" rel="noopener">FDA 公告</a>
-<a href="https://www.ema.europa.eu/en/news" target="_blank" rel="noopener">EMA</a>
+<a href="https://endpts.com" target="_blank" rel="noopener">Endpoints News</a>
 </div>
-<!-- 栏底说明，不是广告位 -->
-<a class="srnote" href="#support">这些栏位可用于赞助 · 联系 contact@therasik.com</a>
+<a class="srnote" href="#support">栏位可用于赞助</a>
 </div></aside>
 <div class="col">
 
@@ -588,7 +664,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
         <a class="btn ghost" href="#fields">看九个领域</a>
       </div>
       <div class="hb-stats">
-        <span><b>9</b> 个领域</span><span>深度 <b id="hb-deep">0</b></span><span>速览 <b id="hb-survey">0</b></span><span>动态 <b id="hb-deals">0</b></span>
+        <span><b>9</b> 个领域</span><span>解读 <b id="hb-deep">0</b></span><span>动态 <b id="hb-deals">0</b></span>
       </div>
     </div>
   </section>
@@ -613,7 +689,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
         <button class="chip" type="button" data-tab="byfield" aria-pressed="false">按领域</button>
       </div>
     </div>
-    <div id="tab-latest"><div class="pgrid" id="latestgrid"></div></div>
+    <div id="tab-latest"><div class="pgrid limited" id="latestgrid"></div><button class="showallbtn" id="showallbtn" type="button">查看全部</button></div>
     <div id="tab-byfield" hidden><div class="fieldlist" id="fieldlist"></div></div>
   </section>
 
@@ -630,31 +706,49 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
   <section class="subblock">
     <div>
       <h2>每周一封，中文</h2>
-      <p>九个领域的解读摘要加商业化动态，正文附原文链接。免费，可随时退订。</p>
+      <p>九个领域的解读摘要加经济动态，正文附原文链接。免费，可随时退订。</p>
     </div>
     <a class="btn" href="#support">订阅每周更新</a>
   </section>
 
-  <!-- 商业化动态频道：对标 Endpoints 的 Deals 频道与 BioPharma Dive 的 tracker -->
+  <!-- 经济动态频道：对标 Endpoints 的 Deals 频道与 BioPharma Dive 的 tracker -->
   <section>
-    <div class="sechead"><h2>商业化动态</h2><span><a href="#deals">看完整时间流 →</a></span></div>
+    <div class="sechead"><h2>经济动态</h2><span><a href="#deals">看完整时间流 →</a></span></div>
     <div class="feed" id="homefeed"></div>
   </section>
 
-  <!-- 领域导航 -->
-  <section>
-    <div class="sechead"><h2>九个领域</h2><span>按领域浏览</span></div>
-    <div class="fieldlist" id="fieldlist2"></div>
+  <!-- 移动端常用来源（<1440px 显示，桌面端由侧栏显示） -->
+  <section class="adslot-mobile">
+    <div class="sechead"><h2>常用来源</h2></div>
+    <div class="srcrow">
+      <a class="srcard" href="https://www.biopharmadive.com" target="_blank" rel="noopener">
+        <div class="srcbanner"><img src="assets/sources/biopharmadive_banner.jpg" alt="BioPharma Dive"></div>
+        <div class="srcbody"><b>BioPharma Dive</b><em>生物制药交易、监管和临床新闻</em></div>
+      </a>
+      <a class="srcard" href="https://www.fiercebiotech.com" target="_blank" rel="noopener">
+        <div class="srcbanner"><img src="assets/sources/fiercebiotech_banner.png" alt="Fierce Biotech"></div>
+        <div class="srcbody"><b>Fierce Biotech</b><em>生物技术研发、融资和监管动态</em></div>
+      </a>
+      <a class="srcard" href="https://endpts.com" target="_blank" rel="noopener">
+        <div class="srcbanner txtbanner">Endpoints</div>
+        <div class="srcbody"><b>Endpoints News</b><em>生物制药行业深度报道</em></div>
+      </a>
+      <a class="srcard" href="https://www.nature.com" target="_blank" rel="noopener">
+        <div class="srcbanner coverbanner"><img src="assets/sources/nature_cover_v658i8135.png" alt="Nature 2026年10月8日期封面" loading="lazy"></div>
+        <div class="srcbody"><b>Nature</b><em>多学科科学期刊</em></div>
+      </a>
+    </div>
   </section>
+
 </div>
 
 <!-- ============ FIELDS ============ -->
 <div class="wrap view" id="v-fields" hidden>
-  <header class="hero"><h1>九个领域</h1><p>每篇解读只出现在它的主领域下。相关领域以描边标签标出，不重复进其他栏目。</p></header>
+  <header class="hero"><h1>学术进展</h1><p>九个领域的一手论文解读，每篇只出现在主领域下，相关领域以描边标签标出。</p></header>
 
   <section>
-    <div class="sechead"><h2>追踪器</h2><span>各领域收录的解读篇数，随每周更新变化</span></div>
-    <div class="tracker" id="ftracker"></div>
+    <div class="sechead"><h2>按领域浏览</h2><span>点击筛选</span></div>
+    <div class="trkgrid" id="ftracker"></div>
   </section>
 
   <section id="fieldfeed">
@@ -673,13 +767,13 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 <!-- ============ DEALS ============ -->
 <div class="wrap view" id="v-deals" hidden>
   <header class="hero">
-    <h1>投资与商业化动态</h1>
-    <p>论文说一条路线成立，交易说有人愿意为它掏钱，两头都记一下。最新的在上面，下面的分类只是筛选器。只收公开披露或双方确认的，传闻不收；来源是公司公告、各家季报和 Endpoints、Fierce 这类行业媒体，每条都挂原链接。</p>
+    <h1>经济动态</h1>
+    <p>收购、授权、融资、临床进展、监管政策——论文说一条路线成立，交易说有人愿意为它掏钱。只收公开披露或双方确认的，来源是公司公告和行业媒体，每条都挂原链接。</p>
   </header>
 
   <section>
-    <div class="sechead"><h2>追踪器</h2><span>本站收录条目的统计，随每周更新变化</span></div>
-    <div class="tracker" id="tracker"></div>
+    <div class="sechead"><h2>按类型浏览</h2><span>点击筛选</span></div>
+    <div class="trkgrid" id="tracker"></div>
   </section>
 
   <section id="dealfeed">
@@ -704,23 +798,23 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 <div class="wrap view textpage" id="v-support" hidden>
   <header class="hero">
     <h1>订阅与赞助</h1>
-    <p>这个站每周整理九个领域的前沿进展和商业化动态，中文、免费、可退订。</p>
+    <p>前沿追踪每周更新九个领域的学术进展与经济动态，中文呈现，免费订阅，可随时退订。</p>
   </header>
   <section class="panel">
-    <h2>欢迎订阅</h2>
-    <p>每周一封邮件，含当周各领域的解读摘要和交易动态，正文附原文链接。</p>
-    <p>也可以直接写信给 <a href="mailto:contact@therasik.com?subject=%E8%AE%A2%E9%98%85%E5%89%8D%E6%B2%BF%E8%BF%BD%E8%B8%AA%E6%AF%8F%E5%91%A8%E6%9B%B4%E6%96%B0">contact@therasik.com</a>，标题写「订阅」，我们手动加进名单。</p>
-
+    <h2>订阅</h2>
+    <p>每周一封邮件，包含当周各领域的解读摘要与交易动态，每条附原文链接。</p>
+    <p>订阅方式：发送邮件至 <a href="mailto:contact@therasik.com?subject=%E8%AE%A2%E9%98%85%E5%89%8D%E6%B2%BF%E8%BF%BD%E8%B8%AA%E6%AF%8F%E5%91%A8%E6%9B%B4%E6%96%B0">contact@therasik.com</a>，标题注明「订阅」，即可加入每周邮件名单。</p>
   </section>
   <section class="panel">
-    <h2>欢迎赞助</h2>
-    <p>目前没有广告位。赞助用于支付文献获取、绘图工具和邮件服务的成本。我们接受以下形式：</p>
-    <ol>
-      <li><b>署名赞助</b>　在首页和每周邮件页脚标注赞助方名称与链接。</li>
-      <li><b>领域冠名</b>　赞助某一个领域的整年解读，在该领域页标注。</li>
-      <li><b>内容合作</b>　就某个主题做深度专题，内容独立，赞助方不干预结论。</li>
-    </ol>
-    <p class="note">赞助位都标「赞助」，和正文分开排。赞助方不参与选题，也不改结论——这条不议。</p>
+    <h2>赞助与合作</h2>
+    <p>赞助用于支持文献获取、绘图工具与邮件服务等运营成本，可选择以下形式：</p>
+    <ul>
+      <li><b>署名赞助</b>　在首页与每周邮件页脚标注赞助方名称与链接。</li>
+      <li><b>领域冠名</b>　冠名某一领域的全年解读，并在该领域页面标注。</li>
+      <li><b>内容合作</b>　围绕特定主题制作深度专题。</li>
+    </ul>
+    <p>赞助内容均会标注并与编辑内容分开呈现，赞助方不参与选题和结论。</p>
+    <p>赞助与合作洽谈：<a href="mailto:contact@therasik.com?subject=%E8%B5%9E%E5%8A%A9%E5%90%88%E4%BD%9C">contact@therasik.com</a></p>
   </section>
 
 </div>
@@ -728,65 +822,47 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 <!-- ============ ABOUT ============ -->
 <div class="wrap view textpage" id="v-about" hidden>
   <header class="hero">
-    <h1>关于</h1>
-    <p>一个人维护的中文研究资讯站，每周整理文献和交易动态。还在起步阶段。</p>
+    <h1>关于我们</h1>
+    <p>前沿追踪（Frontier Digest）由启元智研（北京）生物科技有限公司出品。</p>
   </header>
 
   <section class="panel">
-    <h2>为什么做这个站</h2>
-    <p>ACIR 的周报我每周都看。英文那边还有 Fierce Biotech、Endpoints，一手消息当天就有。中文这边没有对应的东西。等公众号转述，往上两三天，而且转述大多只留一句结论，原文链接也不给，想核对都没处核对。</p>
-    <p>与其每次自己翻，不如顺手写下来。反正文献是要读的。</p>
+    <h2>启元智研与前沿追踪</h2>
+    <p>启元智研为生物医药领域提供科学内容与建站服务。前沿追踪（Frontier Digest）是启元智研出品的中文资讯，每周整理学术文献与产业交易动态，每条内容均附原文出处，供读者直接核对。</p>
   </section>
 
   <section class="panel">
-    <h2>每周更新什么</h2>
-    <p>九个领域：类器官、疾病模型、AI 药物设计、肿瘤免疫与细胞治疗、自身免疫与移植、疫苗与感染免疫、抗体工程、核酸与基因治疗、精准肿瘤与临床转化。每篇解读只归入一个主领域；相关领域用描边标签标出，不重复进其他栏目。</p>
-    <p>每篇解读是一张示意图加一千字以内的评述。示意图由 AI 生成（gpt-image-1），依据论文流程绘制，不是期刊原图，也不代表分子比例。评述分四节写，背景、发现、机制、意义和局限。末尾给作者单位和完整引文，方便你直接去查原文。</p>
-    <p>交易那边记六类：收购、授权、NewCo、临床进展、投资融资、监管政策。金额按首付和里程碑分开写，有多少写多少，来源都挂链接。中国公司出海的授权这两年最多，这一类会盯得紧一些。</p>
+    <h2>内容覆盖</h2>
+    <p><b>学术进展</b>　九个领域：类器官、疾病模型、AI 药物设计、肿瘤免疫与细胞治疗、自身免疫与移植、疫苗与感染免疫、抗体工程、核酸与基因治疗、精准肿瘤与临床转化。每篇解读归入一个主领域，相关领域以描边标签标出。</p>
+    <p>每篇解读包含一张示意图和一千字以内的评述，按背景、发现、机制、意义和局限展开，文末列出作者单位与完整引文。</p>
+    <p><b>经济动态</b>　六类：收购、授权、NewCo、临床进展、投资融资、监管政策。</p>
   </section>
 
   <section class="panel">
-    <h2>做不到的</h2>
-    <p>不是全覆盖。一周能认真读完的就那么几篇，剩下的只能靠领域页的来源清单自己去翻。</p>
-    <p>不给投资建议。商业化动态只记发生了什么和出处，金额和条款都照原文抄，不替你判断值不值。</p>
-    <p>会有错。论文说了什么和我怎么理解，会分开写；只看到摘要或者新闻稿、没读到全文的，会在文里写明是二手。发现错了请告我，更正直接标在原文下面，不悄悄改。</p>
-  </section>
-
-  <section class="panel">
-    <h2>AI 辅助说明</h2>
-    <p>本站使用 AI 工具辅助写作和编辑。具体包括：</p>
+    <h2>编辑原则</h2>
     <ul>
-      <li><b>初稿生成</b>　文献摘要和条目说明的初稿由 Claude 根据原文/摘要起草。</li>
-      <li><b>示意图</b>　配图由 gpt-image-1 生成，是示意图，非期刊原图。</li>
-      <li><b>代码与自动化</b>　站点代码和更新脚本有 AI 辅助编写的部分。</li>
+      <li><b>出处</b>　每条解读与交易均附原文链接；仅依据摘要或新闻稿整理的内容，在文中注明为二手信息。</li>
+      <li><b>交易金额</b>　首付与里程碑分开列示，按公开披露填写，不构成投资建议。</li>
+      <li><b>配图</b>　解读配图为 AI（gpt-image-1）生成的示意图，依据论文流程绘制，非期刊原图，不代表分子比例。</li>
+      <li><b>赞助与利益声明</b>　赞助内容均会标注并与编辑内容分开呈现，赞助方不参与选题和结论；如所报道公司为启元智研客户，将在文首标注。</li>
+      <li><b>更正</b>　发现错误欢迎来信指出，更正直接标注在原文下方。</li>
     </ul>
-    <p>所有发布内容均经编辑逐条核对数字、作者与出处后发布。标注"二手核实"的条目表示未能直接读取原文全文，依据新闻稿或二手来源核实。如发现错误，请来信指出，更正会直接标注在原文下方。</p>
+  </section>
+
+  <section class="panel coblock">
+    <h2>出品方</h2>
+    <img class="colockup" src="assets/brand/qiyuan_logo_A_tight.svg" alt="启元智研 QIYUAN INTELLIGENT RESEARCH" width="252" height="64">
+    <p>前沿追踪由启元智研出品和维护。</p>
   </section>
 
   <section class="panel">
-    <h2>更正记录</h2>
-    <div class="corrections-list">
-      <div class="correction-item"><span class="corr-date">2026-10-08</span><span class="corr-before">a-trap：「近一半样本标签是错的」</span><span class="corr-after">→ 改为「按来源拆开后波动很大（&lt;10% 到 &gt;95%）」，更准确反映原文结论</span></div>
-      <div class="correction-item"><span class="corr-date">2026-10-08</span><span class="corr-before">a-trap：作者「Hunter 等」</span><span class="corr-after">→ 更正为「Messemaker、Kwee 等（Schumacher 组）」</span></div>
-      <div class="correction-item"><span class="corr-date">2026-10-08</span><span class="corr-before">a-invivocar：图注「只进入」</span><span class="corr-after">→ 更正为「主要进入」，更准确</span></div>
-      <div class="correction-item"><span class="corr-date">2026-10-08</span><span class="corr-before">c7-cell-2：「实体血液肿瘤」</span><span class="corr-after">→ 更正为「血液肿瘤」（多发性骨髓瘤是血液肿瘤）</span></div>
-    </div>
-  </section>
-
-  <section class="panel">
-    <h2>赞助与联系</h2>
-    <p>目前没有广告位。如果想赞助本站运营（文献获取、服务器等成本），见<a href="#support">订阅与赞助</a>页。</p>
-    <p>赞助方不参与选题，也不改结论——这条不议。</p>
+    <h2>联系</h2>
     <div class="contact">
       <div class="cc"><span>赞助合作</span><a href="mailto:contact@therasik.com?subject=%E8%B5%9E%E5%8A%A9%E5%90%88%E4%BD%9C">contact@therasik.com</a></div>
       <div class="cc"><span>纠错与建议</span><a href="mailto:contact@therasik.com?subject=%E7%BA%A0%E9%94%99%E4%B8%8E%E5%BB%BA%E8%AE%AE">同一邮箱，标题注明来意</a></div>
       <div class="cc"><span>每周邮件</span><a href="#support">订阅入口</a></div>
     </div>
-  </section>
-
-  <section class="panel">
-    <h2>服务</h2>
-    <p>除了这个站，我们也承接内容和建站项目。详见<a href="#services">服务页面</a>。</p>
+    <p>启元智研的内容与建站服务，见<a href="#services">服务页面</a>。</p>
   </section>
 </div>
 
@@ -794,26 +870,30 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 <div class="wrap view textpage" id="v-services" hidden>
   <header class="hero">
     <h1>服务</h1>
-    <p>TheraSik · 启曜生科 提供的内容和建站服务。</p>
+    <p style="display:flex;align-items:center;gap:8px"><img src="assets/brand/qiyuan_mark_A_tight.svg" alt="" aria-hidden="true" width="28" height="26" style="display:block;height:24px;width:auto;flex:none"><span>启元智研提供的内容与建站服务。</span></p>
   </header>
   <section class="panel">
-    <h2>我们做什么</h2>
-    <p>这个站是自己做的，排版自己写，文案初稿用 AI 起草后人工核对（详见<a href="#about">关于页</a>的 AI 辅助说明）。顺手也接外面的活，主要四类。</p>
-    <p><b>做网页。</b>建站或者改版。你现在看到的这几页就是样品：九个栏目、商业化动态的筛选、手机和桌面两套排版，都是纯静态单页，没有后台，扔到任何静态托管上就能跑，没有月费。要带后台和订阅系统的也能做。</p>
-    <p><b>写内容、做公众号。</b>选题、撰稿、配图、把英文文献和公司公告整理成中文。这正是这个站每周在做的事，只是换成你的名字发。可以按篇结，也可以包月更新。公司新闻稿、融资材料里的科学部分、学术会议的会后整理，都做过类似的。</p>
-    <p><b>写商业计划书和融资材料。</b>生物医药初创的 BP、投资人问答、路演稿，以及尽调清单里要补的那些文档。我写的是技术和市场那部分：管线讲到什么程度、技术路线和竞品怎么摆、临床格局和在研同类药怎么说、适应症的选择理由、机制图和管线图怎么画。数据用你自己的，文献和同类交易我去查并注明出处。财务模型和估值不是我的活，那部分配合你的 CFO 或财务顾问来，我负责让技术故事和数字对得上、口径一致。中英文两版都能写。</p>
-    <p><b>写白皮书。</b>赛道研究、技术路线梳理、市场和竞争格局那一类。一份白皮书通常是：这条路线现在走到哪儿了（谁在做、到了几期、读出来的结论）、几种技术路径的优劣和各自卡在哪、已披露的交易和定价、监管端的口径变化、再给一个判断。文献和交易都标出处，哪一句是公开数据、哪一句是我的推断会分开写。机制图由 AI 生成（如本站配图），非期刊原图。</p>
+    <h2>我们提供的服务</h2>
+    <p>启元智研为生物医药企业与机构提供网站、科学内容、融资材料与行业研究四类服务；前沿追踪即为网站与内容服务的实际样例。</p>
+    <ul>
+      <li><b>网页与建站</b>　新建网站或改版。可做纯静态站点，无需后台，可部署于任意静态托管且无月费；也可做带后台与订阅系统的版本。<br>交付：适配桌面与手机的网站，可直接部署上线。</li>
+      <li><b>内容与公众号</b>　选题、撰稿、配图，将英文文献与公司公告整理为中文；亦可承接新闻稿、融资材料中的科学部分与学术会议会后整理。<br>交付：署客户名义发布的中文稿件与配图，按篇或按月更新。</li>
+      <li><b>商业计划书与融资材料的科学部分</b>　面向生物医药初创企业的 BP、投资人问答、路演稿及尽调补充文档，负责技术与市场部分：管线、技术路线与竞品、临床格局与在研同类药、适应症选择依据。数据由客户提供，文献与同类交易注明出处；财务模型与估值由客户的财务团队或顾问负责，我们确保技术内容与数字口径一致。<br>交付：中英文文稿，以及机制图与管线图。</li>
+      <li><b>白皮书</b>　赛道研究、技术路线梳理、市场与竞争格局分析，涵盖研发进展（参与方、所处阶段、已读出结论）、技术路径比较、已披露交易与定价、监管口径变化与综合判断。<br>交付：白皮书文稿，文献与交易均标注出处，公开数据与分析推断分开表述；机制图为 AI 生成的示意图，非期刊原图。</li>
+    </ul>
   </section>
   <section class="panel">
-    <h2>适合的客户</h2>
-    <p>比较合适的是：刚起步、还没有专职科学编辑的 Biotech；想让技术内容说清楚一点的 CRO 和器械公司；需要有人把尽调材料里的机制讲明白的投资机构。</p>
-    <p>不合适的也直说——纯流量型的营销号、要求结论先定好再找证据的，我不做。</p>
-    <p class="note">利益声明：如所报道公司为本站客户，将在文首标注。本站内容独立于服务项目，客户关系不影响选题和评述。</p>
+    <h2>适合的合作方</h2>
+    <ul>
+      <li>尚未配备专职科学编辑的早期 Biotech。</li>
+      <li>需要清晰呈现技术内容的 CRO 与器械公司。</li>
+      <li>需要梳理尽调材料中作用机制的投资机构。</li>
+    </ul>
+    <p class="note">利益声明：如前沿追踪所报道公司为启元智研客户，将在文首标注。前沿追踪内容独立于服务项目，客户关系不影响选题和评述。</p>
   </section>
   <section class="panel">
     <h2>联系我们</h2>
-    <p>报价看篇幅和交付周期，先聊清楚需求再给数。</p>
-    <p>写信到 <a href="mailto:contact@therasik.com?subject=%E5%90%88%E4%BD%9C%E5%92%A8%E8%AF%A2">contact@therasik.com</a>，说清要做什么、什么时候要。</p>
+    <p>报价根据篇幅与交付周期确定。请将项目内容与时间要求发送至 <a href="mailto:contact@therasik.com?subject=%E5%90%88%E4%BD%9C%E5%92%A8%E8%AF%A2">contact@therasik.com</a>。</p>
   </section>
 </div>
 
@@ -821,25 +901,26 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 
 </div>
 <aside class="rail rail-r" aria-label="右侧信息来源"><div class="railin">
-<!-- R1（原 300×250 广告位）：有赞助商时替换这一块 -->
-<a class="srcard" href="https://www.nature.com" target="_blank" rel="noopener"><b>Nature 系列</b><span class="dom">nature.com</span><em>主刊和各子刊。</em></a>
-<!-- R2（原 300×600 广告位）：有赞助商时替换这一块 -->
-<a class="srcard" href="https://www.science.org" target="_blank" rel="noopener"><b>Science 系列</b><span class="dom">science.org</span><em>《科学》及子刊。</em></a>
-<!-- R3（原 300×250 广告位）：有赞助商时替换这一块 -->
-<a class="srcard" href="https://www.cell.com" target="_blank" rel="noopener"><b>Cell Press</b><span class="dom">cell.com</span><em>Cell 及细胞出版社子刊。</em></a>
-<!-- R4（原 300×250 广告位）：有赞助商时替换这一块 -->
-<a class="srcard" href="https://www.biorxiv.org" target="_blank" rel="noopener"><b>bioRxiv</b><span class="dom">biorxiv.org</span><em>生物学预印本。</em></a>
-<!-- R5（原 300×250 广告位）：有赞助商时替换这一块 -->
-<a class="srcard" href="https://clinicaltrials.gov" target="_blank" rel="noopener"><b>ClinicalTrials.gov</b><span class="dom">clinicaltrials.gov</span><em>临床试验登记。</em></a>
-<!-- 文字链（原 6 个推广链接位）：有赞助商时替换这一块 -->
+<div class="railhead">学术期刊来源</div>
+<a class="srcard" href="https://www.nature.com" target="_blank" rel="noopener">
+  <div class="srcbanner coverbanner"><img src="assets/sources/nature_cover_v658i8135.png" alt="Nature 2026年10月8日期封面" loading="lazy"></div>
+  <div class="srcbody"><b>Nature</b><em>Springer Nature多学科科学期刊</em></div>
+</a>
+<a class="srcard" href="https://www.nature.com/nm" target="_blank" rel="noopener">
+  <div class="srcbanner coverbanner"><img src="assets/sources/naturemedicine_cover_v32i9.png" alt="Nature Medicine 2026年9月刊封面" loading="lazy"></div>
+  <div class="srcbody"><b>Nature Medicine</b><em>Nature旗下医学研究期刊</em></div>
+</a>
+<a class="srcard" href="https://www.biorxiv.org" target="_blank" rel="noopener">
+  <div class="srcbanner logobanner"><img src="assets/sources/biorxiv_logo.png" alt="bioRxiv"></div>
+  <div class="srcbody"><b>bioRxiv</b><em>CSHL生物学预印本服务器</em></div>
+</a>
+<!-- 文字链 -->
 <div class="srgroup"><span class="k">还会翻的</span>
-<a href="https://www.nature.com/nature-index/" target="_blank" rel="noopener">Nature Index</a>
-<a href="https://endpts.com/news-category/deals/" target="_blank" rel="noopener">Endpoints 交易库</a>
-<a href="https://www.biorxiv.org/collection/immunology" target="_blank" rel="noopener">bioRxiv 免疫学</a>
+<a href="https://www.nature.com/nbt" target="_blank" rel="noopener">Nature Biotech</a>
+<a href="https://endpts.com" target="_blank" rel="noopener">Endpoints News</a>
 <a href="https://www.eurekalert.org" target="_blank" rel="noopener">EurekAlert</a>
 </div>
-<!-- 栏底说明，不是广告位 -->
-<a class="srnote" href="#support">这些栏位可用于赞助 · 联系 contact@therasik.com</a>
+<a class="srnote" href="#support">栏位可用于赞助</a>
 </div></aside>
 </div>
 
@@ -847,10 +928,10 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
   <div class="footshell"><div class="foot-in">
     <div class="fbrand">
       <b>前沿追踪</b>
-      <p>TheraSik · 启曜生科 出品。九个领域的前沿进展与商业化动态，中文整理。</p>
+      <p class="fco" style="display:flex;align-items:center;gap:8px"><img src="assets/brand/qiyuan_mark_A_tight.svg" alt="" aria-hidden="true" width="28" height="26" style="display:block;height:26px;width:auto;flex:none"><span>启元智研 出品。九个领域的前沿进展与经济动态，中文整理。</span></p>
     </div>
     <div class="footnav">
-      <a href="#home">首页</a><a href="#fields">领域</a><a href="#deals">商业化动态</a><a href="#archive">存档</a><a href="#about">关于</a><a href="#services">服务</a><a href="#support">订阅</a>
+      <a href="#home">首页</a><a href="#fields">学术进展</a><a href="#deals">经济动态</a><a href="#archive">存档</a><a href="#about">关于</a><a href="#services">服务</a><a href="#support">订阅</a>
     </div>
     <p class="footmail">广告、赞助、纠错都写 <a href="mailto:contact@therasik.com">contact@therasik.com</a></p>
     <p class="footnote">如所报道公司为本站客户，将在文首标注。赞助内容会明确标注「由某方支持」，并与编辑内容分开排版。</p>
@@ -875,6 +956,13 @@ const ICONS={
   cell:'<circle cx="24" cy="26" r="12"/><circle cx="20" cy="23" r="4.5"/><path d="M24 14V8M24 8l-2.5-3M24 8l2.5-3M14 18l-4-4M10 14l-4 .5M10 14l.5-4M34 18l4-4M38 14l4 .5M38 14l-.5-4"/>',
   antibody:'<path d="M24 40V22M24 22L13 10M24 22l11-12"/><circle cx="13" cy="8" r="3"/><circle cx="35" cy="8" r="3"/>',
   lnp:'<circle cx="24" cy="24" r="14"/><path d="M16 20c3 3 5-2 8 0s4 3 7 1M16 29c3 3 5-2 8 0s4 3 7 1"/>',
+  all:'<rect x="10" y="10" width="28" height="28" rx="4"/><path d="M18 24h12M24 18v12"/>',
+  acq:'<path d="M12 32V16a4 4 0 014-4h16a4 4 0 014 4v16a4 4 0 01-4 4H16a4 4 0 01-4-4z"/><path d="M18 24h12M24 18v12"/>',
+  lic:'<path d="M14 12h20v24H14z"/><path d="M18 18h12M18 24h12M18 30h8"/>',
+  newco:'<circle cx="24" cy="20" r="8"/><path d="M16 32h16M20 32v-4M28 32v-4"/>',
+  clin:'<path d="M16 12v24M32 12v24"/><circle cx="24" cy="20" r="6"/><path d="M24 26v6"/>',
+  inv:'<path d="M12 36l8-12 6 6 10-18"/><circle cx="36" cy="12" r="3"/>',
+  policy:'<rect x="14" y="10" width="20" height="28" rx="2"/><path d="M18 18h12M18 24h12M18 30h8"/>',
   vaccine:'<rect x="12" y="18" width="22" height="11" rx="2.5"/><path d="M34 23.5h7M41 23.5l4-3M12 23.5H7M9 19v9M18 18v11M24 18v11M30 18v11"/>',
   model:'<ellipse cx="24" cy="30" rx="15" ry="6"/><path d="M24 24V15"/><path d="M11 16c4-5 9-5 13 0 4-5 9-5 13 0"/>',
   acq:'<circle cx="18" cy="24" r="10"/><circle cx="30" cy="24" r="10"/>',
@@ -895,7 +983,8 @@ function cover(kind,cvar,img,fb){
       ${ICONS[kind]||ICONS.cell}</g></svg></div>`;
 }
 function icon(kind,cvar,cls){
-  const c=(cvar&&String(cvar).startsWith('#'))?cvar:`var(--${cvar})`;
+  const s=String(cvar||'');
+  const c=s.startsWith('#')||s.startsWith('var(')?s:`var(--${cvar})`;
   return `<span class="ic ${cls||''}" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none"
     stroke="${c}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
     <rect x="1.5" y="1.5" width="45" height="45" rx="11" fill="${c}" fill-opacity=".09" stroke="none"/>
@@ -912,6 +1001,18 @@ function fieldThumb(f){
   const key=(f&&f.k)||f;
   const color=(f&&f.color)||key;
   return `<span class="fthumb">${icon(FIELD_MOTIF[key]||'cell',color)}<img src="img/pal/fields/${FIELD_IMG[key]||FIELD_IMG.organoid}?v=1" alt="" loading="lazy" onerror="this.remove()"></span>`;
+}
+function fieldArt(f){
+  const key=(f&&f.k)||f, color=(f&&f.color)||key;
+  return `<span class="artthumb">${icon(FIELD_MOTIF[key]||'cell',color)}<img src="img/pal/fields/${FIELD_IMG[key]||FIELD_IMG.organoid}?v=1" alt="" loading="lazy" onerror="this.remove()"></span>`;
+}
+// 交易类型卡配图：Grok 生成的装饰插画，裁成方图（img/pal/kinds/tiles/*_grok_v1.jpg）
+const KIND_TILE={all:'all_grok_v1.jpg',acq:'acq_grok_v1.jpg',lic:'lic_grok_v1.jpg',inv:'inv_grok_v1.jpg',clin:'clin_grok_v1.jpg',policy:'policy_grok_v1.jpg'};
+function kindArt(key,color){
+  return `<span class="artthumb">${icon(key,color)}${KIND_TILE[key]?`<img src="img/pal/kinds/tiles/${KIND_TILE[key]}?v=1" alt="" loading="lazy" onerror="this.remove()">`:''}</span>`;
+}
+function mosaicArt(srcs){
+  return `<span class="artthumb mosaic" aria-hidden="true">${srcs.map(u=>`<img src="${u}" alt="" loading="lazy">`).join('')}</span>`;
 }
 const FIELD_MOTIF={organoid:'organoid',ai:'net',immuno:'cell',autoimm:'antibody',animal:'model',antibody:'antibody',vaccine:'vaccine',nucleic:'lnp',precision:'cell',
   c1:'organoid',c2:'net',c3:'cell',c4:'antibody',c5:'model',c6:'antibody',c7:'cell',c8:'vaccine',c9:'lnp'};
@@ -1080,7 +1181,7 @@ document.querySelectorAll('.tabs .chip').forEach(b=>b.onclick=()=>{
   document.getElementById('tab-byfield').hidden = b.dataset.tab!=='byfield';
 });
 
-const KINDS={acq:['收购','var(--c3)'],lic:['授权交易','var(--c2)'],newco:['NewCo','var(--c7)'],clin:['临床进展','var(--c1)'],inv:['投资融资','var(--c5)'],policy:['监管政策','var(--c6)']};
+const KINDS={acq:['收购','var(--c3)','公司或资产的整体并购'],lic:['授权交易','var(--c2)','药物或技术权益的许可合作'],newco:['NewCo','var(--c7)','分拆或新设公司持有特定资产'],clin:['临床进展','var(--c1)','临床试验数据读出或推进'],inv:['投资融资','var(--c5)','风险投资、IPO、定增等'],policy:['监管政策','var(--c6)','FDA/EMA等监管机构政策变化']};
 const DEALS=[
  {d:'2026-10',kinds:['lic'],t:'诺华拿下艾博生物 mRNA 体内 T 细胞衔接器 ABO2203 全球权益',m:'首付 5.75 亿美元，总额至多约 78 亿美元',ms:'首付 5.75 亿 + 里程碑至多约 72 亿（含全部期权行权）+ 销售提成',why:'ABO2203 不是体内 CAR-T，而是用脂质纳米颗粒把编码 CD19×CD3 T 细胞衔接器的 mRNA 送进体内，让患者自己的细胞“生产”双抗去清除 B 细胞。目前在难治性自身免疫病的一期研究中，首批公开的是 3 例难治性继发性免疫性血小板减少症患者。诺华另获艾博 mRNA/LNP 平台下一代资产的独家期权。值得注意的是，首付 5.75 亿美元对一个早期一期资产相当高，说明大药企愿意为“体内生成生物药”这条路线提前下注，且 mRNA 公司在疫苗之外找到了自身免疫这一新出口。',src:'AllSci（2026-10-02）',url:'https://allsci.com/news/licensing-and-partnerships/abogen-novartis-deal-secures-usd-575m-upfront/'},
  {d:'2026-09',kinds:['inv'],t:'AI 制药公司 Enveda 完成 3.11 亿美元 E 轮融资',m:'3.11 亿美元',ms:'E 轮；Catalio 领投，另有 16 家机构跟投，含一家主权基金',why:'Enveda 用 AI 从植物和微生物等天然来源中识别分子、预测结构和功能，再交给化学家优化成候选药，累计融资已超 8 亿美元。三款药物在人体试验中：ENV-294 是口服“分子胶”，小型 1b 期显示可能减轻湿疹，正在做湿疹和哮喘二期；ENV-308 模拟运动或进食后分泌的激素，计划研究停用 GLP-1 后维持减重；ENV-6949 靶向 TL1A 通路治疗炎症性肠病。资本市场对 AI 制药的态度已转向看临床管线，Enveda 有三款临床分子是能拿到大额融资的关键。',src:'BioPharma Dive（2026-09-23）',url:'https://www.biopharmadive.com/news/enveda-ai-drug-discovery-series-e/831161/'},
@@ -1108,35 +1209,38 @@ const DEALS=[
 
 
 
-// 八格追踪器：数字全部由数据算出，不手写
+// 追踪器：数字全部由数据算出，不手写
+// Display groups: merge NewCo into 投资融资 for display, but data keeps original kinds
+const DISPLAY_GROUPS=[
+  ['all','全部动态','var(--accent)','所有类型的交易与政策',['all']],
+  ['acq','收购','var(--c3)','公司或资产的整体并购',['acq']],
+  ['lic','授权交易','var(--c2)','药物或技术权益的许可合作',['lic']],
+  ['inv','投资融资','var(--c5)','风险投资、IPO、定增、新设公司(NewCo)',['inv','newco']],
+  ['clin','临床进展','var(--c1)','临床试验数据读出或推进',['clin']],
+  ['policy','监管政策','var(--c6)','FDA/EMA等监管机构政策变化',['policy']]
+];
+function groupCount(kinds){return DEALS.filter(x=>kinds.some(k=>k==='all'||x.kinds.includes(k))).length;}
 function renderTracker(){
   const el=document.getElementById('tracker');
   if(!el) return;
-  const kindCount=k=>DEALS.filter(x=>x.kinds.includes(k)).length;
-  const srcs=new Set(DEALS.map(x=>x.src)).size;
-  const tiles=[
-    ['收录动态',DEALS.length+' 条','var(--accent)','#deals?kind=all','all'],
-    ['收购',kindCount('acq')+' 条',KINDS.acq[1],'#deals?kind=acq','acq'],
-    ['授权交易',kindCount('lic')+' 条',KINDS.lic[1],'#deals?kind=lic','lic'],
-    ['NewCo',kindCount('newco')+' 条',KINDS.newco[1],'#deals?kind=newco','newco'],
-    ['临床进展',kindCount('clin')+' 条',KINDS.clin[1],'#deals?kind=clin','clin'],
-    ['投资融资',kindCount('inv')+' 条',KINDS.inv[1],'#deals?kind=inv','inv'],
-    ['监管政策',kindCount('policy')+' 条',KINDS.policy[1],'#deals?kind=policy','policy'],
-    ['收录解读',visibleCat().length+' 篇','var(--c6)','#home?sec=articles',''],
-  ];
-  // 每格都是链接：交易类筛选下方“最新更新”（#deals?kind=xx，可分享、可后退），收录解读跳到首页解读区
-  el.innerHTML=tiles.map(([k,v,c,href,fk])=>`<a class="tile" href="${href}" style="--tkc:${c}"${fk&&fk===filter?' aria-current="true"':''} aria-label="${k} ${v}，${fk?(fk==='all'?'查看全部动态':'只看'+k):'查看解读'}"><span class="tv">${v}</span><span class="tk">${k}</span></a>`).join('');
+  el.innerHTML=DISPLAY_GROUPS.map(([key,name,color,desc,kinds])=>{
+    const n=key==='all'?DEALS.length:groupCount(kinds);
+    const active=kinds.includes(filter)||(key==='all'&&filter==='all');
+    if(!n&&key!=='all') return `<span class="trkcard art" style="--dc:${color};opacity:.5" aria-disabled="true">
+      ${kindArt(key,color)}<div class="cbody"><b>${name}</b><span>${desc}</span><em>0 条</em></div></span>`;
+    return `<a class="trkcard art" href="#deals?kind=${key}" style="--dc:${color}"${active?' aria-current="true"':''}>
+      ${kindArt(key,color)}<div class="cbody"><b>${name}</b><span>${desc}</span><em>${n} 条</em></div></a>`;
+  }).join('');
 }
-
 let filter='all';
 const chips=document.getElementById('chips'), feed=document.getElementById('feed'), dc=document.getElementById('dealcount');
 function renderChips(){
-  const all=[['all',['全部','var(--accent)']],...Object.entries(KINDS)];
-  chips.innerHTML=all.map(([k,[label]])=>{
-    const n=k==='all'?DEALS.length:DEALS.filter(x=>x.kinds.includes(k)).length;
-    return `<button class="chip" type="button" data-k="${k}" aria-pressed="${filter===k}">${label} ${n}</button>`;
+  chips.innerHTML=DISPLAY_GROUPS.map(([key,name,color,desc,kinds])=>{
+    const n=key==='all'?DEALS.length:groupCount(kinds);
+    const active=kinds.includes(filter)||(key==='all'&&filter==='all');
+    return `<button class="chip" type="button" data-k="${key}" aria-pressed="${active}">${name.replace('动态','').replace('交易','')} ${n}</button>`;
   }).join('');
-  chips.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{filter=b.dataset.k;history.pushState(null,'','#deals?kind='+filter);renderChips();renderFeed()});
+  chips.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{filter=b.dataset.k;history.pushState(null,'','#deals?kind='+filter);renderChips();renderTracker();renderFeed()});
 }
 function escAttr(s){return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function dealCard(x,i){
@@ -1232,19 +1336,15 @@ function repaintCatalog(){
   const fl=document.getElementById('fieldlist');
   fl.innerHTML=FIELDS.map(f=>{
     const n=artsOf(f.k).length;
-    return `<a class="fcard" style="--dc:${f.color||'var(--accent)'}" href="#fields?f=${f.k}">${fieldThumb(f)}<div class="cbody"><b>${f.n}</b><span>${f.d||''}</span><em>${n} 篇</em></div></a>`;
+    return `<a class="fcard art" style="--dc:${f.color||'var(--accent)'}" href="#fields?f=${f.k}">${fieldThumb(f)}<div class="cbody"><b>${f.n}</b><span>${f.d||''}</span><em>${n} 篇</em></div></a>`;
   }).join('');
-  document.getElementById('fieldlist2').innerHTML=fl.innerHTML;
   renderFields();
   renderTracker();
   renderChips();
   fitCardChips();
   lgHtml=document.getElementById('latestgrid').innerHTML;
-  const deepCount=vis.filter(a=>a.curated||a.deep||a.status==='published').length;
-  const surveyCount=vis.length-deepCount;
-  const hd=document.getElementById('hb-deep'), hs=document.getElementById('hb-survey'), hb=document.getElementById('hb-deals');
-  if(hd)hd.textContent=deepCount;
-  if(hs)hs.textContent=surveyCount;
+  const hd=document.getElementById('hb-deep'), hb=document.getElementById('hb-deals');
+  if(hd)hd.textContent=vis.length;
   if(hb)hb.textContent=DEALS.length;
 }
 // 领域页：版式照搬商业化动态（追踪器卡片 + 筛选条 + 一个统一卡片网格）。只按主领域筛选，#fields?f=organoid 可分享、可后退
@@ -1254,10 +1354,17 @@ function fieldArts(){
 }
 function renderFieldTracker(all){
   const el=document.getElementById('ftracker'); if(!el) return;
-  const tiles=[['全部解读',all.length,'var(--accent)','all'],...FIELDS.map(f=>[f.n,all.filter(a=>a.f===f.k).length,f.color||'var(--accent)',f.k])];
-  el.innerHTML=tiles.map(([k,n,c,fk])=>n||fk==='all'
-    ?`<a class="tile" href="#fields?f=${fk}" style="--tkc:${c}"${fk===ffilter?' aria-current="true"':''} aria-label="${k} ${n} 篇，${fk==='all'?'查看全部解读':'只看'+k}"><span class="tv">${n} 篇</span><span class="tk">${k}</span></a>`
-    :`<span class="tile nil" style="--tkc:${c}" aria-disabled="true" title="暂无解读"><span class="tv">0 篇</span><span class="tk">${k}</span></span>`).join('');
+  const allCard=`<a class="trkcard art" href="#fields?f=all" style="--dc:var(--accent)"${ffilter==='all'?' aria-current="true"':''}>
+    <span class="artthumb">${icon('all','accent')}<img src="img/pal/fields/all_grok_v1.jpg?v=1" alt="" loading="lazy" onerror="this.remove()"></span><div class="cbody"><b>全部解读</b><span>所有领域的论文解读</span><em>${all.length} 篇</em></div></a>`;
+  const fieldCards=FIELDS.map(f=>{
+    const n=all.filter(a=>a.f===f.k).length;
+    const motif=FIELD_MOTIF[f.k]||'cell';
+    if(!n) return `<span class="trkcard art" style="--dc:${f.color||'var(--accent)'};opacity:.5" aria-disabled="true">
+      ${fieldArt(f)}<div class="cbody"><b>${f.n}</b><span>${f.d||''}</span><em>0 篇</em></div></span>`;
+    return `<a class="trkcard art" href="#fields?f=${f.k}" style="--dc:${f.color||'var(--accent)'}"${ffilter===f.k?' aria-current="true"':''}>
+      ${fieldArt(f)}<div class="cbody"><b>${f.n}</b><span>${f.d||''}</span><em>${n} 篇</em></div></a>`;
+  }).join('');
+  el.innerHTML=allCard+fieldCards;
 }
 function renderFields(){
   const grid=document.getElementById('fieldgrid'); if(!grid) return;
@@ -1279,8 +1386,11 @@ function renderFields(){
   if(!document.getElementById('v-fields').hidden) fitCardChips(grid.parentNode);
 }
 function renderFeed(){
-  const rows=DEALS.filter(x=>filter==='all'||x.kinds.includes(filter));
-  dc.innerHTML=filter==='all'?`共 ${rows.length} 条，按时间倒序`:`已筛选「${KINDS[filter][0]}」${rows.length} 条 · <a class="clearf" href="#deals?kind=all">显示全部 ×</a>`;
+  const grp=DISPLAY_GROUPS.find(g=>g[0]===filter);
+  const filterKinds=grp?grp[4]:['all'];
+  const rows=DEALS.filter(x=>filter==='all'||filterKinds.some(k=>x.kinds.includes(k)));
+  const label=grp?grp[1]:'全部动态';
+  dc.innerHTML=filter==='all'?`共 ${rows.length} 条，按时间倒序`:`已筛选「${label}」${rows.length} 条 · <a class="clearf" href="#deals?kind=all">显示全部 ×</a>`;
   renderTracker();
   if(!rows.length){feed.innerHTML='<div class="empty">这个分类暂无条目。只收录有公开披露金额或双方确认的交易，等到有确切条目时再补。</div>';return}
   feed.innerHTML=rows.map((x,i)=>dealCard(x,'f'+i)).join('');
@@ -1291,6 +1401,10 @@ const hfHtml=DEALS.slice(0,4).map((x,i)=>dealCard(x,'h'+i)).join('');
 const lg=document.getElementById('latestgrid');
 let lgHtml='';
 function refit(){ setHtml(lg,lgHtml); setHtml(hf,hfHtml); fitCardChips(); }
+document.getElementById('showallbtn').onclick=function(){
+  lg.classList.remove('limited');
+  this.style.display='none';
+};
 let rt;
 addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{
   fitCardChips();
@@ -1305,7 +1419,7 @@ addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{
 
 const views=[...document.querySelectorAll('.view')];
 const REDIRECTS={'c9-rna-4':'c7-cell-2','c9-rna-1':'c8-vac-5','c4-ai-3':'c7-cell-1','c6-ab-1':'c2-ai-1','c5-am-4':'c8-vac-2','c6-ab-2':'c2-ai-5'};
-const TITLES={home:'前沿追踪 - 中文生物医药前沿资讯',fields:'领域浏览 - 前沿追踪',deals:'商业化动态 - 前沿追踪',archive:'存档 - 前沿追踪',about:'关于我们 - 前沿追踪',support:'订阅 - 前沿追踪',services:'服务 - 前沿追踪'};
+const TITLES={home:'前沿追踪 - 中文生物医药前沿资讯',fields:'学术进展 - 前沿追踪',deals:'经济动态 - 前沿追踪',archive:'存档 - 前沿追踪',about:'关于我们 - 前沿追踪',support:'订阅 - 前沿追踪',services:'服务 - 前沿追踪'};
 function route(){
   let h=(location.hash||'#home').slice(1);
   // Handle /a/{id} format from static share pages
@@ -1339,9 +1453,9 @@ function route(){
   }
   document.title=pageTitle;
   views.forEach(v=>{v.hidden = v.id!=='v-'+target});
-  if(target==='deals'){ const k=q.get('kind'); filter=(k&&KINDS[k])?k:'all'; renderChips(); renderFeed(); }
+  if(target==='deals'){ const k=q.get('kind'); filter=(k&&DISPLAY_GROUPS.some(g=>g[0]===k))?k:'all'; renderChips(); renderFeed(); }
   if(target==='fields'){ const f=q.get('f'); ffilter=(f&&FIELDS.some(x=>x.k===f))?f:'all'; renderFields(); }
-  if(target==='home') refit();
+  if(target==='home'){ refit(); lg.classList.add('limited'); document.getElementById('showallbtn').style.display=''; }
   /* Grid columns now controlled purely by CSS */
   document.querySelectorAll('.nav-in a').forEach(a=>a.classList.toggle('on',a.dataset.v===target));
   const jump=target==='deals'&&q.has('kind')?'dealfeed':target==='fields'&&q.has('f')?'fieldfeed':(target==='home'&&q.get('sec')==='articles'?'articles':'');

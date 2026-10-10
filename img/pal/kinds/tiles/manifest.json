@@ -1,0 +1,83 @@
+{
+  "description": "Square tiles for the 经济动态 按类型浏览 cards and the 学术进展 全部解读 card. *_grok_v1.jpg (in use) are Grok-generated decorative illustrations supplied by the user (1280x720 sources, centre-cropped / edge-padded to square, 320x320). *_tile_v1.jpg (kept, unused) were cropped from existing img/pal/kinds/v6 art. Not source/journal logos.",
+  "ai_generated_origin": true,
+  "tiles": [
+    {
+      "file": "acq_tile_v1.jpg",
+      "kind": "收购",
+      "derived_from": "img/pal/kinds/v6/acq_7.jpg"
+    },
+    {
+      "file": "lic_tile_v1.jpg",
+      "kind": "授权交易",
+      "derived_from": "img/pal/kinds/v6/lic_1.jpg"
+    },
+    {
+      "file": "inv_tile_v1.jpg",
+      "kind": "投资融资",
+      "derived_from": "img/pal/kinds/v6/inv_1.jpg"
+    },
+    {
+      "file": "clin_tile_v1.jpg",
+      "kind": "临床进展",
+      "derived_from": "img/pal/kinds/v6/clin_1.jpg"
+    },
+    {
+      "file": "policy_tile_v1.jpg",
+      "kind": "监管政策",
+      "derived_from": "img/pal/kinds/v6/policy_2.jpg"
+    }
+  ],
+  "grok_tiles": [
+    {
+      "file": "img/pal/kinds/tiles/all_grok_v1.jpg",
+      "kind": "全部动态",
+      "generator": "Grok image generation",
+      "source_file": "agents/534567fc-8a02-4f7c-b06f-28e3d9ebdff0/assets/48edd73f91e256e6e520d6d0fa5939bc5c68a6e63654d606485b7550f6d49430.jpg",
+      "size": "320x320"
+    },
+    {
+      "file": "img/pal/kinds/tiles/acq_grok_v1.jpg",
+      "kind": "收购",
+      "generator": "Grok image generation",
+      "source_file": "agents/534567fc-8a02-4f7c-b06f-28e3d9ebdff0/assets/7c46ee97d02cc11dd134315f0379393ee4877dcf357743e12b55780e33a93e3d.jpg",
+      "size": "320x320"
+    },
+    {
+      "file": "img/pal/kinds/tiles/lic_grok_v1.jpg",
+      "kind": "授权交易",
+      "generator": "Grok image generation",
+      "source_file": "agents/534567fc-8a02-4f7c-b06f-28e3d9ebdff0/assets/6cb6f2aa38a22fe6bd54b2eae33bb4d6455e52ee697e35120cedcf294d8dde6e.jpg",
+      "size": "320x320"
+    },
+    {
+      "file": "img/pal/kinds/tiles/inv_grok_v1.jpg",
+      "kind": "投资融资",
+      "generator": "Grok image generation",
+      "source_file": "agents/534567fc-8a02-4f7c-b06f-28e3d9ebdff0/assets/43bcb6a8523006a32a634db3306ef54a17ca7d554246c18503ebc6fbbdb67d18.jpg",
+      "size": "320x320"
+    },
+    {
+      "file": "img/pal/kinds/tiles/clin_grok_v1.jpg",
+      "kind": "临床进展",
+      "generator": "Grok image generation",
+      "source_file": "agents/534567fc-8a02-4f7c-b06f-28e3d9ebdff0/assets/7a775fcd2e53718ba90a7b60fc030b26a6689163dc78381713db7021acfb92f2.jpg",
+      "size": "320x320"
+    },
+    {
+      "file": "img/pal/kinds/tiles/policy_grok_v1.jpg",
+      "kind": "监管政策",
+      "generator": "Grok image generation",
+      "source_file": "agents/534567fc-8a02-4f7c-b06f-28e3d9ebdff0/assets/68ae618c93b00456c6ea2668365aae20f4c7f7163c12348f691d9003159090c0.jpg",
+      "size": "320x320"
+    },
+    {
+      "file": "img/pal/fields/all_grok_v1.jpg",
+      "kind": "全部解读",
+      "generator": "Grok image generation",
+      "source_file": "agents/534567fc-8a02-4f7c-b06f-28e3d9ebdff0/assets/a8052a320bbe0e722110fa654952b179126a0aed9900a3c3c6d1ce979b112fb7.jpg",
+      "size": "320x320"
+    }
+  ],
+  "tiles_note": "tiles[] entries (*_tile_v1.jpg) are retained but no longer referenced by index.html."
+}
