@@ -1,6 +1,36 @@
 {
   "sources": [
     {
+      "id": "nature_cover",
+      "name": "Nature",
+      "logo": "nature_cover_v658i8135.png",
+      "logo_source": "https://media.springernature.com/w440/springer-static/cover-hires/journal/41586/658/8135",
+      "source_page": "https://www.nature.com/nature/current-issue",
+      "size": "440x584",
+      "format": "PNG",
+      "description": "Official Nature cover, Volume 658 Issue 8135 (8 October 2026), from nature.com current-issue page"
+    },
+    {
+      "id": "naturemedicine_cover",
+      "name": "Nature Medicine",
+      "logo": "naturemedicine_cover_v32i9.png",
+      "logo_source": "https://media.springernature.com/w440/springer-static/cover-hires/journal/41591/32/9",
+      "source_page": "https://www.nature.com/nm/current-issue",
+      "size": "440x585",
+      "format": "PNG",
+      "description": "Official Nature Medicine cover, Volume 32 Issue 9 (September 2026), from nature.com current-issue page"
+    },
+    {
+      "id": "biorxiv_logo",
+      "name": "bioRxiv",
+      "logo": "biorxiv_logo.png",
+      "logo_source": "https://connect.biorxiv.org/bioRxiv_logo_sm_0.png",
+      "source_page": "https://connect.biorxiv.org/",
+      "size": "239x83",
+      "format": "PNG",
+      "description": "Official bioRxiv colored wordmark from connect.biorxiv.org (bioRxiv's own subdomain); www.biorxiv.org returned HTTP 429 (Cloudflare)"
+    },
+    {
       "id": "nature_banner",
       "name": "Nature",
       "logo": "nature_banner.png",
@@ -84,12 +114,6 @@
   ],
   "text_badges": [
     {
-      "id": "biorxiv",
-      "name": "bioRxiv",
-      "badge_text": "bioRxiv",
-      "reason": "Official images blocked by Cloudflare protection"
-    },
-    {
       "id": "endpoints",
       "name": "Endpoints News",
       "badge_text": "Endpoints",
@@ -97,5 +121,5 @@
     }
   ],
   "last_updated": "2026-10-10",
-  "notes": "Banner images use official og:image, apple-touch-icon (≥180px), or SVG logos from each source. Sources without accessible large official images use text badges."
+  "notes": "Banner images use official og:image, apple-touch-icon (≥180px), or SVG logos from each source. Sources without accessible large official images use text badges. Nature and Nature Medicine rail cards use the official current-issue cover images (nature.com); bioRxiv uses its official wordmark."
 }
