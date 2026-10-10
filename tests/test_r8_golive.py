@@ -318,6 +318,35 @@ class R8GoLiveTests(unittest.TestCase):
                 f"{a['id']}: quick_look contains no digits; expected Arabic numerals"
             )
 
+    def test_old_company_name_removed(self):
+        """启曜生科 must not appear outside DEALS data block."""
+        old_name = "启曜生科"
+        index_html = ROOT / "index.html"
+        content = index_html.read_text(encoding="utf-8")
+        
+        # Extract DEALS block to exclude it from the check
+        deals_match = re.search(r'const DEALS\s*=\s*\[(.*?)\];', content, re.DOTALL)
+        deals_block = deals_match.group(0) if deals_match else ""
+        
+        # Remove DEALS block from content for checking
+        content_without_deals = content.replace(deals_block, "")
+        
+        self.assertNotIn(
+            old_name,
+            content_without_deals,
+            f"Old company name '{old_name}' still appears in index.html outside DEALS"
+        )
+        
+        # Check build_pages.py
+        build_py = ROOT / "build_pages.py"
+        if build_py.exists():
+            build_content = build_py.read_text(encoding="utf-8")
+            self.assertNotIn(
+                old_name,
+                build_content,
+                f"Old company name '{old_name}' still appears in build_pages.py"
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

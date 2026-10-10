@@ -103,7 +103,7 @@ ARTICLE_FOOT = f"""<footer>
   <div class="footshell"><div class="foot-in">
     <div class="fbrand">
       <b>前沿追踪</b>
-      <p>TheraSik · 启曜生科 出品。九个领域的前沿进展与商业化动态，中文整理。</p>
+      <p>TheraSik · 启元智研 出品。九个领域的前沿进展与经济动态，中文整理。</p>
     </div>
     <div class="footnav">
       <a href="{SITE_URL}/#home">首页</a><a href="{SITE_URL}/#fields">领域</a><a href="{SITE_URL}/#deals">商业化动态</a><a href="{SITE_URL}/#archive">存档</a><a href="{SITE_URL}/#about">关于</a><a href="{SITE_URL}/#support">订阅</a>

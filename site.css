@@ -213,13 +213,14 @@ a.tile .tk::after{content:" →";opacity:.55}
 .view{min-height:62vh;align-content:start;min-width:0}
 .rail{display:none}
 @media (min-width:1400px){
-  .shell{display:grid;grid-template-columns:168px minmax(0,1fr) 168px;gap:18px;max-width:1480px;padding:0 10px}
-  /* 广告栏高度跟随正文：绝对定位不参与撑高，超出正文的广告位被裁掉，页尾不留空白 */
-  .rail{display:block;position:relative;overflow:hidden}
-  .railin{position:absolute;inset:0;display:grid;gap:12px;align-content:start;padding-top:30px}
+  .shell{display:grid;grid-template-columns:180px minmax(0,1fr) 180px;gap:18px;max-width:1520px;padding:0 10px}
+  .rail{display:block;position:sticky;top:60px;height:calc(100vh - 80px);overflow-y:auto;background:color-mix(in srgb,var(--surface) 60%,var(--bg));border-radius:12px;padding:12px}
+  .railin{display:grid;gap:10px;align-content:start}
+  .rail-l{border-right:1px solid var(--line)}
+  .rail-r{border-left:1px solid var(--line)}
 }
 @media (min-width:1700px){
-  .shell{grid-template-columns:176px minmax(0,1fr) 312px;max-width:1700px}
+  .shell{grid-template-columns:220px minmax(0,1fr) 220px;max-width:1780px}
 }
 .adbox{border:1px dashed var(--line);border-radius:9px;background:var(--surface);display:grid;place-content:center;gap:3px;text-align:center;padding:8px 6px}
 .adbox b{font-size:11.5px;letter-spacing:.05em;color:var(--accent);font-weight:700}
@@ -233,11 +234,14 @@ a.tile .tk::after{content:" →";opacity:.55}
 .adtext b{font-size:11px;letter-spacing:.05em;color:var(--accent);font-weight:700}
 .adtext span{font-size:11px;color:var(--muted);border-bottom:1px dotted var(--line);padding-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .adtext span:last-child{border-bottom:0;padding-bottom:0}
-.srcard{display:grid;gap:1px;padding:7px 8px 8px;border:1px solid var(--line);border-radius:9px;background:var(--surface);text-decoration:none;color:inherit;min-width:0}
+.srcard{display:grid;grid-template-columns:24px 1fr;gap:6px;padding:8px;border:1px solid var(--line);border-radius:9px;background:var(--surface);text-decoration:none;color:inherit;min-width:0;align-items:start}
 .srcard:hover{border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+.srcard .srclogo{width:24px;height:24px;border-radius:4px;object-fit:contain;background:#fff}
+.srcard .srcbody{display:grid;gap:2px;min-width:0}
 .srcard b{font-size:12px;line-height:1.25;font-family:var(--display);font-weight:800}
 .srcard .dom{font-size:10px;color:var(--accent);font-weight:700;overflow-wrap:anywhere}
 .srcard em{font-size:11px;line-height:1.35;color:var(--muted);font-style:normal}
+.railhead{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:4px 0 6px;border-bottom:1px solid var(--line);margin-bottom:4px}
 .srgroup{border:1px solid var(--line);border-radius:9px;background:var(--surface);padding:7px 8px 8px;display:grid;gap:3px;min-width:0}
 .srgroup .k{font-size:10px;letter-spacing:.08em;font-weight:700;color:var(--muted)}
 .srgroup a{font-size:11.5px;font-weight:700;line-height:1.3}

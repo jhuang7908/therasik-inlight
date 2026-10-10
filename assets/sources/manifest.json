@@ -1,0 +1,76 @@
+{
+  "sources": [
+    {
+      "id": "nature",
+      "name": "Nature",
+      "logo": "nature.png",
+      "logo_source": "https://www.nature.com/static/images/favicons/nature/favicon-32x32.png",
+      "url": "https://www.nature.com",
+      "description": "Nature是全球顶尖的多学科科学期刊，由Springer Nature出版，覆盖生命科学、物理、化学等领域。",
+      "type": "journal",
+      "count": 13
+    },
+    {
+      "id": "nature-medicine",
+      "name": "Nature Medicine",
+      "logo": "nature.png",
+      "logo_source": "https://www.nature.com/static/images/favicons/nature/favicon-32x32.png",
+      "url": "https://www.nature.com/nm",
+      "description": "Nature Medicine是Nature旗下的医学研究期刊，发表临床和转化医学领域的原创研究。",
+      "type": "journal",
+      "count": 4
+    },
+    {
+      "id": "nature-biotech",
+      "name": "Nature Biotechnology",
+      "logo": "nature.png",
+      "logo_source": "https://www.nature.com/static/images/favicons/nature/favicon-32x32.png",
+      "url": "https://www.nature.com/nbt",
+      "description": "Nature Biotechnology关注生物技术领域的前沿研究与商业化进展。",
+      "type": "journal",
+      "count": 3
+    },
+    {
+      "id": "biopharmadive",
+      "name": "BioPharma Dive",
+      "logo": "biopharmadive.ico",
+      "logo_source": "https://www.biopharmadive.com/favicon.ico",
+      "url": "https://www.biopharmadive.com",
+      "description": "BioPharma Dive是Industry Dive旗下的生物制药行业新闻媒体，报道交易、监管和临床进展。",
+      "type": "news",
+      "count": 4
+    },
+    {
+      "id": "biospace",
+      "name": "BioSpace",
+      "logo": "biospace.ico",
+      "logo_source": "https://www.biospace.com/favicon.ico",
+      "url": "https://www.biospace.com",
+      "description": "BioSpace是生命科学行业的招聘与新闻平台，提供公司新闻稿和行业动态。",
+      "type": "news",
+      "count": 2
+    },
+    {
+      "id": "fiercebiotech",
+      "name": "Fierce Biotech",
+      "logo": "fiercebiotech.ico",
+      "logo_source": "https://www.fiercebiotech.com/favicon.ico",
+      "url": "https://www.fiercebiotech.com",
+      "description": "Fierce Biotech是Questex旗下的生物技术行业新闻媒体，覆盖研发、融资和监管动态。",
+      "type": "news",
+      "count": 1
+    },
+    {
+      "id": "fda",
+      "name": "FDA",
+      "logo": "fda.ico",
+      "logo_source": "https://www.fda.gov/favicon.ico",
+      "url": "https://www.fda.gov",
+      "description": "美国食品药品监督管理局(FDA)是美国联邦政府机构，负责药品、医疗器械等的监管。",
+      "type": "regulatory",
+      "count": 2
+    }
+  ],
+  "generated": "2026-10-10",
+  "note": "Logos downloaded from official websites. Some sources use text badges instead of logos."
+}
