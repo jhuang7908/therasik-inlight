@@ -120,7 +120,6 @@ nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:color-
 /* Tracker cards: fcard style for fields and deals trackers */
 .trkgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 @media (max-width:900px){.trkgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (max-width:520px){.trkgrid{grid-template-columns:1fr}}
 .trkcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;grid-template-columns:40px minmax(0,1fr);gap:10px;align-items:center;color:inherit;text-decoration:none}
 .trkcard:hover{border-color:color-mix(in srgb,var(--dc,var(--accent)) 45%,var(--line))}
 .trkcard[aria-current="true"]{background:color-mix(in srgb,var(--dc,var(--accent)) 9%,var(--surface));border-color:var(--dc,var(--accent))}
@@ -647,14 +646,14 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
   <section class="subblock">
     <div>
       <h2>每周一封，中文</h2>
-      <p>九个领域的解读摘要加商业化动态，正文附原文链接。免费，可随时退订。</p>
+      <p>九个领域的解读摘要加经济动态，正文附原文链接。免费，可随时退订。</p>
     </div>
     <a class="btn" href="#support">订阅每周更新</a>
   </section>
 
-  <!-- 商业化动态频道：对标 Endpoints 的 Deals 频道与 BioPharma Dive 的 tracker -->
+  <!-- 经济动态频道：对标 Endpoints 的 Deals 频道与 BioPharma Dive 的 tracker -->
   <section>
-    <div class="sechead"><h2>商业化动态</h2><span><a href="#deals">看完整时间流 →</a></span></div>
+    <div class="sechead"><h2>经济动态</h2><span><a href="#deals">看完整时间流 →</a></span></div>
     <div class="feed" id="homefeed"></div>
   </section>
 
@@ -716,7 +715,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 <div class="wrap view textpage" id="v-support" hidden>
   <header class="hero">
     <h1>订阅与赞助</h1>
-    <p>这个站每周整理九个领域的前沿进展和商业化动态，中文、免费、可退订。</p>
+    <p>这个站每周整理九个领域的前沿进展和经济动态，中文、免费、可退订。</p>
   </header>
   <section class="panel">
     <h2>欢迎订阅</h2>
@@ -760,7 +759,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
   <section class="panel">
     <h2>做不到的</h2>
     <p>不是全覆盖。一周能认真读完的就那么几篇，剩下的只能靠领域页的来源清单自己去翻。</p>
-    <p>不给投资建议。商业化动态只记发生了什么和出处，金额和条款都照原文抄，不替你判断值不值。</p>
+    <p>不给投资建议。经济动态只记发生了什么和出处，金额和条款都照原文抄，不替你判断值不值。</p>
     <p>会有错。论文说了什么和我怎么理解，会分开写；只看到摘要或者新闻稿、没读到全文的，会在文里写明是二手。发现错了请告我，更正直接标在原文下面，不悄悄改。</p>
   </section>
 
@@ -811,7 +810,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
   <section class="panel">
     <h2>我们做什么</h2>
     <p>这个站是自己做的，排版自己写，文案初稿用 AI 起草后人工核对（详见<a href="#about">关于页</a>的 AI 辅助说明）。顺手也接外面的活，主要四类。</p>
-    <p><b>做网页。</b>建站或者改版。你现在看到的这几页就是样品：九个栏目、商业化动态的筛选、手机和桌面两套排版，都是纯静态单页，没有后台，扔到任何静态托管上就能跑，没有月费。要带后台和订阅系统的也能做。</p>
+    <p><b>做网页。</b>建站或者改版。你现在看到的这几页就是样品：九个栏目、经济动态的筛选、手机和桌面两套排版，都是纯静态单页，没有后台，扔到任何静态托管上就能跑，没有月费。要带后台和订阅系统的也能做。</p>
     <p><b>写内容、做公众号。</b>选题、撰稿、配图、把英文文献和公司公告整理成中文。这正是这个站每周在做的事，只是换成你的名字发。可以按篇结，也可以包月更新。公司新闻稿、融资材料里的科学部分、学术会议的会后整理，都做过类似的。</p>
     <p><b>写商业计划书和融资材料。</b>生物医药初创的 BP、投资人问答、路演稿，以及尽调清单里要补的那些文档。我写的是技术和市场那部分：管线讲到什么程度、技术路线和竞品怎么摆、临床格局和在研同类药怎么说、适应症的选择理由、机制图和管线图怎么画。数据用你自己的，文献和同类交易我去查并注明出处。财务模型和估值不是我的活，那部分配合你的 CFO 或财务顾问来，我负责让技术故事和数字对得上、口径一致。中英文两版都能写。</p>
     <p><b>写白皮书。</b>赛道研究、技术路线梳理、市场和竞争格局那一类。一份白皮书通常是：这条路线现在走到哪儿了（谁在做、到了几期、读出来的结论）、几种技术路径的优劣和各自卡在哪、已披露的交易和定价、监管端的口径变化、再给一个判断。文献和交易都标出处，哪一句是公开数据、哪一句是我的推断会分开写。机制图由 AI 生成（如本站配图），非期刊原图。</p>
@@ -859,7 +858,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
   <div class="footshell"><div class="foot-in">
     <div class="fbrand">
       <b>前沿追踪</b>
-      <p>TheraSik · 启曜生科 出品。九个领域的前沿进展与商业化动态，中文整理。</p>
+      <p>TheraSik · 启曜生科 出品。九个领域的前沿进展与经济动态，中文整理。</p>
     </div>
     <div class="footnav">
       <a href="#home">首页</a><a href="#fields">学术进展</a><a href="#deals">经济动态</a><a href="#archive">存档</a><a href="#about">关于</a><a href="#services">服务</a><a href="#support">订阅</a>
@@ -1129,32 +1128,37 @@ const DEALS=[
 
 
 // 追踪器：数字全部由数据算出，不手写
+// Display groups: merge NewCo into 投资融资 for display, but data keeps original kinds
+const DISPLAY_GROUPS=[
+  ['all','全部动态','var(--accent)','所有类型的交易与政策',['all']],
+  ['acq','收购','var(--c3)','公司或资产的整体并购',['acq']],
+  ['lic','授权交易','var(--c2)','药物或技术权益的许可合作',['lic']],
+  ['inv','投资融资','var(--c5)','风险投资、IPO、定增、新设公司(NewCo)',['inv','newco']],
+  ['clin','临床进展','var(--c1)','临床试验数据读出或推进',['clin']],
+  ['policy','监管政策','var(--c6)','FDA/EMA等监管机构政策变化',['policy']]
+];
+function groupCount(kinds){return DEALS.filter(x=>kinds.some(k=>k==='all'||x.kinds.includes(k))).length;}
 function renderTracker(){
   const el=document.getElementById('tracker');
   if(!el) return;
-  const kindCount=k=>DEALS.filter(x=>x.kinds.includes(k)).length;
-  const allCard=`<a class="trkcard" href="#deals?kind=all" style="--dc:var(--accent)"${filter==='all'?' aria-current="true"':''}>
-    ${icon('all','accent')}<div class="cbody"><b>全部动态</b><span>所有类型的交易与政策</span><em>${DEALS.length} 条</em></div></a>`;
-  const kindCards=Object.entries(KINDS).map(([k,[name,color,desc]])=>{
-    const n=kindCount(k);
-    if(!n) return `<span class="trkcard" style="--dc:${color};opacity:.5" aria-disabled="true">
-      ${icon(k,color)}<div class="cbody"><b>${name}</b><span>${desc}</span><em>0 条</em></div></span>`;
-    return `<a class="trkcard" href="#deals?kind=${k}" style="--dc:${color}"${filter===k?' aria-current="true"':''}>
-      ${icon(k,color)}<div class="cbody"><b>${name}</b><span>${desc}</span><em>${n} 条</em></div></a>`;
+  el.innerHTML=DISPLAY_GROUPS.map(([key,name,color,desc,kinds])=>{
+    const n=key==='all'?DEALS.length:groupCount(kinds);
+    const active=kinds.includes(filter)||(key==='all'&&filter==='all');
+    if(!n&&key!=='all') return `<span class="trkcard" style="--dc:${color};opacity:.5" aria-disabled="true">
+      ${icon(key,color)}<div class="cbody"><b>${name}</b><span>${desc}</span><em>0 条</em></div></span>`;
+    return `<a class="trkcard" href="#deals?kind=${key}" style="--dc:${color}"${active?' aria-current="true"':''}>
+      ${icon(key,color)}<div class="cbody"><b>${name}</b><span>${desc}</span><em>${n} 条</em></div></a>`;
   }).join('');
-  const articlesCard=`<a class="trkcard" href="#home?sec=articles" style="--dc:var(--c6)">
-    ${icon('cell','c6')}<div class="cbody"><b>收录解读</b><span>九个领域的论文解读</span><em>${visibleCat().length} 篇</em></div></a>`;
-  el.innerHTML=allCard+kindCards+articlesCard;
 }
 let filter='all';
 const chips=document.getElementById('chips'), feed=document.getElementById('feed'), dc=document.getElementById('dealcount');
 function renderChips(){
-  const all=[['all',['全部','var(--accent)']],...Object.entries(KINDS)];
-  chips.innerHTML=all.map(([k,[label]])=>{
-    const n=k==='all'?DEALS.length:DEALS.filter(x=>x.kinds.includes(k)).length;
-    return `<button class="chip" type="button" data-k="${k}" aria-pressed="${filter===k}">${label} ${n}</button>`;
+  chips.innerHTML=DISPLAY_GROUPS.map(([key,name,color,desc,kinds])=>{
+    const n=key==='all'?DEALS.length:groupCount(kinds);
+    const active=kinds.includes(filter)||(key==='all'&&filter==='all');
+    return `<button class="chip" type="button" data-k="${key}" aria-pressed="${active}">${name.replace('动态','').replace('交易','')} ${n}</button>`;
   }).join('');
-  chips.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{filter=b.dataset.k;history.pushState(null,'','#deals?kind='+filter);renderChips();renderFeed()});
+  chips.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{filter=b.dataset.k;history.pushState(null,'','#deals?kind='+filter);renderChips();renderTracker();renderFeed()});
 }
 function escAttr(s){return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function dealCard(x,i){
@@ -1300,8 +1304,11 @@ function renderFields(){
   if(!document.getElementById('v-fields').hidden) fitCardChips(grid.parentNode);
 }
 function renderFeed(){
-  const rows=DEALS.filter(x=>filter==='all'||x.kinds.includes(filter));
-  dc.innerHTML=filter==='all'?`共 ${rows.length} 条，按时间倒序`:`已筛选「${KINDS[filter][0]}」${rows.length} 条 · <a class="clearf" href="#deals?kind=all">显示全部 ×</a>`;
+  const grp=DISPLAY_GROUPS.find(g=>g[0]===filter);
+  const filterKinds=grp?grp[4]:['all'];
+  const rows=DEALS.filter(x=>filter==='all'||filterKinds.some(k=>x.kinds.includes(k)));
+  const label=grp?grp[1]:'全部动态';
+  dc.innerHTML=filter==='all'?`共 ${rows.length} 条，按时间倒序`:`已筛选「${label}」${rows.length} 条 · <a class="clearf" href="#deals?kind=all">显示全部 ×</a>`;
   renderTracker();
   if(!rows.length){feed.innerHTML='<div class="empty">这个分类暂无条目。只收录有公开披露金额或双方确认的交易，等到有确切条目时再补。</div>';return}
   feed.innerHTML=rows.map((x,i)=>dealCard(x,'f'+i)).join('');
@@ -1364,7 +1371,7 @@ function route(){
   }
   document.title=pageTitle;
   views.forEach(v=>{v.hidden = v.id!=='v-'+target});
-  if(target==='deals'){ const k=q.get('kind'); filter=(k&&KINDS[k])?k:'all'; renderChips(); renderFeed(); }
+  if(target==='deals'){ const k=q.get('kind'); filter=(k&&DISPLAY_GROUPS.some(g=>g[0]===k))?k:'all'; renderChips(); renderFeed(); }
   if(target==='fields'){ const f=q.get('f'); ffilter=(f&&FIELDS.some(x=>x.k===f))?f:'all'; renderFields(); }
   if(target==='home'){ refit(); lg.classList.add('limited'); document.getElementById('showallbtn').style.display=''; }
   /* Grid columns now controlled purely by CSS */

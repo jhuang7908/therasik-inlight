@@ -100,7 +100,6 @@ nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:color-
 /* Tracker cards: fcard style for fields and deals trackers */
 .trkgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 @media (max-width:900px){.trkgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (max-width:520px){.trkgrid{grid-template-columns:1fr}}
 .trkcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;grid-template-columns:40px minmax(0,1fr);gap:10px;align-items:center;color:inherit;text-decoration:none}
 .trkcard:hover{border-color:color-mix(in srgb,var(--dc,var(--accent)) 45%,var(--line))}
 .trkcard[aria-current="true"]{background:color-mix(in srgb,var(--dc,var(--accent)) 9%,var(--surface));border-color:var(--dc,var(--accent))}
