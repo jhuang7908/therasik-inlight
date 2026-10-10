@@ -977,10 +977,9 @@ function fieldArt(f){
   const key=(f&&f.k)||f, color=(f&&f.color)||key;
   return `<span class="artthumb">${icon(FIELD_MOTIF[key]||'cell',color)}<img src="img/pal/fields/${FIELD_IMG[key]||FIELD_IMG.organoid}?v=1" alt="" loading="lazy" onerror="this.remove()"></span>`;
 }
-// 交易类型卡配图：取自 img/pal/kinds/v6 现有插画、裁成方图（img/pal/kinds/tiles/）
-const KIND_TILE={acq:'acq_tile_v1.jpg',lic:'lic_tile_v1.jpg',inv:'inv_tile_v1.jpg',clin:'clin_tile_v1.jpg',policy:'policy_tile_v1.jpg'};
+// 交易类型卡配图：Grok 生成的装饰插画，裁成方图（img/pal/kinds/tiles/*_grok_v1.jpg）
+const KIND_TILE={all:'all_grok_v1.jpg',acq:'acq_grok_v1.jpg',lic:'lic_grok_v1.jpg',inv:'inv_grok_v1.jpg',clin:'clin_grok_v1.jpg',policy:'policy_grok_v1.jpg'};
 function kindArt(key,color){
-  if(key==='all') return mosaicArt(['acq','lic','inv','clin'].map(k=>`img/pal/kinds/tiles/${KIND_TILE[k]}?v=1`));
   return `<span class="artthumb">${icon(key,color)}${KIND_TILE[key]?`<img src="img/pal/kinds/tiles/${KIND_TILE[key]}?v=1" alt="" loading="lazy" onerror="this.remove()">`:''}</span>`;
 }
 function mosaicArt(srcs){
@@ -1327,7 +1326,7 @@ function fieldArts(){
 function renderFieldTracker(all){
   const el=document.getElementById('ftracker'); if(!el) return;
   const allCard=`<a class="trkcard art" href="#fields?f=all" style="--dc:var(--accent)"${ffilter==='all'?' aria-current="true"':''}>
-    ${mosaicArt(['organoid','immuno','antibody','nucleic'].map(k=>`img/pal/fields/${FIELD_IMG[k]}?v=1`))}<div class="cbody"><b>全部解读</b><span>所有领域的论文解读</span><em>${all.length} 篇</em></div></a>`;
+    <span class="artthumb">${icon('all','accent')}<img src="img/pal/fields/all_grok_v1.jpg?v=1" alt="" loading="lazy" onerror="this.remove()"></span><div class="cbody"><b>全部解读</b><span>所有领域的论文解读</span><em>${all.length} 篇</em></div></a>`;
   const fieldCards=FIELDS.map(f=>{
     const n=all.filter(a=>a.f===f.k).length;
     const motif=FIELD_MOTIF[f.k]||'cell';
