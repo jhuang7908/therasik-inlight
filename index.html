@@ -472,12 +472,15 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 .pgrid .metarow{margin-top:auto;gap:6px;min-height:0;flex-wrap:nowrap}
 .pgrid .jname{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .pgrid .metarow .expbtn{min-height:0;padding:0;font-size:12px}
-/* Homepage 'latest' grid: show max 3 rows, then reveal via button */
-.pgrid.limited .item:nth-child(n+13){display:none!important}
-@media (max-width:860px){.pgrid.limited .item:nth-child(n+7){display:none!important}}
-.showallbtn{display:block;margin:16px auto 0;font-size:14px;font-weight:700;color:var(--accent);background:var(--surface);border:1px solid var(--accent);border-radius:999px;padding:10px 24px;cursor:pointer;font-family:inherit}
+/* Homepage 'latest' grid: show max 4 rows, then link to full archive */
+.pgrid.limited .item:nth-child(n+17){display:none!important}
+@media (max-width:860px){.pgrid.limited .item:nth-child(n+9){display:none!important}}
+/* Deals feed: show max 4 rows */
+.feed.limited .card:nth-child(n+17){display:none!important}
+@media (max-width:1023px){.feed.limited .card:nth-child(n+13){display:none!important}}
+@media (max-width:768px){.feed.limited .card:nth-child(n+9){display:none!important}}
+.showallbtn{display:block;margin:16px auto 0;font-size:14px;font-weight:700;color:var(--accent);background:var(--surface);border:1px solid var(--accent);border-radius:999px;padding:10px 24px;cursor:pointer;font-family:inherit;text-decoration:none;text-align:center}
 .showallbtn:hover{background:var(--accent);color:var(--bg)}
-.pgrid:not(.limited)+.showallbtn{display:none}
 .pv-chips{display:flex;gap:4px;flex-wrap:nowrap;overflow:hidden;white-space:nowrap;min-width:0}
 .pv-chip{flex:0 0 auto;font-size:10.5px;line-height:16px;padding:0 6px;border-radius:999px;border:1px solid #2f7d6d;color:#2f7d6d;background:#fff;font-weight:700}
 .pv-chip.pri,.pv-chip.rel{border-color:var(--fc)!important}
@@ -689,7 +692,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
         <button class="chip" type="button" data-tab="byfield" aria-pressed="false">按领域</button>
       </div>
     </div>
-    <div id="tab-latest"><div class="pgrid limited" id="latestgrid"></div><button class="showallbtn" id="showallbtn" type="button">查看全部</button></div>
+    <div id="tab-latest"><div class="pgrid limited" id="latestgrid"></div><a class="showallbtn" href="#archive">查看全部</a></div>
     <div id="tab-byfield" hidden><div class="fieldlist" id="fieldlist"></div></div>
   </section>
 
@@ -754,7 +757,8 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
   <section id="fieldfeed">
     <div class="sechead"><h2>全部解读</h2><span id="fieldcount"></span></div>
     <div class="chips" id="fchips"></div>
-    <div class="pgrid" id="fieldgrid"></div>
+    <div class="pgrid limited" id="fieldgrid"></div>
+    <a class="showallbtn" href="#archive">查看全部</a>
   </section>
 </div>
 
@@ -779,7 +783,8 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
   <section id="dealfeed">
     <div class="sechead"><h2>最新更新</h2><span id="dealcount"></span></div>
     <div class="chips" id="chips"></div>
-    <div class="feed" id="feed"></div>
+    <div class="feed limited" id="feed"></div>
+    <button class="showallbtn" id="dealsshowallbtn" type="button">查看全部</button>
   </section>
 
   <section>
@@ -1354,8 +1359,6 @@ function fieldArts(){
 }
 function renderFieldTracker(all){
   const el=document.getElementById('ftracker'); if(!el) return;
-  const allCard=`<a class="trkcard art" href="#fields?f=all" style="--dc:var(--accent)"${ffilter==='all'?' aria-current="true"':''}>
-    <span class="artthumb">${icon('all','accent')}<img src="img/pal/fields/all_grok_v1.jpg?v=1" alt="" loading="lazy" onerror="this.remove()"></span><div class="cbody"><b>全部解读</b><span>所有领域的论文解读</span><em>${all.length} 篇</em></div></a>`;
   const fieldCards=FIELDS.map(f=>{
     const n=all.filter(a=>a.f===f.k).length;
     const motif=FIELD_MOTIF[f.k]||'cell';
@@ -1364,7 +1367,7 @@ function renderFieldTracker(all){
     return `<a class="trkcard art" href="#fields?f=${f.k}" style="--dc:${f.color||'var(--accent)'}"${ffilter===f.k?' aria-current="true"':''}>
       ${fieldArt(f)}<div class="cbody"><b>${f.n}</b><span>${f.d||''}</span><em>${n} 篇</em></div></a>`;
   }).join('');
-  el.innerHTML=allCard+fieldCards;
+  el.innerHTML=fieldCards;
 }
 function renderFields(){
   const grid=document.getElementById('fieldgrid'); if(!grid) return;
@@ -1401,8 +1404,10 @@ const hfHtml=DEALS.slice(0,4).map((x,i)=>dealCard(x,'h'+i)).join('');
 const lg=document.getElementById('latestgrid');
 let lgHtml='';
 function refit(){ setHtml(lg,lgHtml); setHtml(hf,hfHtml); fitCardChips(); }
-document.getElementById('showallbtn').onclick=function(){
-  lg.classList.remove('limited');
+// deals showallbtn expands in place
+document.getElementById('dealsshowallbtn').onclick=function(e){
+  e.preventDefault();
+  feed.classList.remove('limited');
   this.style.display='none';
 };
 let rt;
@@ -1455,7 +1460,8 @@ function route(){
   views.forEach(v=>{v.hidden = v.id!=='v-'+target});
   if(target==='deals'){ const k=q.get('kind'); filter=(k&&DISPLAY_GROUPS.some(g=>g[0]===k))?k:'all'; renderChips(); renderFeed(); }
   if(target==='fields'){ const f=q.get('f'); ffilter=(f&&FIELDS.some(x=>x.k===f))?f:'all'; renderFields(); }
-  if(target==='home'){ refit(); lg.classList.add('limited'); document.getElementById('showallbtn').style.display=''; }
+  if(target==='home'){ refit(); lg.classList.add('limited'); }
+  if(target==='deals'){ feed.classList.add('limited'); document.getElementById('dealsshowallbtn').style.display=''; }
   /* Grid columns now controlled purely by CSS */
   document.querySelectorAll('.nav-in a').forEach(a=>a.classList.toggle('on',a.dataset.v===target));
   const jump=target==='deals'&&q.has('kind')?'dealfeed':target==='fields'&&q.has('f')?'fieldfeed':(target==='home'&&q.get('sec')==='articles'?'articles':'');
