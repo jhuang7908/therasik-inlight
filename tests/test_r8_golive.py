@@ -298,6 +298,26 @@ class R8GoLiveTests(unittest.TestCase):
         # The specific rule that overrides .side2 .sbox{border:1px solid var(--line)}
         self.assertIn(".side2 .sbox.coop{border-top:3px solid #C0492F}", src)
 
+    def test_quick_look_no_spelled_out_numbers(self):
+        """quick_look must use Arabic numerals, not spelled-out Chinese numbers."""
+        # Patterns that indicate spelled-out numbers instead of Arabic digits
+        spelled_out_patterns = [
+            r'百分之',  # "percent" spelled out (e.g., 百分之五十)
+            r'零点',    # decimal point spelled out (e.g., 零点五)
+        ]
+        for a in cat.published_articles(self.catalog):
+            ql = a.get("quick_look") or ""
+            for pattern in spelled_out_patterns:
+                self.assertIsNone(
+                    re.search(pattern, ql),
+                    f"{a['id']}: quick_look contains spelled-out number pattern '{pattern}'"
+                )
+            # Check that quick_look contains digits (should have numbers)
+            self.assertTrue(
+                re.search(r'\d', ql),
+                f"{a['id']}: quick_look contains no digits; expected Arabic numerals"
+            )
+
 
 if __name__ == "__main__":
     unittest.main()
