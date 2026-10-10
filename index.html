@@ -536,6 +536,27 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 .feed .cover,.fthumb{background:#fff}
 /* style_unify_v6: deal covers rotate through ten illustrations per deal type (img/pal/kinds/v6/), off-white ground. */
 .feed .cover{background:#F6F4EE}
+
+/* ===== Calm palette variant (r11) ===== */
+/* 1) 侧栏：白卡片，来源 logo 统一 44px 高度、留白、contain；期刊封面改小缩略图 */
+.srcard{background:#fff}
+.srcard .srcbanner,.srcard .srcbanner.logobanner,.srcard .srcbanner.fdabanner,.srcard .srcbanner.txtbanner{aspect-ratio:auto;height:44px;padding:8px 12px 0;background:#fff;justify-content:flex-start}
+.srcard .srcbanner img,.srcard .srcbanner.logobanner img{width:100%;height:100%;max-height:none;object-fit:contain;object-position:left center;background:transparent}
+.srcard .srcbanner.txtbanner{font-size:18px}
+/* og:image 横幅里 logo 只占中间一小块：裁到 logo 区域（cover），不再整幅铺满 */
+.srcard .srcbanner{padding:6px 10px 0;box-sizing:border-box}
+.srcard .srcbanner img[src*="biopharmadive_banner"],.srcard .srcbanner img[src*="biospace_banner"]{object-fit:cover;object-position:center;border-radius:5px}
+.srcard .srcbody{padding:8px 12px 10px}
+.srcard:has(.coverbanner){grid-template-columns:68px minmax(0,1fr);grid-template-rows:auto;align-items:center;gap:10px;padding:10px}
+.srcard .srcbanner.coverbanner{width:68px;height:auto;aspect-ratio:440/584;padding:0;background:#fff;border-radius:4px;box-shadow:0 0 0 1px var(--line)}
+.srcard .srcbanner.coverbanner img{object-fit:cover;object-position:center}
+.srcard:has(.coverbanner) .srcbody{padding:0}
+/* 2) 标签统一：深绿描边；金额保留橙红为唯一强调色 */
+.tag,.kind,.feed .kind,.feed-details-panel .kind{border-color:#2f5d46!important;color:#2f5d46!important;background:transparent!important}
+.pv-chip,.pv-chip.pri,.pv-chip.rel{border-color:#2f5d46!important;color:#2f5d46!important;background:transparent!important}
+.pv-chip.pri{background:rgba(47,93,70,.07)!important}
+/* 分类卡片标题统一深绿（覆盖逐领域/逐类型颜色） */
+.trkcard,.fcard{--dc:#2f5d46!important}
 </style>
 </head>
 <body>
