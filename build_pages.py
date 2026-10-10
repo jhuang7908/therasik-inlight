@@ -121,7 +121,8 @@ def render_article_main(article: dict) -> str:
     data, md = cat.load_article_bundle(article["id"])
     inner = data.get("article") or {}
     cover = article.get("cover_caption") or ""
-    return cat.render_structured_md(md, article["id"], cover), inner, data
+    mech_image = article.get("mech_image")
+    return cat.render_structured_md(md, article["id"], cover, mech_image=mech_image), inner, data
 
 
 def build_article_page(article: dict, body_root: str, inner: dict, data: dict) -> str:

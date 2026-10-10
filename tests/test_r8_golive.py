@@ -209,10 +209,12 @@ class R8GoLiveTests(unittest.TestCase):
             html = page.read_text(encoding="utf-8")
             self.assertIn(a["title"][:12], html)
             self.assertIn(f"{a['id']}_card.webp", html)
-            self.assertIn(f"{a['id']}_mech.webp", html)
+            mech_img = a.get("mech_image") or f"img/{a['id']}_mech.webp"
+            mech_basename = mech_img.replace("img/", "")
+            self.assertIn(mech_basename, html, f"{a['id']} should reference {mech_basename}")
             self.assertNotIn("noindex", html)
             self.assertTrue((ROOT / "img" / f"{a['id']}_card.webp").exists())
-            self.assertTrue((ROOT / "img" / f"{a['id']}_mech.webp").exists())
+            self.assertTrue((ROOT / mech_img).exists(), f"{a['id']} mech image {mech_img} should exist")
 
     def test_primary_field_only_in_catalog_cards(self):
         for a in cat.published_articles(self.catalog):
