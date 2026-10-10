@@ -37,13 +37,22 @@
       "description": "Official og:image from BioSpace website"
     },
     {
+      "id": "fiercebiotech_banner",
+      "name": "Fierce Biotech",
+      "logo": "fiercebiotech_banner.png",
+      "logo_source": "https://qtxasset.com/quartz/qcloud5/logos/Fierce%20Biotech%20Mix%20Logo.svg",
+      "size": "1600x640",
+      "format": "PNG",
+      "description": "Rasterized from official SVG logo at 2x resolution for reliable rendering"
+    },
+    {
       "id": "fiercebiotech_logo",
       "name": "Fierce Biotech",
       "logo": "fiercebiotech_logo.svg",
       "logo_source": "https://qtxasset.com/quartz/qcloud5/logos/Fierce%20Biotech%20Mix%20Logo.svg",
       "size": "600x240",
       "format": "SVG",
-      "description": "Official logo SVG from Fierce Biotech website header"
+      "description": "Original SVG logo from Fierce Biotech website header (source for PNG)"
     },
     {
       "id": "fiercebiotech",
