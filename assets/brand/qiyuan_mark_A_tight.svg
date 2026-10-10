@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="32 50 248 228" width="248" height="228">
+<title>启元智研 mark A</title>
+<g id="markA" transform="translate(0 -8)">
+  <path d="M104 108 A 46 46 0 0 1 196 108 Z" fill="#d35400"/>
+  <rect x="40" y="122" width="220" height="28" rx="14" fill="#2f5d46"/>
+  <path d="M118 150 C 116 206, 94 244, 50 268" fill="none" stroke="#2f5d46" stroke-width="28" stroke-linecap="round"/>
+  <path d="M184 150 L 184 236 C 184 260, 196 268, 220 268 L 244 268 C 256 268, 262 260, 262 246" fill="none" stroke="#2f5d46" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</svg>
