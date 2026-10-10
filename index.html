@@ -144,8 +144,9 @@ nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:color-
 .trkcard span{font-size:10.5px;color:var(--muted);line-height:1.4}
 .trkcard em{font-size:11px;color:var(--muted);font-style:normal;font-weight:700}
 /* 文本型页面（关于、订阅）：容器定宽，段落与列表共用同一换行宽度 */
-.textpage{max-width:940px}
-@media (min-width:1100px){.textpage{margin-left:0;margin-right:auto}}
+/* 文字页（关于/服务/订阅）与其他页面同宽，不再单独收窄到 940px */
+.textpage{max-width:1100px}
+@media (min-width:1100px){.textpage{max-width:none}}
 .textpage p,.textpage li,.textpage .note{max-width:none}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:17px 19px;display:grid;gap:11px}
 .panel ol,.panel ul{margin:0;padding-left:22px;display:grid;gap:7px;font-size:14px}
@@ -552,6 +553,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
     <a href="#home" data-v="home">首页</a>
     <a href="#fields" data-v="fields">学术进展</a>
     <a href="#deals" data-v="deals">经济动态</a>
+    <a href="#services" data-v="services">服务</a>
     <a href="#about" data-v="about">关于我们</a>
   </div>
   <a class="navsub" href="#support">订阅</a>
@@ -823,27 +825,6 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
   </section>
 
   <section class="panel">
-    <h2>AI 辅助说明</h2>
-    <p>本站使用 AI 工具辅助写作和编辑。具体包括：</p>
-    <ul>
-      <li><b>初稿生成</b>　文献摘要和条目说明的初稿由 Claude 根据原文/摘要起草。</li>
-      <li><b>示意图</b>　配图由 gpt-image-1 生成，是示意图，非期刊原图。</li>
-      <li><b>代码与自动化</b>　站点代码和更新脚本有 AI 辅助编写的部分。</li>
-    </ul>
-    <p>所有发布内容均经编辑逐条核对数字、作者与出处后发布。标注"二手核实"的条目表示未能直接读取原文全文，依据新闻稿或二手来源核实。如发现错误，请来信指出，更正会直接标注在原文下方。</p>
-  </section>
-
-  <section class="panel">
-    <h2>更正记录</h2>
-    <div class="corrections-list">
-      <div class="correction-item"><span class="corr-date">2026-10-08</span><span class="corr-before">a-trap：「近一半样本标签是错的」</span><span class="corr-after">→ 改为「按来源拆开后波动很大（&lt;10% 到 &gt;95%）」，更准确反映原文结论</span></div>
-      <div class="correction-item"><span class="corr-date">2026-10-08</span><span class="corr-before">a-trap：作者「Hunter 等」</span><span class="corr-after">→ 更正为「Messemaker、Kwee 等（Schumacher 组）」</span></div>
-      <div class="correction-item"><span class="corr-date">2026-10-08</span><span class="corr-before">a-invivocar：图注「只进入」</span><span class="corr-after">→ 更正为「主要进入」，更准确</span></div>
-      <div class="correction-item"><span class="corr-date">2026-10-08</span><span class="corr-before">c7-cell-2：「实体血液肿瘤」</span><span class="corr-after">→ 更正为「血液肿瘤」（多发性骨髓瘤是血液肿瘤）</span></div>
-    </div>
-  </section>
-
-  <section class="panel">
     <h2>赞助与联系</h2>
     <p>目前没有广告位。如果想赞助本站运营（文献获取、服务器等成本），见<a href="#support">订阅与赞助</a>页。</p>
     <p>赞助方不参与选题，也不改结论——这条不议。</p>
@@ -868,7 +849,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
   </header>
   <section class="panel">
     <h2>我们做什么</h2>
-    <p>这个站是自己做的，排版自己写，文案初稿用 AI 起草后人工核对（详见<a href="#about">关于页</a>的 AI 辅助说明）。顺手也接外面的活，主要四类。</p>
+    <p>这个站是自己做的，排版自己写，文案初稿用 AI 起草后人工核对。顺手也接外面的活，主要四类。</p>
     <p><b>做网页。</b>建站或者改版。你现在看到的这几页就是样品：九个栏目、经济动态的筛选、手机和桌面两套排版，都是纯静态单页，没有后台，扔到任何静态托管上就能跑，没有月费。要带后台和订阅系统的也能做。</p>
     <p><b>写内容、做公众号。</b>选题、撰稿、配图、把英文文献和公司公告整理成中文。这正是这个站每周在做的事，只是换成你的名字发。可以按篇结，也可以包月更新。公司新闻稿、融资材料里的科学部分、学术会议的会后整理，都做过类似的。</p>
     <p><b>写商业计划书和融资材料。</b>生物医药初创的 BP、投资人问答、路演稿，以及尽调清单里要补的那些文档。我写的是技术和市场那部分：管线讲到什么程度、技术路线和竞品怎么摆、临床格局和在研同类药怎么说、适应症的选择理由、机制图和管线图怎么画。数据用你自己的，文献和同类交易我去查并注明出处。财务模型和估值不是我的活，那部分配合你的 CFO 或财务顾问来，我负责让技术故事和数字对得上、口径一致。中英文两版都能写。</p>
