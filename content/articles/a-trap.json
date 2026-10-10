@@ -589,7 +589,7 @@
     }
    ]
   },
-  "quick_look": "T-RAP将VDJdb-10库（3,693个TCR）导入Jurkat并汇集筛选，平均仅56%（n=2,667）复现原注释反应性；阵列共培养一致率96.1%。验证集上tcrdist3与AlphaFold3平均AUROC分别为0.80、0.74。",
+  "quick_look": "T-RAP在384孔板装配12,078个合成TCR，将VDJdb-10库（3,693个TCR）导入TCR缺失的Jurkat并汇集筛选，以468个阴性对照TCR第5百分位P值为阈值。平均仅56%（n=2,667）复现原注释反应性，按表位从NLV 28.3%（91/322）到CIN 76.3%（174/228）不等。以77个TCR的阵列共培养为真值，一致率96.1%，假阴性率3.9%，无假阳性。tcrdist3与AlphaFold3 min-PAE在验证集上平均AUROC分别为0.80、0.74。一名黑色素瘤患者197个TIL TCR的新抗原零样本检验AUROC为0.76–0.79。",
   "author_intro": "通讯作者Ton N. Schumacher为荷兰癌症研究所分子肿瘤与免疫学部组长、莱顿大学医学中心血液学系教授，实验室研究T细胞如何识别肿瘤细胞。第一作者Marius Messemaker同属NKI该学部。"
  },
  "images": {
@@ -599,6 +599,6 @@
   "mech_raw_source": "a-trap_mech.png",
   "card_source": "a-trap_cardsrc.png"
  },
- "quick_look": "T-RAP将VDJdb-10库（3,693个TCR）导入Jurkat并汇集筛选，平均仅56%（n=2,667）复现原注释反应性；阵列共培养一致率96.1%。验证集上tcrdist3与AlphaFold3平均AUROC分别为0.80、0.74。",
+ "quick_look": "T-RAP在384孔板装配12,078个合成TCR，将VDJdb-10库（3,693个TCR）导入TCR缺失的Jurkat并汇集筛选，以468个阴性对照TCR第5百分位P值为阈值。平均仅56%（n=2,667）复现原注释反应性，按表位从NLV 28.3%（91/322）到CIN 76.3%（174/228）不等。以77个TCR的阵列共培养为真值，一致率96.1%，假阴性率3.9%，无假阳性。tcrdist3与AlphaFold3 min-PAE在验证集上平均AUROC分别为0.80、0.74。一名黑色素瘤患者197个TIL TCR的新抗原零样本检验AUROC为0.76–0.79。",
  "author_intro": "通讯作者Ton N. Schumacher为荷兰癌症研究所分子肿瘤与免疫学部组长、莱顿大学医学中心血液学系教授，实验室研究T细胞如何识别肿瘤细胞。第一作者Marius Messemaker同属NKI该学部。"
 }

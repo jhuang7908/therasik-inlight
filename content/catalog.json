@@ -215,7 +215,7 @@
         "sec": 0
       },
       "quick_look": "LPS 1 mg/kg预处理小鼠4小时后再给1 mg/kg mRNA时，E20电荷可切换LNP（SNP）未升高IL-6、IL-1β、MIP-2，而MC3-DLin、cKK-E12、SM-102的传统LNP使其大幅升高，SNP是唯一未加重已有炎症的LNP。MC3-DLin LNP携带pDNA 1 mg/kg时小鼠24小时内全部死亡，E20-SNP组7天观察期内全部存活并持续表达荧光素酶。人PBMC实验（4名健康供者）中E20-SNP转染高效且14种细胞因子均未诱导。E20-SNP在补体、TLR4、galectin-8、PAF通路均不激活，zeta电位比MC3-DLin更负。",
-      "author_intro": "通讯作者Niren Murthy任职加州大学伯克利分校生物工程系及Innovative Genomics Institute。第一作者Dengpan Liang同属上述单位。"
+      "author_intro": "通讯作者Niren Murthy任职加州大学伯克利分校生物工程系及Innovative Genomics Institute。共同通讯Hesong Han同属上述单位；Aijun Wang任职加州大学戴维斯分校。第一作者Dengpan Liang同属伯克利上述单位。"
     },
     {
       "id": "c8-vac-3",
@@ -270,7 +270,7 @@
         "sec": 0
       },
       "quick_look": "75名健康成人观察性队列（mRNA-1010组38人、Fluarix组37人），mRNA接种者HA特异性记忆B细胞增幅在第4及17/26周更高（Mann–Whitney U检验）。FNA亚组13名mRNA接种者中5人（约38%）在26周仍检出生发中心反应，Fluarix组两季均未检出。Ig-seq（各8人）显示mRNA组第4周疫苗诱导克隆型数显著更多，预存克隆型发生CDRH3扩增的比例约为Fluarix组的3倍。抗体谱显示mRNA组新生H3克隆型更多。",
-      "author_intro": "通讯作者Ali H. Ellebedy任职华盛顿大学圣路易斯医学院病理与免疫学系，兼Bursky人类免疫学与免疫治疗中心。第一作者Hanover C. Matz同属病理与免疫学系。"
+      "author_intro": "通讯作者Ali H. Ellebedy任职华盛顿大学圣路易斯医学院病理与免疫学系，兼Bursky人类免疫学与免疫治疗中心。共同通讯Jiwon Lee任职达特茅斯Thayer工程学院。第一作者Hanover C. Matz同属病理与免疫学系。"
     },
     {
       "id": "c7-cell-2",
@@ -324,7 +324,7 @@
         "sec": 0
       },
       "quick_look": "4例复发难治骨髓瘤单次静脉输注体内BCMA CAR-T产品ESO-T01（0.2×10^9转导单位），无需白细胞单采和清淋化疗。随访最长15个月客观缓解率100%（2例sCR、2例PR），1例sCR维持15个月；中位PFS 4.0个月，另3例复发或进展后死亡均伴髓外病灶。4例均出现1–3级双相CRS与3–4级血液学毒性（中性粒细胞减少75%、淋巴细胞减少75%）。整合位点分析未见克隆扩增。",
-      "author_intro": "通讯作者Heng Mei（梅恒）为华中科技大学同济医学院附属协和医院血液内科教授、主任，并任湖北省细胞治疗临床医学中心主任。第一作者含Jia Xu等，同属该院血液内科。"
+      "author_intro": "通讯作者Heng Mei（梅恒）为华中科技大学同济医学院附属协和医院血液内科教授、主任，并任湖北省细胞治疗临床医学中心主任。共同通讯Yu Hu（胡豫）同属该院血液内科。"
     },
     {
       "id": "c5-am-2",
@@ -498,7 +498,7 @@
         "sec": 0
       },
       "quick_look": "AIntibody盲评：29家机构511个AI设计或预测抗体经统一合成与实验验证，靶点SARS-CoV-2 RBD。挑战1（亲和力成熟）含25家机构165个提交，最佳达95 pM，较亲本提高2,000倍。挑战2（簇内排序）中仅9.8–13.8%的提交亲和力高于簇对照，随机挑选克隆39%，仅WashU达50%。挑战3获胜2.9 pM但HIC柱未洗脱。ProBioGen不用机器学习的共有序列为540 pM列第三且无可开发性问题。",
-      "author_intro": "通讯作者Andrew R. M. Bradbury任职Specifica（IQVIA业务，美国新墨西哥州圣菲；邮箱andrew.bradbury@iqvia.com）。第一作者M. Frank Erasmus同属该公司并同为通讯。"
+      "author_intro": "通讯作者Andrew R. M. Bradbury任职Specifica（IQVIA业务，美国新墨西哥州圣菲）。第一作者M. Frank Erasmus同属该公司并同为通讯。"
     },
     {
       "id": "c2-ai-4",
@@ -604,7 +604,7 @@
         "sec": 0
       },
       "quick_look": "在LCMV与B16-OVA模型中，靶向ZMYND8使P14 CD8+ T细胞偏向效应样耗竭状态、减少终末耗竭。体内scCRISPR筛选检出19,032个P14细胞；效应样/Tex term验证n=7/组，肿瘤治疗n=5–8/组。ZMYND8缺失增强IL-2R–STAT5信号通路。敲除ZMYND8的CD8+ T细胞在慢性感染中更好控制病毒，在肿瘤中产生更强抗瘤效应。效应样耗竭与终末耗竭的表型可通过流式与转录组区分。",
-      "author_intro": "通讯作者Hongbo Chi（迟洪波）任职美国圣裘德儿童研究医院免疫学系（邮箱hongbo.chi@stjude.org）。第一作者Yan Wang同属该系。实验室方向未在本轮核到独立官方页，故省略。"
+      "author_intro": "通讯作者Hongbo Chi（迟洪波）任职美国圣裘德儿童研究医院（St. Jude Children's Research Hospital）免疫学系，孟菲斯。第一作者Yan Wang同属该系。"
     },
     {
       "id": "c5-am-5",
@@ -657,7 +657,7 @@
         "deep": "",
         "sec": 0
       },
-      "quick_look": "共55只约4周龄幼猴口服SHIV，72小时内启动TLR7激动剂GS-986（0.5 mg/kg）、bNAb（10-1074加3BNC117，各20 mg/kg）和27周ART三联治疗。三联组8/8在停药后6个月无病毒血症，PBMC与组织未检出细胞相关病毒DNA，第84周IPDA亦未检出前病毒。单用ART组8/8在停药后2周内反跳。对照组单用bNAb或单用TLR7激动剂均不能阻止病毒血症反跳。三联疗法在急性感染期启动可清除或深度抑制SHIV储存库。",
+      "quick_look": "共55只约4周龄幼年恒河猴口服免疫缺陷病毒嵌合体，72小时启动趋化因子受体5阻断抗体勒隆利单抗（每周50 mg/kg）、两株广谱中和抗体VRC07-523LS与PGT121（各20 mg/kg）和27周抗反转录病毒治疗。三联组8只在停药后6个月全部无病毒血症，血细胞与组织未检出细胞相关病毒，第84周亦未检出前病毒。单用抗体或单用抗反转录病毒治疗不能阻止储存库建立。",
       "author_intro": "通讯作者Jonah B. Sacha任职俄勒冈健康与科学大学俄勒冈国家灵长类研究中心及疫苗与基因治疗研究所。共同通讯Nancy L. Haigwood任职同一灵长类研究中心。"
     },
     {
@@ -718,7 +718,7 @@
         "sec": 0
       },
       "quick_look": "HCMI国际多中心从2,780名供者建立665个患者来源癌症模型，覆盖25种癌，其中78%为3D类器官、6%为球体、16%为2D贴壁细胞系。421对匹配肿瘤–模型中97.8%至少保留驱动突变、突变特征、WGD和倍性四项DNA特征中的两项；201对甲基化配对中190对（95%）比随机配对更接近（FDR<0.1）。临床数据覆盖522个模型，包括治疗史与生存结局。模型经ATCC和EMD Millipore分发，数据经Cancer Models公开。",
-      "author_intro": "通讯作者Jesse S. Boehm任职Broad研究所及MIT科赫综合癌症研究所。共同通讯还包括Louis M. Staudt（NCI）等。第一作者Dina ElHarouni任职Broad与Dana-Farber病理系。"
+      "author_intro": "通讯作者Jesse S. Boehm任职Broad研究所及MIT科赫综合癌症研究所。共同通讯还包括Louis M. Staudt（NCI）与Keith L. Ligon（Dana-Farber）。第一作者Dina ElHarouni任职Broad与Dana-Farber病理系。"
     },
     {
       "id": "c4-ai-6",
@@ -772,7 +772,7 @@
         "sec": 1
       },
       "quick_look": "发现队列含4个无关家系7名IBD个体，证实GPR15双等位失功能变异导致严重结肠炎。小鼠2.5% DSS模型验证GPR15引导CD8+ TIGR归巢结肠并限制肠炎。散发性UC结肠活检中该细胞群减少42%（HC n=8，UC n=7）。GPR15缺失小鼠肠道CD8+ T细胞减少，DSS后结肠炎加重。人类遗传学与小鼠模型共同支持GPR15–TIGR轴在结肠免疫稳态中的保护作用。主要小鼠实验多为n=11/组。",
-      "author_intro": "通讯作者Michael J. Lenardo任职NIAID免疫系统生物学实验室免疫发育分子学部、NIAID临床基因组学项目及Calico Life Sciences（South San Francisco）。第一作者Jing Cui同属NIAID上述单位。"
+      "author_intro": "通讯作者Michael J. Lenardo任职NIAID免疫系统生物学实验室免疫发育分子学部、NIAID临床基因组学项目及Calico Life Sciences（South San Francisco）。共同通讯Chuan Wu任职NCI实验免疫学部。第一作者Jing Cui同属NIAID上述单位。"
     },
     {
       "id": "c2-ai-5",
@@ -885,8 +885,8 @@
         "deep": "",
         "sec": 0
       },
-      "quick_look": "160个双特异性抗体（65个亲本臂）经SPR测定同时结合能力，共识别126对共现表位组合。取向对照21对中20对（95%）仍能共结合，仅1对完全失去同时结合能力。Fab与scFv取向在绝对值与趋势上不一致。同时结合能力主要取决于表位几何与臂间距离，而非Fab或scFv格式本身。该研究为双抗设计中表位选择与几何优化提供实验数据支持。",
-      "author_intro": "通讯作者Ammar Arsiwala任职Ginkgo Bioworks（马萨诸塞）。预印本作者列表未在Europe PMC给出分条单位。第一作者Seth Ritter。"
+      "quick_look": "未经同行评审的160个双抗与65个亲本臂，在统一十字形免疫球蛋白支架上测定10项开发性。摘要称疏水与表面电荷从亲本干净继承（秩相关约0.85至0.95）；自结合与多反应性部分继承（约0.60至0.88）；热稳定性预测差（低于0.4），需在双抗水平实测。该文为生物预印本，尚未经同行评审。",
+      "author_intro": "通讯作者Ammar Arsiwala任职Ginkgo Bioworks, Inc.（马萨诸塞）。第一作者Seth Ritter。该文为未经同行评审的bioRxiv预印本。"
     },
     {
       "id": "c1-org-4",
@@ -939,8 +939,8 @@
         "deep": "",
         "sec": 0
       },
-      "quick_look": "多组学分析揭示TSC大脑结节在早期发育定型：马赛克类器官39,539个细胞显示母系印迹带GATOR1通路E12–14周失调；10个结节/8例患者的空间蛋白质组投射到E10–15皮质；逆向建模将缺陷追溯到外放射状胶质细胞。Raptor敲除类器官结节样超增殖可被雷帕霉素抑制。TSC1/TSC2突变导致mTOR过度活化，在胚胎期放射状胶质即可检测到转录与蛋白水平异常。",
-      "author_intro": "通讯作者Helen S. Bateup任职加州大学伯克利分校分子与细胞生物学系及神经科学系（邮箱bateup@berkeley.edu）。第一作者Thomas L. Li同属上述两系。"
+      "quick_look": "第8天用重组酶慢病毒诱导结节性硬化复合体2双等位缺失后，人脑类器官中缺失细胞在第50、120、220天相对同一类器官内对照细胞均显著提高反应性星形胶质模块评分。处理后39,539个细胞映射到胎脑图谱。纯化星形胶质细胞接受50 nM雷帕霉素或100 nM托林。反应性表型由细胞自主的雷帕霉素靶蛋白复合物驱动。",
+      "author_intro": "通讯作者Helen S. Bateup任职加州大学伯克利分校分子与细胞生物学系及神经科学系（Berkeley, CA, USA）。第一作者Thomas L. Li同属上述两系。"
     },
     {
       "id": "c3-io-5",
@@ -994,7 +994,7 @@
         "sec": 0
       },
       "quick_look": "12种饮食下HKP1抗PD-1试验：肥胖性饮食4/6（66.7%）关联ICI应答，非肥胖性饮食2/6（33.3%）。15周饮食暴露，Japanese n=14，其余n=15。菌群分析显示应答饮食富集Lactobacillaceae和Lactobacillus。High Fat联合L. johnsonii补充使抗生素处理小鼠全部完全应答。ICI评分与体重、脂肪量、代谢评分无显著关联。DAT代谢物补充可逆转Psyllium耐药。饮食切换48小时即可检测到菌群变化。",
-      "author_intro": "通讯作者Daniela F. Quail任职麦吉尔大学Goodman癌症研究所、实验医学分部与生理学系。第一作者Lysanne Desharnais任职该所及人类遗传学系。"
+      "author_intro": "通讯作者Daniela F. Quail任职麦吉尔大学Goodman癌症研究所、实验医学分部与生理学系。共同通讯Bertrand Routy任职蒙特利尔大学医院中心；Logan A. Walsh任职Goodman癌症研究所。第一作者Lysanne Desharnais任职该所及人类遗传学系。"
     },
     {
       "id": "c8-vac-2",
@@ -1048,8 +1048,8 @@
         "deep": "",
         "sec": 1
       },
-      "quick_look": "24只恒河猴4组各6只，接受DNA prime加蛋白boost（明矾或AS01B）或mRNA疫苗，第7次免疫后3周鼻内攻毒异源SARS-CoV-2 BA.5。攻毒后支气管肺泡灌洗液和鼻拭子病毒载量组间无显著差异；抗S IgG在第7次免疫后攀升但攻毒后快速消退，记忆B细胞反弹但IgA低。DNA/蛋白与mRNA平台在此异源攻毒模型中未显示保护差异。",
-      "author_intro": "通讯作者William R. Schief任职Scripps Research免疫与微生物学系及IAVI中和抗体中心，并任职Moderna。第一作者Jon M. Steichen同属Scripps与IAVI NAC。"
+      "quick_look": "24只恒河猴分4组各6只，接受HIV包膜N332-GT5起始免疫及后续异源蛋白加强。摘要称44%出现血清广谱中和抗体活性。8只最佳动物在第7次加强后，相对BG18广度平均41%，几何均数ID50范围为52–481、总体107。免疫原针对HIV包膜N332糖基表位，以BG18类抗体为读出。该工作在非人灵长类诱导HIV广谱中和抗体。",
+      "author_intro": "通讯作者William R. Schief任职Scripps Research免疫与微生物学系及IAVI中和抗体中心，并任职Moderna。共同通讯Shane Crotty任职La Jolla免疫学研究所。第一作者Jon M. Steichen同属Scripps与IAVI NAC。"
     },
     {
       "id": "c1-org-5",
@@ -1103,8 +1103,8 @@
         "deep": "",
         "sec": 0
       },
-      "quick_look": "tHIO+ENS（含肠神经系统的组织工程化人肠类器官）的收缩频率为1.0±0.1 min⁻¹，与手术切除人小肠（SI CCS）一致；刺激后速率加快、振幅降低。tHIO+ENS长度为1.0±0.1 cm，显著长于普通HIO。钙成像显示神经元同步活动，Piezo1阳性ICC样细胞位于肌层，体内移植后可见肌层与神经元分化。收缩可被电刺激和化学刺激调节。",
-      "author_intro": "通讯作者Maxime M. Mahe任职南特大学/Inserm TENS UMR1235，并兼辛辛那提儿童医院小儿普外胸外科及干细胞与类器官医学中心。第一作者Holly M. Poling任职辛辛那提儿童医院。"
+      "quick_look": "限位培养系统让约4000个小肠球体暂限融合，第6天取出、续培至第14天再移植到肠系膜，植入率100%，高于同日龄常规人小肠类器官（精确检验P为9.25×10−7）。全研究使用183只动物，移植后随访10周，形成可收缩并带人源肠神经的肠组织。常规同日龄小肠类器官植入率显著更低。",
+      "author_intro": "通讯作者Maxime M. Mahe任职南特大学/Inserm TENS UMR1235，并兼辛辛那提儿童医院小儿普外胸外科及干细胞与类器官医学中心。共同通讯Michael A. Helmrath任职辛辛那提儿童医院。第一作者Holly M. Poling任职该院。"
     },
     {
       "id": "c2-ai-2",
@@ -1330,8 +1330,8 @@
         "deep": "",
         "sec": 0
       },
-      "quick_look": "针对一个无结构、无既有抗体的DSRCT新靶点，智能体引导从头生成288,000个纳米抗体设计，热点推荐智能体在预测结构上标出8个表位热点，三种生成模型（RFantibody、IgGM、mBER）产出设计。Pareto过滤后100,000个进入酵母表面展示，2轮FACS富集后116个进入SPR，46个（39.7%）获Rmax≥30 RU的可靠动力学，Kd 0.66–305 nM，中位31.7 nM，最佳PRJ266_044为0.66 nM。116个候选表达中位产量184 mg/L，对无关抗原TfR1均无结合。",
-      "author_intro": "通讯作者Xinyun (Nina) Cheng任职Amazon Web Services Applied AI Solutions, Life Sciences。第一作者Yue Zhao。预印本作者列表未在Europe PMC给出分条单位。"
+      "quick_look": "针对一个无结构、无既有抗体的促结缔组织增生性小圆细胞瘤新靶点，智能体引导从头生成288,000个纳米抗体设计，覆盖8个表位热点。帕累托过滤后100,000个进入酵母表面展示，两轮分选后116个进入表面等离子共振，46个（39.7%）获可靠动力学，平衡解离常数0.66至305 nM，中位31.7 nM。该文为未经同行评审的预印本。",
+      "author_intro": "通讯作者Xinyun (Nina) Cheng任职Amazon Web Services Applied AI Solutions, Life Sciences。第一作者Yue Zhao。"
     },
     {
       "id": "c8-vac-4",
@@ -1384,8 +1384,8 @@
         "deep": "",
         "sec": 1
       },
-      "quick_look": "亚单位疫苗HMPV-317含F蛋白稳定三聚体加明矾佐剂。小鼠攻毒后肺病毒载量较未免疫组下降4.4 log。食蟹猴10只雄性3–5岁，免疫后血清中和GMTs达3,580–5,040。第三剂后支气管肺泡灌洗液可见F特异性IgG与组织驻留记忆B细胞；mRNA疫苗组中和滴度更高但CD8+ T细胞较低。F蛋白三聚体在两种动物模型中均诱导保护性免疫。",
-      "author_intro": "通讯作者Ivan Zanoni任职哈佛医学院及波士顿儿童医院免疫科与消化科（邮箱ivan.zanoni@childrens.harvard.edu）。第一作者Kautilya K. Jena同属哈佛医学院与波士顿儿童医院免疫科。"
+      "quick_look": "小鼠将甘露聚糖铝佐剂（明矾100 µg加甘露聚糖500 µg）混入WA1刺突信使核糖核酸（1 µg），把对BA.5与XBB.1.5假病毒的中和延长至第500天，而单用信使核糖核酸或再加明矾则不能。食蟹猴10只给予30 µg疫苗后，刺突抗体与三种假病毒中和升至第180天。人源化小鼠第56天攻毒后，加佐剂组肺内检测不到病毒。该糖基佐剂扩大疫苗广度与持续时间。",
+      "author_intro": "通讯作者Ivan Zanoni任职哈佛医学院及波士顿儿童医院免疫科与消化科。共同通讯Yi Wu任职西安交通大学第二附属医院肾内科。第一作者Kautilya K. Jena同属哈佛医学院与波士顿儿童医院免疫科。"
     },
     {
       "id": "c4-ai-5",
@@ -1437,8 +1437,8 @@
         "deep": "",
         "sec": 0
       },
-      "quick_look": "14例自身免疫性甲状腺病供者（发现队列3例桥本+扩展队列6例桥本+5例Graves）的甲状腺单细胞测序揭示Tc17富集并与甲状腺滤泡上皮细胞相互作用。Tc17频率与TPOAb滴度正相关（r=0.66，P=0.01）。小鼠过继转移Tc17可加重EAT滤泡破坏。Tc17表达IL-17A、RORC和细胞毒性基因，提示其通过直接细胞毒与IL-17介导的炎症双重机制参与甲状腺损伤。",
-      "author_intro": "通讯作者Iñigo Martincorena任职Wellcome Sanger Institute体细胞基因组学项目（Hinxton）。第一作者Pantelis A. Nicola同属该项目。"
+      "quick_look": "14例自身免疫甲状腺病供者单分子测序显示，桥本甲状腺炎供者H1体内有135种不同TNFRSF14突变及59种CD274突变。这两种检查点基因的截短突变非同义比分别为141和37，表明受到正选择。突变分布在多个B细胞克隆，而非单一克隆主导。该工作在甲状腺自身免疫组织中追踪体细胞突变。",
+      "author_intro": "通讯作者Iñigo Martincorena与Andrew R. J. Lawson任职Wellcome Sanger Institute体细胞基因组学项目（Hinxton）。第一作者Pantelis A. Nicola同属该项目。"
     },
     {
       "id": "c4-ai-4",
@@ -2276,7 +2276,7 @@
       "one_liner": "在MISTRG6小鼠中CRISPR敲除人CD34+ HSPC的DPP9，可重现外周与骨髓血细胞减少；丢失由CARD8介导的焦亡驱动，敲除CARD8或CASP1可挽救，敲除NLRP1不能。",
       "citation": "Xiao T, Brewer JR, Carlino M, Han A, Takabe YJ, Lee CY, et al. Reverse genetics in humanized mice reveals CARD8-mediated pyroptosis causing pancytopenia in human DPP9 deficiency. J Clin Invest. 2026 Sep 15. https://doi.org/10.1172/jci207530",
       "quick_look": "在MISTRG6人源化小鼠中CRISPR敲除人CD34+ HSPC的DPP9，可重现外周与骨髓血细胞减少及HSPC丢失。敲除CARD8或CASP1可挽救，敲除NLRP1不能，表明丢失由CARD8介导的焦亡驱动而非NLRP1通路。新生1–3日龄小鼠肝内注射30,000个细胞，主表型读出于8–9周。scRNA-seq在移植4周取样，超过5,000个细胞、平均每细胞5,000个基因，分为13个簇，显示CARD8在CD34+各亚群广泛表达。",
-      "author_intro": "通讯作者Richard A. Flavell任职耶鲁大学医学院免疫生物学系与霍华德·休斯医学研究所。共同通讯Diane S. Krause任职耶鲁干细胞中心及检验医学系。第一作者Tianli Xiao同属免疫生物学系。"
+      "author_intro": "通讯作者Richard A. Flavell任职耶鲁大学医学院免疫生物学系与霍华德·休斯医学研究所。末位作者Diane S. Krause任职耶鲁干细胞中心及检验医学系。第一作者Tianli Xiao同属免疫生物学系。"
     },
     {
       "id": "c9-rna-9",
@@ -2312,7 +2312,7 @@
       "one_liner": "随机双盲试验中，吸入靶向肺上皮RAGE的siRNA达到可耐受安全；健康志愿者单剂184 mg后支气管肺泡灌洗可溶性RAGE平均最多下降90.2%。",
       "citation": "O’Carroll M, Kasahara D, Huetsch J, Reed T, Perkins TN, Zhou R, et al. Inhaled siRNA therapy targeting RAGE for pulmonary inflammation: a first-in-human randomized trial. Nat Med. 2026 Sep 9. https://doi.org/10.1038/s41591-026-04607-z",
       "quick_look": "1/2a期随机双盲安慰剂对照试验，吸入靶向肺上皮RAGE的siRNA ARO-RAGE；健康志愿者n=58、哮喘n=19，单次10–184 mg。健康志愿者184 mg后支气管肺泡灌洗液可溶性RAGE平均最多降90.2%，血清sRAGE降76.6%±6.5%。无导致停药的不良事件。治疗期不良事件健康志愿者单次队列86.7%对安慰剂60.0%。唯一严重不良事件为1级子痫前期，末剂后263天发病，判为与药物无关。",
-      "author_intro": "通讯作者Matthias Salathe任职堪萨斯大学医学中心内科。共同通讯Nicholas J. Leeper任职斯坦福大学医学院外科血管外科。第一作者Mark O’Carroll任职奥克兰市立医院呼吸科。"
+      "author_intro": "通讯作者Matthias Salathe任职堪萨斯大学医学中心内科。第一作者Mark O’Carroll任职奥克兰市立医院呼吸科。作者Nicholas J. Leeper任职斯坦福大学医学院外科血管外科。"
     },
     {
       "id": "c5-am-9",
@@ -2354,7 +2354,7 @@
       "one_liner": "在mdx背景下构建人DMD外显子44、45、51或53缺失的4个小鼠模型；8周龄雄鼠腓肠肌缺乏或仅有痕量抗肌萎缩蛋白，肌内注射vivo-morpholino跳跃侧翼外显子可恢复蛋白。",
       "citation": "van Putten M, Linssen M, Tanganyika-de Winter C, Brouwers CM, Claassens JWC, Verwey N, et al. Four new mouse models of Duchenne muscular dystrophy with clinically relevant exon deletions in the human DMD gene. Dis Model Mech. 2026 Aug 28. https://doi.org/10.1242/dmm.052875",
       "quick_look": "在mdx背景下构建人DMD外显子44、45、51或53缺失的4个小鼠模型。hDMDdel44/mdx与hDMDdel53/mdx完全缺失抗肌萎缩蛋白，hDMDdel45/mdx与hDMDdel51/mdx为痕量。8周龄雄鼠腓肠肌与肱三头肌连续两日肌内注射vivo-morpholino（外显子43/44为100 µg/块肌，外显子50/52为50 µg/块肌），可检出目标外显子跳跃并在Western印迹恢复截短蛋白。四种模型腓肠肌均见变性、再生、炎症与纤维化。",
-      "author_intro": "通讯作者Annemieke Aartsma-Rus与Peter Hohenstein任职莱顿大学医学中心人类遗传学系；Hohenstein同时任职该校转基因设施。第一作者Maaike van Putten同属人类遗传学系。"
+      "author_intro": "通讯作者Annemieke Aartsma-Rus任职莱顿大学医学中心转基因设施；Peter Hohenstein任职该校人类遗传学系并兼转基因设施。第一作者Maaike van Putten任职人类遗传学系。"
     },
     {
       "id": "c4-ai-8",
@@ -2395,8 +2395,8 @@
       "sum": "3例AChR阳性难治全身型重症肌无力接受KYV-101（1×10^8细胞）后，随访24、19、19个月均维持停用MG特异性免疫治疗的临床缓解；抗AChR抗体未完全转阴，不良事件短暂可处理。",
       "one_liner": "3例AChR阳性难治全身型重症肌无力接受KYV-101（1×10^8细胞）后，随访24、19、19个月均维持停用MG特异性免疫治疗的临床缓解；抗AChR抗体未完全转阴，不良事件短暂可处理。",
       "citation": "Hegelmaier T, Motte J, Walther D, Feist E, Duscha A, Desel C, et al. Long-term outcomes of anti-CD19 CAR T cell therapy in refractory myasthenia gravis: A case series. Cell Rep Med. 2026;7(9):103000. doi: https://doi.org/10.1016/j.xcrm.2026.103000",
-      "quick_look": "3例AChR阳性难治全身型重症肌无力（2女1男）接受自体抗CD19 CAR-T产品KYV-101（1×10^8细胞），清淋为氟达拉滨30 mg/m²加环磷酰胺300 mg/m²连用3天。随访24、19、19个月均维持停用MG特异性免疫治疗的临床缓解。MG1血肌酐从15/39降至2，MG-ADL于一周内降至0/24。抗AChR抗体未完全转阴，循环CD19阳性B细胞深度清除后再生B细胞以幼稚/过渡表型为主。不良事件短暂可处理，三例均无ICANS。",
-      "author_intro": "通讯作者Aiden Haghikia任职汉诺威医学院神经内科与临床神经生理科（电子邮箱见论文作者栏）。第一作者Tobias Hegelmaier同属该科；合作单位包括鲁尔大学波鸿St. Josef医院神经内科。"
+      "quick_look": "3例乙酰胆碱受体阳性难治全身型重症肌无力（2女1男）接受自体抗CD19嵌合抗原受体T细胞（1×10^8细胞），清淋为氟达拉滨30毫克每平方米加环磷酰胺300毫克每平方米连用3天。随访24、19、19个月均维持停用本病特异性免疫治疗的临床缓解。其中一例定量肌无力评分从15/39降至2，日常量表一周内降至0。不良事件短暂可处理，三例均无免疫效应细胞相关神经毒性。抗受体抗体未完全转阴。",
+      "author_intro": "通讯作者Aiden Haghikia任职汉诺威医学院神经内科与临床神经生理科。第一作者Tobias Hegelmaier同属该科；合作单位包括鲁尔大学波鸿St. Josef医院神经内科。"
     },
     {
       "id": "c6-ab-7",
@@ -2515,8 +2515,8 @@
       "sum": "Lykhopiy等把抗CD25/CD122/CD132的VHH装成三特异激动抗体，先导αβγVHH-48在HEKαβγ上的pSTAT5 EC50为0.015 nM，接近人IL-2的0.010 nM；再做成CD25二价并改几何后，可在皮摩尔甚至飞摩尔级偏向性激活Treg。",
       "one_liner": "Lykhopiy等把抗CD25/CD122/CD132的VHH装成三特异激动抗体，先导αβγVHH-48在HEKαβγ上的pSTAT5 EC50为0.015 nM，接近人IL-2的0.010 nM；再做成CD25二价并改几何后，可在皮摩尔甚至飞摩尔级偏向性激活Treg。",
       "citation": "Lykhopiy V, Pollenus E, Rangan L, Stakenborg M, Tezil T, Varheust M, 等. Engineering trispecific IL-2 receptor agonistic antibodies through geometry optimization for enhanced Treg targeting. Nat Commun. 2026 Jul 10;17:8534. doi: https://doi.org/10.1038/s41467-026-75024-6",
-      "quick_look": "把抗人CD25、CD122、CD132的VHH装成三特异激动抗体，羊驼2只免疫后得独特VHH克隆CD25 85个、CD122 153个、CD132 92个。先导αβγVHH-48在HEKαβγ上pSTAT5 EC50为0.015 nM，接近人IL-2的0.010 nM。人PBMC中FMC63-VHH-48 EC50为1.02 nM，αβγVHH-48的Treg/非Treg比值最高。改变几何后可在皮摩尔甚至飞摩尔级偏向性激活Treg：DC41、DC44在Treg上达个位数皮摩尔或飞摩尔，非Treg需高100–1000倍。体内NSG人PBMC模型腹腔0.03 µg可提高Treg频率而不扩增效应T细胞。",
-      "author_intro": "通讯作者Susan M. Schlenner任职KU Leuven微生物、免疫与移植学系Adaptive Immunology实验室。共同通讯Valentina Lykhopiy任职argenx并兼该实验室；Luc Van Rompaey任职Dualyx。"
+      "quick_look": "把抗人白细胞介素2受体三链的重链抗体片段装成三特异激动抗体，免疫后得独特克隆α链85个、β链153个、γ链92个。先导分子在人胚肾报告细胞上的磷酸信号半数效应浓度0.015纳摩尔，接近人白细胞介素2的0.010纳摩尔。改几何后可在皮摩尔甚至飞摩尔级偏向性激活调节性T细胞，效应细胞需高100至1000倍。人源化小鼠腹腔0.03微克可提高调节性T细胞频率。",
+      "author_intro": "通讯作者Susan M. Schlenner任职KU Leuven微生物、免疫与移植学系Adaptive Immunology实验室。共同通讯Valentina Lykhopiy任职argenx并兼该实验室。"
     },
     {
       "id": "c5-am-7",
@@ -2593,7 +2593,7 @@
       "sum": "系统优化三组分prime editor的脂质纳米颗粒后，单剂总RNA 2 mg/kg在小鼠全肝实现平均49%无插入缺失的精准编辑，较初始方案提高63倍。",
       "one_liner": "系统优化三组分prime editor的脂质纳米颗粒后，单剂总RNA 2 mg/kg在小鼠全肝实现平均49%无插入缺失的精准编辑，较初始方案提高63倍。",
       "citation": "Jiang AY, Cristian A, Brooks DL, Feierman ER, Chen PZ, Whittaker MN, et al. Efficient prime editing in vivo and in vitro using lipid nanoparticles. Nat Nanotechnol. 2026 Jun 15. https://doi.org/10.1038/s41565-026-02200-6",
-      "quick_look": "系统优化三组分prime editor的OF-02 LNP，分装mRNA与两类gRNA临用混合，单剂总RNA 2 mg/kg于7天在小鼠全肝达平均49%无indel精准编辑，较s0.1提高63倍、较s0.2提高13倍；8周时44%，与双载体PE-AAV9（1×10^12 vg）的46%相近。苯丙酮尿症PAH R408W小鼠s2使血清苯丙氨酸3天内降90%，第7天低于360 µM干预阈值。PE6c在肝裂解液各取样点蛋白量高于PEmax。4 mg/kg饱和剂量全肝编辑53%，血清PCSK9最多降94%。",
+      "quick_look": "系统优化三组分引导编辑器的脂质纳米颗粒后，单剂总核糖核酸2毫克每千克于7天在小鼠全肝达平均49%无插入缺失精准编辑，较最初配方提高63倍、较次级配方提高13倍；8周时44%，与双载体腺相关病毒的46%相近。苯丙酮尿症小鼠使血清苯丙氨酸3天内降90%，第7天低于360微摩尔。4毫克每千克饱和剂量全肝编辑53%，血清前蛋白转化酶最多降94%。",
       "author_intro": "通讯作者David R. Liu为Broad研究所Merkin讲席教授、哈佛大学化学与化学生物学系教授及HHMI研究员，实验室开发碱基编辑与prime editing。第一作者Allen Y. Jiang任职Broad与哈佛化学系。"
     },
     {
@@ -2635,8 +2635,8 @@
       "sum": "I期试验安全导入队列中2例极高致敏肾移植候选者接受各5×10^7 CAR+细胞的CD19与BCMA双靶CAR-T后，cPRA下降，并分别于输注后第229天和第93天接受交叉配型相容肾移植；报告期内未见剂量限制性毒性。",
       "one_liner": "I期试验安全导入队列中2例极高致敏肾移植候选者接受各5×10^7 CAR+细胞的CD19与BCMA双靶CAR-T后，cPRA下降，并分别于输注后第229天和第93天接受交叉配型相容肾移植；报告期内未见剂量限制性毒性。",
       "citation": "Bhoj VG, Garfall AL, Naji A, et al. Kidney Transplantation in Two Highly Sensitized Candidates after CAR T-Cell Therapy. N Engl J Med. 2026 Jun 1. https://doi.org/10.1056/nejmoa2513428",
-      "quick_look": "I期安全导入队列2例极高致敏（cPRA≥99.9%）肾移植候选者，接受各5×10^7 CAR+细胞的CD19与BCMA双靶CAR-T后，cPRA下降。患者1剔除18个UA后cPRA 99.516%，于输注后第229天接受移植；患者2第93天移植。未见剂量限制性毒性；MFI数据显示供者特异性抗体水平有下降但未完全清除。移植后活检无抗体或细胞性排斥，C4d阴性。患者1输注后无CRS，患者2为1级CRS，三例均无ICANS。",
-      "author_intro": "通讯作者Ali Naji任职宾夕法尼亚大学Perelman医学院外科。第一作者Vijay G. Bhoj任职该院病理与检验医学系；Alfred L. Garfall任职该院内科。单位来自论文作者栏。"
+      "quick_look": "一期安全导入队列2例极高致敏肾移植候选者，群体反应抗体不低于99.9%，接受各5×10^7阳性细胞的双靶嵌合抗原受体T细胞后，致敏水平下降。患者1于输注后第229天接受移植，患者2第93天移植。报告期未见剂量限制性毒性；两例均无免疫效应细胞相关神经毒性。患者1无细胞因子释放，患者2为1级。",
+      "author_intro": "通讯作者Ali Naji任职宾夕法尼亚大学Perelman医学院外科。第一作者Vijay G. Bhoj任职该院病理与检验医学系；Alfred L. Garfall任职该院内科。"
     }
   ]
 }

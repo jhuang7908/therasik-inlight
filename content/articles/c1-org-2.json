@@ -558,7 +558,7 @@
     }
    ]
   },
-  "quick_look": "英国多中心团队从907份样本（878名供者）建立256例肿瘤类器官（效率28%），171对类器官–肿瘤完成WGS，162例通过质控的全基因组CRISPR–Cas9筛选（成功率85%），用以绘制基因依赖。",
+  "quick_look": "英国多中心从907份样本（878名供者）建立256例肿瘤类器官（效率28%），覆盖结直肠、食管、胰腺、胃和卵巢癌。171对类器官–肿瘤WGS配对，突变负荷PCC为0.786，全基因组SCNA中位PCC为0.78。162例通过质控的全基因组CRISPR–Cas9筛选（成功率85%），AUROC 0.97。线性回归得到1,841个显著基因–生物标志物关联。WRN依赖与RNF43突变相关（效应量−0.747，校正P=0.01）。数据经Cell Model Passports公开。",
   "author_intro": "通讯作者Mathew J. Garnett为Wellcome Sanger Institute转化癌症基因组学组长，实验室用药物与CRISPR筛选及类器官绘制癌症依赖图谱。第一作者C. Herranz-Ors同属Sanger。"
  },
  "images": {
@@ -568,6 +568,6 @@
   "mech_raw_source": "c1-org-2_mech_r1.png",
   "card_source": "c1-org-2_cardsrc.png"
  },
- "quick_look": "英国多中心团队从907份样本（878名供者）建立256例肿瘤类器官（效率28%），171对类器官–肿瘤完成WGS，162例通过质控的全基因组CRISPR–Cas9筛选（成功率85%），用以绘制基因依赖。",
+ "quick_look": "英国多中心从907份样本（878名供者）建立256例肿瘤类器官（效率28%），覆盖结直肠、食管、胰腺、胃和卵巢癌。171对类器官–肿瘤WGS配对，突变负荷PCC为0.786，全基因组SCNA中位PCC为0.78。162例通过质控的全基因组CRISPR–Cas9筛选（成功率85%），AUROC 0.97。线性回归得到1,841个显著基因–生物标志物关联。WRN依赖与RNF43突变相关（效应量−0.747，校正P=0.01）。数据经Cell Model Passports公开。",
  "author_intro": "通讯作者Mathew J. Garnett为Wellcome Sanger Institute转化癌症基因组学组长，实验室用药物与CRISPR筛选及类器官绘制癌症依赖图谱。第一作者C. Herranz-Ors同属Sanger。"
 }

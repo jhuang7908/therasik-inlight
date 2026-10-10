@@ -12,11 +12,11 @@
   "title": "pIgR双抗在食蟹猴BAL中暴露提高5.5倍",
   "one_liner": "Marks等在人、食蟹猴、小鼠组织中比对多聚免疫球蛋白受体（pIgR）后，把抗pIgR VHH接到抗血凝素IgG上；食蟹猴单次静脉5 mg/kg后，双抗血清半衰期约1.6天，支气管肺泡灌洗液（BAL）总暴露为对照IgG的5.5倍。",
   "citation": "Marks K, Shah N, Pham L, Chen J, White I, Burke K, 等. Bispecific antibodies that engage pIgR enrich in mucosa in cynomolgus monkeys. mAbs. 2026 Oct 3;18(1):2743413. doi: https://doi.org/10.1080/19420862.2026.2743413",
-  "quick_look": "Marks等在人、食蟹猴、小鼠组织中比对pIgR后，把抗pIgR VHH接到抗血凝素IgG上；14只食蟹猴单次静脉5 mg/kg后，双抗BAL总暴露为对照IgG的5.5倍，血清t½约1.57对9.53天。",
+  "quick_look": "在人、食蟹猴、小鼠组织中比对多聚免疫球蛋白受体后，把抗pIgR VHH接到抗血凝素IgG上。14只食蟹猴单次静脉5 mg/kg，双抗血清半衰期1.57天（对照9.53天），支气管肺泡灌洗液总暴露为对照的5.5倍（AUC 99.46对18.23 h·µg/mL），72小时浓度0.78对0.14 µg/mL。人与食蟹猴黏膜pIgR转录谱相近，小鼠肝脏高表达构成种属差异，故选用灵长类作药代研究。",
   "author_intro": "通讯作者Adam Zwolak任职Johnson & Johnson Innovative Medicine（Spring House, PA）。共同末位Wan Cheung Cheung同属该机构。第一作者Kelsie Marks任职同机构La Jolla。"
  },
  "pmcid": "PMC13644599",
  "license": "cc by-nc",
- "quick_look": "Marks等在人、食蟹猴、小鼠组织中比对pIgR后，把抗pIgR VHH接到抗血凝素IgG上；14只食蟹猴单次静脉5 mg/kg后，双抗BAL总暴露为对照IgG的5.5倍，血清t½约1.57对9.53天。",
+ "quick_look": "在人、食蟹猴、小鼠组织中比对多聚免疫球蛋白受体后，把抗pIgR VHH接到抗血凝素IgG上。14只食蟹猴单次静脉5 mg/kg，双抗血清半衰期1.57天（对照9.53天），支气管肺泡灌洗液总暴露为对照的5.5倍（AUC 99.46对18.23 h·µg/mL），72小时浓度0.78对0.14 µg/mL。人与食蟹猴黏膜pIgR转录谱相近，小鼠肝脏高表达构成种属差异，故选用灵长类作药代研究。",
  "author_intro": "通讯作者Adam Zwolak任职Johnson & Johnson Innovative Medicine（Spring House, PA）。共同末位Wan Cheung Cheung同属该机构。第一作者Kelsie Marks任职同机构La Jolla。"
 }

@@ -553,7 +553,7 @@
     }
    ]
   },
-  "quick_look": "人脑皮层类器官培养至5年（NeuN染色见于5.8年）；scRNA-seq覆盖110个类器官、424,720个细胞。Horvath与皮层甲基化时钟预测年龄与培养时间相关（r=0.88–0.90，中位绝对误差7.25与20.04个月）。",
+  "quick_look": "人脑皮层类器官培养至5年（NeuN染色见于5.8年）；scRNA-seq覆盖110个类器官、424,720个细胞。Horvath与皮层甲基化时钟预测年龄与培养时间相关（r=0.88–0.90），中位绝对误差7.25与20.04个月。自DIV70改用APM后，9个月SATB2+细胞增多，1年时8个CDM4类器官无一出现网络爆发，9个APM类器官全部出现。将老祖细胞移入年轻类器官后直接产生晚期神经元，CPN占49.0%，跳过早期阶段，提示细胞自带内在发育时钟。",
   "author_intro": "通讯作者Paola Arlotta任职哈佛大学干细胞与再生生物学系及Broad研究所Stanley精神疾病研究中心。第一作者Irene Faravelli同属上述单位，并兼米兰大学。"
  },
  "images": {
@@ -591,6 +591,6 @@
   "final_json": "c1-org-1_final_r2.json"
  },
  "superseded_early_files": "c1-org-1_final.json/.md, c1-org-1_checks.json, c1-org-1_mech_raw.png, c1-org-1_card.png (first assembly, superseded by the _r2 files)",
- "quick_look": "人脑皮层类器官培养至5年（NeuN染色见于5.8年）；scRNA-seq覆盖110个类器官、424,720个细胞。Horvath与皮层甲基化时钟预测年龄与培养时间相关（r=0.88–0.90，中位绝对误差7.25与20.04个月）。",
+ "quick_look": "人脑皮层类器官培养至5年（NeuN染色见于5.8年）；scRNA-seq覆盖110个类器官、424,720个细胞。Horvath与皮层甲基化时钟预测年龄与培养时间相关（r=0.88–0.90），中位绝对误差7.25与20.04个月。自DIV70改用APM后，9个月SATB2+细胞增多，1年时8个CDM4类器官无一出现网络爆发，9个APM类器官全部出现。将老祖细胞移入年轻类器官后直接产生晚期神经元，CPN占49.0%，跳过早期阶段，提示细胞自带内在发育时钟。",
  "author_intro": "通讯作者Paola Arlotta任职哈佛大学干细胞与再生生物学系及Broad研究所Stanley精神疾病研究中心。第一作者Irene Faravelli同属上述单位，并兼米兰大学。"
 }

@@ -454,8 +454,8 @@
    "justified": false,
    "note": "主要读出（细胞因子、肺损伤指标）在正文中无可核对的具体数值，仅 hEPO 600 mU/ml 有单一数值，缺少同口径对照数值，不画数据图。"
   },
-  "quick_look": "LPS 1 mg/kg预处理后4小时再给1 mg/kg mRNA时，E20可切换脂质纳米颗粒未升高IL-6、IL-1β、MIP-2，而MC3-DLin、cKK-E12、SM-102的LNP使其大幅升高；pDNA 1 mg/kg时MC3-DLin组24小时内全部死亡。",
-  "author_intro": "通讯作者Niren Murthy任职加州大学伯克利分校生物工程系及Innovative Genomics Institute。第一作者Dengpan Liang同属上述单位。"
+  "quick_look": "LPS 1 mg/kg预处理小鼠4小时后再给1 mg/kg mRNA时，E20电荷可切换LNP（SNP）未升高IL-6、IL-1β、MIP-2，而MC3-DLin、cKK-E12、SM-102的传统LNP使其大幅升高，SNP是唯一未加重已有炎症的LNP。MC3-DLin LNP携带pDNA 1 mg/kg时小鼠24小时内全部死亡，E20-SNP组7天观察期内全部存活并持续表达荧光素酶。人PBMC实验（4名健康供者）中E20-SNP转染高效且14种细胞因子均未诱导。E20-SNP在补体、TLR4、galectin-8、PAF通路均不激活，zeta电位比MC3-DLin更负。",
+  "author_intro": "通讯作者Niren Murthy任职加州大学伯克利分校生物工程系及Innovative Genomics Institute。共同通讯Hesong Han同属上述单位；Aijun Wang任职加州大学戴维斯分校。第一作者Dengpan Liang同属伯克利上述单位。"
  },
  "images": {
   "mech_raw": "c9-rna-5_mech_raw.png",
@@ -464,6 +464,6 @@
   "mech_raw_source": "c9-rna-5_mech_r2.png",
   "card_source": "c9-rna-5_cardsrc_r2.png"
  },
- "quick_look": "LPS 1 mg/kg预处理后4小时再给1 mg/kg mRNA时，E20可切换脂质纳米颗粒未升高IL-6、IL-1β、MIP-2，而MC3-DLin、cKK-E12、SM-102的LNP使其大幅升高；pDNA 1 mg/kg时MC3-DLin组24小时内全部死亡。",
- "author_intro": "通讯作者Niren Murthy任职加州大学伯克利分校生物工程系及Innovative Genomics Institute。第一作者Dengpan Liang同属上述单位。"
+ "quick_look": "LPS 1 mg/kg预处理小鼠4小时后再给1 mg/kg mRNA时，E20电荷可切换LNP（SNP）未升高IL-6、IL-1β、MIP-2，而MC3-DLin、cKK-E12、SM-102的传统LNP使其大幅升高，SNP是唯一未加重已有炎症的LNP。MC3-DLin LNP携带pDNA 1 mg/kg时小鼠24小时内全部死亡，E20-SNP组7天观察期内全部存活并持续表达荧光素酶。人PBMC实验（4名健康供者）中E20-SNP转染高效且14种细胞因子均未诱导。E20-SNP在补体、TLR4、galectin-8、PAF通路均不激活，zeta电位比MC3-DLin更负。",
+ "author_intro": "通讯作者Niren Murthy任职加州大学伯克利分校生物工程系及Innovative Genomics Institute。共同通讯Hesong Han同属上述单位；Aijun Wang任职加州大学戴维斯分校。第一作者Dengpan Liang同属伯克利上述单位。"
 }

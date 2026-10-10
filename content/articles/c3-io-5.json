@@ -564,8 +564,8 @@
    ],
    "note": "比例来自原文汇总；原文未声明该比例比较按效能设计。"
   },
-  "quick_look": "在12种小鼠饮食模型中，肥胖性饮食4/6（66.7%）关联抗PD-1应答，非肥胖性饮食为2/6（33.3%）；ICI评分与体重、脂肪量、糖耐量、胰岛素、瘦素或代谢评分无显著关联，提示关键在饮食–肠道菌群轴。",
-  "author_intro": "通讯作者Daniela F. Quail任职麦吉尔大学Goodman癌症研究所、实验医学分部与生理学系。第一作者Lysanne Desharnais任职该所及人类遗传学系。"
+  "quick_look": "12种饮食下HKP1抗PD-1试验：肥胖性饮食4/6（66.7%）关联ICI应答，非肥胖性饮食2/6（33.3%）。15周饮食暴露，Japanese n=14，其余n=15。菌群分析显示应答饮食富集Lactobacillaceae和Lactobacillus。High Fat联合L. johnsonii补充使抗生素处理小鼠全部完全应答。ICI评分与体重、脂肪量、代谢评分无显著关联。DAT代谢物补充可逆转Psyllium耐药。饮食切换48小时即可检测到菌群变化。",
+  "author_intro": "通讯作者Daniela F. Quail任职麦吉尔大学Goodman癌症研究所、实验医学分部与生理学系。共同通讯Bertrand Routy任职蒙特利尔大学医院中心；Logan A. Walsh任职Goodman癌症研究所。第一作者Lysanne Desharnais任职该所及人类遗传学系。"
  },
  "images": {
   "mech_raw": "work/r4/clean/c3-io-5_mech_raw_r4c_clean.png",
@@ -575,6 +575,6 @@
   "image_model": "mech: Grok drawing (r4/r4b/r4c, supplied by parent run); card: gpt-image-2 (earlier rounds)",
   "note": "mech: larger fonts HS=38 FACT_FS=34 (mech_r4f.py; default fonts gave 2 labels <50%); OCR soft gate: 1 label <50% (12种饮食 建立差异生态, 0.44), numbers 16/16"
  },
- "quick_look": "在12种小鼠饮食模型中，肥胖性饮食4/6（66.7%）关联抗PD-1应答，非肥胖性饮食为2/6（33.3%）；ICI评分与体重、脂肪量、糖耐量、胰岛素、瘦素或代谢评分无显著关联，提示关键在饮食–肠道菌群轴。",
- "author_intro": "通讯作者Daniela F. Quail任职麦吉尔大学Goodman癌症研究所、实验医学分部与生理学系。第一作者Lysanne Desharnais任职该所及人类遗传学系。"
+ "quick_look": "12种饮食下HKP1抗PD-1试验：肥胖性饮食4/6（66.7%）关联ICI应答，非肥胖性饮食2/6（33.3%）。15周饮食暴露，Japanese n=14，其余n=15。菌群分析显示应答饮食富集Lactobacillaceae和Lactobacillus。High Fat联合L. johnsonii补充使抗生素处理小鼠全部完全应答。ICI评分与体重、脂肪量、代谢评分无显著关联。DAT代谢物补充可逆转Psyllium耐药。饮食切换48小时即可检测到菌群变化。",
+ "author_intro": "通讯作者Daniela F. Quail任职麦吉尔大学Goodman癌症研究所、实验医学分部与生理学系。共同通讯Bertrand Routy任职蒙特利尔大学医院中心；Logan A. Walsh任职Goodman癌症研究所。第一作者Lysanne Desharnais任职该所及人类遗传学系。"
 }

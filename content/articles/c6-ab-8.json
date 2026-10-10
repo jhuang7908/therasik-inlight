@@ -12,11 +12,11 @@
   "title": "三特异IL-2R抗体αβγVHH-48的EC50达0.015 nM",
   "one_liner": "Lykhopiy等把抗CD25/CD122/CD132的VHH装成三特异激动抗体，先导αβγVHH-48在HEKαβγ上的pSTAT5 EC50为0.015 nM，接近人IL-2的0.010 nM；再做成CD25二价并改几何后，可在皮摩尔甚至飞摩尔级偏向性激活Treg。",
   "citation": "Lykhopiy V, Pollenus E, Rangan L, Stakenborg M, Tezil T, Varheust M, 等. Engineering trispecific IL-2 receptor agonistic antibodies through geometry optimization for enhanced Treg targeting. Nat Commun. 2026 Jul 10;17:8534. doi: https://doi.org/10.1038/s41467-026-75024-6",
-  "quick_look": "Lykhopiy等把抗CD25/CD122/CD132的VHH装成三特异激动抗体，先导αβγVHH-48在HEKαβγ上的pSTAT5 EC50为0.015 nM，接近人IL-2的0.010 nM；改几何后可在皮摩尔甚至飞摩尔级偏向性激活Treg。",
-  "author_intro": "通讯作者Susan M. Schlenner任职KU Leuven微生物、免疫与移植学系Adaptive Immunology实验室。共同通讯Valentina Lykhopiy任职argenx并兼该实验室；Luc Van Rompaey任职Dualyx。"
+  "quick_look": "把抗人白细胞介素2受体三链的重链抗体片段装成三特异激动抗体，免疫后得独特克隆α链85个、β链153个、γ链92个。先导分子在人胚肾报告细胞上的磷酸信号半数效应浓度0.015纳摩尔，接近人白细胞介素2的0.010纳摩尔。改几何后可在皮摩尔甚至飞摩尔级偏向性激活调节性T细胞，效应细胞需高100至1000倍。人源化小鼠腹腔0.03微克可提高调节性T细胞频率。",
+  "author_intro": "通讯作者Susan M. Schlenner任职KU Leuven微生物、免疫与移植学系Adaptive Immunology实验室。共同通讯Valentina Lykhopiy任职argenx并兼该实验室。"
  },
  "pmcid": "PMC13482293",
  "license": "cc by-nc-nd",
- "quick_look": "Lykhopiy等把抗CD25/CD122/CD132的VHH装成三特异激动抗体，先导αβγVHH-48在HEKαβγ上的pSTAT5 EC50为0.015 nM，接近人IL-2的0.010 nM；改几何后可在皮摩尔甚至飞摩尔级偏向性激活Treg。",
- "author_intro": "通讯作者Susan M. Schlenner任职KU Leuven微生物、免疫与移植学系Adaptive Immunology实验室。共同通讯Valentina Lykhopiy任职argenx并兼该实验室；Luc Van Rompaey任职Dualyx。"
+ "quick_look": "把抗人白细胞介素2受体三链的重链抗体片段装成三特异激动抗体，免疫后得独特克隆α链85个、β链153个、γ链92个。先导分子在人胚肾报告细胞上的磷酸信号半数效应浓度0.015纳摩尔，接近人白细胞介素2的0.010纳摩尔。改几何后可在皮摩尔甚至飞摩尔级偏向性激活调节性T细胞，效应细胞需高100至1000倍。人源化小鼠腹腔0.03微克可提高调节性T细胞频率。",
+ "author_intro": "通讯作者Susan M. Schlenner任职KU Leuven微生物、免疫与移植学系Adaptive Immunology实验室。共同通讯Valentina Lykhopiy任职argenx并兼该实验室。"
 }

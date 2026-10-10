@@ -476,7 +476,7 @@
    ],
    "note": "IV组仅作内部对照，原文未做两组正式比较。"
   },
-  "quick_look": "61例初治转移性黑色素瘤2:1随机；瘤内伊匹木单抗0.3 mg/kg联合静脉纳武利尤单抗1 mg/kg。IT组37例可评估中9例（24.3%）发生6个月3–4级治疗相关不良事件，低于30%阈值；中位随访55.5个月。",
+  "quick_look": "NIVIPIT 1b期试验：61例初治转移性黑色素瘤2:1随机，瘤内（IT）伊匹木单抗0.3 mg/kg联合静脉纳武利尤单抗组40例、静脉（IV）组21例。IT组37例可评估主要终点，6个月3–4级治疗相关不良事件24.3%（IV组57.1%），低于30%阈值。ORR 67%、CR 38%（IV组ORR 52%、CR 14%）。中位随访55.5月IT组中位PFS 13.8月。瘤内伊匹木单抗血清峰浓度2.2±1.7 µg/ml，IV组42.2±12.3 µg/ml。HoLISTIC框架显示IT注射驱动局部与远处免疫应答。",
   "author_intro": "通讯作者Aurélien Marabelle任职古斯塔夫·鲁西癌症研究所早期临床试验与治疗创新部、INSERM CIC 1428及U1015转化免疫治疗实验室，并兼巴黎萨克莱大学医学院。第一作者Lambros Tselikas任职该所介入放射。"
  },
  "images": {
@@ -495,6 +495,6 @@
  },
  "notes": "Abstract (22.6%) vs Results (24.3%) primary-endpoint basis differ; Results median OS 50 months conflicts with Fig. 2 legend (not reached) - OS median not used in body, flagged in limitations.",
  "text_from": "c3-io-2_final_r5.json (text unchanged)",
- "quick_look": "61例初治转移性黑色素瘤2:1随机；瘤内伊匹木单抗0.3 mg/kg联合静脉纳武利尤单抗1 mg/kg。IT组37例可评估中9例（24.3%）发生6个月3–4级治疗相关不良事件，低于30%阈值；中位随访55.5个月。",
+ "quick_look": "NIVIPIT 1b期试验：61例初治转移性黑色素瘤2:1随机，瘤内（IT）伊匹木单抗0.3 mg/kg联合静脉纳武利尤单抗组40例、静脉（IV）组21例。IT组37例可评估主要终点，6个月3–4级治疗相关不良事件24.3%（IV组57.1%），低于30%阈值。ORR 67%、CR 38%（IV组ORR 52%、CR 14%）。中位随访55.5月IT组中位PFS 13.8月。瘤内伊匹木单抗血清峰浓度2.2±1.7 µg/ml，IV组42.2±12.3 µg/ml。HoLISTIC框架显示IT注射驱动局部与远处免疫应答。",
  "author_intro": "通讯作者Aurélien Marabelle任职古斯塔夫·鲁西癌症研究所早期临床试验与治疗创新部、INSERM CIC 1428及U1015转化免疫治疗实验室，并兼巴黎萨克莱大学医学院。第一作者Lambros Tselikas任职该所介入放射。"
 }

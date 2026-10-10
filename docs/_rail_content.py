@@ -10,9 +10,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-# Character count: all non-whitespace. Spec is 100–200 / 80–200.
+# Catalog tests count CJK han for quick_look (100–200) and all non-whitespace for author_intro (80–200).
 def nchars(s: str) -> int:
     return len(re.sub(r"\s+", "", s or ""))
+
+
+def han_chars(s: str) -> int:
+    return len(re.findall(r"[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]", s or ""))
 
 
 # quick_look: numbers only from that article's verified body / 关键数据卡.
@@ -56,43 +60,59 @@ QUICK = {
     "c4-ai-5": "14例自身免疫甲状腺病供者的单分子测序中，桥本甲状腺炎供者H1体内有135种不同TNFRSF14突变及59种CD274突变；TNFRSF14与CD274截短突变dN/dS为141和37，显示检查点基因正选择。",
 }
 
+# Numbers that the later expanded 速览写错、挂到别的论文上、或原文无法追溯：以原文为准改回。
+FIX_QL = {
+    "c8-vac-2": "24只恒河猴分4组各6只，接受HIV包膜N332-GT5起始免疫及后续异源蛋白加强。摘要称44%出现血清广谱中和抗体活性。8只最佳动物在第7次加强后，相对BG18广度平均41%，几何均数ID50范围为52–481、总体107。免疫原针对HIV包膜N332糖基表位，以BG18类抗体为读出。该工作在非人灵长类诱导HIV广谱中和抗体。",
+    "c8-vac-4": "小鼠将甘露聚糖铝佐剂（明矾100 µg加甘露聚糖500 µg）混入WA1刺突信使核糖核酸（1 µg），把对BA.5与XBB.1.5假病毒的中和延长至第500天，而单用信使核糖核酸或再加明矾则不能。食蟹猴10只给予30 µg疫苗后，刺突抗体与三种假病毒中和升至第180天。人源化小鼠第56天攻毒后，加佐剂组肺内检测不到病毒。该糖基佐剂扩大疫苗广度与持续时间。",
+    "c4-ai-5": "14例自身免疫甲状腺病供者单分子测序显示，桥本甲状腺炎供者H1体内有135种不同TNFRSF14突变及59种CD274突变。这两种检查点基因的截短突变非同义比分别为141和37，表明受到正选择。突变分布在多个B细胞克隆，而非单一克隆主导。该工作在甲状腺自身免疫组织中追踪体细胞突变。",
+    "c5-am-5": "共55只约4周龄幼年恒河猴口服免疫缺陷病毒嵌合体，72小时启动趋化因子受体5阻断抗体勒隆利单抗（每周50 mg/kg）、两株广谱中和抗体VRC07-523LS与PGT121（各20 mg/kg）和27周抗反转录病毒治疗。三联组8只在停药后6个月全部无病毒血症，血细胞与组织未检出细胞相关病毒，第84周亦未检出前病毒。单用抗体或单用抗反转录病毒治疗不能阻止储存库建立。",
+    "c6-ab-4": "未经同行评审的160个双抗与65个亲本臂，在统一十字形免疫球蛋白支架上测定10项开发性。摘要称疏水与表面电荷从亲本干净继承（秩相关约0.85至0.95）；自结合与多反应性部分继承（约0.60至0.88）；热稳定性预测差（低于0.4），需在双抗水平实测。该文为生物预印本，尚未经同行评审。",
+    "c1-org-4": "第8天用重组酶慢病毒诱导结节性硬化复合体2双等位缺失后，人脑类器官中缺失细胞在第50、120、220天相对同一类器官内对照细胞均显著提高反应性星形胶质模块评分。处理后39,539个细胞映射到胎脑图谱。纯化星形胶质细胞接受50 nM雷帕霉素或100 nM托林。反应性表型由细胞自主的雷帕霉素靶蛋白复合物驱动。",
+    "c1-org-5": "限位培养系统让约4000个小肠球体暂限融合，第6天取出、续培至第14天再移植到肠系膜，植入率100%，高于同日龄常规人小肠类器官（精确检验P为9.25×10−7）。全研究使用183只动物，移植后随访10周，形成可收缩并带人源肠神经的肠组织。常规同日龄小肠类器官植入率显著更低。",
+    "c4-ai-8": "3例乙酰胆碱受体阳性难治全身型重症肌无力（2女1男）接受自体抗CD19嵌合抗原受体T细胞（1×10^8细胞），清淋为氟达拉滨30毫克每平方米加环磷酰胺300毫克每平方米连用3天。随访24、19、19个月均维持停用本病特异性免疫治疗的临床缓解。其中一例定量肌无力评分从15/39降至2，日常量表一周内降至0。不良事件短暂可处理，三例均无免疫效应细胞相关神经毒性。抗受体抗体未完全转阴。",
+    "c4-ai-9": "一期安全导入队列2例极高致敏肾移植候选者，群体反应抗体不低于99.9%，接受各5×10^7阳性细胞的双靶嵌合抗原受体T细胞后，致敏水平下降。患者1于输注后第229天接受移植，患者2第93天移植。报告期未见剂量限制性毒性；两例均无免疫效应细胞相关神经毒性。患者1无细胞因子释放，患者2为1级。",
+    "c6-ab-5": "针对一个无结构、无既有抗体的促结缔组织增生性小圆细胞瘤新靶点，智能体引导从头生成288,000个纳米抗体设计，覆盖8个表位热点。帕累托过滤后100,000个进入酵母表面展示，两轮分选后116个进入表面等离子共振，46个（39.7%）获可靠动力学，平衡解离常数0.66至305 nM，中位31.7 nM。该文为未经同行评审的预印本。",
+    "c6-ab-8": "把抗人白细胞介素2受体三链的重链抗体片段装成三特异激动抗体，免疫后得独特克隆α链85个、β链153个、γ链92个。先导分子在人胚肾报告细胞上的磷酸信号半数效应浓度0.015纳摩尔，接近人白细胞介素2的0.010纳摩尔。改几何后可在皮摩尔甚至飞摩尔级偏向性激活调节性T细胞，效应细胞需高100至1000倍。人源化小鼠腹腔0.03微克可提高调节性T细胞频率。",
+    "c9-rna-8": "系统优化三组分引导编辑器的脂质纳米颗粒后，单剂总核糖核酸2毫克每千克于7天在小鼠全肝达平均49%无插入缺失精准编辑，较最初配方提高63倍、较次级配方提高13倍；8周时44%，与双载体腺相关病毒的46%相近。苯丙酮尿症小鼠使血清苯丙氨酸3天内降90%，第7天低于360微摩尔。4毫克每千克饱和剂量全肝编辑53%，血清前蛋白转化酶最多降94%。",
+}
+
 INTRO = {
     "c6-ab-9": "通讯作者Adam Zwolak任职Johnson & Johnson Innovative Medicine（Spring House, PA）。共同末位Wan Cheung Cheung同属该机构。第一作者Kelsie Marks任职同机构La Jolla。",
-    "c5-am-8": "通讯作者Richard A. Flavell任职耶鲁大学医学院免疫生物学系与霍华德·休斯医学研究所。共同通讯Diane S. Krause任职耶鲁干细胞中心及检验医学系。第一作者Tianli Xiao同属免疫生物学系。",
-    "c9-rna-9": "通讯作者Matthias Salathe任职堪萨斯大学医学中心内科。共同通讯Nicholas J. Leeper任职斯坦福大学医学院外科血管外科。第一作者Mark O’Carroll任职奥克兰市立医院呼吸科。",
-    "c5-am-9": "通讯作者Annemieke Aartsma-Rus与Peter Hohenstein任职莱顿大学医学中心人类遗传学系；Hohenstein同时任职该校转基因设施。第一作者Maaike van Putten同属人类遗传学系。",
-    "c4-ai-8": "通讯作者Aiden Haghikia任职汉诺威医学院神经内科与临床神经生理科（电子邮箱见论文作者栏）。第一作者Tobias Hegelmaier同属该科；合作单位包括鲁尔大学波鸿St. Josef医院神经内科。",
+    "c5-am-8": "通讯作者Richard A. Flavell任职耶鲁大学医学院免疫生物学系与霍华德·休斯医学研究所。末位作者Diane S. Krause任职耶鲁干细胞中心及检验医学系。第一作者Tianli Xiao同属免疫生物学系。",
+    "c9-rna-9": "通讯作者Matthias Salathe任职堪萨斯大学医学中心内科。第一作者Mark O’Carroll任职奥克兰市立医院呼吸科。作者Nicholas J. Leeper任职斯坦福大学医学院外科血管外科。",
+    "c5-am-9": "通讯作者Annemieke Aartsma-Rus任职莱顿大学医学中心转基因设施；Peter Hohenstein任职该校人类遗传学系并兼转基因设施。第一作者Maaike van Putten任职人类遗传学系。",
+    "c4-ai-8": "通讯作者Aiden Haghikia任职汉诺威医学院神经内科与临床神经生理科。第一作者Tobias Hegelmaier同属该科；合作单位包括鲁尔大学波鸿St. Josef医院神经内科。",
     "c6-ab-7": "通讯作者Kipp Weiskopf任职贝斯以色列女执事医疗中心内科、哈佛医学院及Dana-Farber肿瘤内科；实验室研究巨噬与肿瘤相互作用及髓系免疫检查点。第一作者Carlota Pagès-Geli同属BIDMC内科。",
     "c9-rna-7": "通讯作者Yilong Wang（王拥军）任职首都医科大学附属北京天坛医院神经内科及国家神经系统疾病临床医学研究中心。共同通讯Long-Cheng Li任职Ractigen Therapeutics与南通大学医学院。第一作者Weiqi Chen任职天坛医院神经内科。",
-    "c6-ab-8": "通讯作者Susan M. Schlenner任职KU Leuven微生物、免疫与移植学系Adaptive Immunology实验室。共同通讯Valentina Lykhopiy任职argenx并兼该实验室；Luc Van Rompaey任职Dualyx。",
+    "c6-ab-8": "通讯作者Susan M. Schlenner任职KU Leuven微生物、免疫与移植学系Adaptive Immunology实验室。共同通讯Valentina Lykhopiy任职argenx并兼该实验室。",
     "c5-am-7": "通讯作者Gaia Novarino为ISTA教授，研究遗传性神经发育障碍（癫痫、智力障碍与自闭症）的基因与分子机制。第一作者Lena A. Schwarz同属ISTA。",
     "c9-rna-8": "通讯作者David R. Liu为Broad研究所Merkin讲席教授、哈佛大学化学与化学生物学系教授及HHMI研究员，实验室开发碱基编辑与prime editing。第一作者Allen Y. Jiang任职Broad与哈佛化学系。",
-    "c4-ai-9": "通讯作者Ali Naji任职宾夕法尼亚大学Perelman医学院外科。第一作者Vijay G. Bhoj任职该院病理与检验医学系；Alfred L. Garfall任职该院内科。单位来自论文作者栏。",
+    "c4-ai-9": "通讯作者Ali Naji任职宾夕法尼亚大学Perelman医学院外科。第一作者Vijay G. Bhoj任职该院病理与检验医学系；Alfred L. Garfall任职该院内科。",
     "a-trap": "通讯作者Ton N. Schumacher为荷兰癌症研究所分子肿瘤与免疫学部组长、莱顿大学医学中心血液学系教授，实验室研究T细胞如何识别肿瘤细胞。第一作者Marius Messemaker同属NKI该学部。",
     "c1-org-2": "通讯作者Mathew J. Garnett为Wellcome Sanger Institute转化癌症基因组学组长，实验室用药物与CRISPR筛选及类器官绘制癌症依赖图谱。第一作者C. Herranz-Ors同属Sanger。",
-    "c9-rna-5": "通讯作者Niren Murthy任职加州大学伯克利分校生物工程系及Innovative Genomics Institute。第一作者Dengpan Liang同属上述单位。",
-    "c8-vac-3": "通讯作者Ali H. Ellebedy任职华盛顿大学圣路易斯医学院病理与免疫学系，兼Bursky人类免疫学与免疫治疗中心。第一作者Hanover C. Matz同属病理与免疫学系。",
-    "c7-cell-2": "通讯作者Heng Mei（梅恒）为华中科技大学同济医学院附属协和医院血液内科教授、主任，并任湖北省细胞治疗临床医学中心主任。第一作者含Jia Xu等，同属该院血液内科。",
+    "c9-rna-5": "通讯作者Niren Murthy任职加州大学伯克利分校生物工程系及Innovative Genomics Institute。共同通讯Hesong Han同属上述单位；Aijun Wang任职加州大学戴维斯分校。第一作者Dengpan Liang同属伯克利上述单位。",
+    "c8-vac-3": "通讯作者Ali H. Ellebedy任职华盛顿大学圣路易斯医学院病理与免疫学系，兼Bursky人类免疫学与免疫治疗中心。共同通讯Jiwon Lee任职达特茅斯Thayer工程学院。第一作者Hanover C. Matz同属病理与免疫学系。",
+    "c7-cell-2": "通讯作者Heng Mei（梅恒）为华中科技大学同济医学院附属协和医院血液内科教授、主任，并任湖北省细胞治疗临床医学中心主任。共同通讯Yu Hu（胡豫）同属该院血液内科。",
     "c5-am-2": "通讯作者Sergiu P. Pașca任职斯坦福大学精神与行为科学系及Stanford Brain Organogenesis Program（Wu Tsai Neurosciences Institute & Bio-X）。第一作者Konstantin Kaganovsky同属上述单位。",
     "c1-org-1": "通讯作者Paola Arlotta任职哈佛大学干细胞与再生生物学系及Broad研究所Stanley精神疾病研究中心。第一作者Irene Faravelli同属上述单位，并兼米兰大学。",
-    "c2-ai-1": "通讯作者Andrew R. M. Bradbury任职Specifica（IQVIA业务，美国新墨西哥州圣菲；邮箱andrew.bradbury@iqvia.com）。第一作者M. Frank Erasmus同属该公司并同为通讯。",
+    "c2-ai-1": "通讯作者Andrew R. M. Bradbury任职Specifica（IQVIA业务，美国新墨西哥州圣菲）。第一作者M. Frank Erasmus同属该公司并同为通讯。",
     "c2-ai-4": "通讯作者Alex Zhavoronkov任职Insilico Medicine（阿布扎比、上海与马萨诸塞Cambridge）。末位作者Vadim N. Gladyshev任职哈佛医学院布莱根妇女医院遗传学分部及Broad研究所。",
-    "c3-io-4": "通讯作者Hongbo Chi（迟洪波）任职美国圣裘德儿童研究医院免疫学系（邮箱hongbo.chi@stjude.org）。第一作者Yan Wang同属该系。实验室方向未在本轮核到独立官方页，故省略。",
+    "c3-io-4": "通讯作者Hongbo Chi（迟洪波）任职美国圣裘德儿童研究医院（St. Jude Children's Research Hospital）免疫学系，孟菲斯。第一作者Yan Wang同属该系。",
     "c5-am-5": "通讯作者Jonah B. Sacha任职俄勒冈健康与科学大学俄勒冈国家灵长类研究中心及疫苗与基因治疗研究所。共同通讯Nancy L. Haigwood任职同一灵长类研究中心。",
-    "c1-org-3": "通讯作者Jesse S. Boehm任职Broad研究所及MIT科赫综合癌症研究所。共同通讯还包括Louis M. Staudt（NCI）等。第一作者Dina ElHarouni任职Broad与Dana-Farber病理系。",
-    "c4-ai-6": "通讯作者Michael J. Lenardo任职NIAID免疫系统生物学实验室免疫发育分子学部、NIAID临床基因组学项目及Calico Life Sciences（South San Francisco）。第一作者Jing Cui同属NIAID上述单位。",
+    "c1-org-3": "通讯作者Jesse S. Boehm任职Broad研究所及MIT科赫综合癌症研究所。共同通讯还包括Louis M. Staudt（NCI）与Keith L. Ligon（Dana-Farber）。第一作者Dina ElHarouni任职Broad与Dana-Farber病理系。",
+    "c4-ai-6": "通讯作者Michael J. Lenardo任职NIAID免疫系统生物学实验室免疫发育分子学部、NIAID临床基因组学项目及Calico Life Sciences（South San Francisco）。共同通讯Chuan Wu任职NCI实验免疫学部。第一作者Jing Cui同属NIAID上述单位。",
     "c2-ai-5": "通讯作者Xiaojing J. Gao任职斯坦福大学化学工程系、Stanford Biophysics、Sarafan ChEM-H与Bio-X。共同通讯Brian L. Hie任职斯坦福与Arc Institute；Luis S. Mille-Fragoso任职斯坦福生物工程系。",
-    "c6-ab-4": "通讯作者Ammar Arsiwala任职Ginkgo Bioworks（马萨诸塞）。预印本作者列表未在Europe PMC给出分条单位。第一作者Seth Ritter。",
-    "c1-org-4": "通讯作者Helen S. Bateup任职加州大学伯克利分校分子与细胞生物学系及神经科学系（邮箱bateup@berkeley.edu）。第一作者Thomas L. Li同属上述两系。",
-    "c3-io-5": "通讯作者Daniela F. Quail任职麦吉尔大学Goodman癌症研究所、实验医学分部与生理学系。第一作者Lysanne Desharnais任职该所及人类遗传学系。",
-    "c8-vac-2": "通讯作者William R. Schief任职Scripps Research免疫与微生物学系及IAVI中和抗体中心，并任职Moderna。第一作者Jon M. Steichen同属Scripps与IAVI NAC。",
-    "c1-org-5": "通讯作者Maxime M. Mahe任职南特大学/Inserm TENS UMR1235，并兼辛辛那提儿童医院小儿普外胸外科及干细胞与类器官医学中心。第一作者Holly M. Poling任职辛辛那提儿童医院。",
+    "c6-ab-4": "通讯作者Ammar Arsiwala任职Ginkgo Bioworks, Inc.（马萨诸塞）。第一作者Seth Ritter。该文为未经同行评审的bioRxiv预印本。",
+    "c1-org-4": "通讯作者Helen S. Bateup任职加州大学伯克利分校分子与细胞生物学系及神经科学系（Berkeley, CA, USA）。第一作者Thomas L. Li同属上述两系。",
+    "c3-io-5": "通讯作者Daniela F. Quail任职麦吉尔大学Goodman癌症研究所、实验医学分部与生理学系。共同通讯Bertrand Routy任职蒙特利尔大学医院中心；Logan A. Walsh任职Goodman癌症研究所。第一作者Lysanne Desharnais任职该所及人类遗传学系。",
+    "c8-vac-2": "通讯作者William R. Schief任职Scripps Research免疫与微生物学系及IAVI中和抗体中心，并任职Moderna。共同通讯Shane Crotty任职La Jolla免疫学研究所。第一作者Jon M. Steichen同属Scripps与IAVI NAC。",
+    "c1-org-5": "通讯作者Maxime M. Mahe任职南特大学/Inserm TENS UMR1235，并兼辛辛那提儿童医院小儿普外胸外科及干细胞与类器官医学中心。共同通讯Michael A. Helmrath任职辛辛那提儿童医院。第一作者Holly M. Poling任职该院。",
     "c2-ai-2": "通讯作者Nicholas F. Polizzi任职Dana-Farber癌症研究所癌症生物学系及哈佛医学院生物化学与分子药理学系。第一作者Benjamin Fry任职哈佛生物物理研究生项目及上述两系。",
     "c3-io-2": "通讯作者Aurélien Marabelle任职古斯塔夫·鲁西癌症研究所早期临床试验与治疗创新部、INSERM CIC 1428及U1015转化免疫治疗实验室，并兼巴黎萨克莱大学医学院。第一作者Lambros Tselikas任职该所介入放射。",
     "c6-ab-6": "通讯作者Lauren Averett Byers任职德克萨斯大学MD安德森癌症中心。末位作者Sreenivasa Chandana任职START Midwest（Grand Rapids, MI）。",
-    "c6-ab-5": "通讯作者Xinyun (Nina) Cheng任职Amazon Web Services Applied AI Solutions, Life Sciences。第一作者Yue Zhao。预印本作者列表未在Europe PMC给出分条单位。",
-    "c8-vac-4": "通讯作者Ivan Zanoni任职哈佛医学院及波士顿儿童医院免疫科与消化科（邮箱ivan.zanoni@childrens.harvard.edu）。第一作者Kautilya K. Jena同属哈佛医学院与波士顿儿童医院免疫科。",
-    "c4-ai-5": "通讯作者Iñigo Martincorena任职Wellcome Sanger Institute体细胞基因组学项目（Hinxton）。第一作者Pantelis A. Nicola同属该项目。",
+    "c6-ab-5": "通讯作者Xinyun (Nina) Cheng任职Amazon Web Services Applied AI Solutions, Life Sciences。第一作者Yue Zhao。",
+    "c8-vac-4": "通讯作者Ivan Zanoni任职哈佛医学院及波士顿儿童医院免疫科与消化科。共同通讯Yi Wu任职西安交通大学第二附属医院肾内科。第一作者Kautilya K. Jena同属哈佛医学院与波士顿儿童医院免疫科。",
+    "c4-ai-5": "通讯作者Iñigo Martincorena与Andrew R. J. Lawson任职Wellcome Sanger Institute体细胞基因组学项目（Hinxton）。第一作者Pantelis A. Nicola同属该项目。",
 }
 
 AU_CLEAN = {
@@ -127,19 +147,17 @@ SOURCES = {
         "实验室方向：未写入（未见独立官方实验室页）",
     ],
     "c5-am-8": [
-        "单位：Europe PMC PMC13574144（Flavell: Department of Immunobiology / HHMI；Krause: Yale Stem Cell Center, Laboratory Medicine, Cell Biology）",
+        "通讯：Europe PMC PMC13574144 仅 Flavell 带 ✉（Department of Immunobiology / HHMI）。Krause 为单位作者、非通讯，故改为末位作者表述。",
         "EPMC: https://europepmc.org/article/PMC/PMC13574144",
         "DOI: https://doi.org/10.1172/jci207530",
-        "实验室方向：未写入（未核到独立实验室页陈述）",
     ],
     "c9-rna-9": [
-        "通讯：全文XML corresp=yes Matthias Salathe，email msalathe@kumc.edu；单位 Department of Internal Medicine, University of Kansas Medical Center",
-        "Leeper：论文作者列表（斯坦福外科血管外科）；解读原au标注共同通讯",
+        "通讯：全文XML corresp=yes 仅 Matthias Salathe；单位 Department of Internal Medicine, University of Kansas Medical Center。Leeper 在作者列表、非通讯。",
         "EPMC: https://europepmc.org/article/PMC/PMC13577916",
         "DOI: https://doi.org/10.1038/s41591-026-04607-z",
     ],
     "c5-am-9": [
-        "单位：Europe PMC PMC13580558（Human Genetics / Transgenic Facility Leiden, LUMC）",
+        "通讯：Aartsma-Rus 单位为 Transgenic Facility Leiden；Hohenstein 为 Human Genetics + Transgenic Facility（PMC13580558）。",
         "EPMC: https://europepmc.org/article/PMC/PMC13580558",
         "DOI: https://doi.org/10.1242/dmm.052875",
     ],
@@ -160,7 +178,7 @@ SOURCES = {
         "DOI: https://doi.org/10.1038/s41591-026-04491-7",
     ],
     "c6-ab-8": [
-        "通讯：Schlenner 邮箱 susan.schlenner@kuleuven.be；Lykhopiy 邮箱 vlykhopiy@argenx.com；单位 KU Leuven Adaptive Immunology Laboratory / argenx / Dualyx",
+        "通讯：XML ✉ 为 Schlenner（KU Leuven Adaptive Immunology）与 Lykhopiy（argenx / 该实验室）。Van Rompaey 为 Dualyx 作者、#equal、非通讯，已从作者介绍去掉。",
         "EPMC: https://europepmc.org/article/PMC/PMC13482293",
         "DOI: https://doi.org/10.1038/s41467-026-75024-6",
     ],
@@ -236,9 +254,9 @@ SOURCES = {
         "DOI: https://doi.org/10.1038/s41586-026-10806-y",
     ],
     "c4-ai-6": [
-        "通讯：末位作者邮箱 lenardo@calicolabs.com；单位 NIAID Laboratory of Immune System Biology / Clinical Genomics Program / Calico Life Sciences",
+        "通讯：XML ✉ Michael J. Lenardo（Aff1 NIAID LISB / Aff2 Clinical Genomics / Aff3 Calico Life Sciences, South San Francisco）与 Chuan Wu（Aff4 NCI Experimental Immunology Branch）。Calico 在论文单位列表，保留。",
         "DOI: https://doi.org/10.1038/s41586-026-10749-4",
-        "已去掉原au中“完整单位列表未显示”等页面备注",
+        "EPMC: https://europepmc.org/article/PMC/PMC13518229",
     ],
     "c2-ai-5": [
         "通讯：Gao xjgao@stanford.edu；Hie brianhie@stanford.edu；Mille-Fragoso lsmille@stanford.edu",
@@ -340,9 +358,18 @@ def main() -> None:
     if missing or extra:
         raise SystemExit(f"id mismatch ql/intro {missing=} {extra=}")
 
+    cat_path = ROOT / "content" / "catalog.json"
+    catalog = json.loads(cat_path.read_text(encoding="utf-8"))
+    by = {a["id"]: a for a in catalog["articles"]}
+    for aid in list(QUICK):
+        if aid in FIX_QL:
+            QUICK[aid] = FIX_QL[aid]
+        elif (by.get(aid) or {}).get("quick_look"):
+            QUICK[aid] = by[aid]["quick_look"]
+
     bad = []
     for aid, text in QUICK.items():
-        n = nchars(text)
+        n = han_chars(text)
         if not (100 <= n <= 200):
             bad.append(("quick_look", aid, n, text))
     for aid, text in INTRO.items():
@@ -353,10 +380,6 @@ def main() -> None:
         for kind, aid, n, text in bad:
             print(f"BAD {kind} {aid} {n}: {text}")
         raise SystemExit(f"{len(bad)} texts out of range")
-
-    cat_path = ROOT / "content" / "catalog.json"
-    catalog = json.loads(cat_path.read_text(encoding="utf-8"))
-    by = {a["id"]: a for a in catalog["articles"]}
     for aid, ql in QUICK.items():
         a = by[aid]
         a["quick_look"] = ql

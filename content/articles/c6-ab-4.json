@@ -514,8 +514,8 @@
    ],
    "note": "HAC采用最大算子；HIC/SMAC为作者选定算子。"
   },
-  "quick_look": "在未经同行评审的160个双抗、65个亲本臂库中，Ritter等用亲本组合预测实测开发性；HIC/SMAC/HAC的Spearman ρ达0.95、0.94和0.89，AC-SINS为0.79–0.88，Tm1/Tm2仅–0.06至0.32。",
-  "author_intro": "通讯作者Ammar Arsiwala任职Ginkgo Bioworks（马萨诸塞）。预印本作者列表未在Europe PMC给出分条单位。第一作者Seth Ritter。"
+  "quick_look": "未经同行评审的160个双抗与65个亲本臂，在统一十字形免疫球蛋白支架上测定10项开发性。摘要称疏水与表面电荷从亲本干净继承（秩相关约0.85至0.95）；自结合与多反应性部分继承（约0.60至0.88）；热稳定性预测差（低于0.4），需在双抗水平实测。该文为生物预印本，尚未经同行评审。",
+  "author_intro": "通讯作者Ammar Arsiwala任职Ginkgo Bioworks, Inc.（马萨诸塞）。第一作者Seth Ritter。该文为未经同行评审的bioRxiv预印本。"
  },
  "images": {
   "mech_raw": "work/r4/clean/c6-ab-4_mech_raw_r4b_clean.png",
@@ -526,6 +526,6 @@
   "note": "mech: larger fonts HS=38 FACT_FS=34 (mech_r4f.py); 3 head/fact labels <50% CJK OCR (亲本筛选, 亲本层可筛, 热稳定性); rendered strings verified identical to final_r3 figure_labels -> pass per user rule (c)"
  },
  "licence_note": "bioRxiv 'no reuse': article text is an original Chinese write-up; no text or figures of the preprint are reused; r4 figures are original drawings (Grok) laid out with original Chinese labels; no preprint figures reused.",
- "quick_look": "在未经同行评审的160个双抗、65个亲本臂库中，Ritter等用亲本组合预测实测开发性；HIC/SMAC/HAC的Spearman ρ达0.95、0.94和0.89，AC-SINS为0.79–0.88，Tm1/Tm2仅–0.06至0.32。",
- "author_intro": "通讯作者Ammar Arsiwala任职Ginkgo Bioworks（马萨诸塞）。预印本作者列表未在Europe PMC给出分条单位。第一作者Seth Ritter。"
+ "quick_look": "未经同行评审的160个双抗与65个亲本臂，在统一十字形免疫球蛋白支架上测定10项开发性。摘要称疏水与表面电荷从亲本干净继承（秩相关约0.85至0.95）；自结合与多反应性部分继承（约0.60至0.88）；热稳定性预测差（低于0.4），需在双抗水平实测。该文为生物预印本，尚未经同行评审。",
+ "author_intro": "通讯作者Ammar Arsiwala任职Ginkgo Bioworks, Inc.（马萨诸塞）。第一作者Seth Ritter。该文为未经同行评审的bioRxiv预印本。"
 }

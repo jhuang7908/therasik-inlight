@@ -10,11 +10,11 @@
   "title": "11个单基因ASD小鼠模型共251个样本：放射状胶质谱系短暂延迟，P4层II/IV神经元715个DEG",
   "one_liner": "对11个单基因ASD小鼠模型的251个样本做单核多组学测序，突变汇聚于放射状胶质谱系的短暂发育延迟；共享转录差异在P4层II/IV神经元最大（715个DEG）。",
   "citation": "Schwarz LA, Dotter CP, Isaev S, Lisi M, Malzl D, Büschl C, et al. Cortical development dynamics across autism spectrum disorder mouse models. Nature. 2026 Jun 17. doi: https://doi.org/10.1038/s41586-026-10679-1",
-  "quick_look": "对11个单基因ASD小鼠模型的251个样本、200,787个核做单核RNA+ATAC测序，突变汇聚于放射状胶质谱系的短暂发育延迟；共享转录差异在P4层II/IV神经元最大（715个DEG），层V/VI深部投射神经元有600个DEG。",
+  "quick_look": "对11个单基因ASD小鼠模型的251个样本、200,787个核做单核RNA+ATAC测序。突变汇聚于放射状胶质谱系的短暂发育延迟，表现为滞留增殖性RG1。共享转录差异在P4层II/IV神经元最大（715个DEG），层V/VI深部投射神经元600个DEG，多数下调。P4下调模块富集突触与离子通道。Arid1b与Shank3在E14.5放射状胶质共享DEG达236个。电生理在四个品系中显示三例出现内在兴奋性改变，与离子通道表达偏离相关。",
   "author_intro": "通讯作者Gaia Novarino为ISTA教授，研究遗传性神经发育障碍（癫痫、智力障碍与自闭症）的基因与分子机制。第一作者Lena A. Schwarz同属ISTA。"
  },
  "pmcid": "PMC13441911",
  "license": "cc by",
- "quick_look": "对11个单基因ASD小鼠模型的251个样本、200,787个核做单核RNA+ATAC测序，突变汇聚于放射状胶质谱系的短暂发育延迟；共享转录差异在P4层II/IV神经元最大（715个DEG），层V/VI深部投射神经元有600个DEG。",
+ "quick_look": "对11个单基因ASD小鼠模型的251个样本、200,787个核做单核RNA+ATAC测序。突变汇聚于放射状胶质谱系的短暂发育延迟，表现为滞留增殖性RG1。共享转录差异在P4层II/IV神经元最大（715个DEG），层V/VI深部投射神经元600个DEG，多数下调。P4下调模块富集突触与离子通道。Arid1b与Shank3在E14.5放射状胶质共享DEG达236个。电生理在四个品系中显示三例出现内在兴奋性改变，与离子通道表达偏离相关。",
  "author_intro": "通讯作者Gaia Novarino为ISTA教授，研究遗传性神经发育障碍（癫痫、智力障碍与自闭症）的基因与分子机制。第一作者Lena A. Schwarz同属ISTA。"
 }
