@@ -428,6 +428,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 .pv-art .abody{grid-template-columns:210px minmax(0,1fr);gap:26px}
 .pv-art .amain p,.pv-art .amain li,.pv-art .amain .cap{max-width:none}
 .pv-art .sec p,.pv-art .sec li{font-size:16.5px;line-height:1.9}
+.pv-art .sec p{text-align:justify;text-justify:inter-ideograph;text-indent:2em}
 .pv-hero{display:grid;gap:6px;justify-items:center;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
 .pv-hero img{display:block;max-height:280px;max-width:100%;width:auto;height:auto;object-fit:contain}
 .pv-hero .cap{text-align:center;max-width:none}
