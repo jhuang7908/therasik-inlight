@@ -220,10 +220,10 @@ a.tile .tk::after{content:" →";opacity:.55}
 /* 领域页追踪器：0 篇的领域保留卡片但置灰、不可点 */
 .tile.nil{color:var(--muted);border-left-color:color-mix(in srgb,var(--tkc,var(--accent)) 40%,var(--line));background:var(--raise)}
 .tile.nil .tv{color:var(--muted)}
-/* 两侧广告位：从 1400px 起显示，这样 1280 与 r8 预览同宽（pv-shell 1100）。 */
+/* 两侧广告位：从 1440px 起显示，banner cards 需要更宽的栏位。 */
 .shell,.navshell,.footshell{max-width:1100px;margin:0 auto}
-@media (min-width:1400px){
-  .navshell,.footshell{display:grid;grid-template-columns:168px minmax(0,1fr) 168px;gap:18px;max-width:1480px;padding:0 10px}
+@media (min-width:1440px){
+  .navshell,.footshell{display:grid;grid-template-columns:200px minmax(0,1fr) 200px;gap:18px;max-width:1560px;padding:0 10px}
   .navshell>*,.footshell>*{grid-column:2;padding-left:4px;padding-right:4px}
 }
 @media (min-width:1700px){
@@ -232,9 +232,9 @@ a.tile .tk::after{content:" →";opacity:.55}
 .col{min-width:0}
 .view{min-height:62vh;align-content:start;min-width:0}
 .rail{display:none}
-@media (min-width:1400px){
-  .shell{display:grid;grid-template-columns:180px minmax(0,1fr) 180px;gap:18px;max-width:1520px;padding:0 10px}
-  .rail{display:block;position:sticky;top:60px;height:calc(100vh - 80px);overflow-y:auto;background:color-mix(in srgb,var(--surface) 60%,var(--bg));border-radius:12px;padding:12px}
+@media (min-width:1440px){
+  .shell{display:grid;grid-template-columns:200px minmax(0,1fr) 200px;gap:18px;max-width:1560px;padding:0 10px}
+  .rail{display:block;position:sticky;top:60px;height:calc(100vh - 80px);overflow-y:auto;background:color-mix(in srgb,var(--surface) 60%,var(--bg));border-radius:12px;padding:10px}
   .railin{display:grid;gap:10px;align-content:start}
   .rail-l{border-right:1px solid var(--line)}
   .rail-r{border-left:1px solid var(--line)}
@@ -248,20 +248,23 @@ a.tile .tk::after{content:" →";opacity:.55}
 .ad-tall{min-height:300px}
 .ad-med{min-height:150px}
 .ad-small{min-height:70px}
-@media (min-width:1400px){.ad-tall{min-height:360px}.ad-med{min-height:180px}}
+@media (min-width:1440px){.ad-tall{min-height:360px}.ad-med{min-height:180px}}
 @media (min-width:1700px){.rail-r .ad-tall{min-height:430px}.rail-r .ad-med{min-height:215px}}
 .adtext{border:1px dashed var(--line);border-radius:9px;background:var(--surface);padding:9px 10px;display:grid;gap:5px}
 .adtext b{font-size:11px;letter-spacing:.05em;color:var(--accent);font-weight:700}
 .adtext span{font-size:11px;color:var(--muted);border-bottom:1px dotted var(--line);padding-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .adtext span:last-child{border-bottom:0;padding-bottom:0}
-.srcard{display:grid;grid-template-columns:30px 1fr;gap:8px;padding:10px;border:1px solid var(--line);border-radius:9px;background:var(--surface);text-decoration:none;color:inherit;min-width:0;align-items:start}
+.srcard{display:grid;grid-template-rows:auto 1fr;gap:0;border:1px solid var(--line);border-radius:9px;background:var(--surface);text-decoration:none;color:inherit;min-width:0;overflow:hidden}
 .srcard:hover{border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
-.srcard .srclogo{width:30px;height:30px;border-radius:4px;object-fit:contain;background:#fff}
-.srcard .srcbody{display:grid;gap:2px;min-width:0}
+.srcard .srcbanner{width:100%;aspect-ratio:16/9;background:#f8f9fa;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.srcard .srcbanner img{width:100%;height:100%;object-fit:contain;background:#fff}
+.srcard .srcbanner svg{width:70%;height:70%;max-width:140px}
+.srcard .srcbody{display:grid;gap:3px;padding:10px 12px;min-width:0}
 .srcard b{font-size:13px;line-height:1.25;font-family:var(--display);font-weight:800}
 .srcard .dom{font-size:12px;color:var(--accent);font-weight:700;overflow-wrap:anywhere}
-.srcard em{font-size:12px;line-height:1.35;color:var(--muted);font-style:normal}
-.srclogo.txtlogo{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--muted);background:var(--raise);border:1px solid var(--line)}
+.srcard em{font-size:12px;line-height:1.4;color:var(--muted);font-style:normal}
+.srcbanner.txtbanner{background:var(--raise);font-size:28px;font-weight:800;color:var(--muted);letter-spacing:.05em}
+.srcbanner.fdabanner{background:#006db6}
 .railhead{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:4px 0 6px;border-bottom:1px solid var(--line);margin-bottom:4px}
 .srgroup{border:1px solid var(--line);border-radius:9px;background:var(--surface);padding:7px 8px 8px;display:grid;gap:3px;min-width:0}
 .srgroup .k{font-size:10px;letter-spacing:.08em;font-weight:700;color:var(--muted)}
@@ -270,7 +273,7 @@ a.tile .tk::after{content:" →";opacity:.55}
 .srnote:hover{color:var(--accent)}
 .ad-inline{min-height:110px}
 .adslot-mobile{display:grid;gap:14px;margin-top:6px}
-@media (min-width:1400px){.adslot-mobile{display:none}}
+@media (min-width:1440px){.adslot-mobile{display:none}}
 .srcrow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 @media (min-width:640px){.srcrow{grid-template-columns:repeat(4,minmax(0,1fr))}}
 .sponsored{border:1px solid var(--line);border-left:3px solid var(--c4);border-radius:10px;background:var(--surface);padding:13px 15px;display:grid;gap:5px}
@@ -538,30 +541,28 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 <aside class="rail rail-l" aria-label="左侧信息来源"><div class="railin">
 <div class="railhead">交易动态来源</div>
 <a class="srcard" href="https://www.biopharmadive.com" target="_blank" rel="noopener">
-  <img class="srclogo" src="assets/sources/biopharmadive.jpg" alt="">
-  <div class="srcbody"><b>BioPharma Dive</b><em>Industry Dive旗下的生物制药新闻，报道交易、监管和临床进展。</em></div>
+  <div class="srcbanner"><img src="assets/sources/biopharmadive_banner.jpg" alt="BioPharma Dive"></div>
+  <div class="srcbody"><b>BioPharma Dive</b><em>生物制药交易、监管和临床新闻</em></div>
 </a>
 <a class="srcard" href="https://www.biospace.com" target="_blank" rel="noopener">
-  <img class="srclogo" src="assets/sources/biospace.png" alt="">
-  <div class="srcbody"><b>BioSpace</b><em>生命科学行业的招聘与新闻平台，提供公司新闻稿和行业动态。</em></div>
+  <div class="srcbanner"><img src="assets/sources/biospace_banner.png" alt="BioSpace"></div>
+  <div class="srcbody"><b>BioSpace</b><em>生命科学招聘与新闻平台</em></div>
 </a>
 <a class="srcard" href="https://www.fiercebiotech.com" target="_blank" rel="noopener">
-  <img class="srclogo" src="assets/sources/fiercebiotech.ico" alt="">
-  <div class="srcbody"><b>Fierce Biotech</b><em>Questex旗下的生物技术新闻，覆盖研发、融资和监管动态。</em></div>
+  <div class="srcbanner"><img src="assets/sources/fiercebiotech_logo.svg" alt="Fierce Biotech"></div>
+  <div class="srcbody"><b>Fierce Biotech</b><em>生物技术研发、融资和监管</em></div>
 </a>
 <a class="srcard" href="https://www.fda.gov" target="_blank" rel="noopener">
-  <img class="srclogo" src="assets/sources/fda.ico" alt="">
-  <div class="srcbody"><b>FDA</b><em>美国食品药品监督管理局，药品和医疗器械的监管机构。</em></div>
+  <div class="srcbanner fdabanner"><img src="assets/sources/fda_logo.svg" alt="FDA"></div>
+  <div class="srcbody"><b>FDA</b><em>美国食品药品监督管理局</em></div>
 </a>
-<!-- 文字链（原 6 个赞助链接位）：有赞助商时替换这一块 -->
+<!-- 文字链 -->
 <div class="srgroup"><span class="k">常用来源</span>
 <a href="https://www.pharmcube.com" target="_blank" rel="noopener">医药魔方</a>
 <a href="https://pubmed.ncbi.nlm.nih.gov/" target="_blank" rel="noopener">PubMed</a>
-<a href="https://www.fda.gov/news-events/fda-newsroom/press-announcements" target="_blank" rel="noopener">FDA 公告</a>
-<a href="https://www.ema.europa.eu/en/news" target="_blank" rel="noopener">EMA</a>
+<a href="https://endpts.com" target="_blank" rel="noopener">Endpoints News</a>
 </div>
-<!-- 栏底说明，不是广告位 -->
-<a class="srnote" href="#support">这些栏位可用于赞助 · 联系 contact@therasik.com</a>
+<a class="srnote" href="#support">栏位可用于赞助</a>
 </div></aside>
 <div class="col">
 
@@ -672,24 +673,24 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
     <div class="feed" id="homefeed"></div>
   </section>
 
-  <!-- 移动端常用来源（<1400px 显示，桌面端由侧栏显示） -->
+  <!-- 移动端常用来源（<1440px 显示，桌面端由侧栏显示） -->
   <section class="adslot-mobile">
     <div class="sechead"><h2>常用来源</h2></div>
     <div class="srcrow">
       <a class="srcard" href="https://www.biopharmadive.com" target="_blank" rel="noopener">
-        <img class="srclogo" src="assets/sources/biopharmadive.jpg" alt="">
+        <div class="srcbanner"><img src="assets/sources/biopharmadive_banner.jpg" alt="BioPharma Dive"></div>
         <div class="srcbody"><b>BioPharma Dive</b><em>生物制药交易、监管和临床新闻</em></div>
       </a>
       <a class="srcard" href="https://www.fiercebiotech.com" target="_blank" rel="noopener">
-        <img class="srclogo" src="assets/sources/fiercebiotech.ico" alt="">
+        <div class="srcbanner"><img src="assets/sources/fiercebiotech_logo.svg" alt="Fierce Biotech"></div>
         <div class="srcbody"><b>Fierce Biotech</b><em>生物技术研发、融资和监管动态</em></div>
       </a>
       <a class="srcard" href="https://endpts.com" target="_blank" rel="noopener">
-        <span class="srclogo txtlogo">EP</span>
+        <div class="srcbanner txtbanner">Endpoints</div>
         <div class="srcbody"><b>Endpoints News</b><em>生物制药行业深度报道</em></div>
       </a>
       <a class="srcard" href="https://www.nature.com" target="_blank" rel="noopener">
-        <img class="srclogo" src="assets/sources/nature.png" alt="">
+        <div class="srcbanner"><img src="assets/sources/nature_banner.png" alt="Nature"></div>
         <div class="srcbody"><b>Nature</b><em>多学科科学期刊</em></div>
       </a>
     </div>
@@ -872,30 +873,24 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 <aside class="rail rail-r" aria-label="右侧信息来源"><div class="railin">
 <div class="railhead">学术期刊来源</div>
 <a class="srcard" href="https://www.nature.com" target="_blank" rel="noopener">
-  <img class="srclogo" src="assets/sources/nature.png" alt="">
-  <div class="srcbody"><b>Nature</b><em>Springer Nature出版的多学科科学期刊。收录13篇。</em></div>
+  <div class="srcbanner"><img src="assets/sources/nature_banner.png" alt="Nature"></div>
+  <div class="srcbody"><b>Nature</b><em>Springer Nature多学科科学期刊</em></div>
 </a>
 <a class="srcard" href="https://www.nature.com/nm" target="_blank" rel="noopener">
-  <img class="srclogo" src="assets/sources/nature.png" alt="">
-  <div class="srcbody"><b>Nature Medicine</b><em>Nature旗下的医学研究期刊。收录4篇。</em></div>
-</a>
-<a class="srcard" href="https://www.nature.com/nbt" target="_blank" rel="noopener">
-  <img class="srclogo" src="assets/sources/nature.png" alt="">
-  <div class="srcbody"><b>Nature Biotechnology</b><em>Nature旗下的生物技术期刊。收录3篇。</em></div>
+  <div class="srcbanner"><img src="assets/sources/nature_banner.png" alt="Nature Medicine"></div>
+  <div class="srcbody"><b>Nature Medicine</b><em>Nature旗下医学研究期刊</em></div>
 </a>
 <a class="srcard" href="https://www.biorxiv.org" target="_blank" rel="noopener">
-  <span class="srclogo txtlogo">bR</span>
-  <div class="srcbody"><b>bioRxiv</b><em>Cold Spring Harbor Laboratory的生物学预印本服务器。收录2篇。</em></div>
+  <div class="srcbanner txtbanner">bioRxiv</div>
+  <div class="srcbody"><b>bioRxiv</b><em>CSHL生物学预印本服务器</em></div>
 </a>
-<!-- 文字链（原 6 个推广链接位）：有赞助商时替换这一块 -->
+<!-- 文字链 -->
 <div class="srgroup"><span class="k">还会翻的</span>
-<a href="https://www.nature.com/nature-index/" target="_blank" rel="noopener">Nature Index</a>
-<a href="https://endpts.com/news-category/deals/" target="_blank" rel="noopener">Endpoints 交易库</a>
-<a href="https://www.biorxiv.org/collection/immunology" target="_blank" rel="noopener">bioRxiv 免疫学</a>
+<a href="https://www.nature.com/nbt" target="_blank" rel="noopener">Nature Biotech</a>
+<a href="https://endpts.com" target="_blank" rel="noopener">Endpoints News</a>
 <a href="https://www.eurekalert.org" target="_blank" rel="noopener">EurekAlert</a>
 </div>
-<!-- 栏底说明，不是广告位 -->
-<a class="srnote" href="#support">这些栏位可用于赞助 · 联系 contact@therasik.com</a>
+<a class="srnote" href="#support">栏位可用于赞助</a>
 </div></aside>
 </div>
 

@@ -1,76 +1,92 @@
 {
   "sources": [
     {
+      "id": "nature_banner",
+      "name": "Nature",
+      "logo": "nature_banner.png",
+      "logo_source": "https://www.nature.com/static/images/favicons/nature/apple-touch-icon-f39cb19454.png",
+      "size": "180x180",
+      "format": "PNG",
+      "description": "Official apple-touch-icon from Nature website"
+    },
+    {
       "id": "nature",
       "name": "Nature",
       "logo": "nature.png",
       "logo_source": "https://www.nature.com/static/images/favicons/nature/favicon-32x32.png",
-      "url": "https://www.nature.com",
-      "description": "Springer Nature出版的多学科科学期刊，覆盖生命科学、物理、化学等领域。",
-      "type": "journal",
-      "count": 13
+      "size": "32x32",
+      "format": "PNG",
+      "description": "Favicon from Nature website (legacy)"
     },
     {
-      "id": "nature-medicine",
-      "name": "Nature Medicine",
-      "logo": "nature.png",
-      "logo_source": "https://www.nature.com/static/images/favicons/nature/favicon-32x32.png",
-      "url": "https://www.nature.com/nm",
-      "description": "Nature旗下的医学研究期刊，发表临床和转化医学领域的原创研究。",
-      "type": "journal",
-      "count": 4
-    },
-    {
-      "id": "nature-biotech",
-      "name": "Nature Biotechnology",
-      "logo": "nature.png",
-      "logo_source": "https://www.nature.com/static/images/favicons/nature/favicon-32x32.png",
-      "url": "https://www.nature.com/nbt",
-      "description": "Nature旗下关注生物技术领域研究与商业化进展的期刊。",
-      "type": "journal",
-      "count": 3
-    },
-    {
-      "id": "biopharmadive",
+      "id": "biopharmadive_banner",
       "name": "BioPharma Dive",
-      "logo": "biopharmadive.jpg",
+      "logo": "biopharmadive_banner.jpg",
       "logo_source": "https://d12v9rtnomnebu.cloudfront.net/divesite/header_image_logos/biopharma_dive_feed_header.jpg",
-      "url": "https://www.biopharmadive.com",
-      "description": "Industry Dive旗下的生物制药行业新闻媒体，报道交易、监管和临床进展。",
-      "type": "news",
-      "count": 4
+      "size": "1280x720",
+      "format": "JPEG",
+      "description": "Official og:image from BioPharma Dive website"
     },
     {
-      "id": "biospace",
+      "id": "biospace_banner",
       "name": "BioSpace",
-      "logo": "biospace.png",
-      "logo_source": "https://k1-prod-biospace.s3.us-east-2.amazonaws.com/brightspot/cc/88/a9fddaf440db946b77e1d45d2e26/biospace-5.png",
-      "url": "https://www.biospace.com",
-      "description": "生命科学行业的招聘与新闻平台，提供公司新闻稿和行业动态。",
-      "type": "news",
-      "count": 2
+      "logo": "biospace_banner.png",
+      "logo_source": "https://static.biospace.com/dims4/default/d32393a/2147483647/strip/true/crop/1120x630+40+0/resize/1440x810!/quality/90/?url=https%3A%2F%2Fk1-prod-biospace.s3.us-east-2.amazonaws.com%2Fbrightspot%2Fcc%2F88%2Fa9fddaf440db946b77e1d45d2e26%2Fbiospace-5.png",
+      "size": "1440x810",
+      "format": "PNG",
+      "description": "Official og:image from BioSpace website"
+    },
+    {
+      "id": "fiercebiotech_logo",
+      "name": "Fierce Biotech",
+      "logo": "fiercebiotech_logo.svg",
+      "logo_source": "https://qtxasset.com/quartz/qcloud5/logos/Fierce%20Biotech%20Mix%20Logo.svg",
+      "size": "600x240",
+      "format": "SVG",
+      "description": "Official logo SVG from Fierce Biotech website header"
     },
     {
       "id": "fiercebiotech",
       "name": "Fierce Biotech",
       "logo": "fiercebiotech.ico",
       "logo_source": "https://qtxasset.com/quartz/qcloud5/fiercefavicon.ico",
-      "url": "https://www.fiercebiotech.com",
-      "description": "Questex旗下的生物技术行业新闻媒体，覆盖研发、融资和监管动态。",
-      "type": "news",
-      "count": 1
+      "size": "48x48",
+      "format": "ICO",
+      "description": "Favicon from Fierce Biotech website (legacy)"
+    },
+    {
+      "id": "fda_logo",
+      "name": "FDA",
+      "logo": "fda_logo.svg",
+      "logo_source": "https://www.fda.gov/themes/custom/preview/assets/images/FDA_Logo_Icon_White.svg",
+      "size": "66x79",
+      "format": "SVG",
+      "description": "Official FDA logo SVG (white on transparent, requires colored background)"
     },
     {
       "id": "fda",
       "name": "FDA",
       "logo": "fda.ico",
-      "logo_source": "https://www.fda.gov/favicon.ico",
-      "url": "https://www.fda.gov",
-      "description": "美国食品药品监督管理局，负责药品、医疗器械等的监管。",
-      "type": "regulatory",
-      "count": 2
+      "logo_source": "https://www.fda.gov/themes/custom/preview/favicon.ico",
+      "size": "32x32",
+      "format": "ICO",
+      "description": "Favicon from FDA website (legacy)"
     }
   ],
-  "generated": "2026-10-10",
-  "note": "Logos downloaded from official websites or CDNs. All files validated as images."
+  "text_badges": [
+    {
+      "id": "biorxiv",
+      "name": "bioRxiv",
+      "badge_text": "bioRxiv",
+      "reason": "Official images blocked by Cloudflare protection"
+    },
+    {
+      "id": "endpoints",
+      "name": "Endpoints News",
+      "badge_text": "Endpoints",
+      "reason": "Official images blocked or inaccessible"
+    }
+  ],
+  "last_updated": "2026-10-10",
+  "notes": "Banner images use official og:image, apple-touch-icon (≥180px), or SVG logos from each source. Sources without accessible large official images use text badges."
 }
