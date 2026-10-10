@@ -572,11 +572,6 @@ def render_structured_md(md: str, article_id: str, cover_caption: str, mech_imag
             close_sec()
             src = m.group(2)
             if "card" in src and not card_done:
-                cap = html.escape(cover_caption)
-                out.append(
-                    f'<div class="pv-hero"><img src="img/{article_id}_card.webp" width="1600" height="1000" alt="封面示意图">'
-                    f'<p class="cap">{cap}</p></div>'
-                )
                 card_done = True
             else:
                 out.append(

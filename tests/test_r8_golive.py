@@ -222,13 +222,12 @@ class R8GoLiveTests(unittest.TestCase):
             self.assertEqual(card["tags"], [card["f"]])
             self.assertTrue(card["field_color"].startswith("#"))
 
-    def test_ai_note_once_under_hero(self):
+    def test_no_hero_cover_in_article_pages(self):
+        """Article pages should not have pv-hero cover block (only mechanism figure)."""
         for a in cat.published_articles(self.catalog):
             html = (ROOT / "pages" / "article" / f"{a['id']}.html").read_text(encoding="utf-8")
-            hero = re.search(r'<div class="pv-hero">.*?</div>', html, re.S)
-            self.assertIsNotNone(hero, a["id"])
-            self.assertIn("AI 生成", hero.group(0), a["id"])
-            self.assertNotIn("配图由 AI 生成，依据论文流程绘制", html, a["id"])
+            hero = re.search(r'<div class="pv-hero">', html)
+            self.assertIsNone(hero, f"{a['id']} should not have pv-hero")
 
     def test_structured_files_untouched_source(self):
         for a in cat.published_articles(self.catalog):
