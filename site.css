@@ -456,9 +456,9 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 .pgrid.limited .item:nth-child(n+17){display:none!important}
 @media (max-width:860px){.pgrid.limited .item:nth-child(n+9){display:none!important}}
 /* Deals feed: show max 4 rows */
-.feed.limited .card:nth-child(n+17){display:none!important}
-@media (max-width:1023px){.feed.limited .card:nth-child(n+13){display:none!important}}
-@media (max-width:768px){.feed.limited .card:nth-child(n+9){display:none!important}}
+.feed.limited .item:nth-child(n+17){display:none!important}
+@media (max-width:1023px){.feed.limited .item:nth-child(n+13){display:none!important}}
+@media (max-width:768px){.feed.limited .item:nth-child(n+9){display:none!important}}
 .showallbtn{display:block;margin:16px auto 0;font-size:14px;font-weight:700;color:var(--accent);background:var(--surface);border:1px solid var(--accent);border-radius:999px;padding:10px 24px;cursor:pointer;font-family:inherit;text-decoration:none;text-align:center}
 .showallbtn:hover{background:var(--accent);color:var(--bg)}
 .pv-chips{display:flex;gap:4px;flex-wrap:nowrap;overflow:hidden;white-space:nowrap;min-width:0}
