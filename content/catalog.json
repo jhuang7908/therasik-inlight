@@ -50,8 +50,8 @@
       "locked": true,
       "title": "合成TCR库规模化验证显示所测VDJdb TCR中平均仅56%复现原注释反应性",
       "card_title": "合成TCR库：VDJdb TCR平均仅56%复现原注释反应性",
-      "card_caption": "绿色TCR结合浅色MHC，红色串珠为呈递肽段",
-      "cover_caption": "封面示意：绿色的 T 细胞受体（TCR）结合在浅色 MHC 分子上，红色串珠代表被呈递的肽段，左侧多孔板寓意汇集功能筛选。图片由 AI 生成，非原文图片。",
+      "card_caption": "绿色肽-MHC复合物与合成TCR结合，红色标出未复现的一例",
+      "cover_caption": "封面示意：多枚绿色的肽–MHC 复合物与合成 TCR 库中的受体结合，红色一例代表未能复现原注释反应性的 TCR。图片由 AI 生成，非原文图片。",
       "field": "肿瘤免疫与细胞治疗",
       "field_label": "肿瘤免疫与细胞治疗",
       "field_color": "#6E3F7A",
@@ -64,7 +64,7 @@
         }
       ],
       "preprint": false,
-      "card_image": "img/a-trap_card.webp",
+      "card_image": "img/a-trap_card_v2.webp",
       "card_px": [
         1600,
         1000
@@ -111,8 +111,8 @@
       "locked": true,
       "title": "256 例肿瘤类器官生物样本库建成，162 例完成全基因组 CRISPR 筛选并绘制基因依赖图谱",
       "card_title": "256例肿瘤类器官库，162例完成全基因组CRISPR筛选",
-      "card_caption": "放大的赤陶色肿瘤类器官与成簇绿色类器官",
-      "cover_caption": "封面示意：前景是一枚放大的肿瘤类器官（赤陶色），身后是成簇的绿色类器官，寓意大规模类器官样本库。图片由 AI 生成，非原文图片。",
+      "card_caption": "成簇肿瘤类器官，红点示CRISPR筛选命中的依赖基因",
+      "cover_caption": "封面示意：成簇的肿瘤类器官构成生物样本库，红色标记代表全基因组 CRISPR 筛选中被识别出的依赖基因。图片由 AI 生成，非原文图片。",
       "field": "精准肿瘤与临床转化",
       "field_label": "精准肿瘤与临床转化",
       "field_color": "#5A5F66",
@@ -125,7 +125,7 @@
         }
       ],
       "preprint": false,
-      "card_image": "img/c1-org-2_card.webp",
+      "card_image": "img/c1-org-2_card_v2.webp",
       "card_px": [
         1600,
         1000
@@ -171,15 +171,15 @@
       "locked": true,
       "title": "电荷可切换脂质纳米颗粒在 LPS 预处理小鼠中未升高 IL-6、IL-1β 和 MIP-2",
       "card_title": "电荷可切换LNP在LPS预处理小鼠中未升高IL-6等炎症因子",
-      "card_caption": "剖开的赤陶色脂质纳米颗粒与绿色内体样囊泡",
-      "cover_caption": "封面示意：左为剖开的赤陶色脂质纳米颗粒，右为剖开的绿色内体样囊泡（内含多个小泡），寓意 LNP 进入细胞后的内体环节。图片由 AI 生成，非原文图片。",
+      "card_caption": "脂质颗粒与巨噬细胞，右侧红色炎症因子稀少",
+      "cover_caption": "封面示意：左侧为脂质纳米颗粒，中间巨噬细胞，右侧少量红色颗粒代表未见升高的炎症因子。图片由 AI 生成，非原文图片。",
       "field": "核酸与基因治疗（含 LNP 递送）",
       "field_label": "核酸与基因治疗",
       "field_color": "#8A6212",
       "f": "nucleic",
       "related": [],
       "preprint": false,
-      "card_image": "img/c9-rna-5_card.webp",
+      "card_image": "img/c9-rna-5_card_v2.webp",
       "card_px": [
         1600,
         1000
@@ -224,15 +224,15 @@
       "locked": true,
       "title": "观察性研究：mRNA-1010接种者记忆B细胞增幅更高，5/13人生发中心持续至26周",
       "card_title": "观察性研究：mRNA-1010接种者记忆B细胞增幅更高",
-      "card_caption": "剖开的绿色淋巴结，中央红球寓意生发中心",
-      "cover_caption": "封面示意：剖开的绿色淋巴结，中央红色球体寓意生发中心，右下细针寓意淋巴结细针穿刺取样。图片由 AI 生成，非原文图片。",
+      "card_caption": "淋巴结生发中心剖面，右侧为记忆B细胞",
+      "cover_caption": "封面示意：淋巴结生发中心剖面，中心红色为持续活跃的反应区，右侧小细胞代表产生的记忆 B 细胞。图片由 AI 生成，非原文图片。",
       "field": "疫苗与感染免疫",
       "field_label": "疫苗与感染免疫",
       "field_color": "#1F6F78",
       "f": "vaccine",
       "related": [],
       "preprint": false,
-      "card_image": "img/c8-vac-3_card.webp",
+      "card_image": "img/c8-vac-3_card_v2.webp",
       "card_px": [
         1600,
         1000
@@ -279,15 +279,15 @@
       "locked": true,
       "title": "骨髓瘤体内 BCMA CAR-T 随访 15 个月：无新增重要 ESO-T01 相关不良事件，1 例持续 sCR，中位 PFS 4.0 个月",
       "card_title": "体内BCMA CAR-T 1期：随访15个月，1例持续sCR",
-      "card_caption": "慢病毒同时连接深绿色T细胞与赤陶红肿瘤块。",
-      "cover_caption": "封面示意：慢病毒同时连接深绿色T细胞与赤陶红肿瘤块。图片由 AI 生成，非原文图片。",
+      "card_caption": "绿色CAR-T细胞攻击右侧红色骨髓瘤细胞",
+      "cover_caption": "封面示意：绿色 CAR-T 细胞识别并攻击右侧红色的骨髓瘤细胞，周围颗粒示意细胞裂解。图片由 AI 生成，非原文图片。",
       "field": "肿瘤免疫与细胞治疗",
       "field_label": "肿瘤免疫与细胞治疗",
       "field_color": "#6E3F7A",
       "f": "immuno",
       "related": [],
       "preprint": false,
-      "card_image": "img/c7-cell-2_card.webp",
+      "card_image": "img/c7-cell-2_card_v2.webp",
       "card_px": [
         1600,
         1000
@@ -333,8 +333,8 @@
       "locked": true,
       "title": "人皮质类器官移植入无皮质小鼠：移植物占皮质体积91.9%，2至3个月约增长4.7倍",
       "card_title": "人皮质类器官移植入无皮质小鼠：移植物占皮质体积91.9%",
-      "card_caption": "绿色小鼠大脑，背侧砖红色圆块寓意类器官。",
-      "cover_caption": "封面示意：绿色小鼠大脑，背侧砖红色圆块寓意类器官。图片由 AI 生成，非原文图片。",
+      "card_caption": "脑剖面中绿色区域为移植的人皮层类器官",
+      "cover_caption": "封面示意：小鼠脑剖面中，绿色区域代表植入并长大的人皮层类器官，细线为长入的血管。图片由 AI 生成，非原文图片。",
       "field": "类器官",
       "field_label": "类器官",
       "field_color": "#2E6B4F",
@@ -347,7 +347,7 @@
         }
       ],
       "preprint": false,
-      "card_image": "img/c5-am-2_card.webp",
+      "card_image": "img/c5-am-2_card_v2.webp",
       "card_px": [
         1600,
         1000
@@ -393,15 +393,15 @@
       "locked": true,
       "title": "人脑皮层类器官体外培养5年，甲基化时钟预测年龄与培养时间相关（r = 0.88–0.90）",
       "card_title": "皮层类器官5年：甲基化时钟与时间相关r=0.88–0.90",
-      "card_caption": "剖开的绿色类器官，切面浮现砖红色神经元。",
-      "cover_caption": "封面示意：剖开的绿色类器官，切面浮现砖红色神经元。图片由 AI 生成，非原文图片。",
+      "card_caption": "类器官由小到大依次生长，下方DNA链上红点示甲基化位点",
+      "cover_caption": "封面示意：人脑皮层类器官从小到大依次生长，下方 DNA 链上的红色标记代表随培养时间累积的甲基化位点。图片由 AI 生成，非原文图片。",
       "field": "类器官",
       "field_label": "类器官",
       "field_color": "#2E6B4F",
       "f": "organoid",
       "related": [],
       "preprint": false,
-      "card_image": "img/c1-org-1_card.webp",
+      "card_image": "img/c1-org-1_card_v2.webp",
       "card_px": [
         1600,
         1000
@@ -447,8 +447,8 @@
       "locked": true,
       "title": "AIntibody 盲评：511 个 AI 抗体在亲和力成熟中最佳达 95 pM，跨任务表现不一",
       "card_title": "511个AI抗体盲评：挑战2仅9.8–13.8%优于对照",
-      "card_caption": "层析柱顶有赤陶红抗体，右侧是巨大绿色抗体。",
-      "cover_caption": "封面示意：层析柱顶有赤陶红抗体，右侧是巨大绿色抗体。图片由 AI 生成，非原文图片。",
+      "card_caption": "众多抗体指向绿色抗原，红色一枚为最优结合体",
+      "cover_caption": "封面示意：大量候选抗体指向中央的绿色抗原，红色一枚代表亲和力成熟后结合最强的抗体。图片由 AI 生成，非原文图片。",
       "field": "AI 药物设计",
       "field_label": "AI药物设计",
       "field_color": "#44489A",
@@ -461,7 +461,7 @@
         }
       ],
       "preprint": false,
-      "card_image": "img/c2-ai-1_card.webp",
+      "card_image": "img/c2-ai-1_card_v2.webp",
       "card_px": [
         1600,
         1000
@@ -507,15 +507,15 @@
       "locked": true,
       "title": "探索性蛋白质组附属分析中Rentosertib衰老钟21项显著",
       "card_title": "Rentosertib 2a期：21/54项衰老钟比较显著",
-      "card_caption": "深绿液滴前悬浮砖红分子，伴浅绿表盘与肺影。",
-      "cover_caption": "封面示意：深绿液滴前悬浮砖红分子，伴浅绿表盘与肺影。图片由 AI 生成，非原文图片。",
+      "card_caption": "细胞团与红色标记分子，示蛋白组学衰老相关变化",
+      "cover_caption": "封面示意：绿色细胞团与红色标记分子代表探索性蛋白质组分析中随衰老时钟显著变化的蛋白。图片由 AI 生成，非原文图片。",
       "field": "AI 药物设计",
       "field_label": "AI药物设计",
       "field_color": "#44489A",
       "f": "ai",
       "related": [],
       "preprint": false,
-      "card_image": "img/c2-ai-4_card.webp",
+      "card_image": "img/c2-ai-4_card_v2.webp",
       "card_px": [
         1600,
         1000
@@ -560,15 +560,15 @@
       "locked": true,
       "title": "靶向ZMYND8重塑小鼠耗竭T细胞并增强免疫治疗反应",
       "card_title": "靶向ZMYND8增加小鼠效应样耗竭T细胞并增强免疫治疗反应",
-      "card_caption": "剖开的白色T细胞，赤陶红元素为ZMYND8蛋白",
-      "cover_caption": "封面示意：剖开的白色T细胞，赤陶红元素为ZMYND8蛋白。图片由 AI 生成，非原文图片。",
+      "card_caption": "绿色免疫细胞攻击红色肿瘤细胞",
+      "cover_caption": "封面示意：绿色的树突状细胞与 T 细胞共同作用于右侧红色肿瘤细胞，示意重塑耗竭 T 细胞后的抗肿瘤反应。图片由 AI 生成，非原文图片。",
       "field": "肿瘤免疫与细胞治疗",
       "field_label": "肿瘤免疫与细胞治疗",
       "field_color": "#6E3F7A",
       "f": "immuno",
       "related": [],
       "preprint": false,
-      "card_image": "img/c3-io-4_card.webp",
+      "card_image": "img/c3-io-4_card_v2.webp",
       "card_px": [
         1600,
         1000
@@ -613,15 +613,15 @@
       "locked": true,
       "title": "72小时三联治疗后，8只幼猴停药6个月无病毒血症",
       "card_title": "72小时三联治疗：8只幼猴停药6个月无病毒血症",
-      "card_caption": "淡绿CD4 T细胞上，赤陶红抗体封住CCR5受体",
-      "cover_caption": "封面示意：淡绿CD4 T细胞上，赤陶红抗体封住CCR5受体。图片由 AI 生成，非原文图片。",
+      "card_caption": "病毒颗粒与三条药物链，红色示被抑制的病毒",
+      "cover_caption": "封面示意：左侧为病毒颗粒，右侧三条链状分子代表三联抗病毒药物，红色颗粒示意被抑制的病毒。图片由 AI 生成，非原文图片。",
       "field": "疫苗与感染免疫",
       "field_label": "疫苗与感染免疫",
       "field_color": "#1F6F78",
       "f": "vaccine",
       "related": [],
       "preprint": false,
-      "card_image": "img/c5-am-5_card.webp",
+      "card_image": "img/c5-am-5_card_v2.webp",
       "card_px": [
         1600,
         1000
@@ -667,8 +667,8 @@
       "locked": true,
       "title": "HCMI资源：421对肿瘤与模型配对中97.8%保留至少两类DNA特征",
       "card_title": "HCMI资源：421对配对中97.8%保留至少两类DNA特征",
-      "card_caption": "培养皿中肿瘤组织块旁，赤陶红类器官为焦点",
-      "cover_caption": "封面示意：培养皿中肿瘤组织块旁，赤陶红类器官为焦点。图片由 AI 生成，非原文图片。",
+      "card_caption": "肿瘤与模型两团组织由DNA链相连，红点示保留的DNA特征",
+      "cover_caption": "封面示意：左右两团组织代表配对的原发肿瘤与衍生模型，中间 DNA 链上的红色标记代表两者共同保留的 DNA 特征。图片由 AI 生成，非原文图片。",
       "field": "精准肿瘤与临床转化",
       "field_label": "精准肿瘤与临床转化",
       "field_color": "#5A5F66",
@@ -681,7 +681,7 @@
         }
       ],
       "preprint": false,
-      "card_image": "img/c1-org-3_card.webp",
+      "card_image": "img/c1-org-3_card_v2.webp",
       "card_px": [
         1600,
         1000
@@ -727,15 +727,15 @@
       "locked": true,
       "title": "GPR15归巢轴定位肠道CD8调节T细胞，散发性UC减少42%",
       "card_title": "GPR15引导CD8调节T细胞归巢结肠，散发性UC减少42%",
-      "card_caption": "深绿CD8调节T细胞紧贴赤陶红炎性巨噬细胞",
-      "cover_caption": "封面示意：深绿CD8调节T细胞紧贴赤陶红炎性巨噬细胞。图片由 AI 生成，非原文图片。",
+      "card_caption": "绿色调节性T细胞归巢至肠上皮，红点示归巢受体",
+      "cover_caption": "封面示意：绿色的 CD8 调节性 T 细胞沿红色归巢受体定位到右侧肠道上皮层。图片由 AI 生成，非原文图片。",
       "field": "自身免疫与移植免疫",
       "field_label": "自身免疫与移植",
       "field_color": "#8E4F5A",
       "f": "autoimm",
       "related": [],
       "preprint": false,
-      "card_image": "img/c4-ai-6_card.webp",
+      "card_image": "img/c4-ai-6_card_v2.webp",
       "card_px": [
         1600,
         1000
@@ -781,8 +781,8 @@
       "locked": true,
       "title": "Germinal低通量验证：43–101个设计覆盖4个抗体靶点生成抗体",
       "card_title": "Germinal验证：43–101个设计覆盖4个抗体靶点",
-      "card_caption": "抗体片段夹住抗原，赤陶红CDR环嵌入表位",
-      "cover_caption": "封面示意：抗体片段夹住抗原，赤陶红CDR环嵌入表位。图片由 AI 生成，非原文图片。",
+      "card_caption": "四个绿色靶点分别被设计抗体结合，一处红色表位",
+      "cover_caption": "封面示意：四个不同的绿色靶点蛋白各自被设计出的纳米抗体与抗体片段结合，红色为其中一处表位，背景细线示意 AI 设计网络。图片由 AI 生成，非原文图片。",
       "field": "AI 药物设计",
       "field_label": "AI药物设计",
       "field_color": "#44489A",
@@ -795,7 +795,7 @@
         }
       ],
       "preprint": false,
-      "card_image": "img/c2-ai-5_card.webp",
+      "card_image": "img/c2-ai-5_card_v2.webp",
       "card_px": [
         1600,
         1000
@@ -841,15 +841,15 @@
       "locked": true,
       "title": "160个双抗库揭示表面性质可由亲本预测ρ至0.95",
       "card_title": "160个双抗库：表面性质可由亲本预测，ρ至0.95",
-      "card_caption": "绿色双特异抗体，一侧为赤陶红风险标记云",
-      "cover_caption": "封面示意：绿色双特异抗体，一侧为赤陶红风险标记云。图片由 AI 生成，非原文图片。",
+      "card_caption": "两个亲本抗体合成双抗，红点示表面性质",
+      "cover_caption": "封面示意：左侧两个亲本抗体组合为中央的双特异性抗体，右侧为同类双抗，红色斑块代表可由亲本预测的表面性质。图片由 AI 生成，非原文图片。",
       "field": "抗体工程",
       "field_label": "抗体工程",
       "field_color": "#3A6489",
       "f": "antibody",
       "related": [],
       "preprint": true,
-      "card_image": "img/c6-ab-4_card.webp",
+      "card_image": "img/c6-ab-4_card_v2.webp",
       "card_px": [
         1600,
         1000
@@ -895,15 +895,15 @@
       "locked": true,
       "title": "TSC2缺失使类器官3个时点均出现星形胶质反应",
       "card_title": "TSC2缺失使类器官3个时点均出现星形胶质反应",
-      "card_caption": "放大的反应性星形胶质细胞，内有赤陶红光团",
-      "cover_caption": "封面示意：放大的反应性星形胶质细胞，内有赤陶红光团。图片由 AI 生成，非原文图片。",
+      "card_caption": "脑类器官剖面内星形胶质细胞，红色为反应性细胞",
+      "cover_caption": "封面示意：剖开的人脑类器官内可见多枚星形胶质细胞，红色者代表 TSC2 缺失后出现的反应性星形胶质细胞。图片由 AI 生成，非原文图片。",
       "field": "类器官",
       "field_label": "类器官",
       "field_color": "#2E6B4F",
       "f": "organoid",
       "related": [],
       "preprint": false,
-      "card_image": "img/c1-org-4_card.webp",
+      "card_image": "img/c1-org-4_card_v2.webp",
       "card_px": [
         1600,
         1000
@@ -949,15 +949,15 @@
       "locked": true,
       "title": "12种饮食模型显示4/6肥胖性饮食关联抗PD-1应答",
       "card_title": "12种饮食模型：4/6肥胖性饮食关联抗PD-1应答",
-      "card_caption": "肠道菌群与CD8 T细胞间，赤陶红为代谢物DAT",
-      "cover_caption": "封面示意：肠道菌群与CD8 T细胞间，赤陶红为代谢物DAT。图片由 AI 生成，非原文图片。",
+      "card_caption": "肠绒毛与菌群在左，T细胞与红色肿瘤在右",
+      "cover_caption": "封面示意：左侧肠绒毛间分布大量肠道细菌，虚线连向右侧，绿色 T 细胞趋向红色肿瘤细胞，示意饮食–菌群与免疫治疗应答的关联。图片由 AI 生成，非原文图片。",
       "field": "肿瘤免疫与细胞治疗",
       "field_label": "肿瘤免疫与细胞治疗",
       "field_color": "#6E3F7A",
       "f": "immuno",
       "related": [],
       "preprint": false,
-      "card_image": "img/c3-io-5_card.webp",
+      "card_image": "img/c3-io-5_card_v2.webp",
       "card_px": [
         1600,
         1000
@@ -1003,15 +1003,15 @@
       "locked": true,
       "title": "序贯HIV疫苗完整方案后44%恒河猴出现血清bnAb活性",
       "card_title": "序贯HIV疫苗完整方案后44%恒河猴出现血清bnAb活性",
-      "card_caption": "深绿HIV Env三聚体，赤陶红bnAb结合V3聚糖区",
-      "cover_caption": "封面示意：深绿HIV Env三聚体，赤陶红bnAb结合V3聚糖区。图片由 AI 生成，非原文图片。",
+      "card_caption": "三代B细胞逐步成熟，抗体结合右侧病毒刺突",
+      "cover_caption": "封面示意：左侧三个阶段的 B 细胞逐步成熟并分泌抗体，最终结合右侧病毒表面的红色刺突位点。图片由 AI 生成，非原文图片。",
       "field": "疫苗与感染免疫",
       "field_label": "疫苗与感染免疫",
       "field_color": "#1F6F78",
       "f": "vaccine",
       "related": [],
       "preprint": false,
-      "card_image": "img/c8-vac-2_card.webp",
+      "card_image": "img/c8-vac-2_card_v2.webp",
       "card_px": [
         1600,
         1000
@@ -1058,15 +1058,15 @@
       "locked": true,
       "title": "暂限培养使小肠类器官早期移植达到100%植入率",
       "card_title": "暂限培养使小肠类器官早期移植达到100%植入率",
-      "card_caption": "赤陶红小肠类器官移植物，外绕淡绿神经丛",
-      "cover_caption": "封面示意：赤陶红小肠类器官移植物，外绕淡绿神经丛。图片由 AI 生成，非原文图片。",
+      "card_caption": "培养皿中环形小肠类器官，右侧一枚植入肠壁",
+      "cover_caption": "封面示意：左侧为限制培养下的小肠类器官球体，右侧一枚嵌入宿主肠壁，红色标出植入部位。图片由 AI 生成，非原文图片。",
       "field": "类器官",
       "field_label": "类器官",
       "field_color": "#2E6B4F",
       "f": "organoid",
       "related": [],
       "preprint": false,
-      "card_image": "img/c1-org-5_card.webp",
+      "card_image": "img/c1-org-5_card_v2.webp",
       "card_px": [
         1600,
         1000
@@ -1113,15 +1113,15 @@
       "locked": true,
       "title": "NISE零样本设计药物结合蛋白，APEX体外亲和力达到80 pM",
       "card_title": "NISE零样本设计药物结合蛋白：APEX亲和力80 pM",
-      "card_caption": "深绿蛋白口袋中，赤陶红药物分子居中",
-      "cover_caption": "封面示意：深绿蛋白口袋中，赤陶红药物分子居中。图片由 AI 生成，非原文图片。",
+      "card_caption": "绿色设计蛋白包裹红色小分子药物",
+      "cover_caption": "封面示意：从头设计的绿色结合蛋白以口袋包裹红色的小分子药物，中央为放大示意。图片由 AI 生成，非原文图片。",
       "field": "AI 药物设计",
       "field_label": "AI药物设计",
       "field_color": "#44489A",
       "f": "ai",
       "related": [],
       "preprint": false,
-      "card_image": "img/c2-ai-2_card.webp",
+      "card_image": "img/c2-ai-2_card_v2.webp",
       "card_px": [
         1600,
         1000
@@ -1166,15 +1166,15 @@
       "locked": true,
       "title": "NIVIPIT 1b期：瘤内低剂量抗CTLA4联合抗PD1，6个月3–4级治疗相关毒性24.3%",
       "card_title": "瘤内抗CTLA4+抗PD1：6个月3–4级毒性24.3%",
-      "card_caption": "巨噬细胞包裹赤陶红调节性T细胞，旁有注射针",
-      "cover_caption": "封面示意：巨噬细胞包裹赤陶红调节性T细胞，旁有注射针。图片由 AI 生成，非原文图片。",
+      "card_caption": "瘤内注射抗体，血管输送抗体，T细胞浸润肿瘤",
+      "cover_caption": "封面示意：细针将抗体直接注入肿瘤，左上血管中另一种抗体经静脉输送，绿色 T 细胞向红色瘤核浸润。图片由 AI 生成，非原文图片。",
       "field": "肿瘤免疫与细胞治疗",
       "field_label": "肿瘤免疫与细胞治疗",
       "field_color": "#6E3F7A",
       "f": "immuno",
       "related": [],
       "preprint": false,
-      "card_image": "img/c3-io-2_card.webp",
+      "card_image": "img/c3-io-2_card_v2.webp",
       "card_px": [
         1600,
         1000
@@ -1219,8 +1219,8 @@
       "locked": true,
       "title": "SEZ6靶向ADC ABBV-706 1期：复发难治SCLC客观缓解率52%，推荐剂量1.8 mg/kg",
       "card_title": "SEZ6靶向ADC 1期：复发难治SCLC缓解率52%",
-      "card_caption": "赤陶红抗体偶联药物结合绿色肺癌细胞表面",
-      "cover_caption": "封面示意：赤陶红抗体偶联药物结合绿色肺癌细胞表面。图片由 AI 生成，非原文图片。",
+      "card_caption": "抗体结合细胞表面受体并携红色药物进入细胞",
+      "cover_caption": "封面示意：抗体偶联药物结合肿瘤细胞表面受体，红色为所携带的毒素载荷，中央示意内吞后在细胞内释放。图片由 AI 生成，非原文图片。",
       "field": "精准肿瘤与临床转化",
       "field_label": "精准肿瘤与临床转化",
       "field_color": "#5A5F66",
@@ -1233,7 +1233,7 @@
         }
       ],
       "preprint": false,
-      "card_image": "img/c6-ab-6_card.webp",
+      "card_image": "img/c6-ab-6_card_v2.webp",
       "card_px": [
         1600,
         1000
@@ -1279,8 +1279,8 @@
       "locked": true,
       "title": "智能体引导从头设计纳米抗体：116个候选中46个经SPR确认，最佳KD 0.66 nM",
       "card_title": "智能体设计纳米抗体：46个确认，最佳KD 0.66 nM",
-      "card_caption": "赤陶红纳米抗体结合绿色抗原表面",
-      "cover_caption": "封面示意：赤陶红纳米抗体结合绿色抗原表面。图片由 AI 生成，非原文图片。",
+      "card_caption": "左为AI网络，中为纳米抗体，右结合红色靶点",
+      "cover_caption": "封面示意：左侧网络示意智能体引导的设计流程，中间生成多枚纳米抗体，右侧一枚结合到细胞膜上的靶点，红色为结合位点。图片由 AI 生成，非原文图片。",
       "field": "AI 药物设计",
       "field_label": "AI药物设计",
       "field_color": "#44489A",
@@ -1293,7 +1293,7 @@
         }
       ],
       "preprint": true,
-      "card_image": "img/c6-ab-5_card.webp",
+      "card_image": "img/c6-ab-5_card_v2.webp",
       "card_px": [
         1600,
         1000
@@ -1340,15 +1340,15 @@
       "locked": true,
       "title": "真菌甘露聚糖佐剂加入新冠mRNA疫苗：小鼠中和抗体广度与持续期延长至第500天",
       "card_title": "真菌糖类佐剂延长新冠mRNA疫苗保护至第500天",
-      "card_caption": "赤陶红糖类佐剂颗粒旁有两枚绿色脂质纳米颗粒",
-      "cover_caption": "封面示意：赤陶红糖类佐剂颗粒旁有两枚绿色脂质纳米颗粒。图片由 AI 生成，非原文图片。",
+      "card_caption": "脂质颗粒与甘露聚糖链、树突状细胞与B细胞产抗体",
+      "cover_caption": "封面示意：左侧为载 mRNA 的脂质纳米颗粒与分枝状甘露聚糖佐剂，中间树突状细胞摄取后活化（红色），右侧 B 细胞分泌中和抗体。图片由 AI 生成，非原文图片。",
       "field": "疫苗与感染免疫",
       "field_label": "疫苗与感染免疫",
       "field_color": "#1F6F78",
       "f": "vaccine",
       "related": [],
       "preprint": false,
-      "card_image": "img/c8-vac-4_card.webp",
+      "card_image": "img/c8-vac-4_card_v2.webp",
       "card_px": [
         1600,
         1000
@@ -1394,15 +1394,15 @@
       "locked": true,
       "title": "甲状腺自身免疫中B细胞多克隆获得检查点突变：单例检出135种TNFRSF14突变",
       "card_title": "桥本甲状腺炎：单例供者检出135种TNFRSF14突变",
-      "card_caption": "甲状腺淋巴聚集区里的一个赤陶红突变B细胞",
-      "cover_caption": "封面示意：甲状腺淋巴聚集区里的一个赤陶红突变B细胞。图片由 AI 生成，非原文图片。",
+      "card_caption": "左为甲状腺滤泡，右为B细胞克隆，红点示突变",
+      "cover_caption": "封面示意：左侧为甲状腺滤泡，右侧大量 B 细胞成克隆扩增，红点代表其中携带的检查点基因突变。图片由 AI 生成，非原文图片。",
       "field": "自身免疫与移植免疫",
       "field_label": "自身免疫与移植",
       "field_color": "#8E4F5A",
       "f": "autoimm",
       "related": [],
       "preprint": false,
-      "card_image": "img/c4-ai-5_card.webp",
+      "card_image": "img/c4-ai-5_card_v2.webp",
       "card_px": [
         1600,
         1000
@@ -2201,8 +2201,8 @@
       "locked": true,
       "title": "pIgR双抗在食蟹猴BAL中暴露提高5.5倍",
       "card_title": "pIgR双抗使食蟹猴BAL暴露提高5.5倍",
-      "card_caption": "赤陶红双抗经pIgR转入肺黏膜",
-      "cover_caption": "封面示意：赤陶红双抗经上皮pIgR从血液转入肺黏膜腔。图片由 AI 生成，非原文图片。",
+      "card_caption": "双抗穿过气道上皮细胞被释放到气道表面",
+      "cover_caption": "封面示意：气道上皮细胞一列排开，双特异抗体自基底侧结合受体、经囊泡转运，并在顶端释放到气道表面与红色靶点结合。图片由 AI 生成，非原文图片。",
       "field": "抗体工程",
       "field_label": "抗体工程",
       "field_color": "#3A6489",
@@ -2215,7 +2215,7 @@
         }
       ],
       "preprint": false,
-      "card_image": "img/c6-ab-9_card.webp",
+      "card_image": "img/c6-ab-9_card_v2.webp",
       "card_px": [
         1600,
         1000
@@ -2243,8 +2243,8 @@
       "locked": true,
       "title": "人源化小鼠中敲除DPP9经CARD8焦亡导致造血干细胞耗竭与全血细胞减少",
       "card_title": "人DPP9缺失经CARD8焦亡致HSPC耗竭",
-      "card_caption": "赤陶色CARD8在绿色HSPC中激活焦亡",
-      "cover_caption": "封面示意：绿色人造血干细胞内，赤陶色CARD8炎性体被激活并导向焦亡，寓意DPP9缺失后门控失效。图片由 AI 生成，非原文图片。",
+      "card_caption": "左为正常造血干细胞，右为焦亡破裂的细胞",
+      "cover_caption": "封面示意：左侧为健康造血干细胞，右侧一枚细胞膜穿孔破裂，内部红色代表引发焦亡的炎症小体。图片由 AI 生成，非原文图片。",
       "field": "疾病模型",
       "field_label": "疾病模型",
       "field_color": "#5E6624",
@@ -2257,7 +2257,7 @@
         }
       ],
       "preprint": false,
-      "card_image": "img/c5-am-8_card.webp",
+      "card_image": "img/c5-am-8_card_v2.webp",
       "card_px": [
         1600,
         1000
@@ -2285,15 +2285,15 @@
       "locked": true,
       "title": "吸入ARO-RAGE在健康人与哮喘患者中可耐受，184 mg单剂BALF sRAGE降90.2%",
       "card_title": "吸入ARO-RAGE单剂使BALF sRAGE降90.2%",
-      "card_caption": "赤陶红吸入siRNA贴在绿色肺泡上皮",
-      "cover_caption": "封面示意：雾化的赤陶红色siRNA贴在绿色肺泡上皮表面，远处是淡绿支气管树，寓意吸入递送到肺。图片由 AI 生成，非原文图片。",
+      "card_caption": "肺泡与雾滴在左，右侧siRNA切断信使RNA",
+      "cover_caption": "封面示意：左侧肺泡群与吸入的雾滴，右侧上皮细胞摄取纳米颗粒，siRNA 切断信使 RNA，红色受体蛋白随之减少。图片由 AI 生成，非原文图片。",
       "field": "核酸与基因治疗（含 LNP 递送）",
       "field_label": "核酸与基因治疗",
       "field_color": "#8A6212",
       "f": "nucleic",
       "related": [],
       "preprint": false,
-      "card_image": "img/c9-rna-9_card.webp",
+      "card_image": "img/c9-rna-9_card_v2.webp",
       "card_px": [
         1600,
         1000
@@ -2321,8 +2321,8 @@
       "locked": true,
       "title": "4个人源化DMD小鼠模型携带外显子44、45、51或53缺失，侧翼外显子跳跃可恢复抗肌萎缩蛋白",
       "card_title": "4株人源化DMD小鼠：缺外显子44、45、51或53",
-      "card_caption": "绿色肌纤维上赤陶色抗肌萎缩蛋白缺口",
-      "cover_caption": "封面示意：绿色肌纤维膜上的赤陶色抗肌萎缩蛋白出现缺口，寓意人DMD外显子缺失后的蛋白中断。图片由 AI 生成，非原文图片。",
+      "card_caption": "基因外显子排中红色为被跳跃者，右为肌纤维",
+      "cover_caption": "封面示意：左侧基因由一排外显子组成，缺口旁红色外显子被反义链跳跃，右侧肌纤维膜上恢复了抗肌萎缩蛋白。图片由 AI 生成，非原文图片。",
       "field": "疾病模型",
       "field_label": "疾病模型",
       "field_color": "#5E6624",
@@ -2335,7 +2335,7 @@
         }
       ],
       "preprint": false,
-      "card_image": "img/c5-am-9_card.webp",
+      "card_image": "img/c5-am-9_card_v2.webp",
       "card_px": [
         1600,
         1000
@@ -2363,8 +2363,8 @@
       "locked": true,
       "title": "难治性重症肌无力抗CD19 CAR-T个案随访：3例均维持停药临床缓解至少19个月",
       "card_title": "难治MG抗CD19 CAR-T：3例停药缓解至少19个月",
-      "card_caption": "深绿CAR-T细胞贴近赤陶红自身反应B细胞",
-      "cover_caption": "封面示意：深绿CAR-T细胞贴近赤陶红自身反应B细胞。图片由 AI 生成，非原文图片。",
+      "card_caption": "左为神经肌肉接头，右为CAR-T清除红色B细胞",
+      "cover_caption": "封面示意：左侧为神经肌肉接头处的受体，右侧绿色 CAR-T 细胞识别并清除红色 B 细胞，周围抗体随之消退。图片由 AI 生成，非原文图片。",
       "field": "自身免疫与移植免疫",
       "field_label": "自身免疫与移植",
       "field_color": "#8E4F5A",
@@ -2377,7 +2377,7 @@
         }
       ],
       "preprint": false,
-      "card_image": "img/c4-ai-8_card.webp",
+      "card_image": "img/c4-ai-8_card_v2.webp",
       "card_px": [
         1600,
         1000
@@ -2405,8 +2405,8 @@
       "locked": true,
       "title": "156个巨噬激活双抗筛出WTa2d1xCD38，IC50低至18.0 pM",
       "card_title": "156个双抗筛出低亲和SIRPα×CD38",
-      "card_caption": "赤陶红双抗桥接巨噬与淋巴瘤细胞",
-      "cover_caption": "封面示意：赤陶红双抗同时抓住巨噬细胞与淋巴瘤细胞，寓意低亲和SIRPα诱饵与CD38臂的桥接杀伤。图片由 AI 生成，非原文图片。",
+      "card_caption": "巨噬细胞经红色双抗桥接吞噬右侧肿瘤细胞",
+      "cover_caption": "封面示意：左侧巨噬细胞通过红色的双特异性抗体与右侧肿瘤细胞桥接，示意激活吞噬作用。图片由 AI 生成，非原文图片。",
       "field": "抗体工程",
       "field_label": "抗体工程",
       "field_color": "#3A6489",
@@ -2419,7 +2419,7 @@
         }
       ],
       "preprint": false,
-      "card_image": "img/c6-ab-7_card.webp",
+      "card_image": "img/c6-ab-7_card_v2.webp",
       "card_px": [
         1600,
         1000
@@ -2447,15 +2447,15 @@
       "locked": true,
       "title": "鞘内RAG-17在6例SOD1-ALS中达可接受安全，队列1第240天脑脊液SOD1降69%",
       "card_title": "RAG-17一期6例：脑脊液SOD1降69%与56%",
-      "card_caption": "赤陶红siRNA双链连着绿色辅助寡核苷酸",
-      "cover_caption": "封面示意：赤陶红色的siRNA双链经接头连着一段绿色辅助寡核苷酸，旁边是腰椎穿刺针与淡绿脊髓轮廓，寓意鞘内递送。图片由 AI 生成，非原文图片。",
+      "card_caption": "运动神经元胞体内红色链代表被沉默的信使RNA",
+      "cover_caption": "封面示意：运动神经元胞体内红色链代表被鞘内给药的小核酸沉默的信使 RNA。图片由 AI 生成，非原文图片。",
       "field": "核酸与基因治疗（含 LNP 递送）",
       "field_label": "核酸与基因治疗",
       "field_color": "#8A6212",
       "f": "nucleic",
       "related": [],
       "preprint": false,
-      "card_image": "img/c9-rna-7_card.webp",
+      "card_image": "img/c9-rna-7_card_v2.webp",
       "card_px": [
         1600,
         1000
@@ -2483,8 +2483,8 @@
       "locked": true,
       "title": "三特异IL-2R抗体αβγVHH-48的EC50达0.015 nM",
       "card_title": "三特异IL-2R抗体EC50达0.015 nM并偏Treg",
-      "card_caption": "赤陶红三抗把IL-2R三链拉在一起",
-      "cover_caption": "封面示意：赤陶红三特异抗体把Treg表面的IL-2Rα/β/γ拉成可信号的三聚体。图片由 AI 生成，非原文图片。",
+      "card_caption": "绿色三特异抗体结合深绿色调节性T细胞，其余静止",
+      "cover_caption": "封面示意：右侧深绿色调节性 T 细胞被三特异抗体结合并活化（红色），左侧其他 T 细胞未被结合。图片由 AI 生成，非原文图片。",
       "field": "抗体工程",
       "field_label": "抗体工程",
       "field_color": "#3A6489",
@@ -2497,7 +2497,7 @@
         }
       ],
       "preprint": false,
-      "card_image": "img/c6-ab-8_card.webp",
+      "card_image": "img/c6-ab-8_card_v2.webp",
       "card_px": [
         1600,
         1000
@@ -2525,15 +2525,15 @@
       "locked": true,
       "title": "11个单基因ASD小鼠模型共251个样本：放射状胶质谱系短暂延迟，P4层II/IV神经元715个DEG",
       "card_title": "11个ASD小鼠251样本：放射胶质短暂延迟",
-      "card_caption": "绿色放射状胶质滞留，赤陶神经元后移",
-      "cover_caption": "封面示意：绿色放射状胶质细胞滞留于增殖态，赤陶色新生神经元位置后移，寓意发育延迟而非谱系错指定。图片由 AI 生成，非原文图片。",
+      "card_caption": "放射状胶质纤维中红色示延迟，右列为多个模型",
+      "cover_caption": "封面示意：左侧为发育中皮层的放射状胶质纤维与迁移神经元，红色示意短暂延迟的谱系；右侧一排代表多个不同模型。图片由 AI 生成，非原文图片。",
       "field": "疾病模型",
       "field_label": "疾病模型",
       "field_color": "#5E6624",
       "f": "animal",
       "related": [],
       "preprint": false,
-      "card_image": "img/c5-am-7_card.webp",
+      "card_image": "img/c5-am-7_card_v2.webp",
       "card_px": [
         1600,
         1000
@@ -2561,8 +2561,8 @@
       "locked": true,
       "title": "优化PE-LNP单剂2 mg/kg使小鼠全肝平均prime editing达49%",
       "card_title": "单剂PE-LNP使小鼠全肝精准编辑达49%",
-      "card_caption": "赤陶红脂质纳米颗粒进入绿色肝细胞",
-      "cover_caption": "封面示意：一枚剖开的赤陶红色脂质纳米颗粒贴近绿色肝细胞，颗粒内可见RNA链，寓意非病毒递送prime editor。图片由 AI 生成，非原文图片。",
+      "card_caption": "脂质颗粒载红色编辑组件进入肝细胞",
+      "cover_caption": "封面示意：左侧脂质纳米颗粒内部红色为所载的编辑组件，右侧进入肝细胞完成编辑。图片由 AI 生成，非原文图片。",
       "field": "核酸与基因治疗（含 LNP 递送）",
       "field_label": "核酸与基因治疗",
       "field_color": "#8A6212",
@@ -2575,7 +2575,7 @@
         }
       ],
       "preprint": false,
-      "card_image": "img/c9-rna-8_card.webp",
+      "card_image": "img/c9-rna-8_card_v2.webp",
       "card_px": [
         1600,
         1000
@@ -2603,8 +2603,8 @@
       "locked": true,
       "title": "双靶CD19/BCMA CAR-T脱敏后肾移植：2例cPRA≥99.9%安全导入队列均完成移植",
       "card_title": "双靶CAR-T脱敏后2例高致敏患者完成肾移植",
-      "card_caption": "深绿双靶CAR-T环绕赤陶红HLA浆细胞",
-      "cover_caption": "封面示意：深绿双靶CAR-T环绕赤陶红HLA浆细胞。图片由 AI 生成，非原文图片。",
+      "card_caption": "五枚绿色CAR-T与一枚红色靶细胞，右侧为肾脏",
+      "cover_caption": "封面示意：绿色双靶 CAR-T 细胞清除红色靶细胞，右侧肾脏轮廓示意脱敏后的肾移植。图片由 AI 生成，非原文图片。",
       "field": "自身免疫与移植免疫",
       "field_label": "自身免疫与移植",
       "field_color": "#8E4F5A",
@@ -2617,7 +2617,7 @@
         }
       ],
       "preprint": false,
-      "card_image": "img/c4-ai-9_card.webp",
+      "card_image": "img/c4-ai-9_card_v2.webp",
       "card_px": [
         1600,
         1000
