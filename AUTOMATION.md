@@ -124,3 +124,32 @@ python build_pages.py --dry-run  # 预览，不写文件
 退出码：`1` 缺少密钥，`2` 这一窗口没有抓到条目或找不到一周目录，`3` 模型结果里没有可用条目，`4` 其他错误（接口返回、目录已存在、上传失败）。同日目录已存在时不会覆盖，先看日志再决定要不要换一天或清掉那一天的目录。
 
 来源 feed 打不开时，这一条记警告，其余来源继续。全部失败才会以退出码 `2` 结束，并且不会改 `content/latest.json`。
+
+## 2026-10-11 周更修复与公告来源
+
+一键运行（自动在仓库内建 `.venv` 并安装依赖，`.venv/` 已被 git 忽略）：
+
+```bash
+./weekly.sh --fetch-only                 # 只抓来源（含公告），写 preview/weekly/日期/candidates.json；不需要任何密钥
+./weekly.sh --dry-run                    # 需要 ANTHROPIC_API_KEY；没有 OPENAI_API_KEY 时自动跳过配图
+./weekly.sh --dry-run --out-dir /tmp/x --no-images
+./weekly.sh                              # 正式写入 content/
+```
+
+- 密钥可以 export，也可以写在仓库根目录的 `.env`（已忽略）；脚本会读取，但不会覆盖已 export 的变量，日志只记变量名。
+- `ANTHROPIC_MODEL` 指定的模型不存在时，脚本自动改用账号里可用的 Sonnet 模型并在日志里写明。
+- `content/weekly/*/images/` 不再被 git 忽略：`content/latest.json` 里的文章引用这些配图，必须随内容一起提交。
+
+### 上市公司公告（filings.py）
+
+`sources.yaml` 的 `filings:` 段控制。每周抓过去 7 天：
+
+- SEC EDGAR 全文检索（efts.sec.gov）：8-K / 6-K（部分查询含 10-Q / 20-F），关键词 "exclusive license" "Greater China"、"exclusive license agreement"、"NewCo"、"upfront payment"；只留医药/生物技术 SIC；同一份 filing 只留一条（优先 EX-99 新闻稿附件）。User-Agent 带 contact@inlightbio.com，限速 5 次/秒。
+- 港交所披露易：按日期检索（中文标题）+ 最新披露 feed；关注名单 02162、01276、03692、09995、02142、06990、01093、01177、01801、09926 的自愿公告/内幕消息/须予披露交易全收，其它医药公司只收许可、合作、新公司、合资类标题；排除月报表、一般授权、回购等。
+- 巨潮资讯（沪深）：关键词 授权许可、独家许可、合作协议、合资、设立公司、首付款、里程碑；排除 生产许可证、上市许可申请、注册证；只留医药类公司或标题。
+
+抓到的公告以 `kind: filing` 进入允许引用的 URL 列表，并下载正文前几页做摘录（PDF 用 pdftotext）。写稿提示词要求公告优先于媒体，同一交易用公告链接。任何一个平台出错只记日志，其它来源照跑。回归：`python -m unittest tests.test_filings`。
+
+### 发布路径
+
+脚本只写文件，不推送。正式运行后在仓库里提交 `content/weekly/日期/`（含 images）和 `content/latest.json`，以补丁或 PR 合入 `main`，GitHub Pages 自动重建。
