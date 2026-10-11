@@ -138,7 +138,7 @@ def build_article_page(article: dict, body_root: str, inner: dict, data: dict) -
     doi = cat.doi_of(citation, article.get("url") or "")
     journal = article.get("j") or cat.journal_of(citation, "")
     one = inner.get("one_liner") or article.get("sum") or ""
-    og_image = f"{SITE_URL}/img/{aid}_card.webp"
+    og_image = f"{SITE_URL}/" + (article.get("card_image") or f"img/{aid}_card.webp")
     page_url = f"{SITE_URL}/pages/article/{aid}.html"
     body = rebase_img_paths(body_root, "../../")
     parts = cat.split_structured_body(body)
