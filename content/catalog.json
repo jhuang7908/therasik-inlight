@@ -285,7 +285,13 @@
       "field_label": "肿瘤免疫与细胞治疗",
       "field_color": "#6E3F7A",
       "f": "immuno",
-      "related": [],
+      "related": [
+        {
+          "field": "核酸与基因治疗（含 LNP 递送）",
+          "label": "核酸与基因治疗",
+          "color": "#8A6212"
+        }
+      ],
       "preprint": false,
       "card_image": "img/c7-cell-2_card_v2.webp",
       "card_px": [
@@ -566,7 +572,13 @@
       "field_label": "肿瘤免疫与细胞治疗",
       "field_color": "#6E3F7A",
       "f": "immuno",
-      "related": [],
+      "related": [
+        {
+          "field": "疫苗与感染免疫",
+          "label": "疫苗与感染免疫",
+          "color": "#1F6F78"
+        }
+      ],
       "preprint": false,
       "card_image": "img/c3-io-4_card_v2.webp",
       "card_px": [
@@ -619,7 +631,13 @@
       "field_label": "疫苗与感染免疫",
       "field_color": "#1F6F78",
       "f": "vaccine",
-      "related": [],
+      "related": [
+        {
+          "field": "抗体工程",
+          "label": "抗体工程",
+          "color": "#3A6489"
+        }
+      ],
       "preprint": false,
       "card_image": "img/c5-am-5_card_v2.webp",
       "card_px": [
@@ -847,7 +865,13 @@
       "field_label": "抗体工程",
       "field_color": "#3A6489",
       "f": "antibody",
-      "related": [],
+      "related": [
+        {
+          "field": "AI 药物设计",
+          "label": "AI药物设计",
+          "color": "#44489A"
+        }
+      ],
       "preprint": true,
       "card_image": "img/c6-ab-4_card_v2.webp",
       "card_px": [
@@ -1009,7 +1033,13 @@
       "field_label": "疫苗与感染免疫",
       "field_color": "#1F6F78",
       "f": "vaccine",
-      "related": [],
+      "related": [
+        {
+          "field": "抗体工程",
+          "label": "抗体工程",
+          "color": "#3A6489"
+        }
+      ],
       "preprint": false,
       "card_image": "img/c8-vac-2_card_v2.webp",
       "card_px": [
@@ -2209,9 +2239,9 @@
       "f": "antibody",
       "related": [
         {
-          "field": "疾病模型",
-          "label": "疾病模型",
-          "color": "#5E6624"
+          "field": "疫苗与感染免疫",
+          "label": "疫苗与感染免疫",
+          "color": "#1F6F78"
         }
       ],
       "preprint": false,

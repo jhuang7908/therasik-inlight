@@ -24,9 +24,9 @@
       ],
       "related": [
         {
-          "field": "疾病模型",
-          "label": "疾病模型",
-          "color": "#5E6624"
+          "field": "疫苗与感染免疫",
+          "label": "疫苗与感染免疫",
+          "color": "#1F6F78"
         }
       ],
       "preprint": false,
@@ -547,7 +547,13 @@
       "tags": [
         "immuno"
       ],
-      "related": [],
+      "related": [
+        {
+          "field": "核酸与基因治疗（含 LNP 递送）",
+          "label": "核酸与基因治疗",
+          "color": "#8A6212"
+        }
+      ],
       "preprint": false,
       "sum": "4 例复发难治骨髓瘤患者单次输注体内 BCMA CAR-T，随访最长 15 个月未见新增重要 ESO-T01 相关不良事件，1 例持续 sCR，中位 PFS 4.0 个月，另 3 例复发或进展后死亡。",
       "card_img": "img/c7-cell-2_card_v2.webp",
@@ -714,7 +720,13 @@
       "tags": [
         "immuno"
       ],
-      "related": [],
+      "related": [
+        {
+          "field": "疫苗与感染免疫",
+          "label": "疫苗与感染免疫",
+          "color": "#1F6F78"
+        }
+      ],
       "preprint": false,
       "sum": "在LCMV与黑色素瘤模型中，靶向ZMYND8使P14细胞偏向效应样耗竭状态，并增强杀伤与免疫治疗反应。",
       "card_img": "img/c3-io-4_card_v2.webp",
@@ -745,7 +757,13 @@
       "tags": [
         "vaccine"
       ],
-      "related": [],
+      "related": [
+        {
+          "field": "抗体工程",
+          "label": "抗体工程",
+          "color": "#3A6489"
+        }
+      ],
       "preprint": false,
       "sum": "口服SHIV感染幼猴在72小时启动LRM、bNAb和27周ART后，8只ATI后6个月均无病毒血症且PBMC/组织未检出CAVL。",
       "card_img": "img/c5-am-5_card_v2.webp",
@@ -881,7 +899,13 @@
       "tags": [
         "antibody"
       ],
-      "related": [],
+      "related": [
+        {
+          "field": "AI 药物设计",
+          "label": "AI药物设计",
+          "color": "#44489A"
+        }
+      ],
       "preprint": true,
       "sum": "在未经同行评审的160个双抗库研究中，Ritter等用亲本组合预测实测值，HIC/SMAC/HAC的Spearman ρ达0.95、0.94和0.89。",
       "card_img": "img/c6-ab-4_card_v2.webp",
@@ -974,7 +998,13 @@
       "tags": [
         "vaccine"
       ],
-      "related": [],
+      "related": [
+        {
+          "field": "抗体工程",
+          "label": "抗体工程",
+          "color": "#3A6489"
+        }
+      ],
       "preprint": false,
       "sum": "在接受完整异源序贯方案的恒河猴中，N332-GT5起始免疫后，按摘要口径有44%的动物出现血清bnAb活性。",
       "card_img": "img/c8-vac-2_card_v2.webp",
