@@ -80,37 +80,99 @@ def write_published_json(catalog: dict) -> Path:
 
 
 def article_nav(active: str = "") -> str:
+    """Same labels as the homepage nav; links go to the homepage views."""
     def item(href: str, label: str, key: str) -> str:
         on = ' class="on"' if key == active else ""
         return f'<a href="{href}"{on}>{label}</a>'
     return f"""<nav><div class="navshell"><div class="nav-in">
-  <a class="brand" href="{SITE_URL}/#home">
+  <a class="qy-made" href="/#about" title="启元智研（北京）生物科技有限公司"><img src="../../assets/brand/qiyuan_mark_A_tight.svg" alt="" aria-hidden="true" width="28" height="26"><span>启元智研 出品</span></a>
+  <a class="brand" href="/#home">
     <span class="bmark-wrap"><img src="../../img/logo.png" alt=""></span>
     <span class="btext"><span class="bn">前沿追踪</span><span class="bs">FRONTIER DIGEST</span></span>
   </a>
   <div class="nav-tabs">
-    {item(SITE_URL + '/#home', '首页', 'home')}
-    {item(SITE_URL + '/#fields', '领域', 'fields')}
-    {item(SITE_URL + '/#deals', '动态', 'deals')}
-    {item(SITE_URL + '/#archive', '存档', 'archive')}
-    {item(SITE_URL + '/#about', '关于', 'about')}
+    {item('/#home', '首页', 'home')}
+    {item('/#fields', '学术进展', 'fields')}
+    {item('/#deals', '经济动态', 'deals')}
+    {item('/#services', '服务', 'services')}
+    {item('/#about', '关于我们', 'about')}
   </div>
-  <a class="navsub" href="{SITE_URL}/#support">订阅</a>
+  <a class="navsub" href="/#support">订阅</a>
 </div></div></nav>"""
 
 
-ARTICLE_FOOT = f"""<footer>
+ARTICLE_FOOT = """<footer>
   <div class="footshell"><div class="foot-in">
     <div class="fbrand">
       <b>前沿追踪</b>
       <p class="fco" style="display:flex;align-items:center;gap:8px"><img src="../../assets/brand/qiyuan_mark_A_tight.svg" alt="" aria-hidden="true" width="28" height="26" style="display:block;height:26px;width:auto;flex:none"><span>启元智研 出品。九个领域的前沿进展与经济动态，中文整理。</span></p>
     </div>
     <div class="footnav">
-      <a href="{SITE_URL}/#home">首页</a><a href="{SITE_URL}/#fields">领域</a><a href="{SITE_URL}/#deals">商业化动态</a><a href="{SITE_URL}/#archive">存档</a><a href="{SITE_URL}/#about">关于</a><a href="{SITE_URL}/#support">订阅</a>
+      <a href="/#home">首页</a><a href="/#fields">学术进展</a><a href="/#deals">经济动态</a><a href="/#archive">存档</a><a href="/#about">关于我们</a><a href="/#services">服务</a><a href="/#support">订阅</a>
     </div>
     <p class="footmail">广告、赞助、纠错都写 <a href="mailto:contact@therasik.com">contact@therasik.com</a></p>
   </div></div>
 </footer>"""
+
+FEED_LINK = f'<link rel="alternate" type="application/rss+xml" title="前沿追踪" href="{SITE_URL}/feed.xml">'
+
+
+def _short_date(ds: str) -> str:
+    return ds[:10].replace("-", ".") if len(ds or "") >= 10 else ""
+
+
+def _end_link(a: dict, cls: str, label: str) -> str:
+    title = a.get("card_title") or a.get("title") or a.get("t") or a["id"]
+    rec = cat.field_record(a["field"])
+    meta = " · ".join(x for x in (rec["n"], _short_date(a.get("ds") or "")) if x)
+    return (
+        f'<a class="pn {cls}" href="{html.escape(a["id"])}.html">'
+        f'<span class="k">{label}</span><b>{html.escape(title)}</b>'
+        f'<em>{html.escape(meta)}</em></a>'
+    )
+
+
+def related_articles(article: dict, published: list[dict], limit: int = 3) -> list[dict]:
+    """Same primary field, nearest publication date first; published ids only."""
+    from datetime import date
+
+    def day(a: dict) -> int:
+        ds = a.get("ds") or ""
+        try:
+            return date(int(ds[:4]), int(ds[5:7]), int(ds[8:10])).toordinal()
+        except (ValueError, IndexError):
+            return 0
+    me = day(article)
+    pool = [a for a in published if a["id"] != article["id"] and a.get("field") == article.get("field")]
+    pool.sort(key=lambda a: (abs(day(a) - me), a["id"]))
+    return pool[:limit]
+
+
+def article_end_html(article: dict, published: list[dict]) -> str:
+    """上一篇 / 下一篇 (site 最新 order), 相关阅读 (same field), 订阅."""
+    ids = [a["id"] for a in published]
+    i = ids.index(article["id"])
+    prev_a = published[i - 1] if i > 0 else None
+    next_a = published[i + 1] if i + 1 < len(published) else None
+    pn = []
+    pn.append(_end_link(prev_a, "prev", "← 上一篇") if prev_a else '<span class="pn prev none"><span class="k">← 上一篇</span><b>已是第一篇</b></span>')
+    pn.append(_end_link(next_a, "next", "下一篇 →") if next_a else '<span class="pn next none"><span class="k">下一篇 →</span><b>已是最后一篇</b></span>')
+    rel = related_articles(article, published)
+    rel_items = "".join(
+        f'<li><a href="{html.escape(a["id"])}.html">{html.escape(a.get("card_title") or a.get("title") or a["id"])}</a>'
+        f'<span>{html.escape(" · ".join(x for x in ((a.get("j") or ""), _short_date(a.get("ds") or "")) if x))}</span></li>'
+        for a in rel
+    )
+    rec = cat.field_record(article["field"])
+    rel_html = (
+        f'<div class="art-rel"><h2>相关阅读<small>{html.escape(rec["n"])}</small></h2><ul>{rel_items}</ul></div>'
+        if rel_items else ""
+    )
+    return f"""<section class="art-end" aria-label="继续阅读">
+ <div class="art-pn">{''.join(pn)}</div>
+ {rel_html}
+ <div class="art-sub"><div><b>每周一封，中文</b><p>九个领域的解读摘要加经济动态，正文附原文链接。免费，可随时退订。</p></div><a class="btn" href="/#support">订阅每周更新</a></div>
+</section>"""
 
 
 def rebase_img_paths(body: str, prefix: str) -> str:
@@ -125,7 +187,7 @@ def render_article_main(article: dict) -> str:
     return cat.render_structured_md(md, article["id"], cover, mech_image=mech_image), inner, data
 
 
-def build_article_page(article: dict, body_root: str, inner: dict, data: dict) -> str:
+def build_article_page(article: dict, body_root: str, inner: dict, data: dict, end_html: str = "") -> str:
     aid = article["id"]
     title = article.get("title") or inner.get("title") or aid
     rec = cat.field_record(article["field"])
@@ -179,6 +241,7 @@ def build_article_page(article: dict, body_root: str, inner: dict, data: dict) -
 <meta property="article:published_time" content="{html.escape(ds)}">
 <meta property="article:section" content="{html.escape(rec['n'])}">
 <link rel="canonical" href="{html.escape(page_url)}">
+{FEED_LINK}
 <link rel="icon" type="image/png" href="../../img/favicon.png">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;800&family=Noto+Sans+SC:wght@400;500;700&display=swap">
 <link rel="stylesheet" href="../../site.css">
@@ -186,7 +249,7 @@ def build_article_page(article: dict, body_root: str, inner: dict, data: dict) -
 <body>
 {article_nav()}
 <div class="pv-shell pv-art"><div class="wrap">
-<a class="back" href="{SITE_URL}/#home">← 返回首页</a>
+<a class="back" href="/#home">← 返回首页</a>
 <article>
  <div class="ahead">
   <div class="eyebrow">{html.escape(rec['n'])}{preprint_bit}</div>
@@ -200,6 +263,7 @@ def build_article_page(article: dict, body_root: str, inner: dict, data: dict) -
   </div>
  </div>
 </article>
+{end_html}
 </div></div>
 {ARTICLE_FOOT}
 </body>
@@ -234,6 +298,54 @@ def write_sitemap(public_ids: list[str]) -> Path:
     parts.append("</urlset>\n")
     path = ROOT / "sitemap.xml"
     path.write_text("\n".join(parts), encoding="utf-8")
+    return path
+
+
+def _rfc822(ds: str) -> str:
+    from datetime import datetime, timedelta, timezone
+    dt = datetime(int(ds[:4]), int(ds[5:7]), int(ds[8:10]), 0, 0, tzinfo=timezone(timedelta(hours=8)))
+    return dt.strftime("%a, %d %b %Y %H:%M:%S +0800")
+
+
+def write_feed(published: list[dict]) -> Path:
+    """RSS 2.0 of published 解读 only (hidden ids never appear)."""
+    esc = html.escape
+    dated = [a for a in published if len(a.get("ds") or "") >= 10]
+    last = max((a["ds"] for a in dated), default="")
+    items = []
+    for a in published:
+        url = f"{SITE_URL}/pages/article/{a['id']}.html"
+        title = a.get("title") or a.get("t") or a["id"]
+        desc = a.get("quick_look") or a.get("sum") or ""
+        rec = cat.field_record(a["field"])
+        bits = [
+            "  <item>",
+            f"    <title>{esc(title)}</title>",
+            f"    <link>{esc(url)}</link>",
+            f'    <guid isPermaLink="true">{esc(url)}</guid>',
+        ]
+        if len(a.get("ds") or "") >= 10:
+            bits.append(f"    <pubDate>{_rfc822(a['ds'])}</pubDate>")
+        bits.append(f"    <category>{esc(rec['n'])}</category>")
+        if desc:
+            bits.append(f"    <description>{esc(desc)}</description>")
+        bits.append("  </item>")
+        items.append("\n".join(bits))
+    head = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">',
+        "<channel>",
+        "  <title>前沿追踪 Frontier Digest</title>",
+        f"  <link>{SITE_URL}/</link>",
+        "  <description>启元智研出品。九个领域的前沿进展与经济动态，中文整理。</description>",
+        "  <language>zh-CN</language>",
+        f'  <atom:link href="{SITE_URL}/feed.xml" rel="self" type="application/rss+xml"/>',
+    ]
+    if last:
+        head.append(f"  <lastBuildDate>{_rfc822(last)}</lastBuildDate>")
+    text = "\n".join(head + items + ["</channel>", "</rss>"]) + "\n"
+    path = ROOT / "feed.xml"
+    path.write_text(text, encoding="utf-8")
     return path
 
 
@@ -282,7 +394,7 @@ def main() -> None:
     for article in published:
         body, inner, data = render_article_main(article)
         bodies[article["id"]] = body
-        page = build_article_page(article, body, inner, data)
+        page = build_article_page(article, body, inner, data, article_end_html(article, published))
         dest = PAGES_DIR / f"{article['id']}.html"
         print(f"  {article['id']} -> {dest.relative_to(ROOT)}")
         if not args.dry_run:
@@ -304,6 +416,7 @@ def main() -> None:
     js_path = write_site_articles_js(catalog, bodies)
     pub_path = write_published_json(catalog)
     sm_path = write_sitemap([a["id"] for a in published])
+    feed_path = write_feed(published)
 
     index_path = ROOT / "index.html"
     index_html = index_path.read_text(encoding="utf-8")
@@ -319,6 +432,7 @@ def main() -> None:
     print(f"  {js_path.relative_to(ROOT)}")
     print(f"  {pub_path.relative_to(ROOT)}")
     print(f"  {sm_path.relative_to(ROOT)}")
+    print(f"  {feed_path.relative_to(ROOT)}")
     print(f"  {css_path.relative_to(ROOT)}")
     print("  index.html catalog patched (DEALS unchanged)")
 

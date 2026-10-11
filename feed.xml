@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<channel>
+  <title>前沿追踪 Frontier Digest</title>
+  <link>https://inlight.therasik.com/</link>
+  <description>启元智研出品。九个领域的前沿进展与经济动态，中文整理。</description>
+  <language>zh-CN</language>
+  <atom:link href="https://inlight.therasik.com/feed.xml" rel="self" type="application/rss+xml"/>
+  <lastBuildDate>Tue, 06 Oct 2026 00:00:00 +0800</lastBuildDate>
+  <item>
+    <title>pIgR双抗在食蟹猴BAL中暴露提高5.5倍</title>
+    <link>https://inlight.therasik.com/pages/article/c6-ab-9.html</link>
+    <guid isPermaLink="true">https://inlight.therasik.com/pages/article/c6-ab-9.html</guid>
+    <pubDate>Sat, 03 Oct 2026 00:00:00 +0800</pubDate>
+    <category>抗体工程</category>
+    <description>在人、食蟹猴、小鼠组织中比对多聚免疫球蛋白受体后，把抗pIgR VHH接到抗血凝素IgG上。14只食蟹猴单次静脉5 mg/kg，双抗血清半衰期1.57天（对照9.53天），支气管肺泡灌洗液总暴露为对照的5.5倍（AUC 99.46对18.23 h·µg/mL），72小时浓度0.78对0.14 µg/mL。人与食蟹猴黏膜pIgR转录谱相近，小鼠肝脏高表达构成种属差异，故选用灵长类作药代研究。</description>
+  </item>
+  <item>
+    <title>人源化小鼠中敲除DPP9经CARD8焦亡导致造血干细胞耗竭与全血细胞减少</title>
+    <link>https://inlight.therasik.com/pages/article/c5-am-8.html</link>
+    <guid isPermaLink="true">https://inlight.therasik.com/pages/article/c5-am-8.html</guid>
+    <pubDate>Tue, 15 Sep 2026 00:00:00 +0800</pubDate>
+    <category>疾病模型</category>
+    <description>在MISTRG6人源化小鼠中CRISPR敲除人CD34+ HSPC的DPP9，可重现外周与骨髓血细胞减少及HSPC丢失。敲除CARD8或CASP1可挽救，敲除NLRP1不能，表明丢失由CARD8介导的焦亡驱动而非NLRP1通路。新生1–3日龄小鼠肝内注射30,000个细胞，主表型读出于8–9周。scRNA-seq在移植4周取样，超过5,000个细胞、平均每细胞5,000个基因，分为13个簇，显示CARD8在CD34+各亚群广泛表达。</description>
+  </item>
+  <item>
+    <title>吸入ARO-RAGE在健康人与哮喘患者中可耐受，184 mg单剂BALF sRAGE降90.2%</title>
+    <link>https://inlight.therasik.com/pages/article/c9-rna-9.html</link>
+    <guid isPermaLink="true">https://inlight.therasik.com/pages/article/c9-rna-9.html</guid>
+    <pubDate>Wed, 09 Sep 2026 00:00:00 +0800</pubDate>
+    <category>核酸与基因治疗</category>
+    <description>1/2a期随机双盲安慰剂对照试验，吸入靶向肺上皮RAGE的siRNA ARO-RAGE；健康志愿者n=58、哮喘n=19，单次10–184 mg。健康志愿者184 mg后支气管肺泡灌洗液可溶性RAGE平均最多降90.2%，血清sRAGE降76.6%±6.5%。无导致停药的不良事件。治疗期不良事件健康志愿者单次队列86.7%对安慰剂60.0%。唯一严重不良事件为1级子痫前期，末剂后263天发病，判为与药物无关。</description>
+  </item>
+  <item>
+    <title>4个人源化DMD小鼠模型携带外显子44、45、51或53缺失，侧翼外显子跳跃可恢复抗肌萎缩蛋白</title>
+    <link>https://inlight.therasik.com/pages/article/c5-am-9.html</link>
+    <guid isPermaLink="true">https://inlight.therasik.com/pages/article/c5-am-9.html</guid>
+    <pubDate>Fri, 28 Aug 2026 00:00:00 +0800</pubDate>
+    <category>疾病模型</category>
+    <description>在mdx背景下构建人DMD外显子44、45、51或53缺失的4个小鼠模型。hDMDdel44/mdx与hDMDdel53/mdx完全缺失抗肌萎缩蛋白，hDMDdel45/mdx与hDMDdel51/mdx为痕量。8周龄雄鼠腓肠肌与肱三头肌连续两日肌内注射vivo-morpholino（外显子43/44为100 µg/块肌，外显子50/52为50 µg/块肌），可检出目标外显子跳跃并在Western印迹恢复截短蛋白。四种模型腓肠肌均见变性、再生、炎症与纤维化。</description>
+  </item>
+  <item>
+    <title>难治性重症肌无力抗CD19 CAR-T个案随访：3例均维持停药临床缓解至少19个月</title>
+    <link>https://inlight.therasik.com/pages/article/c4-ai-8.html</link>
+    <guid isPermaLink="true">https://inlight.therasik.com/pages/article/c4-ai-8.html</guid>
+    <pubDate>Fri, 21 Aug 2026 00:00:00 +0800</pubDate>
+    <category>自身免疫与移植</category>
+    <description>3例乙酰胆碱受体阳性难治全身型重症肌无力（2女1男）接受自体抗CD19嵌合抗原受体T细胞（1×10^8细胞），清淋为氟达拉滨30毫克每平方米加环磷酰胺300毫克每平方米连用3天。随访24、19、19个月均维持停用本病特异性免疫治疗的临床缓解。其中一例定量肌无力评分从15/39降至2，日常量表一周内降至0。不良事件短暂可处理，三例均无免疫效应细胞相关神经毒性。抗受体抗体未完全转阴。</description>
+  </item>
+  <item>
+    <title>156个巨噬激活双抗筛出WTa2d1xCD38，IC50低至18.0 pM</title>
+    <link>https://inlight.therasik.com/pages/article/c6-ab-7.html</link>
+    <guid isPermaLink="true">https://inlight.therasik.com/pages/article/c6-ab-7.html</guid>
+    <pubDate>Sat, 01 Aug 2026 00:00:00 +0800</pubDate>
+    <category>抗体工程</category>
+    <description>功能优先表面组筛选加156个异源scFv-Fc双抗，鼠源单抗库173个、人源241个（共享抗原92个）。选出低亲和SIRPα诱饵×CD38分子WTa2d1xCD38；在10条人淋巴瘤细胞系上IC50为18.0 pM（Daudi）至3.08 nM（U-2932），Raji敲除CD47几乎不影响杀伤。NSG-SGM3移植人Raji后，WTa2d1xCD38单用或与利妥昔单抗联用均可延长生存，联用组为唯一完全治愈队列（n=10/组）。抗CD47诱导红细胞吞噬的EC50为10 pM，WTa2d1xCD38效力降低数个数量级。</description>
+  </item>
+  <item>
+    <title>鞘内RAG-17在6例SOD1-ALS中达可接受安全，队列1第240天脑脊液SOD1降69%</title>
+    <link>https://inlight.therasik.com/pages/article/c9-rna-7.html</link>
+    <guid isPermaLink="true">https://inlight.therasik.com/pages/article/c9-rna-7.html</guid>
+    <pubDate>Wed, 15 Jul 2026 00:00:00 +0800</pubDate>
+    <category>核酸与基因治疗</category>
+    <description>6例SOD1-ALS开放标签剂量递增试验，鞘内RAG-17（寡核苷酸-siRNA偶联物），队列1起始60 mg共7剂、队列2起始90 mg共6剂，维持150或180 mg。治疗期不良事件2/6（33%），为轻度肌颤和ALT升高，均自行缓解；无严重不良事件。脑脊液SOD1：队列1第240天降69%，队列2第210天降56%；血浆神经丝轻链分别降62%与52%。猴50 mg使腰髓SOD1 mRNA降91%，皮质&gt;70%。6例年龄26–67岁，女性4例，病程33.3±22.7个月，4例有家族史。</description>
+  </item>
+  <item>
+    <title>三特异IL-2R抗体αβγVHH-48的EC50达0.015 nM</title>
+    <link>https://inlight.therasik.com/pages/article/c6-ab-8.html</link>
+    <guid isPermaLink="true">https://inlight.therasik.com/pages/article/c6-ab-8.html</guid>
+    <pubDate>Fri, 10 Jul 2026 00:00:00 +0800</pubDate>
+    <category>抗体工程</category>
+    <description>把抗人白细胞介素2受体三链的重链抗体片段装成三特异激动抗体，免疫后得独特克隆α链85个、β链153个、γ链92个。先导分子在人胚肾报告细胞上的磷酸信号半数效应浓度0.015纳摩尔，接近人白细胞介素2的0.010纳摩尔。改几何后可在皮摩尔甚至飞摩尔级偏向性激活调节性T细胞，效应细胞需高100至1000倍。人源化小鼠腹腔0.03微克可提高调节性T细胞频率。</description>
+  </item>
+  <item>
+    <title>11个单基因ASD小鼠模型共251个样本：放射状胶质谱系短暂延迟，P4层II/IV神经元715个DEG</title>
+    <link>https://inlight.therasik.com/pages/article/c5-am-7.html</link>
+    <guid isPermaLink="true">https://inlight.therasik.com/pages/article/c5-am-7.html</guid>
+    <pubDate>Wed, 17 Jun 2026 00:00:00 +0800</pubDate>
+    <category>疾病模型</category>
+    <description>对11个单基因ASD小鼠模型的251个样本、200,787个核做单核RNA+ATAC测序。突变汇聚于放射状胶质谱系的短暂发育延迟，表现为滞留增殖性RG1。共享转录差异在P4层II/IV神经元最大（715个DEG），层V/VI深部投射神经元600个DEG，多数下调。P4下调模块富集突触与离子通道。Arid1b与Shank3在E14.5放射状胶质共享DEG达236个。电生理在四个品系中显示三例出现内在兴奋性改变，与离子通道表达偏离相关。</description>
+  </item>
+  <item>
+    <title>优化PE-LNP单剂2 mg/kg使小鼠全肝平均prime editing达49%</title>
+    <link>https://inlight.therasik.com/pages/article/c9-rna-8.html</link>
+    <guid isPermaLink="true">https://inlight.therasik.com/pages/article/c9-rna-8.html</guid>
+    <pubDate>Mon, 15 Jun 2026 00:00:00 +0800</pubDate>
+    <category>核酸与基因治疗</category>
+    <description>系统优化三组分引导编辑器的脂质纳米颗粒后，单剂总核糖核酸2毫克每千克于7天在小鼠全肝达平均49%无插入缺失精准编辑，较最初配方提高63倍、较次级配方提高13倍；8周时44%，与双载体腺相关病毒的46%相近。苯丙酮尿症小鼠使血清苯丙氨酸3天内降90%，第7天低于360微摩尔。4毫克每千克饱和剂量全肝编辑53%，血清前蛋白转化酶最多降94%。</description>
+  </item>
+  <item>
+    <title>双靶CD19/BCMA CAR-T脱敏后肾移植：2例cPRA≥99.9%安全导入队列均完成移植</title>
+    <link>https://inlight.therasik.com/pages/article/c4-ai-9.html</link>
+    <guid isPermaLink="true">https://inlight.therasik.com/pages/article/c4-ai-9.html</guid>
+    <pubDate>Mon, 01 Jun 2026 00:00:00 +0800</pubDate>
+    <category>自身免疫与移植</category>
+    <description>一期安全导入队列2例极高致敏肾移植候选者，群体反应抗体不低于99.9%，接受各5×10^7阳性细胞的双靶嵌合抗原受体T细胞后，致敏水平下降。患者1于输注后第229天接受移植，患者2第93天移植。报告期未见剂量限制性毒性；两例均无免疫效应细胞相关神经毒性。患者1无细胞因子释放，患者2为1级。</description>
+  </item>
+  <item>
+    <title>合成TCR库规模化验证显示所测VDJdb TCR中平均仅56%复现原注释反应性</title>
+    <link>https://inlight.therasik.com/pages/article/a-trap.html</link>
+    <guid isPermaLink="true">https://inlight.therasik.com/pages/article/a-trap.html</guid>
+    <pubDate>Thu, 01 Oct 2026 00:00:00 +0800</pubDate>
+    <category>肿瘤免疫与细胞治疗</category>
+    <description>T-RAP在384孔板装配12,078个合成TCR，将VDJdb-10库（3,693个TCR）导入TCR缺失的Jurkat并汇集筛选，以468个阴性对照TCR第5百分位P值为阈值。平均仅56%（n=2,667）复现原注释反应性，按表位从NLV 28.3%（91/322）到CIN 76.3%（174/228）不等。以77个TCR的阵列共培养为真值，一致率96.1%，假阴性率3.9%，无假阳性。tcrdist3与AlphaFold3 min-PAE在验证集上平均AUROC分别为0.80、0.74。一名黑色素瘤患者197个TIL TCR的新抗原零样本检验AUROC为0.76–0.79。</description>
+  </item>
+  <item>
+    <title>256 例肿瘤类器官生物样本库建成，162 例完成全基因组 CRISPR 筛选并绘制基因依赖图谱</title>
+    <link>https://inlight.therasik.com/pages/article/c1-org-2.html</link>
+    <guid isPermaLink="true">https://inlight.therasik.com/pages/article/c1-org-2.html</guid>
+    <pubDate>Wed, 05 Aug 2026 00:00:00 +0800</pubDate>
+    <category>精准肿瘤与临床转化</category>
+    <description>英国多中心从907份样本（878名供者）建立256例肿瘤类器官（效率28%），覆盖结直肠、食管、胰腺、胃和卵巢癌。171对类器官–肿瘤WGS配对，突变负荷PCC为0.786，全基因组SCNA中位PCC为0.78。162例通过质控的全基因组CRISPR–Cas9筛选（成功率85%），AUROC 0.97。线性回归得到1,841个显著基因–生物标志物关联。WRN依赖与RNF43突变相关（效应量−0.747，校正P=0.01）。数据经Cell Model Passports公开。</description>
+  </item>
+  <item>
+    <title>电荷可切换脂质纳米颗粒在 LPS 预处理小鼠中未升高 IL-6、IL-1β 和 MIP-2</title>
+    <link>https://inlight.therasik.com/pages/article/c9-rna-5.html</link>
+    <guid isPermaLink="true">https://inlight.therasik.com/pages/article/c9-rna-5.html</guid>
+    <pubDate>Tue, 08 Sep 2026 00:00:00 +0800</pubDate>
+    <category>核酸与基因治疗</category>
+    <description>LPS 1 mg/kg预处理小鼠4小时后再给1 mg/kg mRNA时，E20电荷可切换LNP（SNP）未升高IL-6、IL-1β、MIP-2，而MC3-DLin、cKK-E12、SM-102的传统LNP使其大幅升高，SNP是唯一未加重已有炎症的LNP。MC3-DLin LNP携带pDNA 1 mg/kg时小鼠24小时内全部死亡，E20-SNP组7天观察期内全部存活并持续表达荧光素酶。人PBMC实验（4名健康供者）中E20-SNP转染高效且14种细胞因子均未诱导。E20-SNP在补体、TLR4、galectin-8、PAF通路均不激活，zeta电位比MC3-DLin更负。</description>
+  </item>
+  <item>
+    <title>观察性研究：mRNA-1010接种者记忆B细胞增幅更高，5/13人生发中心持续至26周</title>
+    <link>https://inlight.therasik.com/pages/article/c8-vac-3.html</link>
+    <guid isPermaLink="true">https://inlight.therasik.com/pages/article/c8-vac-3.html</guid>
+    <pubDate>Mon, 15 Jun 2026 00:00:00 +0800</pubDate>
+    <category>疫苗与感染免疫</category>
+    <description>75名健康成人观察性队列（mRNA-1010组38人、Fluarix组37人），mRNA接种者HA特异性记忆B细胞增幅在第4及17/26周更高（Mann–Whitney U检验）。FNA亚组13名mRNA接种者中5人（约38%）在26周仍检出生发中心反应，Fluarix组两季均未检出。Ig-seq（各8人）显示mRNA组第4周疫苗诱导克隆型数显著更多，预存克隆型发生CDRH3扩增的比例约为Fluarix组的3倍。抗体谱显示mRNA组新生H3克隆型更多。</description>
+  </item>
+  <item>
+    <title>骨髓瘤体内 BCMA CAR-T 随访 15 个月：无新增重要 ESO-T01 相关不良事件，1 例持续 sCR，中位 PFS 4.0 个月</title>
+    <link>https://inlight.therasik.com/pages/article/c7-cell-2.html</link>
+    <guid isPermaLink="true">https://inlight.therasik.com/pages/article/c7-cell-2.html</guid>
+    <pubDate>Tue, 06 Oct 2026 00:00:00 +0800</pubDate>
+    <category>肿瘤免疫与细胞治疗</category>
+    <description>4例复发难治骨髓瘤单次静脉输注体内BCMA CAR-T产品ESO-T01（0.2×10^9转导单位），无需白细胞单采和清淋化疗。随访最长15个月客观缓解率100%（2例sCR、2例PR），1例sCR维持15个月；中位PFS 4.0个月，另3例复发或进展后死亡均伴髓外病灶。4例均出现1–3级双相CRS与3–4级血液学毒性（中性粒细胞减少75%、淋巴细胞减少75%）。整合位点分析未见克隆扩增。</description>
+  </item>
+  <item>
+    <title>人皮质类器官移植入无皮质小鼠：移植物占皮质体积91.9%，2至3个月约增长4.7倍</title>
+    <link>https://inlight.therasik.com/pages/article/c5-am-2.html</link>
+    <guid isPermaLink="true">https://inlight.therasik.com/pages/article/c5-am-2.html</guid>
+    <pubDate>Wed, 16 Sep 2026 00:00:00 +0800</pubDate>
+    <category>类器官</category>
+    <description>在Esco2缺失的免疫缺陷无皮质小鼠中，5–17日龄每侧半球移植2个人皮质类器官（每只共4个）。移植成功率86.2%（29只），移植物2–3个月增长约4.7倍（n=14，配对t检验P=1.66×10−6），3个月时占皮质组织体积91.9%（n=7）。钙成像显示全移植物同步钙爆发，持续数十秒、每隔数分钟重复。移植物含L5-ET神经元，颈段脊髓见稀疏人源投射。Y迷宫中移植小鼠自发交替高于随机水平（P=0.0004），无皮质小鼠则否。</description>
+  </item>
+  <item>
+    <title>人脑皮层类器官体外培养5年，甲基化时钟预测年龄与培养时间相关（r = 0.88–0.90）</title>
+    <link>https://inlight.therasik.com/pages/article/c1-org-1.html</link>
+    <guid isPermaLink="true">https://inlight.therasik.com/pages/article/c1-org-1.html</guid>
+    <pubDate>Wed, 19 Aug 2026 00:00:00 +0800</pubDate>
+    <category>类器官</category>
+    <description>人脑皮层类器官培养至5年（NeuN染色见于5.8年）；scRNA-seq覆盖110个类器官、424,720个细胞。Horvath与皮层甲基化时钟预测年龄与培养时间相关（r=0.88–0.90），中位绝对误差7.25与20.04个月。自DIV70改用APM后，9个月SATB2+细胞增多，1年时8个CDM4类器官无一出现网络爆发，9个APM类器官全部出现。将老祖细胞移入年轻类器官后直接产生晚期神经元，CPN占49.0%，跳过早期阶段，提示细胞自带内在发育时钟。</description>
+  </item>
+  <item>
+    <title>AIntibody 盲评：511 个 AI 抗体在亲和力成熟中最佳达 95 pM，跨任务表现不一</title>
+    <link>https://inlight.therasik.com/pages/article/c2-ai-1.html</link>
+    <guid isPermaLink="true">https://inlight.therasik.com/pages/article/c2-ai-1.html</guid>
+    <pubDate>Wed, 19 Aug 2026 00:00:00 +0800</pubDate>
+    <category>AI药物设计</category>
+    <description>AIntibody盲评：29家机构511个AI设计或预测抗体经统一合成与实验验证，靶点SARS-CoV-2 RBD。挑战1（亲和力成熟）含25家机构165个提交，最佳达95 pM，较亲本提高2,000倍。挑战2（簇内排序）中仅9.8–13.8%的提交亲和力高于簇对照，随机挑选克隆39%，仅WashU达50%。挑战3获胜2.9 pM但HIC柱未洗脱。ProBioGen不用机器学习的共有序列为540 pM列第三且无可开发性问题。</description>
+  </item>
+  <item>
+    <title>探索性蛋白质组附属分析中Rentosertib衰老钟21项显著</title>
+    <link>https://inlight.therasik.com/pages/article/c2-ai-4.html</link>
+    <guid isPermaLink="true">https://inlight.therasik.com/pages/article/c2-ai-4.html</guid>
+    <pubDate>Mon, 07 Sep 2026 00:00:00 +0800</pubDate>
+    <category>AI药物设计</category>
+    <description>2a期IPF试验的蛋白质组子研究纳入42例（安慰剂11、30 mg QD 11、30 mg BID 11、60 mg QD 9）。口服TNIK抑制剂rentosertib 12周后，六种蛋白质组衰老钟计算ΔBioAge：54个治疗组对安慰剂比较中21个达Q&lt;0.10，第4周18个比较中11个显著，患者标签置换零假设均值0.15。SenMayo签名在安慰剂中上调（NES=1.48，Q&lt;0.01），治疗臂显著负向。该分析为二次探索性，主终点FVC变化来自父试验。</description>
+  </item>
+  <item>
+    <title>靶向ZMYND8重塑小鼠耗竭T细胞并增强免疫治疗反应</title>
+    <link>https://inlight.therasik.com/pages/article/c3-io-4.html</link>
+    <guid isPermaLink="true">https://inlight.therasik.com/pages/article/c3-io-4.html</guid>
+    <pubDate>Wed, 23 Sep 2026 00:00:00 +0800</pubDate>
+    <category>肿瘤免疫与细胞治疗</category>
+    <description>在LCMV与B16-OVA模型中，靶向ZMYND8使P14 CD8+ T细胞偏向效应样耗竭状态、减少终末耗竭。体内scCRISPR筛选检出19,032个P14细胞；效应样/Tex term验证n=7/组，肿瘤治疗n=5–8/组。ZMYND8缺失增强IL-2R–STAT5信号通路。敲除ZMYND8的CD8+ T细胞在慢性感染中更好控制病毒，在肿瘤中产生更强抗瘤效应。效应样耗竭与终末耗竭的表型可通过流式与转录组区分。</description>
+  </item>
+  <item>
+    <title>72小时三联治疗后，8只幼猴停药6个月无病毒血症</title>
+    <link>https://inlight.therasik.com/pages/article/c5-am-5.html</link>
+    <guid isPermaLink="true">https://inlight.therasik.com/pages/article/c5-am-5.html</guid>
+    <pubDate>Mon, 10 Aug 2026 00:00:00 +0800</pubDate>
+    <category>疫苗与感染免疫</category>
+    <description>共55只约4周龄幼年恒河猴口服免疫缺陷病毒嵌合体，72小时启动趋化因子受体5阻断抗体勒隆利单抗（每周50 mg/kg）、两株广谱中和抗体VRC07-523LS与PGT121（各20 mg/kg）和27周抗反转录病毒治疗。三联组8只在停药后6个月全部无病毒血症，血细胞与组织未检出细胞相关病毒，第84周亦未检出前病毒。单用抗体或单用抗反转录病毒治疗不能阻止储存库建立。</description>
+  </item>
+  <item>
+    <title>HCMI资源：421对肿瘤与模型配对中97.8%保留至少两类DNA特征</title>
+    <link>https://inlight.therasik.com/pages/article/c1-org-3.html</link>
+    <guid isPermaLink="true">https://inlight.therasik.com/pages/article/c1-org-3.html</guid>
+    <pubDate>Wed, 05 Aug 2026 00:00:00 +0800</pubDate>
+    <category>精准肿瘤与临床转化</category>
+    <description>HCMI国际多中心从2,780名供者建立665个患者来源癌症模型，覆盖25种癌，其中78%为3D类器官、6%为球体、16%为2D贴壁细胞系。421对匹配肿瘤–模型中97.8%至少保留驱动突变、突变特征、WGD和倍性四项DNA特征中的两项；201对甲基化配对中190对（95%）比随机配对更接近（FDR&lt;0.1）。临床数据覆盖522个模型，包括治疗史与生存结局。模型经ATCC和EMD Millipore分发，数据经Cancer Models公开。</description>
+  </item>
+  <item>
+    <title>GPR15归巢轴定位肠道CD8调节T细胞，散发性UC减少42%</title>
+    <link>https://inlight.therasik.com/pages/article/c4-ai-6.html</link>
+    <guid isPermaLink="true">https://inlight.therasik.com/pages/article/c4-ai-6.html</guid>
+    <pubDate>Mon, 08 Jun 2026 00:00:00 +0800</pubDate>
+    <category>自身免疫与移植</category>
+    <description>发现队列含4个无关家系7名IBD个体，证实GPR15双等位失功能变异导致严重结肠炎。小鼠2.5% DSS模型验证GPR15引导CD8+ TIGR归巢结肠并限制肠炎。散发性UC结肠活检中该细胞群减少42%（HC n=8，UC n=7）。GPR15缺失小鼠肠道CD8+ T细胞减少，DSS后结肠炎加重。人类遗传学与小鼠模型共同支持GPR15–TIGR轴在结肠免疫稳态中的保护作用。主要小鼠实验多为n=11/组。</description>
+  </item>
+  <item>
+    <title>Germinal低通量验证：43–101个设计覆盖4个抗体靶点生成抗体</title>
+    <link>https://inlight.therasik.com/pages/article/c2-ai-5.html</link>
+    <guid isPermaLink="true">https://inlight.therasik.com/pages/article/c2-ai-5.html</guid>
+    <pubDate>Tue, 23 Jun 2026 00:00:00 +0800</pubDate>
+    <category>AI药物设计</category>
+    <description>Germinal联合AF-M结构目标与IgLM抗体序列先验，在4个蛋白靶点每抗原测试43–101个设计从头生成抗体：纳米抗体101个PD-L1、46个IL3、43个IL20、52个BHRF1。NanoBiT初筛后BLI确认结合：PD-L1 7/25（28%）、IL3 2/11（18%）、IL20 4/11（36%）、BHRF1 5/20（25%）。PD-L1 E11 Kd=170 nM（BLI），IL3 D2 Ser Kd=280 nM，IL20 H5 Kd=190 nM。scFv/Fab中BLI确认3/4个抗PD-L1。H5-PD-L1复合物cryo-EM分辨率3.9 Å，与预测模型Cα RMSD为1.25 Å，热点丙氨酸突变中17/26设计至少一个热点完全消除可检测结合。PSR多特异性：所有Germinal设计&lt;4%阳性对照。</description>
+  </item>
+  <item>
+    <title>160个双抗库揭示表面性质可由亲本预测ρ至0.95</title>
+    <link>https://inlight.therasik.com/pages/article/c6-ab-4.html</link>
+    <guid isPermaLink="true">https://inlight.therasik.com/pages/article/c6-ab-4.html</guid>
+    <pubDate>Mon, 15 Jun 2026 00:00:00 +0800</pubDate>
+    <category>抗体工程</category>
+    <description>未经同行评审的160个双抗与65个亲本臂，在统一十字形免疫球蛋白支架上测定10项开发性。摘要称疏水与表面电荷从亲本干净继承（秩相关约0.85至0.95）；自结合与多反应性部分继承（约0.60至0.88）；热稳定性预测差（低于0.4），需在双抗水平实测。该文为生物预印本，尚未经同行评审。</description>
+  </item>
+  <item>
+    <title>TSC2缺失使类器官3个时点均出现星形胶质反应</title>
+    <link>https://inlight.therasik.com/pages/article/c1-org-4.html</link>
+    <guid isPermaLink="true">https://inlight.therasik.com/pages/article/c1-org-4.html</guid>
+    <pubDate>Wed, 23 Sep 2026 00:00:00 +0800</pubDate>
+    <category>类器官</category>
+    <description>第8天用重组酶慢病毒诱导结节性硬化复合体2双等位缺失后，人脑类器官中缺失细胞在第50、120、220天相对同一类器官内对照细胞均显著提高反应性星形胶质模块评分。处理后39,539个细胞映射到胎脑图谱。纯化星形胶质细胞接受50 nM雷帕霉素或100 nM托林。反应性表型由细胞自主的雷帕霉素靶蛋白复合物驱动。</description>
+  </item>
+  <item>
+    <title>12种饮食模型显示4/6肥胖性饮食关联抗PD-1应答</title>
+    <link>https://inlight.therasik.com/pages/article/c3-io-5.html</link>
+    <guid isPermaLink="true">https://inlight.therasik.com/pages/article/c3-io-5.html</guid>
+    <pubDate>Wed, 08 Jul 2026 00:00:00 +0800</pubDate>
+    <category>肿瘤免疫与细胞治疗</category>
+    <description>12种饮食下HKP1抗PD-1试验：肥胖性饮食4/6（66.7%）关联ICI应答，非肥胖性饮食2/6（33.3%）。15周饮食暴露，Japanese n=14，其余n=15。菌群分析显示应答饮食富集Lactobacillaceae和Lactobacillus。High Fat联合L. johnsonii补充使抗生素处理小鼠全部完全应答。ICI评分与体重、脂肪量、代谢评分无显著关联。DAT代谢物补充可逆转Psyllium耐药。饮食切换48小时即可检测到菌群变化。</description>
+  </item>
+  <item>
+    <title>序贯HIV疫苗完整方案后44%恒河猴出现血清bnAb活性</title>
+    <link>https://inlight.therasik.com/pages/article/c8-vac-2.html</link>
+    <guid isPermaLink="true">https://inlight.therasik.com/pages/article/c8-vac-2.html</guid>
+    <pubDate>Tue, 30 Jun 2026 00:00:00 +0800</pubDate>
+    <category>疫苗与感染免疫</category>
+    <description>24只恒河猴分4组各6只，接受HIV包膜N332-GT5起始免疫及后续异源蛋白加强。摘要称44%出现血清广谱中和抗体活性。8只最佳动物在第7次加强后，相对BG18广度平均41%，几何均数ID50范围为52–481、总体107。免疫原针对HIV包膜N332糖基表位，以BG18类抗体为读出。该工作在非人灵长类诱导HIV广谱中和抗体。</description>
+  </item>
+  <item>
+    <title>暂限培养使小肠类器官早期移植达到100%植入率</title>
+    <link>https://inlight.therasik.com/pages/article/c1-org-5.html</link>
+    <guid isPermaLink="true">https://inlight.therasik.com/pages/article/c1-org-5.html</guid>
+    <pubDate>Fri, 22 May 2026 00:00:00 +0800</pubDate>
+    <category>类器官</category>
+    <description>限位培养系统让约4000个小肠球体暂限融合，第6天取出、续培至第14天再移植到肠系膜，植入率100%，高于同日龄常规人小肠类器官（精确检验P为9.25×10−7）。全研究使用183只动物，移植后随访10周，形成可收缩并带人源肠神经的肠组织。常规同日龄小肠类器官植入率显著更低。</description>
+  </item>
+  <item>
+    <title>NISE零样本设计药物结合蛋白，APEX体外亲和力达到80 pM</title>
+    <link>https://inlight.therasik.com/pages/article/c2-ai-2.html</link>
+    <guid isPermaLink="true">https://inlight.therasik.com/pages/article/c2-ai-2.html</guid>
+    <pubDate>Wed, 24 Jun 2026 00:00:00 +0800</pubDate>
+    <category>AI药物设计</category>
+    <description>NISE闭环神经网络在exatecan与apixaban体外任务中从头设计药物结合蛋白，把配体pLDDT和序列NLL联合优化。exatecan 4个NISE设计全部结合（Kd 0.12–17 µM），对照COMBS 16个设计中仅3个结合（Kd 8–44 µM），非特异性HSA为43 µM；apixaban 6个设计中5个结合，APEX Kd=80 pM（95% CI 54–122 pM），factor Xa的Ki为80–700 pM。LASErMPNN校对的EPIC(Q51N/M97L)使exatecan至少50 h保持&gt;99%闭环状态（PBS pH 7.4），Kd=1.2 nM，较EPIC提高100倍。晶体结构EPIC 2.0 Å，骨架与NISE输入Cα r.m.s.d.为0.8 Å。游离exatecan在血浆中水解半衰期约2 h。</description>
+  </item>
+  <item>
+    <title>NIVIPIT 1b期：瘤内低剂量抗CTLA4联合抗PD1，6个月3–4级治疗相关毒性24.3%</title>
+    <link>https://inlight.therasik.com/pages/article/c3-io-2.html</link>
+    <guid isPermaLink="true">https://inlight.therasik.com/pages/article/c3-io-2.html</guid>
+    <pubDate>Wed, 29 Apr 2026 00:00:00 +0800</pubDate>
+    <category>肿瘤免疫与细胞治疗</category>
+    <description>NIVIPIT 1b期试验：61例初治转移性黑色素瘤2:1随机，瘤内（IT）伊匹木单抗0.3 mg/kg联合静脉纳武利尤单抗组40例、静脉（IV）组21例。IT组37例可评估主要终点，6个月3–4级治疗相关不良事件24.3%（IV组57.1%），低于30%阈值。ORR 67%、CR 38%（IV组ORR 52%、CR 14%）。中位随访55.5月IT组中位PFS 13.8月。瘤内伊匹木单抗血清峰浓度2.2±1.7 µg/ml，IV组42.2±12.3 µg/ml。HoLISTIC框架显示IT注射驱动局部与远处免疫应答。</description>
+  </item>
+  <item>
+    <title>SEZ6靶向ADC ABBV-706 1期：复发难治SCLC客观缓解率52%，推荐剂量1.8 mg/kg</title>
+    <link>https://inlight.therasik.com/pages/article/c6-ab-6.html</link>
+    <guid isPermaLink="true">https://inlight.therasik.com/pages/article/c6-ab-6.html</guid>
+    <pubDate>Mon, 01 Jun 2026 00:00:00 +0800</pubDate>
+    <category>精准肿瘤与临床转化</category>
+    <description>SEZ6靶向ADC ABBV-706首次人体1期：入组288例，单药240例，其中复发/难治小细胞肺癌（R/R SCLC）124例，中位随访16.9月。第2a部分随机剂量优化后确定推荐2期剂量1.8 mg/kg Q3W，R/R SCLC队列确认ORR 52%（65/124），中位缓解持续时间5.3月，中位PFS 5.4月，中位OS 11.3月。1.8与2.5 mg/kg组ORR分别为56%和59%，≥3级不良事件54%对77%。单药240例中≥3级TRAE 61%，最常见为贫血（61%）和乏力（38%）；裁定肺炎/间质性肺病10例（4%）。</description>
+  </item>
+  <item>
+    <title>智能体引导从头设计纳米抗体：116个候选中46个经SPR确认，最佳KD 0.66 nM</title>
+    <link>https://inlight.therasik.com/pages/article/c6-ab-5.html</link>
+    <guid isPermaLink="true">https://inlight.therasik.com/pages/article/c6-ab-5.html</guid>
+    <pubDate>Fri, 17 Apr 2026 00:00:00 +0800</pubDate>
+    <category>AI药物设计</category>
+    <description>针对一个无结构、无既有抗体的促结缔组织增生性小圆细胞瘤新靶点，智能体引导从头生成288,000个纳米抗体设计，覆盖8个表位热点。帕累托过滤后100,000个进入酵母表面展示，两轮分选后116个进入表面等离子共振，46个（39.7%）获可靠动力学，平衡解离常数0.66至305 nM，中位31.7 nM。该文为未经同行评审的预印本。</description>
+  </item>
+  <item>
+    <title>真菌甘露聚糖佐剂加入新冠mRNA疫苗：小鼠中和抗体广度与持续期延长至第500天</title>
+    <link>https://inlight.therasik.com/pages/article/c8-vac-4.html</link>
+    <guid isPermaLink="true">https://inlight.therasik.com/pages/article/c8-vac-4.html</guid>
+    <pubDate>Fri, 22 May 2026 00:00:00 +0800</pubDate>
+    <category>疫苗与感染免疫</category>
+    <description>小鼠将甘露聚糖铝佐剂（明矾100 µg加甘露聚糖500 µg）混入WA1刺突信使核糖核酸（1 µg），把对BA.5与XBB.1.5假病毒的中和延长至第500天，而单用信使核糖核酸或再加明矾则不能。食蟹猴10只给予30 µg疫苗后，刺突抗体与三种假病毒中和升至第180天。人源化小鼠第56天攻毒后，加佐剂组肺内检测不到病毒。该糖基佐剂扩大疫苗广度与持续时间。</description>
+  </item>
+  <item>
+    <title>甲状腺自身免疫中B细胞多克隆获得检查点突变：单例检出135种TNFRSF14突变</title>
+    <link>https://inlight.therasik.com/pages/article/c4-ai-5.html</link>
+    <guid isPermaLink="true">https://inlight.therasik.com/pages/article/c4-ai-5.html</guid>
+    <pubDate>Tue, 14 Apr 2026 00:00:00 +0800</pubDate>
+    <category>自身免疫与移植</category>
+    <description>14例自身免疫甲状腺病供者单分子测序显示，桥本甲状腺炎供者H1体内有135种不同TNFRSF14突变及59种CD274突变。这两种检查点基因的截短突变非同义比分别为141和37，表明受到正选择。突变分布在多个B细胞克隆，而非单一克隆主导。该工作在甲状腺自身免疫组织中追踪体细胞突变。</description>
+  </item>
+</channel>
+</rss>
