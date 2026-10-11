@@ -884,10 +884,11 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 <div class="wrap view" id="v-conf" hidden>
   <header class="hero">
     <h1>学术会议</h1>
-    <p>国内主要的生物医药学术会议、行业峰会和展会，可按时间正序或倒序查看。日期以主办方官网为准；尚未由官方确认的会标注出来，下一届还没公布的列在最后，并注明往届时间。每条都挂来源链接，出行前请再到官网核对。</p>
+    <p>国内主要的生物医药学术会议、行业峰会和展会，可按时间范围筛选，已结束的会议自动隐藏。日期以主办方官网为准；尚未由官方确认的会标注出来，下一届还没公布的列在最后，并注明往届时间。每条都挂来源链接，出行前请再到官网核对。</p>
   </header>
   <section>
     <div class="sechead"><h2>会议日程</h2><span id="confcount"></span></div>
+    <div class="chips confrange" id="confrange" aria-label="时间范围" style="margin-bottom:10px"></div>
     <div class="confbar"><div class="chips" id="confchips"></div><div class="chips confsort" id="confsort" aria-label="时间排序"></div></div>
     <div class="conflist" id="conflist"></div>
     <p class="note" style="margin-top:12px"><a href="#deals">返回经济动态</a></p>
@@ -1539,7 +1540,7 @@ addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{
 
 const views=[...document.querySelectorAll('.view')];
 const REDIRECTS={'c9-rna-4':'c7-cell-2','c9-rna-1':'c8-vac-5','c4-ai-3':'c7-cell-1','c6-ab-1':'c2-ai-1','c5-am-4':'c8-vac-2','c6-ab-2':'c2-ai-5'};
-let confKind='all', confOrder='asc';
+let confKind='all', confOrder='asc', confRange='all';
 function fmtConfDate(x){
   if(!x.dates||x.dates==='待公布') return '待公布';
   const [a,b]=x.dates.split(' to ');const pa=a.split('-'),pb=(b||a).split('-');
@@ -1549,11 +1550,20 @@ function fmtConfDate(x){
 }
 function renderConfs(){
   const kinds=['all','学术会议','行业峰会','展会'];
-  const cnt=k=>k==='all'?CONFS.length:CONFS.filter(x=>x.kind===k).length;
+  const cnt=k=>CONFS.filter(x=>(k==='all'||x.kind===k)&&(!x.dates||x.dates==='待公布'||(x.dates.split(' to ')[1]||x.dates)>=new Date().toISOString().slice(0,10))).length;
   document.getElementById('confchips').innerHTML=kinds.map(k=>`<button class="chip${confKind===k?' on':''}" type="button" data-k="${k}"${confKind===k?' aria-pressed="true"':''}>${k==='all'?'全部':k} ${cnt(k)}</button>`).join('');
   document.querySelectorAll('#confchips .chip').forEach(b=>b.onclick=()=>{confKind=b.dataset.k;renderConfs();});
   const isTbd=x=>!x.dates||x.dates==='待公布';
-  const list=CONFS.filter(x=>confKind==='all'||x.kind===confKind);
+  const pad=n=>String(n).padStart(2,'0'), ymd=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const now=new Date(), today=ymd(now);
+  const endOf=x=>{const p=x.dates.split(' to ');return p[1]||p[0];};
+  const upcoming=CONFS.filter(x=>isTbd(x)||endOf(x)>=today);
+  const limit=m=>{const d=new Date(now);d.setMonth(d.getMonth()+m);return ymd(d);};
+  const RANGES=[['1','未来1个月',1],['2','未来2个月',2],['3','未来3个月',3],['6','未来半年',6],['all','全部',0]];
+  const inRange=(x,r)=>{if(r==='all') return true; if(isTbd(x)) return false; const m=RANGES.find(z=>z[0]===r)[2]; return x.dates.split(' to ')[0]<=limit(m);};
+  document.getElementById('confrange').innerHTML=RANGES.map(([k,l])=>`<button class="chip" type="button" data-r="${k}"${confRange===k?' aria-pressed="true"':''}>${l} ${upcoming.filter(x=>inRange(x,k)).length}</button>`).join('');
+  document.querySelectorAll('#confrange .chip').forEach(b=>b.onclick=()=>{confRange=b.dataset.r;renderConfs();});
+  const list=upcoming.filter(x=>inRange(x,confRange)&&(confKind==='all'||x.kind===confKind));
   const dated=list.filter(x=>!isTbd(x)).sort((a,b)=>a.dates<b.dates?-1:a.dates>b.dates?1:0);
   if(confOrder==='desc') dated.reverse();
   list.splice(0,list.length,...dated,...list.filter(isTbd));
