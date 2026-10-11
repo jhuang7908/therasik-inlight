@@ -354,6 +354,17 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 .arow .asrc{font-size:12px;color:var(--muted);white-space:nowrap}
 @media (max-width:720px){.arow{grid-template-columns:minmax(0,1fr);gap:6px}.arow .asrc{white-space:normal}}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.confcal{margin-left:auto;position:relative}
+.confcal summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:#24456e;font-size:13px;font-weight:600}
+.confcal summary::-webkit-details-marker{display:none}
+.sechead .confcal span{font-size:13px;color:inherit}
+.confcal[open] summary{border-color:#24456e}
+.calpop{position:absolute;right:0;top:calc(100% + 6px);z-index:30;width:220px;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 24px rgba(20,40,70,.12);padding:10px}
+.calpop .calk{font-size:11.5px;color:var(--muted);margin:4px 4px 6px}
+.calpop button{display:flex;justify-content:space-between;width:100%;border:0;background:none;padding:7px 10px;border-radius:8px;font:inherit;font-size:13.5px;color:inherit;cursor:pointer;text-align:left}
+.calpop button:hover{background:#eef3f8}
+.calpop button[aria-pressed="true"]{background:#24456e;color:#fff;font-weight:600}
+.calpop button em{font-style:normal;opacity:.7}
 .confbar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}
 .confbar .chips{margin:0}
 .conflist{display:grid;gap:10px}
@@ -887,9 +898,11 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
     <p>国内主要的生物医药学术会议、行业峰会和展会，可按时间范围筛选，已结束的会议自动隐藏。日期以主办方官网为准；尚未由官方确认的会标注出来，下一届还没公布的列在最后，并注明往届时间。每条都挂来源链接，出行前请再到官网核对。</p>
   </header>
   <section>
-    <div class="sechead"><h2>会议日程</h2><span id="confcount"></span></div>
-    <div class="chips confrange" id="confrange" aria-label="时间范围" style="margin-bottom:10px"></div>
-    <div class="confbar"><div class="chips" id="confchips"></div><div class="chips confsort" id="confsort" aria-label="时间排序"></div></div>
+    <div class="sechead"><h2>会议日程</h2><span id="confcount"></span>
+      <details class="confcal" id="confcal"><summary aria-label="选择时间范围"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><rect x="7" y="13" width="3" height="3" rx=".5" fill="currentColor" stroke="none"/></svg><span id="confcallabel">全部</span><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+        <div class="calpop"><div class="calk">时间范围</div><div id="confrange"></div><div class="calk">排序</div><div id="confsort"></div></div>
+      </details></div>
+    <div class="confbar"><div class="chips" id="confchips"></div></div>
     <div class="conflist" id="conflist"></div>
     <p class="note" style="margin-top:12px"><a href="#deals">返回经济动态</a></p>
   </section>
@@ -1360,8 +1373,8 @@ function renderChips(){
     const n=key==='all'?DEALS.length:groupCount(kinds);
     const active=kinds.includes(filter)||(key==='all'&&filter==='all');
     return `<button class="chip" type="button" data-k="${key}" aria-pressed="${active}">${name.replace('动态','').replace('交易','')} ${n}</button>`;
-  }).join('');
-  chips.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{filter=b.dataset.k;history.pushState(null,'','#deals?kind='+filter);renderChips();renderTracker();renderFeed()});
+  }).join('')+`<a class="chip" href="#conf">学术会议 ${CONFS.filter(x=>!x.dates||x.dates==='待公布'||(x.dates.split(' to ')[1]||x.dates)>=new Date().toISOString().slice(0,10)).length}</a>`;
+  chips.querySelectorAll('button.chip').forEach(b=>b.onclick=()=>{filter=b.dataset.k;history.pushState(null,'','#deals?kind='+filter);renderChips();renderTracker();renderFeed()});
 }
 function escAttr(s){return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function dealCard(x,i){
@@ -1561,15 +1574,16 @@ function renderConfs(){
   const limit=m=>{const d=new Date(now);d.setMonth(d.getMonth()+m);return ymd(d);};
   const RANGES=[['1','未来1个月',1],['2','未来2个月',2],['3','未来3个月',3],['6','未来半年',6],['all','全部',0]];
   const inRange=(x,r)=>{if(r==='all') return true; if(isTbd(x)) return false; const m=RANGES.find(z=>z[0]===r)[2]; return x.dates.split(' to ')[0]<=limit(m);};
-  document.getElementById('confrange').innerHTML=RANGES.map(([k,l])=>`<button class="chip" type="button" data-r="${k}"${confRange===k?' aria-pressed="true"':''}>${l} ${upcoming.filter(x=>inRange(x,k)).length}</button>`).join('');
-  document.querySelectorAll('#confrange .chip').forEach(b=>b.onclick=()=>{confRange=b.dataset.r;renderConfs();});
+  document.getElementById('confrange').innerHTML=RANGES.map(([k,l])=>`<button type="button" data-r="${k}"${confRange===k?' aria-pressed="true"':''}><span>${l}</span><em>${upcoming.filter(x=>inRange(x,k)).length}</em></button>`).join('');
+  document.querySelectorAll('#confrange button').forEach(b=>b.onclick=()=>{confRange=b.dataset.r;document.getElementById('confcal').open=false;renderConfs();});
+  document.getElementById('confcallabel').textContent=RANGES.find(z=>z[0]===confRange)[1];
   const list=upcoming.filter(x=>inRange(x,confRange)&&(confKind==='all'||x.kind===confKind));
   const dated=list.filter(x=>!isTbd(x)).sort((a,b)=>a.dates<b.dates?-1:a.dates>b.dates?1:0);
   if(confOrder==='desc') dated.reverse();
   list.splice(0,list.length,...dated,...list.filter(isTbd));
   document.getElementById('confcount').textContent=`共 ${list.length} 场`;
-  document.getElementById('confsort').innerHTML=[['asc','由近到远'],['desc','由远到近']].map(([k,l])=>`<button class="chip" type="button" data-o="${k}"${confOrder===k?' aria-pressed="true"':''}>${l}</button>`).join('');
-  document.querySelectorAll('#confsort .chip').forEach(b=>b.onclick=()=>{confOrder=b.dataset.o;renderConfs();});
+  document.getElementById('confsort').innerHTML=[['asc','由近到远'],['desc','由远到近']].map(([k,l])=>`<button type="button" data-o="${k}"${confOrder===k?' aria-pressed="true"':''}><span>${l}</span></button>`).join('');
+  document.querySelectorAll('#confsort button').forEach(b=>b.onclick=()=>{confOrder=b.dataset.o;document.getElementById('confcal').open=false;renderConfs();});
   const esc=t=>String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
   document.getElementById('conflist').innerHTML=list.map(x=>{
     const tbd=!x.dates||x.dates==='待公布';
