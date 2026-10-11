@@ -999,12 +999,12 @@ function icon(kind,cvar,cls){
     ${ICONS[kind]||ICONS.cell}</svg></span>`;
 }
 // 九张领域固定图，放在 img/fields/ 下即自动生效；缺图时退回 SVG 图标
-const FIELD_IMG={organoid:'organoid_v6.jpg',ai:'ai-drug-design_v6.jpg',immuno:'tumor-immunology_v6.jpg',
-  autoimm:'autoimmune_v6.jpg',animal:'animal-model_v6.jpg',antibody:'antibody-engineering_v6.jpg',
-  vaccine:'vaccine_v6.jpg',nucleic:'lnp-oligo_v6.jpg',precision:'cell-therapy_v6.jpg',
-  c1:'organoid_v6.jpg',c2:'ai-drug-design_v6.jpg',c3:'tumor-immunology_v6.jpg',
-  c4:'autoimmune_v6.jpg',c5:'animal-model_v6.jpg',c6:'antibody-engineering_v6.jpg',
-  c7:'cell-therapy_v6.jpg',c8:'vaccine_v6.jpg',c9:'lnp-oligo_v6.jpg'};
+const FIELD_IMG={organoid:'organoid_v7.jpg',ai:'ai_v7.jpg',immuno:'immuno_v7.jpg',
+  autoimm:'autoimm_v7.jpg',animal:'animal_v7.jpg',antibody:'antibody_v7.jpg',
+  vaccine:'vaccine_v7.jpg',nucleic:'nucleic_v7.jpg',precision:'precision_v7.jpg',
+  c1:'organoid_v7.jpg',c2:'ai_v7.jpg',c3:'immuno_v7.jpg',
+  c4:'autoimm_v7.jpg',c5:'animal_v7.jpg',c6:'antibody_v7.jpg',
+  c7:'precision_v7.jpg',c8:'vaccine_v7.jpg',c9:'nucleic_v7.jpg'};
 function fieldThumb(f){
   const key=(f&&f.k)||f;
   const color=(f&&f.color)||key;
@@ -1015,7 +1015,7 @@ function fieldArt(f){
   return `<span class="artthumb">${icon(FIELD_MOTIF[key]||'cell',color)}<img src="img/pal/fields/${FIELD_IMG[key]||FIELD_IMG.organoid}?v=1" alt="" loading="lazy" onerror="this.remove()"></span>`;
 }
 // 交易类型卡配图：Grok 生成的装饰插画，裁成方图（img/pal/kinds/tiles/*_grok_v1.jpg）
-const KIND_TILE={all:'all_grok_v1.jpg',acq:'acq_grok_v1.jpg',lic:'lic_grok_v1.jpg',inv:'inv_grok_v1.jpg',clin:'clin_grok_v1.jpg',policy:'policy_grok_v1.jpg'};
+const KIND_TILE={all:'all_v7.jpg',acq:'acq_v7.jpg',lic:'lic_v7.jpg',inv:'inv_v7.jpg',clin:'clin_v7.jpg',policy:'policy_v7.jpg'};
 function kindArt(key,color){
   return `<span class="artthumb">${icon(key,color)}${KIND_TILE[key]?`<img src="img/pal/kinds/tiles/${KIND_TILE[key]}?v=1" alt="" loading="lazy" onerror="this.remove()">`:''}</span>`;
 }
@@ -1031,6 +1031,8 @@ const KIND_CVAR={acq:'c3',lic:'c2',newco:'c7',clin:'c1',inv:'c5',policy:'c6'};
 // 某类型没有轮换图或图缺失时，退回该类型的单张图。
 const KIND_ART_N={acq:10,lic:10,inv:10,clin:10,policy:10,newco:10};
 const KIND_ART_BASE={acq:'acq_v5',lic:'lic_v4',inv:'inv_v4',clin:'clin_v4',policy:'policy_v5',newco:'newco_v4'};
+// v7：每条经济动态按内容单独配图（按标题对应，不改 DEALS 数据）；没有专属图的新条目退回 v6 轮换图
+const DEAL_ART_V7={"诺华拿下艾博生物 mRNA 体内 T 细胞衔接器 ABO2203 全球权益": "img/pal/deals/v7/deal_01.jpg", "AI 制药公司 Enveda 完成 3.11 亿美元 E 轮融资": "img/pal/deals/v7/deal_02.jpg", "FDA 发布直接最终规则：法规中“动物试验”改为“非临床研究”": "img/pal/deals/v7/deal_03.jpg", "GSK 以至多 7.5 亿美元收购 Chimagen 的三抗 T 细胞衔接器": "img/pal/deals/v7/deal_04.jpg", "HeartBeat.bio 与 Cubase Bio 获约 100 万欧元资助，用心脏类器官研究心肌纤维化": "img/pal/deals/v7/deal_05.jpg", "依沃西单抗单药 HARMONi-2 总生存期显著优于帕博利珠单抗": "img/pal/deals/v7/deal_06.jpg", "先声再明把 CD79a×CD19×CD3 三抗 SIM0660 授权给罗氏": "img/pal/deals/v7/deal_07.jpg", "礼来以至多 29 亿美元收购 Merida Biosciences，切入 Graves 病": "img/pal/deals/v7/deal_08.jpg", "海思科免疫资产装入 ARCH 新设公司 Sentivera": "img/pal/deals/v7/deal_09.jpg", "FDA 批准首个 mRNA 流感疫苗：Moderna mFlusiva": "img/pal/deals/v7/deal_10.jpg", "强生以股权投资加收购期权锁定 Sail Biomedicines 体内 CAR-T": "img/pal/deals/v7/deal_11.jpg", "argenx 以 22 亿美元收购 Forte，拿下抗 CD122 抗体 FB102": "img/pal/deals/v7/deal_12.jpg", "集萃药康与 Humlab 合作全球分销人源化小鼠模型": "img/pal/deals/v7/deal_13.jpg", "Avere 引进翰森口服 IL-23 药物，借壳 NextCure 上市并融资 3.2 亿美元": "img/pal/deals/v7/deal_14.jpg", "勃林格殷格翰引进 Prime Vector 的 Orf 病毒平台开发肿瘤疫苗": "img/pal/deals/v7/deal_15.jpg", "阿斯利康与石药合作开发肾病 siRNA": "img/pal/deals/v7/deal_16.jpg", "英矽智能与武田达成 AI 药物发现合作": "img/pal/deals/v7/deal_17.jpg", "礼来一次收购三家疫苗公司，合计近 40 亿美元": "img/pal/deals/v7/deal_18.jpg", "Kyverna 启动首个自免 CAR-T 的 BLA 滚动递交（僵人综合征）": "img/pal/deals/v7/deal_19.jpg", "礼来以至多 70 亿美元收购体内 CAR-T 公司 Kelonia": "img/pal/deals/v7/deal_20.jpg", "FDA 发布减少动物试验路线图一周年报告，取消单抗 6 个月猴试验要求": "img/pal/deals/v7/deal_21.jpg", "耀速科技完成 2 亿元 A 轮融资，押注“AI + 器官芯片/类器官”": "img/pal/deals/v7/deal_22.jpg"};
 let DEAL_ART=null;
 function dealArt(x){
   if(!DEAL_ART){
@@ -1042,7 +1044,8 @@ function dealArt(x){
     }
   }
   const k=x.kinds[0], base=KIND_ART_BASE[k]?`img/pal/kinds/${KIND_ART_BASE[k]}.jpg?v=1`:'';
-  return [DEAL_ART.get(x)||base, base];
+  const own=DEAL_ART_V7[x.t]?`${DEAL_ART_V7[x.t]}?v=7`:'';
+  return [own||DEAL_ART.get(x)||base, DEAL_ART.get(x)||base];
 }
 
 const MONTH={'01':'1 月','02':'2 月','03':'3 月','04':'4 月','05':'5 月','06':'6 月','07':'7 月','08':'8 月','09':'9 月','10':'10 月','11':'11 月','12':'12 月'};
