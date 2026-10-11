@@ -18,7 +18,7 @@
 - **统计量**：小鼠样本量未按统计学预设；图注报告two-way ANOVA、one-way ANOVA、Kruskal–Wallis、Mann–Whitney U-test、t-test、Wald tests和FDR校正等
 - **安全性**：小鼠>25%初始体重下降即按预设人道终点处死；患者治疗反应为讨论信息，非干预安全性试验
 - **证据等级**：全文
-- **核对记录**：全文来源为Europe PMC fullTextXML PMC13518229；材料包含Abstract、Results、Methods、Figure captions、Discussion与Limitations
+- **核对记录**：Europe PMC fullTextXML PMC13518229：Abstract、Results、Methods、Figure captions、Discussion与Limitations
 
 ![机制示意图](c4-ai-6_mech_r4.png)
 
@@ -87,4 +87,4 @@
 
 Cui J, Chen Z, Cheng YH, Nie J, Zhu MH, Xiang C, et al. GPR15-guided CD8+ T regulatory cells control intestinal inflammation. Nature. 2026. https://doi.org/10.1038/s41586-026-10749-4
 
-证据等级：全文；核对记录：全文来源为Europe PMC fullTextXML PMC13518229；材料包含Abstract、Results、Methods、Figure captions、Discussion与Limitations
+证据等级：全文；核对记录：Europe PMC fullTextXML PMC13518229：Abstract、Results、Methods、Figure captions、Discussion与Limitations

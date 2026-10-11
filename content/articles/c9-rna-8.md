@@ -81,4 +81,4 @@ HuH-7中针对HEK4的四种编辑，PE-LNP在三种上的正确编辑不低于�
 
 Jiang AY, Cristian A, Brooks DL, Feierman ER, Chen PZ, Whittaker MN, et al. Efficient prime editing in vivo and in vitro using lipid nanoparticles. Nat Nanotechnol. 2026 Jun 15. https://doi.org/10.1038/s41565-026-02200-6
 
-证据等级：全文；核对记录：Europe PMC全文XML（PMC13379318）：摘要、Main、Results各节、Conclusions、Methods、Fig.1–6与Extended Data Fig.1–10图注。许可为CC BY 4.0。
+证据等级：全文；核对记录：Europe PMC全文XML（PMC13379318）：摘要、Main、Results各节、Conclusions、Methods、Fig.1–6与Extended Data Fig.1–10图注。

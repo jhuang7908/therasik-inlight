@@ -17,7 +17,7 @@
 - **主要终点结果**：26周仍检出HA特异性GC反应：mRNA-1010组5/13（约38%），Fluarix组两季均未检出（未见统计检验）；记忆B细胞增幅在第4周及17/26周mRNA-1010组显著更高（两侧Mann–Whitney U检验）
 - **统计量**：两侧Mann–Whitney U检验；线性混合效应模型（捐献者为随机效应）；BASELINe检验；Spearman相关；两阶段step-up FDR校正（q<0.05）
 - **证据等级**：全文
-- **核对记录**：Europe PMC fullTextXML PMC13414572：读了摘要、前言、Results全部小节、Discussion、Methods及全部图注
+- **核对记录**：Europe PMC fullTextXML PMC13414572：摘要、前言、Results全部小节、Discussion、Methods及全部图注
 
 ![机制示意图](c8-vac-3_mech_labeled.png)
 
@@ -88,4 +88,4 @@ Ig-seq每人检出67–186个A/H3特异性血清IgG克隆型；第4周预存克�
 
 Matz HC, Yu TG, Dixit K, Kikawa C, Zhou JQ, Pena Alzua G, et al. mRNA-based influenza vaccine expands the B cell response breadth in humans. Nat Immunol. 2026. https://doi.org/10.1038/s41590-026-02569-5
 
-证据等级：全文；核对记录：Europe PMC fullTextXML PMC13414572：读了摘要、前言、Results全部小节、Discussion、Methods及全部图注
+证据等级：全文；核对记录：Europe PMC fullTextXML PMC13414572：摘要、前言、Results全部小节、Discussion、Methods及全部图注

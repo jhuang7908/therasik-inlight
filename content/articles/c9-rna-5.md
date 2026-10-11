@@ -18,7 +18,7 @@
 - **统计量**：单因素 ANOVA + Dunnett/Tukey/Holm-Šídák，存活用对数秩检验，数据为均值 ± s.e.m.
 - **安全性**：E20-SNP 组小鼠外观与未处理对照相近；传统 LNP 组出现弓背、活动减少、眯眼；pDNA 的 MC3-DLin 组全部死亡
 - **证据等级**：全文
-- **核对记录**：读了 Nature Nanotechnology 开放获取全文的摘要、Main、Results 各小节、Fig.1–6 与 Extended Data Fig.1–3 图注、Methods 及 Conclusion
+- **核对记录**：Nature Nanotechnology 开放获取全文的摘要、Main、Results 各小节、Fig.1–6 与 Extended Data Fig.1–3 图注、Methods 及 Conclusion
 
 ![机制示意图](c9-rna-5_mech_labeled.png)
 
@@ -88,4 +88,4 @@ LNP–mRNA 复合物具备转染效率和组织趋向性，但在疫苗之外的
 
 Liang D, Qi Y, Han H, Ahmadian N, Gao K, Sapasap K, et al. Charge-switching ionizable lipids lower the toxicity of lipid nanoparticles. Nat Nanotechnol. 2026. https://doi.org/10.1038/s41565-026-02262-6
 
-证据等级：全文；核对记录：读了 Nature Nanotechnology 开放获取全文的摘要、Main、Results 各小节、Fig.1–6 与 Extended Data Fig.1–3 图注、Methods 及 Conclusion
+证据等级：全文；核对记录：Nature Nanotechnology 开放获取全文的摘要、Main、Results 各小节、Fig.1–6 与 Extended Data Fig.1–3 图注、Methods 及 Conclusion

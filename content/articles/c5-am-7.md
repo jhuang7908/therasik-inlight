@@ -18,7 +18,7 @@
 - **统计量**：DESeq2双侧Wald检验、Benjamini–Hochberg校正；edgeR双侧准似然F检验（名义P）；电生理为非配对双侧t检验或Mann–Whitney；GSEA为FDR<0.05；未普遍设盲或随机化
 - **安全性**：不适用（发育表型图谱，无治疗安全性读出）
 - **证据等级**：全文
-- **核对记录**：读了Europe PMC全文XML（PMC13441911）：Abstract、Main、Results各节、Discussion、Methods、Fig.1–6图注与Extended Data图注
+- **核对记录**：Europe PMC全文XML（PMC13441911）：Abstract、Main、Results各节、Discussion、Methods、Fig.1–6图注与Extended Data图注
 
 ![机制示意图](c5-am-7_mech.webp)
 
@@ -90,4 +90,4 @@ P4小脑（雄性，每基因型n=3）几乎没有跨突变共享DEG；Bckdk是�
 
 Schwarz LA, Dotter CP, Isaev S, Lisi M, Malzl D, Büschl C, et al. Cortical development dynamics across autism spectrum disorder mouse models. Nature. 2026 Jun 17. doi: https://doi.org/10.1038/s41586-026-10679-1
 
-证据等级：全文；核对记录：读了Europe PMC全文XML（PMC13441911）：Abstract、Main、Results各节、Discussion、Methods、Fig.1–6图注与Extended Data图注
+证据等级：全文；核对记录：Europe PMC全文XML（PMC13441911）：Abstract、Main、Results各节、Discussion、Methods、Fig.1–6图注与Extended Data图注

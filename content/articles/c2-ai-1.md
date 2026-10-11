@@ -16,7 +16,7 @@
 - **主要终点结果**：27F、28F、47F 分别为 10.3%、13.8%、9.8%（全部 AI 提交 9.8–13.8%，获胜者 11–50%），随机挑选克隆为 39%；仅 WashU 为 50%；该对比未做统计检验
 - **统计量**：检测平台间双侧 Spearman 秩相关，未做多重比较校正；KinExA 以 95% 置信区间重叠判断无差异
 - **证据等级**：全文
-- **核对记录**：读了 Nature Biotechnology 开放获取 HTML 的 Abstract、Main、Results、Discussion、图注（Fig. 1–5、Extended Data Fig. 1–4）与 Methods
+- **核对记录**：Nature Biotechnology 开放获取 HTML 的 Abstract、Main、Results、Discussion、图注（Fig. 1–5、Extended Data Fig. 1–4）与 Methods
 
 ![机制示意图](c2-ai-1_mech_r2.png)
 
@@ -75,7 +75,7 @@ AI 最佳 SPR 亲和力为 340 pM，实验最佳为 517 pM；KinExA 下实验前
 - 外推性：仅一个抗原（SARS-CoV-2 RBD），数据刻意丰富，作者称结果是该靶点类别当前计算能力的上界，不代表其他抗原；挑战 2、3 还给了亲和力数据，早期发现通常没有。
 - 盲评与参与：首轮由报告结果的同一联盟组织，依赖组织者诚信而非信息学手段保证盲评，多家知名团队未参与。
 - 终点与统计：挑战 2 与随机 39% 的比较未检验；KinExA 只测最强子集（挑战 1 仅 8 个 AI 提交）；综合评分允许单项失败被抵消。
-- 数字口径：Fig. 3d 图注称 28F 为 5.2%，正文为 13.8%，本文按正文。
+- 各来源数字不一：Fig. 3d 图注报 28F 为 5.2%，正文报 13.8%。
 
 ## 临床/产业意义
 
@@ -87,4 +87,4 @@ AI 最佳 SPR 亲和力为 340 pM，实验最佳为 517 pM；KinExA 下实验前
 
 Erasmus MF, Bedinger D, Hopkins E, Ferguson G, Strickler J, Graff CP, et al. A blinded, prospective benchmark of in silico antibody discovery anchored to experimental affinity and developability. Nat Biotechnol. 2026. https://doi.org/10.1038/s41587-026-03238-6
 
-证据等级：全文；核对记录：读了 Nature Biotechnology 开放获取 HTML 的 Abstract、Main、Results、Discussion、图注（Fig. 1–5、Extended Data Fig. 1–4）与 Methods
+证据等级：全文；核对记录：Nature Biotechnology 开放获取 HTML 的 Abstract、Main、Results、Discussion、图注（Fig. 1–5、Extended Data Fig. 1–4）与 Methods

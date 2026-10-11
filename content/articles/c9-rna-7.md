@@ -89,4 +89,4 @@ ALSFRS-R在最长210/240天内个体波动：例3终访提高4分，例2下降�
 
 Chen W, Jiang L, Duan C, Kang M, Ye J, Wang L, et al. Oligonucleotide–siRNA conjugate for SOD1 amyotrophic lateral sclerosis: a phase 1 trial. Nat Med. 2026 Jul 15. https://doi.org/10.1038/s41591-026-04491-7
 
-证据等级：全文；核对记录：Europe PMC全文XML（PMC13375534）：摘要、Main、Results各节、Discussion、Methods、Fig.1–4与Extended Data Fig.1–6图注及Table 1–2。许可为CC BY-NC-ND 4.0，正文仅为释义，不逐句复述原文。
+证据等级：全文；核对记录：Europe PMC全文XML（PMC13375534）：摘要、Main、Results各节、Discussion、Methods、Fig.1–4与Extended Data Fig.1–6图注及Table 1–2。

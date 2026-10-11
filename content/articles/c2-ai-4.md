@@ -17,7 +17,7 @@
 - **主要终点结果**：54个治疗组对安慰剂比较中21个达到Q<0.10；第4周18个比较中11个显著，置换零假设均值0.15
 - **统计量**：单侧Mann–Whitney U检验比较治疗臂与安慰剂，Benjamini–Hochberg校正；患者标签置换100,000次；原文未说明蛋白质组子研究为组间比较设计效能
 - **证据等级**：全文
-- **核对记录**：读了Nature Biotechnology OA全文的Abstract、Results、Discussion、Methods和图注；来源为全文HTML，DOI 10.1038/s41587-026-03286-y
+- **核对记录**：Nature Biotechnology OA全文的Abstract、Results、Discussion、Methods和图注；来源为全文HTML，DOI 10.1038/s41587-026-03286-y
 
 ![机制示意图](c2-ai-4_mech.png)
 
@@ -86,4 +86,4 @@ GSEA显示衰老细胞相关循环蛋白呈相反轨迹：SenMayo签名在安慰
 
 Zhavoronkov A, Galkin F, Chen S, Ren F, Aliper A, Durymanov M, et al. Integration of proteomic aging clocks in a phase 2a clinical trial supports simultaneous geroprotective assessment. Nat Biotechnol. 2026. https://doi.org/10.1038/s41587-026-03286-y
 
-证据等级：全文；核对记录：读了Nature Biotechnology OA全文的Abstract、Results、Discussion、Methods和图注；来源为全文HTML，DOI 10.1038/s41587-026-03286-y
+证据等级：全文；核对记录：Nature Biotechnology OA全文的Abstract、Results、Discussion、Methods和图注；来源为全文HTML，DOI 10.1038/s41587-026-03286-y

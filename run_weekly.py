@@ -587,6 +587,15 @@ def claude_draft(items: list[dict], config: dict) -> dict:
 学术最多 {config.get('max_academic', 6)} 篇，行业最多 {config.get('max_industry', 4)} 条。
 每篇的 url 必须从输入里原样复制，不能修改。
 
+## 写作规则（不写自说自话）
+
+- 只写论文和交易本身。不写编辑过程：不写“用户提供全文”“本文不补”“两处均保留”“Supplementary 未读”“摘录未给出……”这类说明，不写抓取或资料收集情况，也不用一句话解释为什么缺数据。
+- 不写许可或版权自辩（如“许可为 CC BY，正文为改写”）。
+- 免责与说明（不构成投资建议、配图由 AI 生成、来源说明）由网站模板统一给出，正文里不要重复。
+- 各来源数字不一致时只写一次，格式为“各来源数字不一：A 报 X，B 报 Y。”，不写“本文按……”“口径冲突”之类的处理说明。
+- 不解释页面版式（“本页列出……”“下方卡片……”“点击……”），不写“前沿追踪即为……样例”这类自我介绍，不为自身独立性辩护。
+- 不用口语或俚语做自我评价。
+
 ## 领域分类规则
 
 领域 field 只能是：{json.dumps(FIELDS, ensure_ascii=False)}
@@ -797,7 +806,7 @@ def site_article(item: dict, image_rel: str) -> dict:
         "body": item["body"],
         "discuss": item["discuss"],
         "steps": item["steps"],
-        "note": f"材料来自 {item['source']}，只写来源里能核对的内容。",
+        "note": f"来源：{item['source']}",
         "img": image_rel,
         "curated": False,
         "locked": False,
@@ -840,7 +849,6 @@ def wechat_html(articles: list[dict], deals: list[dict], week: str) -> str:
     parts = [
         '<section style="font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,sans-serif;font-size:16px;line-height:1.75;color:#333;">',
         f'<p style="font-size:14px;color:#666;">前沿追踪 · {week} · 启元智研 出品</p>',
-        '<p style="margin:1em 0;">本期内容均基于原始来源核对，配图由 AI 生成（示意图，非期刊原图）。</p>',
     ]
     
     # Table of contents
@@ -880,13 +888,13 @@ def wechat_html(articles: list[dict], deals: list[dict], week: str) -> str:
     # Footer with AI disclosure and contact
     parts.append('<hr style="border:none;border-top:1px solid #eee;margin:2em 0;">')
     parts.append('<p style="font-size:14px;color:#666;margin:1em 0;">')
-    parts.append('本期内容由 Claude 起草，配图由 gpt-image-1 生成，编辑核对后发布。')
+    parts.append('本期文字由 Claude 起草，配图由 gpt-image-1 生成（示意图，非期刊原图）。')
     parts.append('</p>')
     parts.append('<p style="font-size:14px;color:#666;margin:1em 0;">')
-    parts.append('如发现错误，请邮件 contact@therasik.com，我们会在下期更正。')
+    parts.append('纠错：contact@therasik.com')
     parts.append('</p>')
     parts.append('<p style="font-size:14px;color:#0f6b5c;margin:1em 0;">')
-    parts.append('点击「阅读原文」查看完整版。')
+    parts.append('完整版见「阅读原文」。')
     parts.append('</p>')
     parts.append('</section>')
     

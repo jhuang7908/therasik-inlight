@@ -16,7 +16,7 @@
 - **主要终点结果**：256/907 份样本建立类器官，效率 28%（65% 为计入短期培养、排除低细胞量样本的口径）；162 例筛选通过质控，成功率 85%。两项均为描述性读出，无组间比较
 - **统计量**：Pearson 相关；Fisher 精确检验；线性回归（似然比检验、多重校正）；Wilcoxon 秩和检验
 - **证据等级**：全文
-- **核对记录**：读了 Europe PMC fullTextXML（PMC13581617）的摘要、Main、各 Results 小节、Discussion、Methods 与 Fig.1–5、Extended Data Fig.1–10 图注；Supplementary 材料未读。
+- **核对记录**：Europe PMC fullTextXML（PMC13581617）的摘要、Main、各 Results 小节、Discussion、Methods 与 Fig.1–5、Extended Data Fig.1–10 图注。
 
 ![机制示意图](c1-org-2_mech_labeled.png)
 
@@ -87,4 +87,4 @@ EGFR 依赖与药敏相互印证：CRISPR 中 EGFR 依赖高的类器官属于�
 
 Herranz-Ors C, Bhosle SG, Beck AE, Gilbert JGR, Picco G, Espejo Valle-Inclan J, et al. A tumour-derived organoid biobank maps cancer gene dependencies. Nature. 2026. https://doi.org/10.1038/s41586-026-10830-y
 
-证据等级：全文；核对记录：读了 Europe PMC fullTextXML（PMC13581617）的摘要、Main、各 Results 小节、Discussion、Methods 与 Fig.1–5、Extended Data Fig.1–10 图注；Supplementary 材料未读。
+证据等级：全文；核对记录：Europe PMC fullTextXML（PMC13581617）的摘要、Main、各 Results 小节、Discussion、Methods 与 Fig.1–5、Extended Data Fig.1–10 图注。

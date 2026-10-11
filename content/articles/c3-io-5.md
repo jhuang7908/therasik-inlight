@@ -18,7 +18,7 @@
 - **统计量**：样本量由历史数据确定而非效能计算；肿瘤生长曲线用多重双侧Mann–Whitney检验，相关为双侧Spearman
 - **安全性**：动物实验按人道终点执行：肿瘤溃疡、总体积超过2.5 cm3或出现不良临床体征时提前终止
 - **证据等级**：全文
-- **核对记录**：读了Europe PMC fullTextXML PMC13558080的Abstract、Results、Methods、图注、Discussion和Limitations
+- **核对记录**：Europe PMC fullTextXML PMC13558080的Abstract、Results、Methods、图注、Discussion和Limitations
 
 ![机制示意图](c3-io-5_mech_r4c.png)
 
@@ -89,4 +89,4 @@ Desharnais等在Nature提出的切口，是把“肥胖悖论”拆成饮食、�
 
 Desharnais L, Swaby A, Messaoudene M, Doré S, Yu MW, Fiset B, 等. Diet–microbiome synergy underlies obesity-associated immunotherapy efficacy. Nature. 2026. https://doi.org/10.1038/s41586-026-10750-x
 
-证据等级：全文；核对记录：读了Europe PMC fullTextXML PMC13558080的Abstract、Results、Methods、图注、Discussion和Limitations
+证据等级：全文；核对记录：Europe PMC fullTextXML PMC13558080的Abstract、Results、Methods、图注、Discussion和Limitations
