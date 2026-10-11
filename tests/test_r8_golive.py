@@ -246,8 +246,8 @@ class R8GoLiveTests(unittest.TestCase):
         self.assertEqual(cat.FIELD_KEYS["疾病模型"], "animal")
         self.assertEqual(cat.FIELD_KEYS["动物模型"], "animal")
 
-    def test_article_rail_quick_look_author_and_coop(self):
-        """Left rail: 速览 100–200 han chars, 作者介绍 present, 合作 box; 作者节已移出正文."""
+    def test_article_rail_quick_look_author_no_coop(self):
+        """Left rail: 速览 100–200 han chars, 作者介绍 present, no 合作 promo box; 作者节已移出正文."""
         expected = [
             "研究背景与待解问题",
             "研究设计",
@@ -268,10 +268,11 @@ class R8GoLiveTests(unittest.TestCase):
             self.assertLessEqual(han_chars, 200, (a["id"], han_chars))
             self.assertIn('<span class="k">作者介绍</span>', page, a["id"])
             self.assertTrue((a.get("author_intro") or "").strip(), a["id"])
-            self.assertIn("InSynBio · 前沿追踪", page, a["id"])
-            self.assertIn("contact@therasik.com", page, a["id"])
-            self.assertIn("科技新闻实时更新", page, a["id"])
-            self.assertIn('class="sbox coop"', page, a["id"])
+            self.assertNotIn("InSynBio", page, a["id"])
+            self.assertNotIn("论文写作", page, a["id"])
+            self.assertNotIn("智能中转服务", page, a["id"])
+            self.assertNotIn('class="sbox coop"', page, a["id"])
+            self.assertIn('class="art-end"', page, a["id"])
             amain = re.search(r'<div class="amain">(.*)</div>\s*</div>\s*</article>', page, re.S)
             self.assertIsNotNone(amain, a["id"])
             body = amain.group(1)
@@ -284,7 +285,8 @@ class R8GoLiveTests(unittest.TestCase):
         src = (ROOT / "index.html").read_text(encoding="utf-8")
         self.assertIn("function renderPaper", src)
         self.assertIn("sbox look", src)
-        self.assertIn("COOP_AD", src)
+        self.assertNotIn("COOP_AD", src)
+        self.assertNotIn("InSynBio", src)
         self.assertIn("作者、出处与核对", src)
 
     def test_quick_look_han_char_count_in_catalog(self):
@@ -295,11 +297,28 @@ class R8GoLiveTests(unittest.TestCase):
             self.assertGreaterEqual(han_chars, 100, f"{a['id']}: {han_chars} han chars (need ≥100)")
             self.assertLessEqual(han_chars, 200, f"{a['id']}: {han_chars} han chars (need ≤200)")
 
-    def test_coop_border_rule_exists(self):
-        """The .side2 .sbox.coop rule must apply border-top:3px solid #C0492F."""
+    def test_no_sponsor_placeholder_text(self):
+        """Empty sponsor slots (栏位可用于赞助) are not shown."""
         src = (ROOT / "index.html").read_text(encoding="utf-8")
-        # The specific rule that overrides .side2 .sbox{border:1px solid var(--line)}
-        self.assertIn(".side2 .sbox.coop{border-top:3px solid #C0492F}", src)
+        self.assertNotIn("栏位可用于赞助", src)
+
+    def test_article_end_links_published_only(self):
+        """上一篇/下一篇/相关阅读 link only published ids; feed lists exactly the published ids."""
+        pub = [a["id"] for a in cat.published_articles(self.catalog)]
+        hidden = set(cat.hidden_ids(self.catalog))
+        for aid in pub:
+            page = (ROOT / "pages" / "article" / f"{aid}.html").read_text(encoding="utf-8")
+            end = re.search(r'<section class="art-end".*?</section>', page, re.S)
+            self.assertIsNotNone(end, aid)
+            linked = re.findall(r'href="([a-z0-9-]+)\.html"', end.group(0))
+            self.assertTrue(linked, aid)
+            for lid in linked:
+                self.assertIn(lid, pub, (aid, lid))
+                self.assertNotIn(lid, hidden, (aid, lid))
+            self.assertIn('href="/#support"', end.group(0), aid)
+        feed = (ROOT / "feed.xml").read_text(encoding="utf-8")
+        ids = re.findall(r"<link>https://inlight\.therasik\.com/pages/article/([a-z0-9-]+)\.html</link>", feed)
+        self.assertEqual(ids, pub)
 
     def test_quick_look_no_spelled_out_numbers(self):
         """quick_look must use Arabic numerals, not spelled-out Chinese numbers."""

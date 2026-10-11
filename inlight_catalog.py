@@ -332,20 +332,6 @@ def filter_public_rows(rows: list[dict], catalog: dict | None = None) -> list[di
     return out
 
 
-COOP_AD_INNER = (
-    '<span class="k">合作</span><b class="coop-t">InSynBio · 前沿追踪</b>\n'
-    "<ul><li>科技新闻实时更新</li><li>广告发布</li><li>网站建设</li>"
-    "<li>公众号制作</li><li>论文写作</li><li>智能中转服务</li></ul>\n"
-    '<p class="coop-c">欢迎合作 · '
-    '<a href="mailto:contact@therasik.com">contact@therasik.com</a></p>'
-)
-
-
-def coop_ad_html(extra_class: str = "") -> str:
-    cls = "sbox coop" + (f" {extra_class}" if extra_class else "")
-    return f'<section class="{cls}">{COOP_AD_INNER}</section>'
-
-
 def cn_date(ds: str) -> str:
     if len(ds or "") >= 10:
         return f"{ds[:4]} 年 {int(ds[5:7])} 月 {int(ds[8:10])} 日"
@@ -406,7 +392,7 @@ def render_article_rail(
     quick_look: str = "",
     author_intro: str = "",
 ) -> str:
-    """Left-rail HTML: 速览 / 出处 / 作者介绍 / 关键数据卡 / 合作."""
+    """Left-rail HTML: 速览 / 出处 / 作者介绍 / 关键数据卡."""
     look = ""
     if quick_look:
         look = (
@@ -448,7 +434,7 @@ def render_article_rail(
     )
     return (
         f'<aside class="meta side2">{look}{source}{author_box}'
-        f"{card_box}{coop_ad_html()}</aside>"
+        f"{card_box}</aside>"
     )
 
 

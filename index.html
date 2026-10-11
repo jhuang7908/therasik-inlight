@@ -10,18 +10,19 @@ img{max-width:100%}
 [hidden]{display:none!important}
 </style>
 <title>前沿追踪 - 中文生物医药前沿资讯</title>
-<meta name="description" content="中文生物医药前沿资讯，每周整理九个领域的研究进展与商业化动态。类器官、AI药物设计、肿瘤免疫、细胞治疗、疫苗、自身免疫病、小核酸与LNP、疾病模型、抗体工程。">
+<meta name="description" content="中文生物医药前沿资讯，每周整理九个领域的研究进展与经济动态。类器官、AI药物设计、肿瘤免疫、细胞治疗、疫苗、自身免疫病、小核酸与LNP、疾病模型、抗体工程。">
 <meta name="author" content="启元智研 / 前沿追踪">
 <meta property="og:title" content="前沿追踪 - 中文生物医药前沿资讯">
-<meta property="og:description" content="每周整理九个领域的研究进展与商业化动态：类器官、AI药物设计、肿瘤免疫、细胞治疗、疫苗、自身免疫病、小核酸与LNP、疾病模型、抗体工程。">
+<meta property="og:description" content="每周整理九个领域的研究进展与经济动态：类器官、AI药物设计、肿瘤免疫、细胞治疗、疫苗、自身免疫病、小核酸与LNP、疾病模型、抗体工程。">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://inlight.therasik.com/">
 <meta property="og:image" content="https://inlight.therasik.com/img/og-image.png">
 <meta property="og:locale" content="zh_CN">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="前沿追踪 - 中文生物医药前沿资讯">
-<meta name="twitter:description" content="每周整理九个领域的研究进展与商业化动态。">
+<meta name="twitter:description" content="每周整理九个领域的研究进展与经济动态。">
 <link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="alternate" type="application/rss+xml" title="前沿追踪" href="https://inlight.therasik.com/feed.xml">
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;800&family=Noto+Sans+SC:wght@400;500;700&display=swap">
 <style>
@@ -503,7 +504,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 .shell:has(#v-paper:not([hidden])){display:block;max-width:1100px}
 #v-paper.pv-art{max-width:1100px}
 
-/* v9: 文章页左栏 = 速览 / 出处 / 作者介绍 / 关键数据卡 / 合作广告；正文只放解读各小节 */
+/* v9: 文章页左栏 = 速览 / 出处 / 作者介绍 / 关键数据卡；正文只放解读各小节 */
 .pv-art .abody{grid-template-columns:300px minmax(0,1fr);gap:28px}
 .meta.side2{position:static;background:none;border:0;padding:0;gap:14px}
 .side2 .sbox{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:grid;gap:8px}
@@ -513,12 +514,6 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 .side2 .side-card{border-left:4px solid var(--accent)}
 .side2 .side-card h2{font-size:15px}
 .side2 .side-card li{font-size:13px;line-height:1.65}
-.coop{border-top:3px solid #C0492F}
-.side2 .sbox.coop{border-top:3px solid #C0492F}
-.coop .coop-t{font-size:15px;color:var(--accent);font-family:var(--display)}
-.coop ul{margin:0;padding-left:1.1em;display:grid;gap:3px}
-.coop li{font-size:13.5px;line-height:1.6}
-.coop .coop-c{font-size:13px;font-weight:700}
 @media (max-width:860px){
   .pv-art .abody{grid-template-columns:1fr}
   .side2{display:contents}
@@ -531,7 +526,6 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
   .pv-art .abody{align-items:stretch}
   .meta.side2{display:flex;flex-direction:column;gap:14px;align-self:stretch}
   .side2 .side-card{position:static}
-  .side2 .coop{margin-top:0;position:sticky;top:72px}
 }
 
 /* style_unify_v2 (Oct 2026): original illustrations kept, recoloured to the site palette
@@ -563,6 +557,56 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 .pv-chip.pri{background:rgba(47,93,70,.07)!important}
 /* 分类卡片标题统一深绿（覆盖逐领域/逐类型颜色） */
 .trkcard,.fcard{--dc:#2f5d46!important}
+/* 文末：上一篇 / 下一篇 + 相关阅读 + 订阅（不缩进） */
+.art-end{display:grid;gap:14px;margin:30px 0 6px;padding-top:18px;border-top:2px solid #2f5d46}
+.art-end p,.art-end li{text-indent:0;text-align:left}
+.art-pn{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.art-pn .pn{display:grid;gap:4px;align-content:start;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;color:var(--fg);min-width:0}
+.art-pn a.pn:hover{border-color:#2f5d46;box-shadow:0 2px 10px rgba(47,93,70,.12)}
+.art-pn .next{text-align:right}
+.art-pn .k{font-size:12px;font-weight:700;color:#2f5d46;letter-spacing:.04em}
+.art-pn b{font-family:var(--display);font-size:15px;line-height:1.5;font-weight:800}
+.art-pn em{font-style:normal;font-size:12px;color:var(--muted)}
+.art-pn .none{background:var(--raise)}
+.art-pn .none b{font-family:var(--body);font-weight:500;font-size:13.5px;color:var(--muted)}
+.art-rel{background:var(--surface);border:1px solid var(--line);border-left:4px solid #2f5d46;border-radius:10px;padding:14px 16px}
+.art-rel h2{font-size:16px;color:#2f5d46;margin:0 0 8px;display:flex;align-items:baseline;gap:8px}
+.art-rel h2 small{font-family:var(--body);font-size:12px;font-weight:500;color:var(--muted)}
+.art-rel ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.art-rel li{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:14.5px;line-height:1.6;border-top:1px dashed var(--line);padding-top:8px}
+.art-rel li:first-child{border-top:0;padding-top:0}
+.art-rel li a{color:var(--fg);font-weight:500;min-width:0}
+.art-rel li a:hover{color:#2f5d46}
+.art-rel li span{flex:none;font-size:12px;color:var(--muted);white-space:nowrap}
+.art-sub{background:#2f5d46;color:#fff;border-radius:10px;padding:14px 18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.art-sub b{font-family:var(--display);font-size:16px}
+.art-sub p{margin:2px 0 0;font-size:13.5px;line-height:1.6;opacity:.9;max-width:none}
+.art-sub .btn{background:#fff;color:#2f5d46;margin-left:auto}
+@media (max-width:720px){.art-pn{grid-template-columns:1fr}.art-pn .next{text-align:left}.art-rel li{flex-direction:column;gap:2px}.art-rel li span{white-space:normal}.art-sub .btn{margin-left:0}}
+/* 站内搜索：导航放大镜 + 下拉面板（纯前端，覆盖已发布解读与经济动态） */
+.navsearch{flex-shrink:0;width:36px;height:36px;border-radius:18px;border:0;background:none;color:var(--muted);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0;margin:0 2px;font:inherit}
+.navsearch:hover,.navsearch[aria-expanded="true"]{background:var(--raise);color:#2f5d46}
+.navsearch svg{width:19px;height:19px;display:block}
+@media (max-width:480px){.navsearch{width:32px;height:32px;margin:0}}
+.srch-scrim{position:fixed;inset:0;z-index:18;background:rgba(17,23,21,.18)}
+.srch{position:fixed;left:0;right:0;top:56px;z-index:19;padding:0 10px;pointer-events:none}
+.srch-box{pointer-events:auto;max-width:720px;margin:8px auto 0;background:var(--surface);border:1px solid var(--line);border-top:3px solid #2f5d46;border-radius:12px;box-shadow:0 14px 34px rgba(29,42,39,.18);overflow:hidden}
+.srch-in{display:flex;align-items:center;gap:8px;padding:8px 10px 8px 14px;border-bottom:1px solid var(--line)}
+.srch-in svg{width:18px;height:18px;flex:none;color:#2f5d46}
+.srch-in input{flex:1;min-width:0;font:inherit;font-size:16px;border:0;outline:0;background:transparent;color:var(--fg);height:38px;-webkit-appearance:none;appearance:none}
+.srch-in input::-webkit-search-cancel-button{display:none}
+.srch-x{flex:none;border:0;background:var(--raise);color:var(--muted);font:inherit;font-size:12.5px;font-weight:700;border-radius:999px;padding:0 12px;height:32px;cursor:pointer}
+.srch-res{max-height:min(66vh,540px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.srch-hint{padding:12px 14px;font-size:13px;line-height:1.6;color:var(--muted);margin:0;max-width:none}
+.srch-grp{padding:7px 14px 5px;font-size:12px;font-weight:700;color:#2f5d46;letter-spacing:.06em;background:var(--raise);display:flex;justify-content:space-between}
+.srch-grp span{font-weight:500;color:var(--muted)}
+.srch-item{display:grid;gap:2px;padding:10px 14px;border-top:1px solid var(--line);color:var(--fg)}
+.srch-grp+.srch-item{border-top:0}
+.srch-item:hover,.srch-item.on{background:color-mix(in srgb,#2f5d46 7%,var(--surface))}
+.srch-item b{font-size:14.5px;line-height:1.45;font-weight:700}
+.srch-item span{font-size:12.5px;color:var(--muted);line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.srch-item em{font-style:normal;font-size:11.5px;color:#2f5d46;font-weight:700}
+.srch mark{background:rgba(192,73,47,.16);color:inherit;border-radius:2px;padding:0 1px}
 /* 左上角：启元智研 出品 */
 .navshell{position:relative}
 .qy-made{display:flex;align-items:center;gap:7px;flex-shrink:0;padding:0 12px 0 2px!important;margin-right:10px;height:36px;border-right:1px solid var(--line);border-radius:0!important;color:var(--fg)!important;font-size:14px!important;font-weight:700;white-space:nowrap}
@@ -592,8 +636,14 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
     <a href="#services" data-v="services">服务</a>
     <a href="#about" data-v="about">关于我们</a>
   </div>
+  <button class="navsearch" id="navsearch" type="button" aria-label="站内搜索" aria-expanded="false" aria-controls="srch" title="搜索（/）"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg></button>
   <a class="navsub" href="#support">订阅</a>
 </div></div></nav>
+<div class="srch-scrim" id="srch-scrim" hidden></div>
+<div class="srch" id="srch" role="dialog" aria-label="站内搜索" hidden><div class="srch-box">
+  <div class="srch-in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg><input id="srch-q" type="search" placeholder="搜索解读与经济动态：标题、领域、期刊、公司…" autocomplete="off" enterkeyhint="search" aria-label="搜索关键词"><button class="srch-x" id="srch-x" type="button">关闭</button></div>
+  <div class="srch-res" id="srch-res" aria-live="polite"></div>
+</div></div>
 
 <div class="shell">
 <aside class="rail rail-l" aria-label="左侧信息来源"><div class="railin">
@@ -620,7 +670,6 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 <a href="https://pubmed.ncbi.nlm.nih.gov/" target="_blank" rel="noopener">PubMed</a>
 <a href="https://endpts.com" target="_blank" rel="noopener">Endpoints News</a>
 </div>
-<a class="srnote" href="#support">栏位可用于赞助</a>
 </div></aside>
 <div class="col">
 
@@ -936,7 +985,6 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 <a href="https://endpts.com" target="_blank" rel="noopener">Endpoints News</a>
 <a href="https://www.eurekalert.org" target="_blank" rel="noopener">EurekAlert</a>
 </div>
-<a class="srnote" href="#support">栏位可用于赞助</a>
 </div></aside>
 </div>
 
@@ -947,7 +995,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
       <p class="fco" style="display:flex;align-items:center;gap:8px"><img src="assets/brand/qiyuan_mark_A_tight.svg" alt="" aria-hidden="true" width="28" height="26" style="display:block;height:26px;width:auto;flex:none"><span>启元智研 出品。九个领域的前沿进展与经济动态，中文整理。</span></p>
     </div>
     <div class="footnav">
-      <a href="#home">首页</a><a href="#fields">学术进展</a><a href="#deals">经济动态</a><a href="#archive">存档</a><a href="#about">关于</a><a href="#services">服务</a><a href="#support">订阅</a>
+      <a href="#home">首页</a><a href="#fields">学术进展</a><a href="#deals">经济动态</a><a href="#archive">存档</a><a href="#about">关于我们</a><a href="#services">服务</a><a href="#support">订阅</a>
     </div>
     <p class="footmail">广告、赞助、纠错都写 <a href="mailto:contact@therasik.com">contact@therasik.com</a></p>
     <p class="footnote">如所报道公司为本站客户，将在文首标注。赞助内容会明确标注「由某方支持」，并与编辑内容分开排版。</p>
@@ -1112,9 +1160,23 @@ function catCard(a){
       ${articleChips(a)}
     </div></div>`;
 }
-const COOP_AD=`<section class="sbox coop"><span class="k">合作</span><b class="coop-t">InSynBio · 前沿追踪</b>
-<ul><li>科技新闻实时更新</li><li>广告发布</li><li>网站建设</li><li>公众号制作</li><li>论文写作</li><li>智能中转服务</li></ul>
-<p class="coop-c">欢迎合作 · <a href="mailto:contact@therasik.com">contact@therasik.com</a></p></section>`;
+// 文末：上一篇/下一篇（按「最新」顺序，仅已发布解读）+ 同领域相关阅读 + 订阅
+function paperEndHTML(a){
+  const list=visibleCat(), i=list.findIndex(x=>x.id===a.id);
+  const prev=i>0?list[i-1]:null, next=(i>=0&&i<list.length-1)?list[i+1]:null;
+  const sd=ds=>(ds||'').slice(0,10).replace(/-/g,'.');
+  const fl=x=>x.field_label||FNAMES[x.f]||'';
+  const pn=(x,cls,label,none)=>x?`<a class="pn ${cls}" href="#p-${x.id}"><span class="k">${label}</span><b>${x.card_title||x.t}</b><em>${[fl(x),sd(x.ds)].filter(Boolean).join(' · ')}</em></a>`
+    :`<span class="pn ${cls} none"><span class="k">${label}</span><b>${none}</b></span>`;
+  const day=s=>Date.parse((s||'').slice(0,10))||0, me=day(a.ds);
+  const rel=list.filter(x=>x.id!==a.id&&x.f===a.f).sort((x,y)=>Math.abs(day(x.ds)-me)-Math.abs(day(y.ds)-me)||(x.id<y.id?-1:x.id>y.id?1:0)).slice(0,3);
+  const relHTML=rel.length?`<div class="art-rel"><h2>相关阅读<small>${fl(a)}</small></h2><ul>${rel.map(x=>`<li><a href="#p-${x.id}">${x.card_title||x.t}</a><span>${[x.j||'',sd(x.ds)].filter(Boolean).join(' · ')}</span></li>`).join('')}</ul></div>`:'';
+  return `<section class="art-end" aria-label="继续阅读">
+    <div class="art-pn">${pn(prev,'prev','← 上一篇','已是第一篇')}${pn(next,'next','下一篇 →','已是最后一篇')}</div>
+    ${relHTML}
+    <div class="art-sub"><div><b>每周一封，中文</b><p>九个领域的解读摘要加经济动态，正文附原文链接。免费，可随时退订。</p></div><a class="btn" href="#support">订阅每周更新</a></div>
+  </section>`;
+}
 function renderPaper(id){
   const el=document.getElementById('v-paper');
   el.classList.add('pv-art','pv-shell');
@@ -1152,11 +1214,11 @@ function renderPaper(id){
           </section>
           ${(intro||notes)?`<section class="sbox"><span class="k">作者介绍</span>${intro}${notes?`<div class="small">${notes}</div>`:''}</section>`:''}
           ${cardHTML?`<section class="sbox pv-card side-card">${cardHTML}</section>`:''}
-          ${COOP_AD}
         </aside>
         <div class="amain">${tmp.innerHTML}</div>
       </div>
-    </article>`;
+    </article>
+    ${paperEndHTML(a)}`;
     return;
   }
   const bits=(a.sum||'').split(/(?<=。)/).map(s=>s.trim()).filter(Boolean);
@@ -1182,7 +1244,8 @@ function renderPaper(id){
           <p class="note" style="margin-top:1em;font-size:13px;">本文由每周更新写入，尚未做成完整结构化解读。</p>
         </div>
       </div>
-    </article>`;
+    </article>
+    ${paperEndHTML(a)}`;
 }
 function setHtml(el,html){ el.innerHTML=html; }
 function arcRow(a){
@@ -1481,7 +1544,90 @@ function route(){
   const jump=target==='deals'&&q.has('kind')?'dealfeed':target==='fields'&&q.has('f')?'fieldfeed':(target==='home'&&q.get('sec')==='articles'?'articles':'');
   const je=jump&&document.getElementById(jump);
   if(je) je.scrollIntoView({block:'start'}); else window.scrollTo(0,0);
+  if(q.has('q')&&typeof openSearch==='function') openSearch(q.get('q'));
 }
+// ---------- 站内搜索：已发布解读（不含隐藏条目）+ 经济动态，纯前端 ----------
+const srchEl=document.getElementById('srch'), srchQ=document.getElementById('srch-q'), srchRes=document.getElementById('srch-res'),
+  srchBtn=document.getElementById('navsearch'), srchScrim=document.getElementById('srch-scrim');
+let srchSel=-1;
+function srchText(s){return String(s||'').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim();}
+function srchEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function srchIndex(){
+  const kn=d=>d.kinds.map(k=>KINDS[k]?KINDS[k][0]:k).join(' / ');
+  const arts=visibleCat().map(a=>({type:'a',href:'#p-'+a.id,title:srchText(a.card_title||a.t),sub:srchText(a.quick_look||a.sum||a.card_caption),
+    meta:[a.field_label||FNAMES[a.f]||'',a.j||'',a.disp||''].filter(Boolean).join(' · '),
+    tl:srchText((a.card_title||'')+' '+(a.t||'')).toLowerCase(),
+    hay:[a.t,a.card_title,a.card_caption,a.sum,a.quick_look,a.field_label,FNAMES[a.f],a.field,a.j,(a.related||[]).map(r=>r.label||r.field).join(' '),a.au].map(srchText).join(' ').toLowerCase()}));
+  const deals=DEALS.map(d=>({type:'d',key:dealKey(d),title:srchText(d.t),sub:srchText(d.m),
+    meta:['经济动态',kn(d),d.d.replace('-','.')].join(' · '),
+    tl:srchText(d.t).toLowerCase(),
+    hay:[d.t,d.m,d.ms,d.why,d.src,kn(d)].map(srchText).join(' ').toLowerCase()}));
+  return arts.concat(deals);
+}
+function srchHL(text,terms){
+  let h=srchEsc(text);
+  terms.forEach(t=>{const e=srchEsc(t).replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); if(e) h=h.replace(new RegExp(e,'gi'),m=>`<mark>${m}</mark>`);});
+  return h;
+}
+function srchSnippet(text,terms){
+  const low=text.toLowerCase(); let i=-1;
+  for(const t of terms){const j=low.indexOf(t); if(j>=0&&(i<0||j<i)) i=j;}
+  if(i<=24) return text.slice(0,110);
+  return '…'+text.slice(i-20,i+90);
+}
+function srchRun(){
+  const raw=srchQ.value.trim(); srchSel=-1;
+  if(!raw){srchRes.innerHTML=`<p class="srch-hint">可搜索 ${visibleCat().length} 篇已发布解读和 ${DEALS.length} 条经济动态：标题、摘要、领域、期刊、公司名。快捷键「/」打开，Esc 关闭。</p>`;return;}
+  const terms=raw.toLowerCase().split(/\s+/).filter(Boolean);
+  const hits=srchIndex().map((x,i)=>{
+    if(!terms.every(t=>x.hay.includes(t))) return null;
+    return [x,terms.reduce((s,t)=>s+(x.tl.includes(t)?3:1),0),i];
+  }).filter(Boolean).sort((a,b)=>b[1]-a[1]||a[2]-b[2]).map(h=>h[0]);
+  const arts=hits.filter(x=>x.type==='a'), deals=hits.filter(x=>x.type==='d');
+  if(!hits.length){srchRes.innerHTML=`<p class="srch-hint">没有找到与「${srchEsc(raw)}」相关的内容。可以换个关键词，或去<a href="#fields">学术进展</a>、<a href="#deals">经济动态</a>浏览。</p>`;return;}
+  const item=x=>x.type==='a'
+    ?`<a class="srch-item" href="${x.href}"><em>${srchEsc(x.meta)}</em><b>${srchHL(x.title,terms)}</b>${x.sub?`<span>${srchHL(srchSnippet(x.sub,terms),terms)}</span>`:''}</a>`
+    :`<a class="srch-item" href="#deals" data-deal="${srchEsc(x.key)}"><em>${srchEsc(x.meta)}</em><b>${srchHL(x.title,terms)}</b>${x.sub?`<span>${srchHL(x.sub,terms)}</span>`:''}</a>`;
+  srchRes.innerHTML=(arts.length?`<div class="srch-grp">解读<span>${arts.length} 篇</span></div>${arts.slice(0,12).map(item).join('')}`:'')
+    +(deals.length?`<div class="srch-grp">经济动态<span>${deals.length} 条</span></div>${deals.slice(0,8).map(item).join('')}`:'');
+}
+function srchPlace(){const n=document.querySelector('nav'); if(n) srchEl.style.top=Math.max(0,Math.round(n.getBoundingClientRect().bottom))+'px';}
+function openSearch(q){
+  srchPlace(); srchEl.hidden=false; srchScrim.hidden=false; srchBtn.setAttribute('aria-expanded','true');
+  if(typeof q==='string'&&q!==srchQ.value) srchQ.value=q;
+  srchRun(); try{srchQ.focus({preventScroll:true});}catch(e){srchQ.focus();}
+}
+function closeSearch(){srchEl.hidden=true; srchScrim.hidden=true; srchBtn.setAttribute('aria-expanded','false');}
+function openDeal(key){
+  history.pushState(null,'','#deals'); route();
+  feed.classList.remove('limited'); document.getElementById('dealsshowallbtn').style.display='none';
+  const b=[...feed.querySelectorAll('.expbtn')].find(x=>x.dataset.key===key);
+  if(b){const it=b.closest('.item'); if(!it.classList.contains('expanded')) b.click(); it.scrollIntoView({block:'center'});}
+}
+srchBtn.addEventListener('click',()=>srchEl.hidden?openSearch():closeSearch());
+document.getElementById('srch-x').addEventListener('click',closeSearch);
+srchScrim.addEventListener('click',closeSearch);
+srchQ.addEventListener('input',srchRun);
+srchRes.addEventListener('click',e=>{
+  const a=e.target.closest('a'); if(!a) return;
+  if(a.dataset.deal){e.preventDefault(); closeSearch(); openDeal(a.dataset.deal); return;}
+  closeSearch();
+});
+srchQ.addEventListener('keydown',e=>{
+  const items=[...srchRes.querySelectorAll('.srch-item')];
+  if(e.key==='ArrowDown'||e.key==='ArrowUp'){
+    if(!items.length) return; e.preventDefault();
+    srchSel=(srchSel+(e.key==='ArrowDown'?1:-1)+items.length)%items.length;
+    items.forEach((x,i)=>x.classList.toggle('on',i===srchSel)); items[srchSel].scrollIntoView({block:'nearest'});
+  } else if(e.key==='Enter'){
+    const t=items[srchSel>=0?srchSel:0]; if(t){e.preventDefault(); t.click();}
+  }
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&!srchEl.hidden){closeSearch(); srchBtn.focus(); return;}
+  if(e.key==='/'&&srchEl.hidden&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&!/^(INPUT|TEXTAREA|SELECT)$/.test((document.activeElement||{}).tagName||'')){e.preventDefault(); openSearch();}
+});
+addEventListener('resize',()=>{if(!srchEl.hidden) srchPlace();});
 function mergeWeekly(data){
   const ids=new Set(CAT.map(a=>a.id));
   const locked=lockedSet(), hidden=hiddenSet();
