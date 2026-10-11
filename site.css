@@ -625,3 +625,33 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 .qy-made img{display:block;height:24px;width:auto;flex:none}
 @media (max-width:899px){.qy-made{display:none!important}}
 @media (min-width:1440px){.qy-made{position:absolute;left:14px;top:50%;transform:translateY(-50%);border-right:0;margin:0;font-size:15px!important}.qy-made img{height:26px}}
+
+/* v9: compact conference cards — logo beside the date/title block; summary and tags full width beneath */
+.confrow{display:grid;grid-template-columns:150px minmax(0,1fr);grid-template-rows:auto 1fr auto;grid-template-areas:"logo head" "sum sum" "tags tags";column-gap:14px;row-gap:0;padding:12px 14px;gap:0 14px}
+.confrow .conflogo{grid-area:logo;box-sizing:border-box;width:150px;height:64px;padding:5px 7px;align-self:center;background:#fff;border-color:var(--line)}
+.confrow .conflogo img{width:100%;height:100%;max-width:none;max-height:none;object-fit:contain}
+.confrow .conflogo.tile{background:#eef4ef;border-color:#cfe0d4}
+.confrow .conflogo.tile b{color:#2f5d46;font-family:var(--display);font-weight:800;font-size:16px;line-height:1.15;text-align:center;white-space:nowrap;padding:0 4px}
+.confhead{grid-area:head;min-width:0;align-self:center}
+.confrow .confdate{text-align:left;font-size:13px;line-height:1.4;margin:0}
+.confrow .confdate small{display:inline;font-size:inherit;font-weight:inherit;color:inherit}
+.confrow h3{margin:1px 0 2px;font-size:15.5px;line-height:1.4}
+.confrow .confmeta{font-size:12.5px;line-height:1.5;margin:0}
+.confrow p.confsum{grid-area:sum;margin:8px 0 6px;font-size:14px;line-height:1.6;text-align:justify;text-justify:inter-character}
+.confrow .conftags{grid-area:tags;align-self:end}
+@media (max-width:600px){
+  .confrow{grid-template-columns:100px minmax(0,1fr);padding:10px 12px;gap:0 10px}
+  .confrow .conflogo{width:100px;height:60px;padding:3px 4px}
+  .confrow .conflogo.tile b{font-size:13px}
+  .confrow p.confsum{margin:6px 0 5px;font-size:13.5px;line-height:1.55}
+  #confchips{gap:6px}
+  #confchips .chip{padding:5px 11px;font-size:12.5px}
+}
+@media (max-width:480px){
+  .nav-in .brand{display:none}
+  .nav-in{padding:4px 6px;gap:2px}
+  .nav-tabs{gap:0;justify-content:space-between}
+  .nav-in .nav-tabs a{padding:0 7px;font-size:12.5px}
+  .navsub{padding:0 10px}
+}
+@media (max-width:380px){.nav-in .nav-tabs a{padding:0 5px;font-size:12px}.navsub{padding:0 8px}}
