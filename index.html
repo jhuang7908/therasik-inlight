@@ -646,6 +646,36 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 .qy-made img{display:block;height:24px;width:auto;flex:none}
 @media (max-width:899px){.qy-made{display:none!important}}
 @media (min-width:1440px){.qy-made{position:absolute;left:14px;top:50%;transform:translateY(-50%);border-right:0;margin:0;font-size:15px!important}.qy-made img{height:26px}}
+
+/* v9: compact conference cards — logo beside the date/title block; summary and tags full width beneath */
+.confrow{display:grid;grid-template-columns:150px minmax(0,1fr);grid-template-rows:auto 1fr auto;grid-template-areas:"logo head" "sum sum" "tags tags";column-gap:14px;row-gap:0;padding:12px 14px;gap:0 14px}
+.confrow .conflogo{grid-area:logo;box-sizing:border-box;width:150px;height:64px;padding:5px 7px;align-self:center;background:#fff;border-color:var(--line)}
+.confrow .conflogo img{width:100%;height:100%;max-width:none;max-height:none;object-fit:contain}
+.confrow .conflogo.tile{background:#eef4ef;border-color:#cfe0d4}
+.confrow .conflogo.tile b{color:#2f5d46;font-family:var(--display);font-weight:800;font-size:16px;line-height:1.15;text-align:center;white-space:nowrap;padding:0 4px}
+.confhead{grid-area:head;min-width:0;align-self:center}
+.confrow .confdate{text-align:left;font-size:13px;line-height:1.4;margin:0}
+.confrow .confdate small{display:inline;font-size:inherit;font-weight:inherit;color:inherit}
+.confrow h3{margin:1px 0 2px;font-size:15.5px;line-height:1.4}
+.confrow .confmeta{font-size:12.5px;line-height:1.5;margin:0}
+.confrow p.confsum{grid-area:sum;margin:8px 0 6px;font-size:14px;line-height:1.6;text-align:justify;text-justify:inter-character}
+.confrow .conftags{grid-area:tags;align-self:end}
+@media (max-width:600px){
+  .confrow{grid-template-columns:100px minmax(0,1fr);padding:10px 12px;gap:0 10px}
+  .confrow .conflogo{width:100px;height:60px;padding:3px 4px}
+  .confrow .conflogo.tile b{font-size:13px}
+  .confrow p.confsum{margin:6px 0 5px;font-size:13.5px;line-height:1.55}
+  #confchips{gap:6px}
+  #confchips .chip{padding:5px 11px;font-size:12.5px}
+}
+@media (max-width:480px){
+  .nav-in .brand{display:none}
+  .nav-in{padding:4px 6px;gap:2px}
+  .nav-tabs{gap:0;justify-content:space-between}
+  .nav-in .nav-tabs a{padding:0 7px;font-size:12.5px}
+  .navsub{padding:0 10px}
+}
+@media (max-width:380px){.nav-in .nav-tabs a{padding:0 5px;font-size:12px}.navsub{padding:0 8px}}
 </style>
 </head>
 <body>
@@ -1554,6 +1584,11 @@ addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{
 const views=[...document.querySelectorAll('.view')];
 const REDIRECTS={'c9-rna-4':'c7-cell-2','c9-rna-1':'c8-vac-5','c4-ai-3':'c7-cell-1','c6-ab-1':'c2-ai-1','c5-am-4':'c8-vac-2','c6-ab-2':'c2-ai-5'};
 let confKind='all', confOrder='asc', confRange='all';
+const CONF_LOGO_RATIO={"conf_01.png": 3.17, "conf_02.png": 3.0, "conf_04.png": 6.42, "conf_05.png": 1.34, "conf_06.png": 8.13, "conf_07.png": 3.13, "conf_09.png": 6.78, "conf_14.png": 6.42, "conf_16.png": 3.75, "conf_17.png": 4.28, "conf_18.png": 6.42, "conf_19.png": 3.0, "conf_20.png": 4.21, "conf_21.png": 6.42, "conf_22.png": 4.98, "conf_24.png": 6.1, "conf_25.png": 2.12, "conf_26.png": 3.64, "conf_27.png": 3.81, "conf_28.png": 0.98, "conf_30.png": 1.94};
+function confAbbr(x){const n=x.name_zh||'';const M=[['进口博览会','进博会'],['原料药','API China'],['博鳌','博鳌乐城'],['启思会','启思会'],['生物药产业大会','生物药大会'],['亚洲医疗健康','亚洲医疗健康']];
+  for(const [k,v] of M) if(n.includes(k)) return v;
+  const m=n.match(/[A-Za-z][A-Za-z&]{2,}/); if(m) return m[0];
+  return n.replace(/^[0-9]{4}|第[^届]{1,4}届|[（(].*$/g,'').slice(0,4);}
 function fmtConfDate(x){
   if(!x.dates||x.dates==='待公布') return '待公布';
   const [a,b]=x.dates.split(' to ');const pa=a.split('-'),pb=(b||a).split('-');
@@ -1589,13 +1624,14 @@ function renderConfs(){
     const tbd=!x.dates||x.dates==='待公布';
     const warn=tbd?(x.prev_edition_note?`<span class="warn">${esc(x.prev_edition_note)}</span>`:''):(!x.verified?'<span class="warn">日期待确认</span>':'');
     const place=[x.city,x.venue].filter(Boolean).map(esc).join(' · ');
-    const logo=x.logo?`<span class="conflogo${x.logo_dark?' dark':''}"><img src="${esc(x.logo)}" alt="${esc(x.name_zh)} Logo" loading="lazy"></span>`:`<span class="conflogo ph"><img src="img/pal/kinds/tiles/conf_bluelight_v4.jpg?v=4" alt="" loading="lazy"></span>`;
-    return `<article class="confrow"><div class="conftop">${logo}<div class="confdate">${fmtConfDate(x)}</div></div><div>
+    const lr=x.logo?(CONF_LOGO_RATIO[x.logo.split('/').pop()]||2):0;
+    const logo=x.logo?`<span class="conflogo"><img src="${esc(x.logo.replace('/logos/','/logos/t/'))}" alt="${esc(x.name_zh)} Logo" loading="lazy"></span>`:`<span class="conflogo tile" aria-hidden="true"><b>${esc(confAbbr(x))}</b></span>`;
+    return `<article class="confrow${lr>2.6?' wl':''}">${logo}<div class="confhead"><div class="confdate">${fmtConfDate(x)}</div>
       <h3>${esc(x.name_zh)}</h3>
-      <div class="confmeta">${[place,x.organizer?'主办：'+esc(x.organizer):''].filter(Boolean).join('　')}</div>
+      <div class="confmeta">${[place,x.organizer?'主办：'+esc(x.organizer):''].filter(Boolean).join('　')}</div></div>
       <p class="confsum">${esc(x.summary_zh)}</p>
       <div class="conftags"><span class="tag">${esc(x.kind)}</span>${(x.topics||[]).map(t=>`<span class="tag">${esc(t)}</span>`).join('')}<a href="${esc(x.url)}" target="_blank" rel="noopener">来源</a>${warn}</div>
-    </div></article>`;}).join('');
+    </article>`;}).join('');
 }
 const TITLES={home:'前沿追踪 - 中文生物医药前沿资讯',fields:'学术进展 - 前沿追踪',deals:'经济动态 - 前沿追踪',archive:'存档 - 前沿追踪',about:'关于我们 - 前沿追踪',support:'订阅 - 前沿追踪',services:'服务 - 前沿追踪',conf:'学术会议 - 前沿追踪'};
 function route(){
@@ -1637,7 +1673,7 @@ function route(){
   if(target==='home'){ refit(); lg.classList.add('limited'); }
   if(target==='deals'){ feed.classList.add('limited'); document.getElementById('dealsshowallbtn').style.display=''; }
   /* Grid columns now controlled purely by CSS */
-  document.querySelectorAll('.nav-in a').forEach(a=>a.classList.toggle('on',a.dataset.v===(target==='conf'?'deals':target)));
+  document.querySelectorAll('.nav-in a').forEach(a=>a.classList.toggle('on',a.dataset.v===target));
   const jump=target==='deals'&&q.has('kind')?'dealfeed':target==='fields'&&q.has('f')?'fieldfeed':(target==='home'&&q.get('sec')==='articles'?'articles':'');
   const je=jump&&document.getElementById(jump);
   if(je) je.scrollIntoView({block:'start'}); else window.scrollTo(0,0);
