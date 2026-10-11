@@ -22,6 +22,7 @@ Windows 上如果 `python` 不在 PATH 里，用 `py -3` 代替 `python`。
 | `OPENAI_API_KEY` | `run_weekly.py` 配图和公众号封面 |
 | `ANTHROPIC_MODEL` | 可选，默认 `claude-sonnet-5-5`（脚本启动时会检查模型可用性） |
 | `OPENAI_IMAGE_MODEL` | 可选，默认 `gpt-image-1` |
+| `INLIGHT_NO_DEALS` | 可选，设为 `1` 时不收录行业动态（同 `--no-deals`） |
 | `WECHAT_APPID` | 只有 `publish_wechat.py` 需要 |
 | `WECHAT_APPSECRET` | 只有 `publish_wechat.py` 需要 |
 
@@ -40,6 +41,21 @@ python run_weekly.py --dry-run
 ```
 
 `--dry-run` 仍会调用 Claude 和 OpenAI（会消耗额度），但只写到 `preview/weekly/日期/`。它不修改 `content/`，也不推送公众号。
+
+只生成学术文章、不收录行业动态：
+
+```bash
+python run_weekly.py --no-deals
+# 或设置环境变量
+INLIGHT_NO_DEALS=1 python run_weekly.py
+```
+
+`--no-deals` 或 `INLIGHT_NO_DEALS=1` 会：
+- 不让 Claude 生成行业动态
+- 强制 `deals.json` 为空数组
+- 保留 `content/latest.json` 中已有的行业动态不变
+- WeChat HTML 中不包含行业板块
+- 只要有文章就不会报错退出（不再要求必须有动态）
 
 确认内容可以上站之后，在仓库里提交并推送 `main`。GitHub Pages 监听 `main` 的根目录，推送后自动重新构建，站点跟着更新。HTTPS 已启用并强制跳转。
 
