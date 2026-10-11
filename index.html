@@ -1148,9 +1148,9 @@ function fieldArt(f){
   return `<span class="artthumb">${icon(FIELD_MOTIF[key]||'cell',color)}<img src="img/pal/fields/${FIELD_IMG[key]||FIELD_IMG.organoid}?v=1" alt="" loading="lazy" onerror="this.remove()"></span>`;
 }
 // 交易类型卡配图：Grok 生成的装饰插画，裁成方图（img/pal/kinds/tiles/*_grok_v1.jpg）
-const KIND_TILE={all:'all_v7.jpg',conf:'conf_bluelight_v4.jpg',acq:'acq_bluelight_v4.jpg',lic:'lic_bluelight_v4.jpg',inv:'inv_bluelight_v4.jpg',clin:'clin_bluelight_v4.jpg',policy:'policy_bluelight_v4.jpg'};
+const KIND_TILE={all:'all_v7.jpg',conf:'conf_bluelight_v6.jpg',acq:'acq_bluelight_v6.jpg',lic:'lic_bluelight_v6.jpg',inv:'inv_bluelight_v6.jpg',clin:'clin_bluelight_v6.jpg',policy:'policy_bluelight_v6.jpg'};
 function kindArt(key,color){
-  return `<span class="artthumb">${icon(key,color)}${KIND_TILE[key]?`<img src="img/pal/kinds/tiles/${KIND_TILE[key]}?v=4" alt="" loading="lazy" onerror="this.remove()">`:''}</span>`;
+  return `<span class="artthumb">${icon(key,color)}${KIND_TILE[key]?`<img src="img/pal/kinds/tiles/${KIND_TILE[key]}?v=6" alt="" loading="lazy" onerror="this.remove()">`:''}</span>`;
 }
 function mosaicArt(srcs){
   return `<span class="artthumb mosaic" aria-hidden="true">${srcs.map(u=>`<img src="${u}" alt="" loading="lazy">`).join('')}</span>`;
