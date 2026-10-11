@@ -354,6 +354,8 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 .arow .asrc{font-size:12px;color:var(--muted);white-space:nowrap}
 @media (max-width:720px){.arow{grid-template-columns:minmax(0,1fr);gap:6px}.arow .asrc{white-space:normal}}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.confbar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}
+.confbar .chips{margin:0}
 .conflist{display:grid;gap:10px}
 .confrow{display:grid;grid-template-columns:116px minmax(0,1fr);gap:16px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
 .confdate{font-weight:700;color:#24456e;font-size:14px;line-height:1.5}
@@ -874,11 +876,11 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 <div class="wrap view" id="v-conf" hidden>
   <header class="hero">
     <h1>学术会议</h1>
-    <p>国内主要的生物医药学术会议、行业峰会和展会，按时间排列。日期以主办方官网为准；尚未由官方确认的会标注出来，下一届还没公布的列在最后，并注明往届时间。每条都挂来源链接，出行前请再到官网核对。</p>
+    <p>国内主要的生物医药学术会议、行业峰会和展会，可按时间正序或倒序查看。日期以主办方官网为准；尚未由官方确认的会标注出来，下一届还没公布的列在最后，并注明往届时间。每条都挂来源链接，出行前请再到官网核对。</p>
   </header>
   <section>
     <div class="sechead"><h2>会议日程</h2><span id="confcount"></span></div>
-    <div class="chips" id="confchips"></div>
+    <div class="confbar"><div class="chips" id="confchips"></div><div class="chips confsort" id="confsort" aria-label="时间排序"></div></div>
     <div class="conflist" id="conflist"></div>
     <p class="note" style="margin-top:12px"><a href="#deals">返回经济动态</a></p>
   </section>
@@ -1529,7 +1531,7 @@ addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{
 
 const views=[...document.querySelectorAll('.view')];
 const REDIRECTS={'c9-rna-4':'c7-cell-2','c9-rna-1':'c8-vac-5','c4-ai-3':'c7-cell-1','c6-ab-1':'c2-ai-1','c5-am-4':'c8-vac-2','c6-ab-2':'c2-ai-5'};
-let confKind='all';
+let confKind='all', confOrder='asc';
 function fmtConfDate(x){
   if(!x.dates||x.dates==='待公布') return '待公布';
   const [a,b]=x.dates.split(' to ');const pa=a.split('-'),pb=(b||a).split('-');
@@ -1542,8 +1544,14 @@ function renderConfs(){
   const cnt=k=>k==='all'?CONFS.length:CONFS.filter(x=>x.kind===k).length;
   document.getElementById('confchips').innerHTML=kinds.map(k=>`<button class="chip${confKind===k?' on':''}" type="button" data-k="${k}"${confKind===k?' aria-pressed="true"':''}>${k==='all'?'全部':k} ${cnt(k)}</button>`).join('');
   document.querySelectorAll('#confchips .chip').forEach(b=>b.onclick=()=>{confKind=b.dataset.k;renderConfs();});
+  const isTbd=x=>!x.dates||x.dates==='待公布';
   const list=CONFS.filter(x=>confKind==='all'||x.kind===confKind);
-  document.getElementById('confcount').textContent=`共 ${list.length} 场，按时间排序`;
+  const dated=list.filter(x=>!isTbd(x)).sort((a,b)=>a.dates<b.dates?-1:a.dates>b.dates?1:0);
+  if(confOrder==='desc') dated.reverse();
+  list.splice(0,list.length,...dated,...list.filter(isTbd));
+  document.getElementById('confcount').textContent=`共 ${list.length} 场`;
+  document.getElementById('confsort').innerHTML=[['asc','由近到远'],['desc','由远到近']].map(([k,l])=>`<button class="chip" type="button" data-o="${k}"${confOrder===k?' aria-pressed="true"':''}>${l}</button>`).join('');
+  document.querySelectorAll('#confsort .chip').forEach(b=>b.onclick=()=>{confOrder=b.dataset.o;renderConfs();});
   const esc=t=>String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
   document.getElementById('conflist').innerHTML=list.map(x=>{
     const tbd=!x.dates||x.dates==='待公布';
