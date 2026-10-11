@@ -3,8 +3,12 @@
 
     python run_weekly.py
     python run_weekly.py --dry-run
+    python run_weekly.py --fetch-only            # no API keys needed
+    python run_weekly.py --dry-run --out-dir /tmp/inlight-preview --no-images
 
---dry-run writes only under preview/ and does not update content/ or call WeChat.
+--dry-run writes only under preview/ (or --out-dir) and does not update content/ or call WeChat.
+--fetch-only fetches all sources (RSS, PubMed, filings) and writes candidates.json only.
+Keys can be exported or put in a git-ignored .env next to this script.
 This script never pushes git and never calls the WeChat API.
 """
 
@@ -87,6 +91,27 @@ def setup_log() -> Path:
     return path
 
 
+def load_dotenv_file(path: Path | None = None) -> list[str]:
+    """Load KEY=VALUE lines from .env (git-ignored) without overriding exported vars.
+
+    Returns the names that were loaded (never the values)."""
+    path = path or (ROOT / ".env")
+    loaded: list[str] = []
+    if not path.exists():
+        return loaded
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip().removeprefix("export ").strip()
+        value = value.strip().strip('"').strip("'")
+        if key and value and not os.environ.get(key):
+            os.environ[key] = value
+            loaded.append(key)
+    return loaded
+
+
 def require_env(names: list[str]) -> None:
     missing = [n for n in names if not os.environ.get(n)]
     if missing:
@@ -124,9 +149,19 @@ def check_anthropic_model() -> str:
         logging.info("模型 %s 可用（tool_choice=auto 测试通过）", model)
         return model
     except NotFoundError:
-        logging.error("模型 %s 不存在或已下线。请设置 ANTHROPIC_MODEL 环境变量为可用模型。", model)
-        logging.error("可选模型包括：claude-sonnet-5-5, claude-opus-5-5, claude-haiku-5-5, claude-sonnet-4-6 等。")
-        raise SystemExit(1)
+        logging.warning("模型 %s 不存在或已下线，尝试自动改用可用的 Sonnet 模型", model)
+        try:
+            ids = [m.id for m in client.models.list(limit=50).data]
+        except Exception as e:  # pragma: no cover - network
+            logging.error("无法列出可用模型：%s", e)
+            ids = []
+        fallback = next((i for i in ids if "sonnet" in i), ids[0] if ids else None)
+        if not fallback:
+            logging.error("没有可用模型。请设置 ANTHROPIC_MODEL 环境变量为可用模型。")
+            raise SystemExit(1)
+        logging.warning("改用模型 %s（可用 ANTHROPIC_MODEL 固定）", fallback)
+        os.environ["ANTHROPIC_MODEL"] = fallback
+        return fallback
     except APIError as e:
         logging.error("Anthropic API 错误：%s", e)
         raise SystemExit(1)
@@ -503,12 +538,33 @@ def fetch_all(config: dict) -> list[dict]:
         if skipped_no_abstract:
             logging.info("  %s: 跳过 %d 条无摘要条目", source_name, skipped_no_abstract)
         source_stats.append({"name": source_name, "status": "ok", "count": count})
+
+    # Listed-company filings (SEC EDGAR / HKEXnews / cninfo). Fail-soft per source.
+    if (config.get("filings") or {}).get("enabled"):
+        try:
+            import filings
+            f_days = int((config.get("filings") or {}).get("window_days") or default_days)
+            f_rows, f_stats = filings.fetch_filings(config, end - timedelta(days=f_days), end)
+            source_stats.extend(f_stats)
+            f_count = 0
+            for row in f_rows:
+                if row["url"] in seen or row["url"] in existing:
+                    continue
+                seen.add(row["url"])
+                rows.append(row)
+                f_count += 1
+            source_stats.append({"name": "公告（去重后送筛选）", "status": "ok", "count": f_count})
+        except Exception:
+            logging.exception("公告抓取整体失败，继续其它来源")
+            source_stats.append({"name": "公告", "status": "failed", "count": 0})
     
     # Log per-source summary
     logging.info("=== 来源统计 ===")
     for stat in source_stats:
         if stat["status"] == "manual":
             logging.info("  %s: 手动来源，跳过", stat["name"])
+        elif stat["status"] == "disabled":
+            logging.info("  %s: 已停用", stat["name"])
         elif stat["status"] == "failed":
             logging.info("  %s: 失败", stat["name"])
         else:
@@ -612,6 +668,8 @@ def claude_draft(items: list[dict], config: dict) -> dict:
 kinds 只能是这些词的子集：acq 收购、lic 授权、newco NewCo、clin 临床进展、inv 投资融资、policy 监管政策。
 - policy 仅限监管机构的正式政策或审批决定。裁员、战略调整、公司重组不是 policy。
 - 金额格式统一为"X 亿美元"或"X 亿元人民币"或"未披露"。不要写"$26亿"这种混合格式。
+- kind 为 "filing" 的条目是上市公司公告或监管披露（SEC、港交所披露易、巨潮资讯），是一手来源，优先于媒体报道。同一交易既有公告又有媒体报道时，选公告那条的 url。公告里只有标题、没有金额或条款的，金额写"未披露"，不要从媒体或记忆里补。
+- 公告类条目的 source_name 写"公司名 + 公告 + 平台"，如"恒瑞医药公告（港交所披露易）""Alector 8-K（美国 SEC）"。
 
 ## authors 字段
 
@@ -763,6 +821,8 @@ steps 必须是 3-5 个简短步骤（每个≤25字），描述论文的核心�
         })
     cap_a = int(config.get("max_academic") or 6)
     cap_d = int(config.get("max_industry") or 4)
+    # Filings first: they are primary sources
+    deals.sort(key=lambda d: 0 if by_url[d["url"]].get("kind") == "filing" else 1)
     return {"articles": articles[:cap_a], "deals": deals[:cap_d]}
 
 
@@ -901,18 +961,23 @@ def wechat_html(articles: list[dict], deals: list[dict], week: str) -> str:
     return "\n".join(parts)
 
 
-def write_output(draft: dict, dest: Path, week: str) -> None:
+def write_output(draft: dict, dest: Path, week: str, images: bool = True) -> None:
     img_dir = dest / "images"
     img_dir.mkdir(parents=True, exist_ok=True)
     articles = []
     for index, item in enumerate(draft["articles"], start=1):
         filename = f"a{index}.png"
-        try:
-            draw_image(item["image_prompt"], img_dir / filename)
-            rel = f"{dest.relative_to(ROOT).as_posix()}/images/{filename}"
-        except Exception:
-            logging.exception("配图失败：%s", item["title"])
-            rel = ""
+        rel = ""
+        if images:
+            try:
+                draw_image(item["image_prompt"], img_dir / filename)
+                try:
+                    rel = f"{dest.relative_to(ROOT).as_posix()}/images/{filename}"
+                except ValueError:  # --out-dir outside the repo
+                    rel = (img_dir / filename).as_posix()
+            except Exception:
+                logging.exception("配图失败：%s", item["title"])
+                rel = ""
         art = site_article(item, rel)
         art["lead"] = item["lead"]
         art["body"] = item["body"]
@@ -934,10 +999,13 @@ def write_output(draft: dict, dest: Path, week: str) -> None:
     )
     cover = dest / "wechat" / "cover.png"
     cover.parent.mkdir(parents=True, exist_ok=True)
-    try:
-        draw_image(cover_prompt, cover)
-    except Exception:
-        logging.exception("封面图失败")
+    if images:
+        try:
+            draw_image(cover_prompt, cover)
+        except Exception:
+            logging.exception("封面图失败")
+    else:
+        logging.info("跳过配图和封面（--no-images 或缺少 OPENAI_API_KEY）")
     (dest / "articles.json").write_text(json.dumps(articles, ensure_ascii=False, indent=2), encoding="utf-8")
     (dest / "deals.json").write_text(json.dumps(deals, ensure_ascii=False, indent=2), encoding="utf-8")
     html = wechat_html(articles, deals, week)
@@ -978,29 +1046,52 @@ def update_latest(dest: Path) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="生成一周的前沿追踪内容")
-    parser.add_argument("--dry-run", action="store_true", help="只写到 preview/，不改网站内容目录")
+    parser.add_argument("--dry-run", action="store_true", help="只写到 preview/（或 --out-dir），不改网站内容目录")
+    parser.add_argument("--fetch-only", action="store_true", help="只抓取来源（含公告），写 candidates.json；不调用 Claude/OpenAI，不需要密钥")
+    parser.add_argument("--out-dir", help="预览输出目录（配合 --dry-run / --fetch-only），默认 preview/weekly/日期")
+    parser.add_argument("--no-images", action="store_true", help="不调用 OpenAI 画图")
     args = parser.parse_args()
+    if args.out_dir and not (args.dry_run or args.fetch_only):
+        parser.error("--out-dir 只能和 --dry-run 或 --fetch-only 一起用")
     log_path = setup_log()
     logging.info("日志 %s", log_path)
+    loaded = load_dotenv_file()
+    if loaded:
+        logging.info("从 .env 读取环境变量：%s", ", ".join(sorted(loaded)))
     try:
-        require_env(["ANTHROPIC_API_KEY", "OPENAI_API_KEY"])
-        check_anthropic_model()
+        week = date.today().isoformat()
+        preview = Path(args.out_dir).expanduser().resolve() if args.out_dir else (ROOT / "preview" / "weekly" / week)
+        images = not args.no_images
+        if not args.fetch_only:
+            require_env(["ANTHROPIC_API_KEY"])
+            if images and not os.environ.get("OPENAI_API_KEY"):
+                logging.warning("缺少 OPENAI_API_KEY：本次不画配图和封面，文字照常生成")
+                images = False
+            check_anthropic_model()
         config = load_sources()
         items = fetch_all(config)
         if not items:
             logging.error("最近 %s 天没有抓到条目，不写文件", config.get("window_days", 7))
             raise SystemExit(2)
+        if args.fetch_only:
+            preview.mkdir(parents=True, exist_ok=True)
+            out = preview / "candidates.json"
+            out.write_text(json.dumps(items, ensure_ascii=False, indent=2), encoding="utf-8")
+            logging.info("fetch-only 完成：%d 条候选写入 %s（没有调用模型，没有改 content/）", len(items), out)
+            return
         logging.info("送去筛选的条目 %d", len(items))
+        if args.dry_run:
+            preview.mkdir(parents=True, exist_ok=True)
+            (preview / "candidates.json").write_text(json.dumps(items, ensure_ascii=False, indent=2), encoding="utf-8")
         draft = claude_draft(items, config)
         if not draft["articles"] and not draft["deals"]:
             logging.error("模型没有留下任何来源内的条目")
             raise SystemExit(3)
-        week = date.today().isoformat()
-        dest = (ROOT / "preview" / "weekly" / week) if args.dry_run else (ROOT / "content" / "weekly" / week)
-        if dest.exists():
+        dest = preview if args.dry_run else (ROOT / "content" / "weekly" / week)
+        if dest.exists() and any(p.name != "candidates.json" for p in dest.iterdir()):
             logging.error("目录已存在，避免覆盖：%s", dest)
             raise SystemExit(4)
-        write_output(draft, dest, week)
+        write_output(draft, dest, week, images=images)
         if args.dry_run:
             logging.info("dry-run 完成，没有改 content/，也没有调用公众号")
         else:

@@ -23,5 +23,6 @@ __pycache__/
 Thumbs.db
 
 # Generated content (committed separately)
-content/weekly/*/images/
+# content/weekly/*/images/ must be committed: articles in content/latest.json link to them
 content/weekly/*/wechat/
+.venv/

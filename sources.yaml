@@ -46,7 +46,7 @@ sources:
     type: rss
     url: https://www.cell.com
     feed: https://www.cell.com/cell/current.rss
-    window_days: 10  # Cell issue dates often fall outside 7-day window
+    window_days: 14  # Cell issue dates (00:00 UTC) often fall just outside a 10-day window
 
   - name: bioRxiv 免疫学
     kind: academic
@@ -100,3 +100,32 @@ sources:
     type: rss
     url: https://www.ema.europa.eu/en/news
     feed: https://www.ema.europa.eu/en/news.xml
+
+# 上市公司公告（一手来源，优先于媒体）。由 filings.py 抓取，单个来源出错只记日志、不影响其它来源。
+# 抓到的公告进入允许引用的 URL 列表，kind 为 filing。
+filings:
+  enabled: true
+  window_days: 7
+  max_items: 12          # 送给模型的公告总数上限
+  max_per_exchange: 5    # 每个平台最多几条，避免一家挤掉其它
+  fetch_excerpts: true   # 下载公告正文前几页做摘录（PDF 需要 pdftotext）
+  edgar:
+    # SEC EDGAR 全文检索 efts.sec.gov；User-Agent 带 contact@inlightbio.com；限速 <=10 次/秒
+    max_rps: 5
+    sics: ["2833", "2834", "2835", "2836", "8731", "8733"]  # 只保留医药/生物技术公司
+    queries:
+      - q: '"exclusive license" "Greater China"'
+        forms: 8-K,6-K,10-Q,20-F
+      - q: '"exclusive license agreement"'
+        forms: 8-K,6-K
+      - q: '"NewCo"'
+        forms: 8-K,6-K
+      - q: '"upfront payment" "license agreement"'
+        forms: 8-K,6-K
+  hkex:
+    # 披露易按日期检索（中文标题，本地过滤）+ 最新披露 feed
+    watchlist: ["02162", "01276", "03692", "09995", "02142", "06990", "01093", "01177", "01801", "09926"]
+  cninfo:
+    # 巨潮资讯公告检索（沪深两市）
+    keywords: [授权许可, 独家许可, 合作协议, 合资, 设立公司, 首付款, 里程碑]
+    exclude: [生产许可证, 上市许可申请, 注册证]
