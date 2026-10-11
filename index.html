@@ -563,12 +563,20 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 .pv-chip.pri{background:rgba(47,93,70,.07)!important}
 /* 分类卡片标题统一深绿（覆盖逐领域/逐类型颜色） */
 .trkcard,.fcard{--dc:#2f5d46!important}
+/* 左上角：启元智研 出品 */
+.navshell{position:relative}
+.qy-made{display:flex;align-items:center;gap:7px;flex-shrink:0;padding:0 12px 0 2px!important;margin-right:10px;height:36px;border-right:1px solid var(--line);border-radius:0!important;color:var(--fg)!important;font-size:14px!important;font-weight:700;white-space:nowrap}
+.qy-made:hover{background:none!important;opacity:.85}
+.qy-made img{display:block;height:24px;width:auto;flex:none}
+@media (max-width:899px){.qy-made{display:none!important}}
+@media (min-width:1440px){.qy-made{position:absolute;left:14px;top:50%;transform:translateY(-50%);border-right:0;margin:0;font-size:15px!important}.qy-made img{height:26px}}
 </style>
 </head>
 <body>
 
 
 <nav><div class="navshell"><div class="nav-in">
+  <a class="qy-made" href="#about" title="启元智研（北京）生物科技有限公司"><img src="assets/brand/qiyuan_mark_A_tight.svg" alt="" aria-hidden="true" width="28" height="26"><span>启元智研 出品</span></a>
   <a class="brand" href="#home">
     <span class="bmark-wrap"><img src="img/logo.png" alt="" onerror="this.remove()" onload="var s=this.nextElementSibling;if(s)s.remove()"><svg class="bmark" viewBox="0 0 48 48" fill="none" aria-hidden="true">
       <rect x="1.5" y="1.5" width="45" height="45" rx="12" fill="var(--accent)" opacity=".12"/>
