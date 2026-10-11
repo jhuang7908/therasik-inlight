@@ -83,4 +83,4 @@ ARO-RAGE反义链两处错配的基因有9个，其中已知表达蛋白的3个�
 
 O’Carroll M, Kasahara D, Huetsch J, Reed T, Perkins TN, Zhou R, et al. Inhaled siRNA therapy targeting RAGE for pulmonary inflammation: a first-in-human randomized trial. Nat Med. 2026 Sep 9. https://doi.org/10.1038/s41591-026-04607-z
 
-证据等级：全文；核对记录：Europe PMC全文XML（PMC13577916）：摘要、Main、Results各节、Discussion、Methods、Fig.1–4与Extended Data Fig.1–9图注及Table 1–2。许可为CC BY-NC-ND 4.0，正文仅为释义，不逐句复述原文。
+证据等级：全文；核对记录：Europe PMC全文XML（PMC13577916）：摘要、Main、Results各节、Discussion、Methods、Fig.1–4与Extended Data Fig.1–9图注及Table 1–2。

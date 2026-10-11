@@ -18,7 +18,7 @@
 - **统计量**：均数±标准差；双侧Student t检验或双因素ANOVA；P<0.05为显著；图注以P≤0.05至P≤0.0001标星，未给精确P值；部分读出用相对细胞数（各动物对同供体对照均值的倍数）
 - **安全性**：不适用（疾病机制模型；表型本身即HSPC焦亡与全血细胞减少）
 - **证据等级**：全文
-- **核对记录**：读了Europe PMC全文XML（PMC13574144）：Abstract、Introduction、Results各节、Discussion、Methods、Fig.1–5图注
+- **核对记录**：Europe PMC全文XML（PMC13574144）：Abstract、Introduction、Results各节、Discussion、Methods、Fig.1–5图注
 
 ![机制示意图](c5-am-8_mech.webp)
 
@@ -78,4 +78,4 @@ TRAC敲除后，移植小鼠在脾、肝、肺直至16周几乎不能产生人T�
 
 Xiao T, Brewer JR, Carlino M, Han A, Takabe YJ, Lee CY, et al. Reverse genetics in humanized mice reveals CARD8-mediated pyroptosis causing pancytopenia in human DPP9 deficiency. J Clin Invest. 2026 Sep 15. https://doi.org/10.1172/jci207530
 
-证据等级：全文；核对记录：读了Europe PMC全文XML（PMC13574144）：Abstract、Introduction、Results各节、Discussion、Methods、Fig.1–5图注
+证据等级：全文；核对记录：Europe PMC全文XML（PMC13574144）：Abstract、Introduction、Results各节、Discussion、Methods、Fig.1–5图注

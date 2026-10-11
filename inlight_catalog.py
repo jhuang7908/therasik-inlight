@@ -373,6 +373,8 @@ def split_structured_body(body: str) -> dict:
     c = re.search(r'<div class="pv-card">(.*?)</div>', rest, re.S)
     if c:
         card = c.group(1)
+        # 证据等级 / 核对记录 already appear once in 作者、出处与核对; do not print them twice.
+        card = re.sub(r"<li><b>(?:证据等级|核对记录)</b>.*?</li>\n?", "", card)
         rest = rest.replace(c.group(0), "", 1)
 
     rest = re.sub(r"<p>主领域：[^<]*</p>\n?", "", rest, count=1)

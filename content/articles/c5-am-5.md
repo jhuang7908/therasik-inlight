@@ -18,7 +18,7 @@
 - **统计量**：样本量按双侧检验80% power、alpha=0.05估算，每组6只用于检测PVL差异；分组按出生日期顺序而非随机；LRM组织CAVL比较用two-way ANOVA和mixed-effect analysis with Tukey校正
 - **安全性**：三联方案耐受良好，日常健康监测无临床担忧；与未感染幼猴相比未见体重增长受影响，尸检无SHIV相关病理证据
 - **证据等级**：全文
-- **核对记录**：核对章节：Abstract、Main、Results、Discussion、Methods、Fig.1–4图注和Extended Data图注；来源为用户提供全文材料
+- **核对记录**：Abstract、Main、Results、Discussion、Methods、Fig.1–4图注和Extended Data图注
 
 ![机制示意图](c5-am-5_mech_r3.png)
 
@@ -89,4 +89,4 @@ LRM单药每周28周把稳态血浆病毒降低2–4 log10，治疗末3/6不可�
 
 Sacha JB, Ordonez T, Pandey S, Webb G, Barnette P, Pessoa C, et al. Combination therapy with broadly neutralizing antibodies, antiretroviral therapy and CCR5 blockade limits viral reservoir seeding in infant macaque model of HIV. Nature Microbiology. 2026. https://doi.org/10.1038/s41564-026-02444-x
 
-证据等级：全文；核对记录：核对章节：Abstract、Main、Results、Discussion、Methods、Fig.1–4图注和Extended Data图注；来源为用户提供全文材料
+证据等级：全文；核对记录：Abstract、Main、Results、Discussion、Methods、Fig.1–4图注和Extended Data图注

@@ -18,7 +18,7 @@
 - **统计量**：配对/非配对t检验、ANOVA（Holm–Šidák校正）、Kruskal–Wallis（Bonferroni校正）、单样本t检验，均为双侧
 - **安全性**：无皮质小鼠体重低于对照，约2个月龄存活率有降低趋势；缺氧诱导中有1只小鼠因气道阻塞死亡
 - **证据等级**：全文
-- **核对记录**：读了Nature开放获取全文HTML的摘要、正文Results、Discussion、图1–5图注与Methods
+- **核对记录**：Nature开放获取全文HTML的摘要、正文Results、Discussion、图1–5图注与Methods
 
 ![机制示意图](c5-am-2_mech_r2.png)
 
@@ -88,4 +88,4 @@ XCX与对照小鼠暴露于5% O2 5小时（含1小时渐降期）后，3/3只XCX
 
 Kaganovsky K, Kelley KW, Gschwind T, Harary PM, Kochalka J, White AD, et al. Developmental xenocortication using human-derived organoids in mice. Nature. 2026. https://doi.org/10.1038/s41586-026-11032-2
 
-证据等级：全文；核对记录：读了Nature开放获取全文HTML的摘要、正文Results、Discussion、图1–5图注与Methods
+证据等级：全文；核对记录：Nature开放获取全文HTML的摘要、正文Results、Discussion、图1–5图注与Methods

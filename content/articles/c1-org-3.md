@@ -17,7 +17,7 @@
 - **统计量**：甲基化FDR<0.1；GBM培养基Fisher’s exact test P=1.5×10−4；SBS11药敏Wilcoxon P<0.05
 - **安全性**：非治疗性资源研究，不涉及患者给药安全性终点
 - **证据等级**：全文
-- **核对记录**：读了Europe PMC fullTextXML PMC13581597的Abstract、Results、Discussion、Methods、Fig.1–6图注
+- **核对记录**：Europe PMC fullTextXML PMC13581597的Abstract、Results、Discussion、Methods、Fig.1–6图注
 
 ![机制示意图](c1-org-3_mech.png)
 
@@ -87,4 +87,4 @@
 
 ElHarouni D, Al-Jazrawe M, Choi S, Dede M, Hinoue T, Misek SA, et al. A compendium of next-generation patient-derived models for diverse cancers. Nature. 2026. https://doi.org/10.1038/s41586-026-10806-y
 
-证据等级：全文；核对记录：读了Europe PMC fullTextXML PMC13581597的Abstract、Results、Discussion、Methods、Fig.1–6图注
+证据等级：全文；核对记录：Europe PMC fullTextXML PMC13581597的Abstract、Results、Discussion、Methods、Fig.1–6图注

@@ -78,4 +78,4 @@ FM1B104血清末端半衰期1.57±0.5天，对照9.53±0.5天（结果叙述圆�
 
 Marks K, Shah N, Pham L, Chen J, White I, Burke K, 等. Bispecific antibodies that engage pIgR enrich in mucosa in cynomolgus monkeys. mAbs. 2026 Oct 3;18(1):2743413. doi: https://doi.org/10.1080/19420862.2026.2743413
 
-并列贡献：Kelsie Marks、Nirav Shah；末位：Wan Cheung Cheung、Adam Zwolak（通讯）。证据等级：全文；核对记录：Europe PMC全文XML（PMC13644599）：Abstract、Results、Methods、Discussion、Table 1–2及Fig. 1–6图注。许可为CC BY-NC，正文为改写，未逐句抄录、未用原图。
+并列贡献：Kelsie Marks、Nirav Shah；末位：Wan Cheung Cheung、Adam Zwolak（通讯）。证据等级：全文；核对记录：Europe PMC全文XML（PMC13644599）：Abstract、Results、Methods、Discussion、Table 1–2及Fig. 1–6图注。

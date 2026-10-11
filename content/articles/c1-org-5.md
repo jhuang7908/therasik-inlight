@@ -17,7 +17,7 @@
 - **主要终点结果**：SI CCS在d14移植达到100%植入；与d14 mesentery HIO比较，Fisher精确检验P=9.25×10−7
 - **统计量**：Fisher精确检验、Mann–Whitney、ANOVA/Tukey和t检验用于图示关键比较
 - **证据等级**：全文
-- **核对记录**：来源为用户提供的Nature Biomedical Engineering开放获取HTML全文材料；核对范围包括Abstract、Results、Methods、图注和Discussion
+- **核对记录**：Nature Biomedical Engineering开放获取HTML全文；核对范围包括Abstract、Results、Methods、图注和Discussion
 
 ![机制示意图](c1-org-5_mech_r4c.png)
 
@@ -87,4 +87,4 @@
 
 Poling HM, Noël T, Singh A, Fisher GW, Thorner K, Chaturvedi P, et al. Large-scale and innervated functional human gut tissues for transplantation via transient spheroid confinement. Nat Biomed Eng. 2026. https://doi.org/10.1038/s41551-026-01688-6
 
-证据等级：全文；核对记录：来源为用户提供的Nature Biomedical Engineering开放获取HTML全文材料；核对范围包括Abstract、Results、Methods、图注和Discussion
+证据等级：全文；核对记录：Nature Biomedical Engineering开放获取HTML全文；核对范围包括Abstract、Results、Methods、图注和Discussion

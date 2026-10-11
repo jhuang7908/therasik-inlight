@@ -78,4 +78,4 @@ Lykhopiy（兼通讯）与Van Rompaey、Schlenner团队的假设是：与其改�
 
 Lykhopiy V, Pollenus E, Rangan L, Stakenborg M, Tezil T, Varheust M, 等. Engineering trispecific IL-2 receptor agonistic antibodies through geometry optimization for enhanced Treg targeting. Nat Commun. 2026 Jul 10;17:8534. doi: https://doi.org/10.1038/s41467-026-75024-6
 
-第一兼共同通讯：Valentina Lykhopiy；末位：Luc Van Rompaey、Susan M Schlenner（通讯）。Pollenus、Rangan、Van Rompaey、Schlenner并列贡献。证据等级：全文；核对记录：Europe PMC全文XML（PMC13482293）：Abstract、Results、Methods、Discussion及Fig. 1–5图注。许可为CC BY-NC-ND，正文为改写，未逐句抄录。
+第一兼共同通讯：Valentina Lykhopiy；末位：Luc Van Rompaey、Susan M Schlenner（通讯）。Pollenus、Rangan、Van Rompaey、Schlenner并列贡献。证据等级：全文；核对记录：Europe PMC全文XML（PMC13482293）：Abstract、Results、Methods、Discussion及Fig. 1–5图注。

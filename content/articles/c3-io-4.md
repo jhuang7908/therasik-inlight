@@ -17,7 +17,7 @@
 - **主要终点结果**：体内筛选中Zmynd8为效应样细胞顶级负调控因子、Tex term正调控因子；流式在多个时间点验证效应样细胞增加、Tex term减少；p300共删除阻断该效应
 - **统计量**：非临床效能设计；按图注使用Student’s t检验、one-way或two-way ANOVA、Fisher精确检验、Wilcoxon秩和检验和log-rank检验
 - **证据等级**：全文
-- **核对记录**：读到Nature OA全文的Abstract、Results、Methods、图注、Discussion与Limitations；来源编号DOI 10.1038/s41586-026-11059-5
+- **核对记录**：Nature OA全文的Abstract、Results、Methods、图注、Discussion与Limitations；来源编号DOI 10.1038/s41586-026-11059-5
 
 ![机制示意图](c3-io-4_mech.png)
 
@@ -86,4 +86,4 @@ CUT&RUN定义了2,863个ZMYND8核心结合峰，IL-2–STAT5信号为最富集�
 
 Wang Y, Shi H, Chapman NM, KC A, Sun R, Song H, et al. Targeting ZMYND8 unleashes IL-2 signalling to override T cell exhaustion. Nature. 2026 Sep 23. doi: https://doi.org/10.1038/s41586-026-11059-5
 
-证据等级：全文；核对记录：读到Nature OA全文的Abstract、Results、Methods、图注、Discussion与Limitations；来源编号DOI 10.1038/s41586-026-11059-5
+证据等级：全文；核对记录：Nature OA全文的Abstract、Results、Methods、图注、Discussion与Limitations；来源编号DOI 10.1038/s41586-026-11059-5

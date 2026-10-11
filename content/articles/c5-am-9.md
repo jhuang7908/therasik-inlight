@@ -18,7 +18,7 @@
 - **统计量**：本文为模型构建与定性验证，未报告组间P值或定量蛋白恢复百分比
 - **安全性**：未报告ASO相关不良事件；实验为局部肌内注射，非全身毒性评价
 - **证据等级**：全文
-- **核对记录**：读了Europe PMC全文XML（PMC13580558）：Abstract、Introduction、Results各节、Discussion、Materials and Methods、Fig.1–6图注
+- **核对记录**：Europe PMC全文XML（PMC13580558）：Abstract、Introduction、Results各节、Discussion、Materials and Methods、Fig.1–6图注
 
 ![机制示意图](c5-am-9_mech.webp)
 
@@ -76,4 +76,4 @@ del44胚胎干细胞有14%的候选克隆通过两步预筛；桑格测序只见
 
 van Putten M, Linssen M, Tanganyika-de Winter C, Brouwers CM, Claassens JWC, Verwey N, et al. Four new mouse models of Duchenne muscular dystrophy with clinically relevant exon deletions in the human DMD gene. Dis Model Mech. 2026 Aug 28. https://doi.org/10.1242/dmm.052875
 
-证据等级：全文；核对记录：读了Europe PMC全文XML（PMC13580558）：Abstract、Introduction、Results各节、Discussion、Materials and Methods、Fig.1–6图注
+证据等级：全文；核对记录：Europe PMC全文XML（PMC13580558）：Abstract、Introduction、Results各节、Discussion、Materials and Methods、Fig.1–6图注

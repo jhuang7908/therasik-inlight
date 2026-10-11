@@ -18,7 +18,7 @@
 - **统计量**：n=4，未做假设检验、效能计算或推断性统计，结果均为描述性；疗效按 2016 IMWG 标准，CRS/ICANS 按 ASTCT 标准
 - **安全性**：全部患者出现 1–3 级双相 CRS 与 3–4 级血液学毒性；Patient 4 出现 1 级 ICANS；整合位点分析未见克隆扩增
 - **证据等级**：全文
-- **核对记录**：读取 Nature Medicine 开放获取全文的 Abstract、Results（各小节）、Discussion、Methods、图注与 Extended Data 图注
+- **核对记录**：Nature Medicine 开放获取全文的 Abstract、Results（各小节）、Discussion、Methods、图注与 Extended Data 图注
 
 ![机制示意图](c7-cell-2_mech_r2.png)
 
@@ -90,4 +90,4 @@ Patient 3 在第 3 个月进展，骨髓和髓外皮下病灶的 BCMA 阳性率�
 
 Xu J, Liu L, Xie W, Su L, Wang W, Li C, et al. Extended follow-up of in vivo BCMA CAR-T therapy in relapsed/refractory multiple myeloma. Nat Med. 2026. doi:10.1038/s41591-026-04704-z. https://doi.org/10.1038/s41591-026-04704-z
 
-证据等级：全文；核对记录：读取 Nature Medicine 开放获取全文的 Abstract、Results（各小节）、Discussion、Methods、图注与 Extended Data 图注
+证据等级：全文；核对记录：Nature Medicine 开放获取全文的 Abstract、Results（各小节）、Discussion、Methods、图注与 Extended Data 图注

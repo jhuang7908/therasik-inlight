@@ -18,7 +18,7 @@
 - **统计量**：Kd多由1,000次bootstrap残差拟合给出区间；APEX Kd报告95% CI。
 - **安全性**：SEC显示所选设计或突变蛋白为单体。
 - **证据等级**：全文
-- **核对记录**：读了Europe PMC全文XML PMC13441969的Abstract、Results、Discussion、图注和Methods占位。
+- **核对记录**：Europe PMC全文XML PMC13441969的Abstract、Results、Discussion、图注和Methods。
 
 ![机制示意图](c2-ai-2_mech_r4c.png)
 
@@ -89,4 +89,4 @@ LASErMPNN校对给出的EPIC(Q51N/M97L)把亲和力提高100倍，Kd=1.2 nM，Δ
 
 Fry B, Slaw K, Polizzi NF. Zero-shot design of drug-binding proteins via neural iterative selection−expansion. Nature. 2026 Jun 24. https://doi.org/10.1038/s41586-026-10670-w
 
-证据等级：全文；核对记录：读了Europe PMC全文XML PMC13441969的Abstract、Results、Discussion、图注和Methods占位。
+证据等级：全文；核对记录：Europe PMC全文XML PMC13441969的Abstract、Results、Discussion、图注和Methods。

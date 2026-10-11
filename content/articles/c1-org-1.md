@@ -17,7 +17,7 @@
 - **主要终点结果**：Horvath泛组织时钟与皮层特异时钟：r = 0.88–0.90，中位绝对误差7.25和20.04个月；胎脑时钟r = 0.54，P = 0.056
 - **统计量**：LMM、NBME、Wilcoxon秩和、Fisher精确检验、ANOVA、单侧F检验、似然比检验、Kruskal–Wallis；样本量未预先计算，未设盲
 - **证据等级**：全文
-- **核对记录**：读了Europe PMC全文PMC13581598的Abstract、Main、Results各小节、Discussion、Fig. 1–5图注与Methods
+- **核对记录**：Europe PMC全文PMC13581598的Abstract、Main、Results各小节、Discussion、Fig. 1–5图注与Methods
 
 ![机制示意图](c1-org-1_mech_r2.png)
 
@@ -87,4 +87,4 @@ scRNA-seq时间序列自15天至5年，含110个单个类器官（34个新数据
 
 Faravelli I, Antón-Bolaños N, Wei A, Faits T, Kumar AS, Andreadis S, et al. Human brain organoids record the passage of time over multiple years. Nature. 2026. https://doi.org/10.1038/s41586-026-10877-x
 
-证据等级：全文；核对记录：读了Europe PMC全文PMC13581598的Abstract、Main、Results各小节、Discussion、Fig. 1–5图注与Methods
+证据等级：全文；核对记录：Europe PMC全文PMC13581598的Abstract、Main、Results各小节、Discussion、Fig. 1–5图注与Methods

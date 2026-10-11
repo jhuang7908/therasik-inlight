@@ -16,7 +16,7 @@
 - **主要终点结果**：平均56%（n=2,667；摘要写作约50%）；NLV 28.3%（91/322）至CIN 76.3%（174/228）；以阵列共培养为真值，一致率96.1%，假阴性率3.9%，无假阳性
 - **统计量**：PyDESeq2 Wald检验；Mann-Whitney U检验（RTR与新抗原比较）；AUROC与AUC PR评估模型；新抗原检验p=5.5×10⁻³与3.3×10⁻³
 - **证据等级**：全文
-- **核对记录**：读取Cell Press开放获取HTML全文：Summary、Introduction、Results（五个小节）、Discussion、Limitations of the study、图1–5图注与STAR Methods
+- **核对记录**：Cell Press开放获取HTML全文：Summary、Introduction、Results（五个小节）、Discussion、Limitations of the study、图1–5图注与STAR Methods
 
 ![机制示意图](a-trap_mech_labeled.png)
 
@@ -47,7 +47,7 @@ T-RAP在五轮合成中装配了12,078个TCR，其中TCR-s1至TCR-s4共8,385个�
 
 ### 主要读出：注释验证率
 
-在功能筛选中，平均仅56%的被评估TCR（n=2,667）复现了原注释反应性（摘要写作约50%，此处用正文口径）。按表位，验证率从NLV的28.3%（91/322）到CIN的76.3%（174/228）；按来源研究，验证率从<10%到>95%。VDJdb自身置信分仅显示中等精确度、低敏感度。以上均为描述性比例，未做组间检验。
+在功能筛选中，平均仅56%的被评估TCR（n=2,667）复现了原注释反应性（各来源数字不一：摘要报约50%，正文报56%）。按表位，验证率从NLV的28.3%（91/322）到CIN的76.3%（174/228）；按来源研究，验证率从<10%到>95%。VDJdb自身置信分仅显示中等精确度、低敏感度。以上均为描述性比例，未做组间检验。
 
 ### 筛选准确性与读出一致性
 
@@ -85,4 +85,4 @@ TCRvdb可作为评估与改进模型的验证集，T-RAP可仅凭序列装配任
 
 Messemaker M, Kwee BPY, Moravec Ž, Paauw Sd, Urbanus J, Álvarez-Salmoral D, et al. Functional evaluation of TCR-pMHC pairs at scale allows in silico TCR reactivity prediction. Immunity. 2026. https://doi.org/10.1016/j.immuni.2026.09.007
 
-证据等级：全文；核对记录：读取Cell Press开放获取HTML全文：Summary、Introduction、Results（五个小节）、Discussion、Limitations of the study、图1–5图注与STAR Methods
+证据等级：全文；核对记录：Cell Press开放获取HTML全文：Summary、Introduction、Results（五个小节）、Discussion、Limitations of the study、图1–5图注与STAR Methods
