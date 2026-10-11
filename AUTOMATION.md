@@ -153,3 +153,17 @@ python build_pages.py --dry-run  # 预览，不写文件
 ### 发布路径
 
 脚本只写文件，不推送。正式运行后在仓库里提交 `content/weekly/日期/`（含 images）和 `content/latest.json`，以补丁或 PR 合入 `main`，GitHub Pages 自动重建。
+
+## 发布前审计（必过）
+
+每次发布前必须按 [`docs/PUBLISH_CHECKLIST.md`](docs/PUBLISH_CHECKLIST.md) 跑审计，全部通过才发布：
+
+```bash
+python tools/audit_weekly.py --base origin/main --week content/weekly/<周> \
+    --candidates preview/weekly/<周>/candidates.json --run-tests
+```
+
+- 有 FAIL 时退出码为 1，不得发布。WARN 和 MANUAL 项要人工确认，并在 PR 里写明结论。
+- 报告写在 `preview/audit/<时间>/audit_report.md` 和 `.json`。
+- 已发布内容的遗留问题登记在 `tools/audit_baseline.json`，报告里显示为 LEGACY。新条目不能登记进基线。
+- 上线后再跑一次：`python tools/audit_weekly.py --base <上一版> --live https://inlight.therasik.com --offline`

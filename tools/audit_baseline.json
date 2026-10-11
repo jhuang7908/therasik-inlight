@@ -1,0 +1,258 @@
+{
+  "created": "2026-10-11T16:59:31",
+  "note": "历史问题基线：只对已发布旧条目生效，新条目不得登记。修好一条就删一条。",
+  "entries": [
+    {
+      "check": "B1-数字与正文一致",
+      "item": "c2-ai-5",
+      "msg_hash": "a65aa399ca",
+      "status": "WARN",
+      "msg": "以下数字已在 docs/source_audit.md 对原文核对，但正文/数据卡里没有（速览应只用正文数字）：quick_look:18、quick_look:28、quick_look:36"
+    },
+    {
+      "check": "B1-数字与正文一致",
+      "item": "c6-ab-4",
+      "msg_hash": "091d47d202",
+      "status": "WARN",
+      "msg": "以下数字已在 docs/source_audit.md 对原文核对，但正文/数据卡里没有（速览应只用正文数字）：quick_look:0.4、quick_look:0.85"
+    },
+    {
+      "check": "B1-数字与正文一致",
+      "item": "c1-org-5",
+      "msg_hash": "c3088fe88f",
+      "status": "WARN",
+      "msg": "以下数字已在 docs/source_audit.md 对原文核对，但正文/数据卡里没有（速览应只用正文数字）：quick_look:14"
+    },
+    {
+      "check": "B1-数字与正文一致",
+      "item": "c3-io-2",
+      "msg_hash": "c3088fe88f",
+      "status": "WARN",
+      "msg": "以下数字已在 docs/source_audit.md 对原文核对，但正文/数据卡里没有（速览应只用正文数字）：quick_look:67"
+    },
+    {
+      "check": "D4-段落长度",
+      "item": "c6-ab-9",
+      "msg_hash": "a90ebae6f7",
+      "status": "WARN",
+      "msg": "2 段超过 150 字（手机可读性）"
+    },
+    {
+      "check": "D4-段落长度",
+      "item": "c5-am-8",
+      "msg_hash": "a90ebae6f7",
+      "status": "WARN",
+      "msg": "1 段超过 150 字（手机可读性）"
+    },
+    {
+      "check": "D4-段落长度",
+      "item": "c9-rna-9",
+      "msg_hash": "a90ebae6f7",
+      "status": "WARN",
+      "msg": "3 段超过 150 字（手机可读性）"
+    },
+    {
+      "check": "D4-段落长度",
+      "item": "c4-ai-8",
+      "msg_hash": "a90ebae6f7",
+      "status": "WARN",
+      "msg": "5 段超过 150 字（手机可读性）"
+    },
+    {
+      "check": "D4-段落长度",
+      "item": "c6-ab-7",
+      "msg_hash": "a90ebae6f7",
+      "status": "WARN",
+      "msg": "4 段超过 150 字（手机可读性）"
+    },
+    {
+      "check": "D4-段落长度",
+      "item": "c9-rna-7",
+      "msg_hash": "a90ebae6f7",
+      "status": "WARN",
+      "msg": "1 段超过 150 字（手机可读性）"
+    },
+    {
+      "check": "D4-段落长度",
+      "item": "c6-ab-8",
+      "msg_hash": "a90ebae6f7",
+      "status": "WARN",
+      "msg": "2 段超过 150 字（手机可读性）"
+    },
+    {
+      "check": "B1-数字与正文一致",
+      "item": "c5-am-7",
+      "msg_hash": "c3088fe88f",
+      "status": "WARN",
+      "msg": "以下数字已在 docs/source_audit.md 对原文核对，但正文/数据卡里没有（速览应只用正文数字）：quick_look:236"
+    },
+    {
+      "check": "D4-段落长度",
+      "item": "c5-am-7",
+      "msg_hash": "a90ebae6f7",
+      "status": "WARN",
+      "msg": "2 段超过 150 字（手机可读性）"
+    },
+    {
+      "check": "D4-段落长度",
+      "item": "c4-ai-9",
+      "msg_hash": "a90ebae6f7",
+      "status": "WARN",
+      "msg": "2 段超过 150 字（手机可读性）"
+    },
+    {
+      "check": "E6-颗粒质感",
+      "item": "c6-ab-4 [card]",
+      "msg_hash": "b1dd9a1d85",
+      "status": "WARN",
+      "msg": "空白区颗粒度 0.02 低于已发布下限 0.07（可能缺少纸纹颗粒）"
+    },
+    {
+      "check": "E6-颗粒质感",
+      "item": "c6-ab-5 [card]",
+      "msg_hash": "b1dd9a1d85",
+      "status": "WARN",
+      "msg": "空白区颗粒度 0.06 低于已发布下限 0.07（可能缺少纸纹颗粒）"
+    },
+    {
+      "check": "E5-暖米白底",
+      "item": "a-trap [mech]",
+      "msg_hash": "73511820f7",
+      "status": "WARN",
+      "msg": "底色 (255, 255, 255) 不是暖米白 #f7f4ea（ΔE=6.5）"
+    },
+    {
+      "check": "E5-暖米白底",
+      "item": "c1-org-2 [mech]",
+      "msg_hash": "73511820f7",
+      "status": "WARN",
+      "msg": "底色 (255, 255, 255) 不是暖米白 #f7f4ea（ΔE=6.5）"
+    },
+    {
+      "check": "E5-暖米白底",
+      "item": "c9-rna-5 [mech]",
+      "msg_hash": "73511820f7",
+      "status": "WARN",
+      "msg": "底色 (255, 255, 255) 不是暖米白 #f7f4ea（ΔE=6.5）"
+    },
+    {
+      "check": "E5-暖米白底",
+      "item": "c8-vac-3 [mech]",
+      "msg_hash": "73511820f7",
+      "status": "WARN",
+      "msg": "底色 (255, 255, 255) 不是暖米白 #f7f4ea（ΔE=6.5）"
+    },
+    {
+      "check": "E5-暖米白底",
+      "item": "c7-cell-2 [mech]",
+      "msg_hash": "73511820f7",
+      "status": "WARN",
+      "msg": "底色 (255, 255, 255) 不是暖米白 #f7f4ea（ΔE=6.5）"
+    },
+    {
+      "check": "E5-暖米白底",
+      "item": "c5-am-2 [mech]",
+      "msg_hash": "73511820f7",
+      "status": "WARN",
+      "msg": "底色 (255, 255, 255) 不是暖米白 #f7f4ea（ΔE=6.5）"
+    },
+    {
+      "check": "E5-暖米白底",
+      "item": "c2-ai-1 [mech]",
+      "msg_hash": "73511820f7",
+      "status": "WARN",
+      "msg": "底色 (255, 255, 255) 不是暖米白 #f7f4ea（ΔE=6.5）"
+    },
+    {
+      "check": "E5-暖米白底",
+      "item": "c3-io-4 [mech]",
+      "msg_hash": "73511820f7",
+      "status": "WARN",
+      "msg": "底色 (255, 255, 255) 不是暖米白 #f7f4ea（ΔE=6.5）"
+    },
+    {
+      "check": "E5-暖米白底",
+      "item": "c5-am-5 [mech]",
+      "msg_hash": "73511820f7",
+      "status": "WARN",
+      "msg": "底色 (255, 255, 255) 不是暖米白 #f7f4ea（ΔE=6.5）"
+    },
+    {
+      "check": "E5-暖米白底",
+      "item": "c4-ai-6 [mech]",
+      "msg_hash": "73511820f7",
+      "status": "WARN",
+      "msg": "底色 (255, 255, 255) 不是暖米白 #f7f4ea（ΔE=6.5）"
+    },
+    {
+      "check": "E5-暖米白底",
+      "item": "c2-ai-5 [mech]",
+      "msg_hash": "73511820f7",
+      "status": "WARN",
+      "msg": "底色 (255, 255, 255) 不是暖米白 #f7f4ea（ΔE=6.5）"
+    },
+    {
+      "check": "E5-暖米白底",
+      "item": "c3-io-5 [mech]",
+      "msg_hash": "73511820f7",
+      "status": "WARN",
+      "msg": "底色 (255, 255, 255) 不是暖米白 #f7f4ea（ΔE=6.5）"
+    },
+    {
+      "check": "E5-暖米白底",
+      "item": "c8-vac-2 [mech]",
+      "msg_hash": "73511820f7",
+      "status": "WARN",
+      "msg": "底色 (255, 255, 255) 不是暖米白 #f7f4ea（ΔE=6.5）"
+    },
+    {
+      "check": "E5-暖米白底",
+      "item": "c3-io-2 [mech]",
+      "msg_hash": "73511820f7",
+      "status": "WARN",
+      "msg": "底色 (255, 255, 255) 不是暖米白 #f7f4ea（ΔE=6.5）"
+    },
+    {
+      "check": "E5-暖米白底",
+      "item": "c6-ab-6 [mech]",
+      "msg_hash": "73511820f7",
+      "status": "WARN",
+      "msg": "底色 (255, 255, 255) 不是暖米白 #f7f4ea（ΔE=6.5）"
+    },
+    {
+      "check": "E5-暖米白底",
+      "item": "c6-ab-5 [mech]",
+      "msg_hash": "73511820f7",
+      "status": "WARN",
+      "msg": "底色 (255, 255, 255) 不是暖米白 #f7f4ea（ΔE=6.5）"
+    },
+    {
+      "check": "E5-暖米白底",
+      "item": "c8-vac-4 [mech]",
+      "msg_hash": "73511820f7",
+      "status": "WARN",
+      "msg": "底色 (255, 255, 255) 不是暖米白 #f7f4ea（ΔE=6.5）"
+    },
+    {
+      "check": "E4-分区配色",
+      "item": "c5-am-9 [mech]",
+      "msg_hash": "19225e2e2a",
+      "status": "WARN",
+      "msg": "未检出赤陶红强调色"
+    },
+    {
+      "check": "E5-暖米白底",
+      "item": "https://www.sec.gov/Archives/edgar/data/0001131399/000165495426008359/a6888u.htm [deal]",
+      "msg_hash": "73511820f7",
+      "status": "WARN",
+      "msg": "底色 (233, 233, 232) 不是暖米白 #f7f4ea（ΔE=6.1）"
+    },
+    {
+      "check": "E5-暖米白底",
+      "item": "https://www.thepharmaletter.com/biotech-news/boehringer-expands-cancer-vaccine-push-with-prime-vector-licensing-deal [deal]",
+      "msg_hash": "73511820f7",
+      "status": "WARN",
+      "msg": "底色 (166, 204, 238) 不是暖米白 #f7f4ea（ΔE=30.7）"
+    }
+  ]
+}
