@@ -898,3 +898,74 @@
 - **正文/数据卡**：错误数字只在被改写的速览；解读正文未改。
 
 速览汉字 100–200、作者介绍 80–200 保持；DEALS 块未改（sha256 `bf29e0b21cb5fa50e1f25d41c23f4d5a804012d266b6fa06d43712c9ecb454a6`）。
+
+
+---
+
+## 周更 2026-10-11（weekly fulltext）
+
+对照物：Nature Biotechnology / Nature Medicine OA PDF；bioRxiv 全文 PDF。逐条 MATCH。
+
+### w-20261006-2564a57990 · SGE / Nat Biotechnol OA PDF
+
+| 数字 | 上下文 | 原句（短） | 判定 |
+| --- | --- | --- | --- |
+| 数百万 | 数百万组合中筛出通路 | screened millions of pathway combinations | MATCH |
+| 1.1 | 缺缬氨酸倍增约 1.1 天 | near-wild-type doubling time of just 1.1 days | MATCH |
+| 数十 | 数十 kb 量级合成 DNA | tens of kilobases of synthetic DNA | MATCH |
+
+### w-20261006-43356a100f · MedGemma / Nat Med OA PDF
+
+| 数字 | 上下文 | 原句（短） | 判定 |
+| --- | --- | --- | --- |
+| 4 | MedGemma 4B | MedGemma 4B (4 billion parameters) | MATCH |
+| 27 | 27B 多模态/文本 | MedGemma 27B (27 billion parameters) | MATCH |
+| 4 亿 | MedSigLIP 约 4 亿参数 | MedSigLIP image encoder (400 million parameters) | MATCH |
+| 86.2 | MedQA 86.2 | MedGemma 27B Text … MedQA 86.2 | MATCH |
+| 74.9 | Gemma 3 27B MedQA 74.9 | Gemma 3 27B … 74.9 | MATCH |
+| 64.1 | MedGemma 4B MedQA 64.1 | MedGemma 4B … 64.1 | MATCH |
+| 52.4 | Gemma 3 4B MedQA 52.4 | Gemma 3 4B … 52.4 | MATCH |
+| 2.6–10 | 影像问答改进约 2.6–10% | improvements of 2.6–10% in medical image question answering | MATCH |
+| 15.5–18.1 | 胸片分类改进约 15.5–18.1% | 15.5–18.1% in chest X-ray finding classification | MATCH |
+
+### w-20261011-a7751bdc1f · CAR19 EngTreg / bioRxiv PDF
+
+| 数字 | 上下文 | 原句（短） | 判定 |
+| --- | --- | --- | --- |
+| 4 | 存续超过 4 个月 | persisted for >4 months | MATCH |
+| 19 | CD19 CAR | CD19 CAR Engineered T Regulatory Cells | MATCH |
+
+### w-20261010-7c2032237a · IL-15 / bioRxiv PDF
+
+| 数字 | 上下文 | 原句（短） | 判定 |
+| --- | --- | --- | --- |
+| 1 | 第 1 组固有淋巴样细胞 | group 1 innate lymphoid cells | MATCH |
+| 500 | IL-15Rα 约为肝的 1/500 | 500-fold lower … brain than in the liver | MATCH |
+| 15 | IL-15 | Local IL-15 complex administration | MATCH |
+
+### w-20261010-c3f04a373e · TEM1657 / bioRxiv PDF
+
+| 数字 | 上下文 | 原句（短） | 判定 |
+| --- | --- | --- | --- |
+| 80–90 | 斑块型约占 80–90% | accounts for 80-90% of psoriasis patients | MATCH |
+| 7 | 分 7 组 | randomly distributed into 7 groups | MATCH |
+| 8 | 每组 n=8 | (n=8) | MATCH |
+| 0.05 | 氯倍他索 0.05% | clobetasol propionate 0.05% cream | MATCH |
+| 0.8 | 0.8% 剂量 | improved with the 0.8% dose | MATCH |
+
+### 经济动态数字（公告原文）
+
+| 条目 | 数字 | 来源句 | 判定 |
+| --- | --- | --- | --- |
+| 盟科-ClearideBio | 100 万美元首付；2.23 亿；1.25 亿×6=7.5 亿上限 | 巨潮公告 2026-044 重要内容提示 | MATCH |
+| 亚虹-Theramex | 1500 万；1100 万；总金额超过 2.5 亿 | 巨潮公告 2026-040 | MATCH |
+| 花园生物合资 | 持股不少于 51% | 巨潮公告合作协议核心要点 | MATCH |
+| 石药 SYS6002 | 82 例；39/43；ORR 35.9%/28.6%；DoR 8.2/10.3；PFS 4.1/4.3；OS 15.1/11.5；ILD 2.4% | 港交所自愿公告 | MATCH |
+
+### hidden_excluded 复查
+
+| id | 全文状态 | 处理 |
+| --- | --- | --- |
+| c7-cell-5 | Europe PMC OA=Y，PMC13577911 全文 XML 可读 | 不在本周 candidates；catalog 仍 excluded。未写入周更（避免 A2/H6）。记录待后续精编复活流程。 |
+| c5-am-6 | Europe PMC OA=N | 维持 excluded |
+

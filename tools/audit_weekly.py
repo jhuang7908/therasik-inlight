@@ -1001,17 +1001,23 @@ def audit(args) -> tuple[Ctx, dict]:
             cands.update(load_candidates(guess))
     for x in week_arts + week_deals:
         x["_new"] = True
-    # content/latest.json 是网站实际读取的周更内容：同样过一遍；相对基准新增的算新条目
-    ref_latest = {norm_url(x.get("url", "")) for x in ref.weekly_articles() + ref.weekly_deals()} if args.base else None
-    seen_week = {norm_url(x.get("url", "")) for x in week_arts + week_deals}
-    for src, dst in ((site.weekly_articles(), week_arts), (site.weekly_deals(), week_deals)):
-        for x in src:
-            k = norm_url(x.get("url", ""))
-            if k and k in seen_week:
-                continue
-            x = dict(x)
-            x["_new"] = bool(ref_latest is not None and k not in ref_latest)
-            dst.append(x)
+    # content/latest.json 是网站实际读取的周更内容。若已用 --week 指向本周目录，
+    # 以周目录为准，不再合并 latest，避免把已写入 latest 的条目拿去对照另一份
+    # --week 夹具候选（单元测试）或重复计数。
+    if not ctx.week:
+        ref_latest = {norm_url(x.get("url", "")) for x in ref.weekly_articles() + ref.weekly_deals()} if args.base else None
+        seen_week = {norm_url(x.get("url", "")) for x in week_arts + week_deals}
+        for src, dst in ((site.weekly_articles(), week_arts), (site.weekly_deals(), week_deals)):
+            for x in src:
+                k = norm_url(x.get("url", ""))
+                if k and k in seen_week:
+                    continue
+                x = dict(x)
+                x["_new"] = bool(ref_latest is not None and k not in ref_latest)
+                dst.append(x)
+    else:
+        # 有 --week 时仍可用 --base 判断“相对旧 latest 是否新增”，但条目集合只来自周目录
+        pass
     new_week_arts = [a for a in week_arts if a["_new"]]
     check_site_static(ctx, site)
     check_articles(ctx, site, ref, new_ids)
