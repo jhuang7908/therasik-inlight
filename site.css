@@ -145,7 +145,7 @@ article .ahead{display:grid;gap:11px;padding-bottom:18px;border-bottom:1px solid
 .shell:has(.view[id^="v-a-"]:not([hidden]))>.rail,
 .shell:has(#v-paper:not([hidden]))>.rail{display:none}
 .eyebrow{font-size:12px;letter-spacing:.1em;font-weight:700;color:var(--accent)}
-.zh-title{font-family:var(--display);font-size:clamp(18px,2.4vw,24px);font-weight:800;line-height:1.4}
+.zh-title{font-family:var(--display);font-size:30px;font-weight:800;line-height:1.4;margin:0}/* typography sample 2026-10-12 */.pv-art .amain{max-width:720px}.ahead h1.zh-title,.zh-title{font-size:30px;line-height:1.4}
 .en-title{font-size:13.5px;color:var(--muted);font-style:italic}
 .abody{display:grid;grid-template-columns:232px minmax(0,1fr);gap:28px;align-items:start}
 @media (max-width:860px){.abody{grid-template-columns:1fr;gap:16px}}
@@ -163,7 +163,7 @@ article .ahead{display:grid;gap:11px;padding-bottom:18px;border-bottom:1px solid
 @media (max-width:720px){.figsteps{grid-template-columns:1fr 1fr}}
 .cap{font-size:12.5px;color:var(--muted);line-height:1.6}
 .sec{display:grid;gap:8px}
-.sec h2{font-size:18px;color:var(--accent);font-family:var(--display)}
+.sec h2{font-size:22px;color:var(--accent);font-family:var(--display);line-height:1.35}
 .sec p{font-size:16px;line-height:1.85;color:var(--fg)}
 .meet{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
 .meet h2{margin:0}
@@ -291,8 +291,8 @@ a.tile .tk::after{content:" →";opacity:.55}
 .hero-band::after{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(95deg,rgba(255,255,255,.96) 0%,rgba(255,255,255,.92) 50%,rgba(255,255,255,.3) 100%)}
 .hb-text{position:relative;z-index:2;padding:16px 20px 14px;display:grid;gap:6px;max-width:520px;color:var(--fg)}
 .hb-kicker{font-size:11px;letter-spacing:.12em;font-weight:700;color:var(--accent)}
-.hb-text h1{font-family:var(--display);font-size:clamp(22px,3.2vw,32px);font-weight:800;line-height:1.1;letter-spacing:.01em;color:var(--fg)}
-.hb-text p{font-size:13px;line-height:1.55;color:var(--muted);max-width:none}
+.hb-text h1{font-family:var(--display);font-size:clamp(22px,3.2vw,32px);font-weight:800;line-height:1.35;color:var(--fg)}
+.hb-text p{font-size:15px;line-height:1.7;color:var(--muted);max-width:none}
 .hb-cta{display:flex;gap:8px;flex-wrap:wrap;margin-top:2px}
 .hb-cta .btn{font-weight:800;padding:6px 12px;font-size:13px}
 .hb-cta .btn.ghost{background:transparent;color:var(--accent);border:1px solid color-mix(in srgb,var(--accent) 40%,var(--line))}
@@ -360,7 +360,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 .confdate small{display:block;font-weight:400;color:var(--muted);font-size:12px}
 .confrow h3{margin:0 0 4px;font-size:16px;line-height:1.45}
 .confmeta{font-size:13px;color:var(--muted);margin-bottom:6px}
-.confrow p.confsum{margin:0 0 8px;font-size:14px;line-height:1.7;text-indent:0;text-align:left}
+.confrow p.confsum{margin:0 0 8px;font-size:15px;line-height:1.7;text-indent:0;text-align:left}
 .conftags{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12px}
 .conftags .tag{--tc:#4a6f96}
 .conftags .warn{color:#b0412e;font-size:12px}
@@ -459,7 +459,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 .pv-shell{max-width:1100px;margin:0 auto}
 .pv-art .abody{grid-template-columns:210px minmax(0,1fr);gap:26px}
 .pv-art .amain p,.pv-art .amain li,.pv-art .amain .cap{max-width:none}
-.pv-art .sec p,.pv-art .sec li{font-size:16.5px;line-height:1.9}
+.pv-art .sec p,.pv-art .sec li{font-size:17px;line-height:1.8;max-width:720px}
 .pv-art .sec p{text-align:justify;text-justify:inter-ideograph;text-indent:2em}
 .textpage .panel p{text-align:justify;text-justify:inter-ideograph;text-indent:2em}
 .feed-details-panel p:not(.msline){text-align:justify;text-justify:inter-ideograph;text-indent:2em}
@@ -467,9 +467,9 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 .pv-hero img{display:block;max-height:280px;max-width:100%;width:auto;height:auto;object-fit:contain}
 .pv-hero .cap{text-align:center;max-width:none}
 @media (max-width:860px){.pv-art .abody{grid-template-columns:1fr;gap:14px}}
-@media (max-width:720px){.pv-shell .wrap{padding-left:10px;padding-right:10px}.pv-hero img{max-height:200px}.pv-art .sec p,.pv-art .sec li{font-size:16px;line-height:1.85}}
+@media (max-width:720px){.pv-shell .wrap{padding-left:10px;padding-right:10px}.pv-hero img{max-height:200px}.pv-art .sec p,.pv-art .sec li{font-size:16.5px;line-height:1.8;max-width:720px}}
 .pv-card{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:14px 16px}
-.pv-card h2{font-size:17px;color:var(--accent);font-family:var(--display);margin-bottom:6px}
+.pv-card h2{font-size:22px;color:var(--accent);font-family:var(--display);margin-bottom:6px;line-height:1.35}
 .pv-card ul{margin:0;padding-left:1.1em;display:grid;gap:6px}
 .pv-card li{font-size:14.5px;line-height:1.7}
 .sec h3{font-size:16px;font-weight:800;margin-top:6px}
@@ -483,7 +483,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 .pgrid .item .cover{aspect-ratio:2/1;height:auto;min-height:0;background:#fff!important;overflow:hidden}
 .pgrid .item .cover .coverimg{object-fit:contain!important;object-position:50% 50%!important;background:#fff}
 .pgrid .item h3{font-size:14px;line-height:1.4;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;height:2.8em;margin:0}
-.pgrid .pv-ccap{font-size:11.5px;line-height:1.45;color:var(--muted);margin:0;max-width:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pgrid .pv-ccap{font-size:14.5px;line-height:1.7;color:var(--muted);margin:0;max-width:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pgrid .metarow{margin-top:auto;gap:6px;min-height:0;flex-wrap:nowrap}
 .pgrid .jname{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .pgrid .metarow .expbtn{min-height:0;padding:0;font-size:12px}
@@ -523,7 +523,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 .side2 .small,.side2 .small p{font-size:12.5px;line-height:1.7;color:var(--muted)}
 .side2 .cite{word-break:break-word}
 .side2 .side-card{border-left:4px solid var(--accent)}
-.side2 .side-card h2{font-size:15px}
+.side2 .side-card h2{font-size:22px;line-height:1.35}
 .side2 .side-card li{font-size:13px;line-height:1.65}
 @media (max-width:860px){
   .pv-art .abody{grid-template-columns:1fr}

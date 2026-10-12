@@ -244,7 +244,7 @@ def build_article_page(article: dict, body_root: str, inner: dict, data: dict, e
 {FEED_LINK}
 <link rel="icon" type="image/png" href="../../img/favicon.png">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;800&family=Noto+Sans+SC:wght@400;500;700&display=swap">
-<link rel="stylesheet" href="../../site.css">
+<link rel="stylesheet" href="../../site.css?v=2">
 </head>
 <body>
 {article_nav()}
@@ -253,7 +253,7 @@ def build_article_page(article: dict, body_root: str, inner: dict, data: dict, e
 <article>
  <div class="ahead">
   <div class="eyebrow">{html.escape(rec['n'])}{preprint_bit}</div>
-  <div class="zh-title">{cat.inline_markup(title)}</div>
+  <h1 class="zh-title">{cat.inline_markup(title)}</h1>
   {chips}
  </div>
  <div class="abody">
