@@ -1,0 +1,4 @@
+{"reviewer":"assistant","date":"2026-10-11","round":"r3 (articles 1-4 from r1, TEM1657 + deal_24/27 from r2, deal_23/25/26 from r3)",
+ "all":"visually checked: hand-drawn watercolor matching refs, each unique, subject matches article/deal, no text, no placeholder",
+ "w-20261010-c3f04a373e_card":"auto OCR flagged 2 chars ('ES', conf 84) from skin texture at x553,y543; visually confirmed no text in image -> false positive, accepted",
+ "verdict":"PASS 10/10"}
