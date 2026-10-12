@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>MedGemma：基于 Gemma 3 构建的开放权重医学视觉-语言模型家族 - 前沿追踪</title>
+<meta name="description" content="三个变体（MedGemma 4B 多模态、MedGemma 27B 多模态、MedGemma 27B Text）在 Gemma 3 之上进行医学调优，共享一个 4 亿参数的视觉编码器（MedSigLIP），后者由 SigLIP-400M 在数百万医学图像-文本对上微调而来。在 MedQA 上，MedGemma 27B Text 达到 86.2（Gemma 3 27B 为 74.9），MedGemm">
+<meta property="og:title" content="MedGemma：基于 Gemma 3 构建的开放权重医学视觉-语言模型家族 - 前沿追踪">
+<meta property="og:description" content="三个变体（MedGemma 4B 多模态、MedGemma 27B 多模态、MedGemma 27B Text）在 Gemma 3 之上进行医学调优，共享一个 4 亿参数的视觉编码器（MedSigLIP），后者由 SigLIP-400M 在数百万医学图像-文本对上微调而来。在 MedQA 上，MedGemma 27B Text 达到 86.2（Gemma 3 27B 为 74.9），MedGemm">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://inlight.therasik.com/pages/article/w-medgemma.html">
+<meta property="og:image" content="https://inlight.therasik.com/img/w-medgemma_card.webp">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:site_name" content="前沿追踪">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="MedGemma：基于 Gemma 3 构建的开放权重医学视觉-语言模型家族 - 前沿追踪">
+<meta name="twitter:description" content="三个变体（MedGemma 4B 多模态、MedGemma 27B 多模态、MedGemma 27B Text）在 Gemma 3 之上进行医学调优，共享一个 4 亿参数的视觉编码器（MedSigLIP），后者由 SigLIP-400M 在数百万医学图像-文本对上微调而来。在 MedQA 上，MedGemma 27B Text 达到 86.2（Gemma 3 27B 为 74.9），MedGemm">
+<meta name="twitter:image" content="https://inlight.therasik.com/img/w-medgemma_card.webp">
+<meta property="article:published_time" content="2026-10-06">
+<meta property="article:section" content="AI药物设计">
+<link rel="canonical" href="https://inlight.therasik.com/pages/article/w-medgemma.html">
+<link rel="alternate" type="application/rss+xml" title="前沿追踪" href="https://inlight.therasik.com/feed.xml">
+<link rel="icon" type="image/png" href="../../img/favicon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;800&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="../../site.css?v=2">
+</head>
+<body>
+<nav><div class="navshell"><div class="nav-in">
+  <a class="qy-made" href="/#about" title="启元智研（北京）生物科技有限公司"><img src="../../assets/brand/qiyuan_mark_A_tight.svg" alt="" aria-hidden="true" width="28" height="26"><span>启元智研 出品</span></a>
+  <a class="brand" href="/#home">
+    <span class="bmark-wrap"><img src="../../img/logo.png" alt=""></span>
+    <span class="btext"><span class="bn">前沿追踪</span><span class="bs">FRONTIER DIGEST</span></span>
+  </a>
+  <div class="nav-tabs">
+    <a href="/#home">首页</a>
+    <a href="/#fields">学术进展</a>
+    <a href="/#deals">经济动态</a>
+    <a href="/#services">服务</a>
+    <a href="/#about">关于我们</a>
+  </div>
+  <a class="navsub" href="/#support">订阅</a>
+</div></div></nav>
+<div class="pv-shell pv-art"><div class="wrap">
+<a class="back" href="/#home">← 返回首页</a>
+<article>
+ <div class="ahead">
+  <div class="eyebrow">AI药物设计</div>
+  <h1 class="zh-title">MedGemma：基于 Gemma 3 构建的开放权重医学视觉-语言模型家族</h1>
+  <div class="pv-chips"><span class="pv-chip pri" style="--fc:#44489A">AI药物设计</span></div>
+ </div>
+ <div class="abody">
+  <aside class="meta side2"><section class="sbox look"><span class="k">速览</span><p>三个变体（MedGemma 4B 多模态、MedGemma 27B 多模态、MedGemma 27B Text）在 Gemma 3 之上进行医学调优，共享一个 4 亿参数的视觉编码器（MedSigLIP），后者由 SigLIP-400M 在数百万医学图像-文本对上微调而来。在 MedQA 上，MedGemma 27B Text 达到 86.2（Gemma 3 27B 为 74.9），MedGemma 4B 达到 64.1（Gemma 3 4B 为 52.4）。相对基础模型的分布外提升为：医学图像问答 2.6-10%、胸片 X 线征象分类 15.5-18.1%、智能体评测 10.8%。MedGemma 与 MedSigLIP 的权重开放发布，以支持本地评估与数据高效的微调。作者指出基准泄漏与分布外泛化仍是局限，并强调公开基准分数不等于临床验证。</p></section><section class="sbox"><span class="k">出处</span><p><b>Nature Medicine</b><br>2026 年 10 月 6 日<br><a href="https://doi.org/10.1038/s41591-026-04626-w" target="_blank" rel="noopener">阅读原文 ↗</a></p><p class="small">主领域：AI药物设计</p><p class="small cite">Andrew Sellergren 与 Sahar Kazemzadeh（共同第一作者），以及包括 Fereshteh Mahvar、Atilla Kiraly、Madeleine Traverse、Timo Kohlberger、Chufan Gao、Yun Liu、Shekoofeh Azizi、Dale Webster 等在内的庞大 Google 团队（Google，加州 Mountain View）；Charles Lau（Google，经由 Advanced Clinical，伊利诺伊州 Deerfield）；Catherine Kozlowski（Google，经由 Buchanan Ingersoll and Rooney PC，宾夕法尼亚州 Pittsburgh）。Shravya Shetty、David F. Steiner、Rory Pilgrim、Daniel Golden 与 Lin Yang 共同指导本研究。通讯作者：Andrew Sellergren、David F. Steiner、Daniel Golden 与 Lin Yang。由 Alphabet 资助；几乎所有作者均为 Google 现任或前任员工。</p></section><section class="sbox"><span class="k">作者介绍</span><p>通讯作者为 Andrew Sellergren、David F. Steiner、Daniel Golden 与 Lin Yang（均在 Google，加州 Mountain View）。Andrew Sellergren 与 Sahar Kazemzadeh 作为共同第一作者贡献相同；Shravya Shetty、David F. Steiner、Rory Pilgrim、Daniel Golden 与 Lin Yang 共同指导本研究。本研究由 Alphabet 资助。</p><div class="small"><p>全文（开放获取）：<a href="https://doi.org/10.1038/s41591-026-04626-w" target="_blank" rel="noopener">https://doi.org/10.1038/s41591-026-04626-w</a> ；<a href="https://www.nature.com/articles/s41591-026-04626-w" target="_blank" rel="noopener">https://www.nature.com/articles/s41591-026-04626-w</a> ；许可证 CC BY 4.0。模型与代码：<a href="https://goo.gle/medgemma" target="_blank" rel="noopener">https://goo.gle/medgemma</a> 与 <a href="https://goo.gle/hai-def" target="_blank" rel="noopener">https://goo.gle/hai-def</a>。</p></div></section><section class="sbox pv-card side-card"><h2>关键数据卡</h2>
+<ul>
+<li><b>研究类型</b>：医学 AI 模型研发与基准评测论文，描述一个开放权重的视觉-语言基础模型家族及图像编码器（Nature Medicine，开放获取，CC BY 4.0）。非临床试验</li>
+<li><b>样本量 n</b>：非患者研究。发布的模型集合包含四个成果：MedGemma 4B（多模态）、MedGemma 27B（多模态）、MedGemma 27B Text，以及 MedSigLIP（约 4 亿参数编码器）。在众多医学文本与影像基准上评测；留出的微调测试集包括 CRC100k（n=7,180 个组织病理图块）、ISIC 2017（n=600 张皮肤镜图像）与 SIIM-ACR（n=1,068 张胸片）</li>
+<li><b>对照</b>：同规模的 Gemma 3 基础模型（4B 与 27B）为主要基线；并与更大或基于 API 的前沿模型（如 Gemini 2.5、Med-Gemini）以及任务专用模型比较</li>
+<li><b>干预/剂量</b>：对 Gemma 3 进行医学领域适配，包括视觉编码器增强（SigLIP-400M 在数百万医学图像-文本对上微调，混合权重约 2%）、多模态解码器预训练（医学数据混合权重约 12%），以及通过蒸馏与强化学习的后训练。输入图像分辨率 896x896；发布的 MedSigLIP 为 448x448；上下文长度 128k；SentencePiece 分词器（262,000 条目）；在 TPUv4、TPUv5e 与 TPUv5p 上训练</li>
+<li><b>随访</b>：不适用。无纵向患者随访；评测为横断面基准测试加示例性微调实验</li>
+<li><b>主要终点</b>：无临床终点。核心读数为医学文本问答、图像分类、视觉问答、报告生成与智能体任务上的基准准确率及专家评分质量，涵盖分布内与分布外</li>
+<li><b>主要终点结果</b>：MedGemma 27B Text 在 MedQA 上得分 86.2（Gemma 3 27B 为 74.9）；MedGemma 4B 得分 64.1（Gemma 3 4B 为 52.4）。相对基础模型的分布外提升为医学图像 QA 2.6-10%、胸片 X 线征象分类 15.5-18.1%、智能体评测 10.8%。在发布时，除 671B 的 DeepSeek-R1（91.0）外，86.2 是开放模型在 MedQA 上的最佳成绩，领先次优的 OpenBioLLM 70B（78.2）。强化学习微调在 MIMIC-CXR 上达到 RadGraph F1 30.3（findings 加 impression）；81% 的生成胸片报告被评定为可能带来与原报告相同或更优的临床决策</li>
+<li><b>统计</b>：除非另有说明，每个样例单次推理；医学题集温度为 0.0。对类别不均衡的微调任务采用平衡准确率（balanced accuracy）；95% 置信区间通过 1,000 次非参数自助重采样（bootstrap）得到。部分置信区间见补充表格</li>
+<li><b>安全性</b>：非临床研究；无患者安全终点。作者强调基准表现仅是迈向真实世界验证的第一步，模型错误与分布偏差仍是风险，下游临床使用前需对安全性、性能与可靠性进行充分验证。公开基准分数不等于临床验证</li>
+<li><b>证据级别</b>：全文（Nature Medicine，开放获取，CC BY 4.0）。模型与代码在 <a href="https://goo.gle/medgemma" target="_blank" rel="noopener">https://goo.gle/medgemma</a> 与 <a href="https://goo.gle/hai-def" target="_blank" rel="noopener">https://goo.gle/hai-def</a> 开放发布</li>
+</ul>
+</section></aside>
+  <div class="amain">
+<div class="sec">
+<p><b>MedGemma 是一组基于 Gemma 3 构建的开放权重医学视觉-语言基础模型（4B 多模态、27B 多模态、27B 纯文本），并配有 MedSigLIP——一个约 4 亿参数、经医学调优的图像编码器；MedGemma 27B Text 在 MedQA 上得分 86.2，而 Gemma 3 27B 为 74.9，MedGemma 4B 为 64.1 对 52.4，分布外提升在医学图像 QA 上为 2.6-10%、在胸片 X 线征象分类上为 15.5-18.1%。</b></p>
+</div>
+
+<div class="fig paperfig"><div class="fig-scroll"><img src="../../img/w-medgemma_fig_zh_v4.jpg" alt="机制示意图" loading="lazy"></div>
+</div>
+<ul>
+<li>基于 Gemma 3 构建的开放权重医学视觉-语言家族（4B 与 27B 多模态、27B 文本）</li>
+<li>MedSigLIP——约 4 亿参数的医学图像编码器——驱动视觉理解，亦可独立使用</li>
+<li>相较基础 Gemma 3，在医学文本与影像上大幅提升，规模-性能效率突出</li>
+<li>开放发布支持本地、离线使用与数据高效的微调，但分数不等于临床验证</li>
+</ul>
+<p class="cap">示意图概括了将 Gemma 3 医学调优为 MedGemma 家族（共享 MedSigLIP 编码器）、与基础 Gemma 3 及更大前沿模型的基准比较，以及用于本地评估与微调的开放发布。</p>
+<div class="sec"><h2>背景与未决问题</h2>
+<p>现代医疗产生了前所未有的海量且多样的数据，诊断、治疗与监测都依赖于跨影像模态、专科与自由文本的证据整合。通用型大型多模态模型能力广泛，但往往缺乏稳健解读与推理医学数据所需的细致医学理解。与此同时，能力最强的前沿系统体量大、封闭且运行成本高，难以适配需要数据主权、离线运行、可复现的冻结检查点或严格算力预算的场景。</p>
+<p>在 Nature Medicine 上，Google 的 Sellergren、Kazemzadeh 及同事推出 MedGemma——一组基于 Gemma 3 构建的、经医学调优的开放权重视觉-语言基础模型，并配有经医学调优的图像编码器 MedSigLIP。他们针对的未决问题是：一个单一、相对较小的开放基础模型能否在众多影像领域与文本任务上针对医学进行专化，同时保留通用能力，并能否作为下游微调的数据高效起点。</p>
+</div>
+<div class="sec"><h2>研究设计</h2>
+<p>MedGemma 包含三个变体：两个多模态模型 MedGemma 4B 与 MedGemma 27B，可接受文本、图像或两者；以及针对文本输入优化的 MedGemma 27B Text。它们均基于 Gemma 3 架构，兼容现有 Gemma 基础设施，支持任意的图文交错与 128k 上下文窗口。共享的 4 亿参数视觉编码器 MedSigLIP 由 Gemma 3 的 SigLIP-400M 编码器在数百万医学图像-文本对上微调而来；为保留通用视觉能力，保留了原始 SigLIP 数据，并将医学数据以约 2% 的权重混入。图像以 896x896 处理，而单独发布的 MedSigLIP 以 448x448 运行，使用在相同权重上下采样的位置嵌入。</p>
+<p>训练分阶段进行。多模态解码器在预训练阶段重新适配增强后的编码器，医学图像-文本数据以约 12% 权重混入，并从 Gemma 3 检查点继续训练。后训练沿用 Gemma 3 的蒸馏与强化学习方案，在蒸馏中加入医学文本、在 RL 中加入配对的医学影像-文本；所有多模态后训练均通过 RL 完成，其泛化优于监督微调（SFT）。MedGemma 27B Text 仅使用后训练。评测涵盖分布内与分布外基准，分布外定义为完全从编码器训练、预训练与后训练中留出的数据集或划分。</p>
+</div>
+<div class="sec"><h2>关键结果</h2>
+<h3>医学文本问答</h3>
+<p>在纯文本生物医学问答上，MedGemma 超过同规模的 Gemma 3 基线，并与体量大得多的模型相当。MedGemma 27B Text 在 MedQA 上得分 86.2，而 Gemma 3 27B 为 74.9；MedGemma 4B 得分 64.1，而 Gemma 3 4B 为 52.4。发布时，除 671 亿参数的 DeepSeek-R1（91.0）外，86.2 是开放模型在 MedQA 上的最佳成绩，并大幅领先次优、有充分记录的开放模型 OpenBioLLM 70B（78.2）。评测使用 MedQA、MedMCQA、PubMedQA、MMLU 医学子集、AfriMed-QA 以及分布外的 MedXpertQA。在 MedHallu 难题集上，第三方评测发现 MedGemma 4B 得分 0.50，而 Gemma 3 4B 为 0.09，表明其在区分"貌似合理却错误"的答案上更强。</p>
+<h3>医学图像分类与视觉问答</h3>
+<p>在涵盖胸片、组织病理、皮肤科与视网膜的零样本医学图像分类上，MedGemma 大幅超越 Gemma 3 基线，并在多个任务上胜过体量大得多的基于 API 的模型。相对基础模型的分布外提升为医学图像问答 2.6-10%、胸片 X 线征象分类 15.5-18.1%。在医学 VQA 基准 SLAKE 与 VQA-RAD 上，MedGemma 同样超过基础 Gemma 3，并与体量大得多的基于 API 的模型表现相当。在 Chest ImaGenome 的解剖结构定位上，交并比（IoU）为 MedGemma 27B 0.16、Gemma 3 27B 0.08、MedGemma 4B 0.03、Qwen3-VL 4B 0.09，表明仍有明显改进空间。</p>
+<h3>报告生成、推理与智能体行为</h3>
+<p>在 MIMIC-CXR 上的胸片报告生成（RadGraph F1）中，预训练的 MedGemma 4B 达到或超过更大及任务专用的对照模型，强化学习微调在 findings 加 impression 上达到 RadGraph F1 30.3，被称为该指标与数据集上的最新水平（state of the art）。人类专家评定正常研究生成报告的 68%、异常研究生成报告的 49% 等于或优于原报告，对应 81% 被评定为可能带来相同或更优的临床决策。在开放式内容问题上，事实性不准确的回答相对下降约 17%（Gemma 3 4B 为 18.5%，MedGemma 4B 为 15.4%）。在纯文本 AgentClinic 基准中，MedGemma 27B 在 AgentClinic-MedQA 上超过人类医生表现，并接近体量大得多的模型，相对基础模型的智能体提升为 10.8%；4B 模型难以遵循该智能体框架。</p>
+<h3>微调效率与通用能力</h3>
+<p>在三个此前未见数据集（SIIM-ACR 气胸、CRC100k 组织病理、ISIC 2017 皮损）上的微调实验显示，MedGemma 4B 总体优于 Gemma 3 4B，且在仅使用 10% 数据时优势最为明显，支持数据高效的适配。在 SIIM-ACR 上，Gemma 3 退化为预测多数类，而 MedGemma 未出现此问题。在通用、非医学基准（MMLU Pro、Global MMLU Lite、MMMU）上，MedGemma 相对同规模 Gemma 3 仅有轻微下降，表明专化并未牺牲广泛能力。作者指出 MedGemma 4B 与最昂贵对照模型之间存在约 500 倍的算力成本差距。</p>
+</div>
+<div class="sec"><h2>机制解读</h2>
+<p><b>论文所证实的：</b> 通过经医学调优的共享视觉编码器（MedSigLIP）加上分阶段预训练与 RL 后训练，对开放基础模型（Gemma 3）进行医学领域适配，可在文本、图像分类、VQA、报告生成与智能体任务上相对同规模基础模型取得一致提升，同时基本保留通用性能。提升在视觉任务与数据有限的微调场景中最大，模型相对体量大得多的系统展现出突出的规模-性能比。MedSigLIP 单独使用即可支持数据高效与零样本的分类和检索，达到或优于专用编码器。</p>
+<p><b>作者假设：</b> 作者将 MedGemma 的优势归因于在预训练与后训练中对领域特定数据的优化融入，并认为开放发布能够实现数据与模型主权、离线使用及广泛的社区适配。他们建议，在需要冻结、本地或成本敏感模型时 MedGemma 最为适用，而前沿模型在追求最优广泛性能时可能仍更可取，二者还可在智能体场景中结合。他们提醒这些只是基线能力，意在作为起点，而非成熟的临床工具。</p>
+</div>
+<div class="sec"><h2>局限与不确定性</h2>
+<ul>
+<li>基准表现仅是迈向真实世界验证的第一步；部分基准可能已接近饱和，且公开基准带来测试数据泄漏的可能。</li>
+<li>分布外泛化仍是局限，公开基准分数明确不等于临床验证。</li>
+<li>在某些任务上专用模型仍可能胜过 MedGemma（例如最新水平的组织病理编码器）；多模态覆盖为二维，缺少 3D CT/MRI 序列以及基因组学等模态。</li>
+<li>模型错误与训练数据中的细微分布偏差仍是风险；若干训练数据集为私有、无法共享，限制了完全可复现性。该研究来自 Google、由 Alphabet 资助，几乎所有作者均为 Google 现任或前任员工。</li>
+</ul>
+</div>
+<div class="sec"><h2>临床与产业意义</h2>
+<p>MedGemma 为开发者提供了一个开放、相对较小的基础模型，可本地或离线运行、可冻结以保证可复现性、并能针对特定医学任务高效微调，这在数据主权、成本或可靠性限制封闭前沿模型使用的场景中颇具吸引力。作者强调的可能用途包括医学图像检索，将放射学、组织病理、眼科与皮肤科与临床文本相连接，为试验匹配、药物警戒与质量指标提取概念，以及在智能体框架内辅助报告生成。其直接贡献是一个统一、开放发布的起点，而非经过验证的临床产品：真实部署仍需针对具体用例的微调，以及对安全性、性能与可靠性的充分验证。</p>
+</div>
+
+  </div>
+ </div>
+</article>
+<section class="art-end" aria-label="继续阅读">
+ <div class="art-pn"><a class="pn prev" href="w-tem1657.html"><span class="k">← 上一篇</span><b>TEM1657 抑制 NFKBIZ，缓解小鼠银屑病样炎症</b><em>自身免疫与移植 · 2026.10.10</em></a><a class="pn next" href="c9-rna-10.html"><span class="k">下一篇 →</span><b>霰弹枪工程在 CHO 与 Jurkat 细胞中重建氨基酸合成</b><em>核酸与基因治疗 · 2026.10.06</em></a></div>
+ <div class="art-rel"><h2>相关阅读<small>AI药物设计</small></h2><ul><li><a href="c2-ai-4.html">Rentosertib 2a期：21/54项衰老钟比较显著</a><span>Nature Biotechnology · 2026.09.07</span></li><li><a href="c2-ai-1.html">511个AI抗体盲评：挑战2仅9.8–13.8%优于对照</a><span>Nature Biotechnology · 2026.08.19</span></li><li><a href="c2-ai-2.html">NISE零样本设计药物结合蛋白：APEX亲和力80 pM</a><span>Nature · 2026.06.24</span></li></ul></div>
+ <div class="art-sub"><div><b>每周一封，中文</b><p>九个领域的解读摘要加经济动态，正文附原文链接。免费，可随时退订。</p></div><a class="btn" href="/#support">订阅每周更新</a></div>
+</section>
+</div></div>
+<footer>
+  <div class="footshell"><div class="foot-in">
+    <div class="fbrand">
+      <b>前沿追踪</b>
+      <p class="fco" style="display:flex;align-items:center;gap:8px"><img src="../../assets/brand/qiyuan_mark_A_tight.svg" alt="" aria-hidden="true" width="28" height="26" style="display:block;height:26px;width:auto;flex:none"><span>启元智研 出品。九个领域的前沿进展与经济动态，中文整理。</span></p>
+    </div>
+    <div class="footnav">
+      <a href="/#home">首页</a><a href="/#fields">学术进展</a><a href="/#deals">经济动态</a><a href="/#archive">存档</a><a href="/#about">关于我们</a><a href="/#services">服务</a><a href="/#support">订阅</a>
+    </div>
+    <p class="footmail">广告、赞助、纠错都写 <a href="mailto:contact@therasik.com">contact@therasik.com</a></p>
+  </div></div>
+</footer>
+</body>
+</html>

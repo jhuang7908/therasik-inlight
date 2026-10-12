@@ -6,7 +6,47 @@
   <description>启元智研出品。九个领域的前沿进展与经济动态，中文整理。</description>
   <language>zh-CN</language>
   <atom:link href="https://inlight.therasik.com/feed.xml" rel="self" type="application/rss+xml"/>
-  <lastBuildDate>Tue, 06 Oct 2026 00:00:00 +0800</lastBuildDate>
+  <lastBuildDate>Sun, 11 Oct 2026 00:00:00 +0800</lastBuildDate>
+  <item>
+    <title>CD19 CAR 工程化调节性 T 细胞在实验性狼疮中驱动持久耐受</title>
+    <link>https://inlight.therasik.com/pages/article/w-cartreg.html</link>
+    <guid isPermaLink="true">https://inlight.therasik.com/pages/article/w-cartreg.html</guid>
+    <pubDate>Sun, 11 Oct 2026 00:00:00 +0800</pubDate>
+    <category>自身免疫与移植</category>
+    <description>将 CD19 CAR 递送与 FOXP3 位点的同源定向修复相结合，在 CD4 T 细胞中驱动组成型、稳定的 FOXP3 表达，制成 CAR19 EngTreg；这些细胞表达典型 Treg 标志物、产生极少量炎症因子，并阻断人 B 细胞向分泌抗体的浆细胞分化。在人源化小鼠中，CAR19 EngTreg 相比 CD19 CAR 效应 T 细胞（CAR Teff）以更低的炎症因子产量减少 B 细胞数量，并减轻组织炎症。在短期咪喹莫特诱导的炎症模型中，鼠源 CAR19 EngTreg 减轻皮肤病理、缩小脾脏并降低炎症因子。在两套不同的小鼠狼疮模型中，CAR19 EngTreg 存续超过四个月，减少自身免疫性 T 与 B 效应群体，持续降低多种自身抗体，并改善肾功能与组织病理。确切的队列规模、所用具体狼疮模型及各自身抗体数值在现有预印本摘要中未给出。</description>
+  </item>
+  <item>
+    <title>恢复脑内 IL-15 信号可解锁针对脑转移的固有淋巴样细胞免疫</title>
+    <link>https://inlight.therasik.com/pages/article/w-il15.html</link>
+    <guid isPermaLink="true">https://inlight.therasik.com/pages/article/w-il15.html</guid>
+    <pubDate>Sat, 10 Oct 2026 00:00:00 +0800</pubDate>
+    <category>肿瘤免疫与细胞治疗</category>
+    <description>作者用单细胞 RNA 测序与功能耗竭实验，比较乳腺癌脑转移（BCBM）与肝脏中的第 1 组固有淋巴样细胞（NK 细胞与 ILC1）。在肝脏中，多样且功能完备的第 1 组固有淋巴样细胞群体支持良好的转移控制；而在脑内，这些细胞多样性有限且表现出严重的组织特异性功能障碍，尽管有一定程度的脑实质浸润，耗竭它们对瘤荷没有影响。该功能障碍被归因于 IL-15 可得性的严重受限，脑内检出的 IL-15Rα 蛋白浓度约为肝脏的 1/500。局部给予 IL-15 复合物可恢复第 1 组固有淋巴样细胞的聚集、细胞毒性与组织驻留，并在不依赖 T 细胞的情况下显著降低脑转移负荷。颅内递送分泌 IL-15 的诱导多能干细胞来源 NK（iPSC-NK）细胞——该平台已在非小细胞肺癌中进入临床测试——同样显著降低瘤荷。各组小鼠数量与定量的负荷下降在现有预印本摘要中未给出。</description>
+  </item>
+  <item>
+    <title>调节线粒体的小分子 TEM1657 抑制 NFKBIZ 并缓解银屑病样炎症</title>
+    <link>https://inlight.therasik.com/pages/article/w-tem1657.html</link>
+    <guid isPermaLink="true">https://inlight.therasik.com/pages/article/w-tem1657.html</guid>
+    <pubDate>Sat, 10 Oct 2026 00:00:00 +0800</pubDate>
+    <category>自身免疫与移植</category>
+    <description>TEM1657，一种源自 3,5-二咖啡酰奎宁酸的小分子，在咪喹莫特诱导银屑病小鼠模型及 Th17 刺激的角质形成细胞中接受测试。机制上，其作用据报道通过调节线粒体动力学、尤其经由 OPA1（一种改变线粒体钙内流、进而影响细胞生物能学的内膜蛋白）介导；该分子迅速抑制 NFKBIZ 及其他多种银屑病相关基因的转录。在周报简报所述的动物研究中，小鼠被随机分为 7 组、每组 8 只（n=8），比较若干 TEM1657 浓度与氯倍他索丙酸酯 0.05% 阳性对照及溶剂对照；各测试浓度均缩小脾脏，0.8% 剂量改善体重相关读出。其余定量终点在预印本摘要中不可得。</description>
+  </item>
+  <item>
+    <title>MedGemma：基于 Gemma 3 构建的开放权重医学视觉-语言模型家族</title>
+    <link>https://inlight.therasik.com/pages/article/w-medgemma.html</link>
+    <guid isPermaLink="true">https://inlight.therasik.com/pages/article/w-medgemma.html</guid>
+    <pubDate>Tue, 06 Oct 2026 00:00:00 +0800</pubDate>
+    <category>AI药物设计</category>
+    <description>三个变体（MedGemma 4B 多模态、MedGemma 27B 多模态、MedGemma 27B Text）在 Gemma 3 之上进行医学调优，共享一个 4 亿参数的视觉编码器（MedSigLIP），后者由 SigLIP-400M 在数百万医学图像-文本对上微调而来。在 MedQA 上，MedGemma 27B Text 达到 86.2（Gemma 3 27B 为 74.9），MedGemma 4B 达到 64.1（Gemma 3 4B 为 52.4）。相对基础模型的分布外提升为：医学图像问答 2.6-10%、胸片 X 线征象分类 15.5-18.1%、智能体评测 10.8%。MedGemma 与 MedSigLIP 的权重开放发布，以支持本地评估与数据高效的微调。作者指出基准泄漏与分布外泛化仍是局限，并强调公开基准分数不等于临床验证。</description>
+  </item>
+  <item>
+    <title>霰弹枪基因工程在哺乳动物细胞中重建必需氨基酸合成</title>
+    <link>https://inlight.therasik.com/pages/article/c9-rna-10.html</link>
+    <guid isPermaLink="true">https://inlight.therasik.com/pages/article/c9-rna-10.html</guid>
+    <pubDate>Tue, 06 Oct 2026 00:00:00 +0800</pubDate>
+    <category>核酸与基因治疗</category>
+    <description>一个含 40 个成员、带条形码的转录单元文库（十个大肠杆菌编码序列、EF1a 或 PGK 启动子、含或不含线粒体靶向）以高感染复数递送。在 CHO 细胞中（MOI 8.8；242 万个细胞），蒙特卡洛抽样预测约 156 万种通路组合；CHO-Val-D1 与 CHO-Val-D3 在无缬氨酸培养基中分别以 1.14 天和 1.05 天倍增，带标记缬氨酸分别为 96.5% 与 96.6% 13C。CHO-Ile-10-H1 以 1.69 天倍增，带标记异亮氨酸 78.5%。在 Jurkat 细胞中（MOI 3.4；300 万个细胞），119 个克隆中有 85 个达到缬氨酸原养型阈值。功能通路偏好线粒体定位，并整合了数十千碱基的合成 DNA。</description>
+  </item>
   <item>
     <title>pIgR双抗在食蟹猴BAL中暴露提高5.5倍</title>
     <link>https://inlight.therasik.com/pages/article/c6-ab-9.html</link>
