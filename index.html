@@ -1507,6 +1507,8 @@ function repaintCatalog(){
   renderChips();
   fitCardChips();
   lgHtml=document.getElementById('latestgrid').innerHTML;
+  hfHtml=DEALS.slice(0,4).map((x,i)=>dealCard(x,'h'+i)).join('');
+  const _hf=document.getElementById('homefeed'); if(_hf) _hf.innerHTML=hfHtml;
   const hd=document.getElementById('hb-deep'), hb=document.getElementById('hb-deals');
   if(hd)hd.textContent=vis.length;
   if(hb)hb.textContent=DEALS.length;
@@ -1559,7 +1561,7 @@ function renderFeed(){
 }
 renderChips();renderFeed();
 const hf=document.getElementById('homefeed');
-const hfHtml=DEALS.slice(0,4).map((x,i)=>dealCard(x,'h'+i)).join('');
+let hfHtml=DEALS.slice(0,4).map((x,i)=>dealCard(x,'h'+i)).join('');
 const lg=document.getElementById('latestgrid');
 let lgHtml='';
 function refit(){ setHtml(lg,lgHtml); setHtml(hf,hfHtml); fitCardChips(); }
@@ -1776,7 +1778,8 @@ function mergeWeekly(data){
   if(fresh.length) CAT.unshift(...fresh);
   if(nd.length) DEALS.unshift(...nd);
   repaintCatalog();
-  if(!document.getElementById('v-deals').hidden) renderFeed();
+  renderFeed();
+  const _hf2=document.getElementById('homefeed'); if(_hf2){ hfHtml=DEALS.slice(0,4).map((x,i)=>dealCard(x,'h'+i)).join(''); _hf2.innerHTML=hfHtml; }
 }
 repaintCatalog();
 refit();
