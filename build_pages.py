@@ -110,7 +110,7 @@ ARTICLE_FOOT = """<footer>
     <div class="footnav">
       <a href="/#home">首页</a><a href="/#fields">学术进展</a><a href="/#deals">经济动态</a><a href="/#archive">存档</a><a href="/#about">关于我们</a><a href="/#services">服务</a><a href="/#support">订阅</a>
     </div>
-    <p class="footmail">广告、赞助、纠错都写 <a href="mailto:contact@therasik.com">contact@therasik.com</a></p>
+    <p class="footmail">广告、赞助、纠错都写 <a href="mailto:contact@inlightbio.com">contact@inlightbio.com</a></p>
   </div></div>
 </footer>"""
 
