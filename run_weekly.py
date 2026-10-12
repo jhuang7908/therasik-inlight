@@ -951,7 +951,7 @@ def wechat_html(articles: list[dict], deals: list[dict], week: str) -> str:
     parts.append('本期文字由 Claude 起草，配图由 gpt-image-1 生成（示意图，非期刊原图）。')
     parts.append('</p>')
     parts.append('<p style="font-size:14px;color:#666;margin:1em 0;">')
-    parts.append('纠错：contact@therasik.com')
+    parts.append('纠错：contact@inlightbio.com')
     parts.append('</p>')
     parts.append('<p style="font-size:14px;color:#0f6b5c;margin:1em 0;">')
     parts.append('完整版见「阅读原文」。')
