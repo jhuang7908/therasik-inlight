@@ -94,7 +94,7 @@ def article_nav(active: str = "") -> str:
     {item('/#home', '首页', 'home')}
     {item('/#fields', '学术进展', 'fields')}
     {item('/#deals', '经济动态', 'deals')}
-    {item('/#services', '服务', 'services')}
+    {item('/#services', '服务与合作', 'services')}
     {item('/#about', '关于我们', 'about')}
   </div>
   <a class="navsub" href="/#support">订阅</a>
@@ -108,7 +108,7 @@ ARTICLE_FOOT = """<footer>
       <p class="fco" style="display:flex;align-items:center;gap:8px"><img src="../../assets/brand/qiyuan_mark_A_tight.svg" alt="" aria-hidden="true" width="28" height="26" style="display:block;height:26px;width:auto;flex:none"><span>启元智研 出品。九个领域的前沿进展与经济动态，中文整理。</span></p>
     </div>
     <div class="footnav">
-      <a href="/#home">首页</a><a href="/#fields">学术进展</a><a href="/#deals">经济动态</a><a href="/#archive">存档</a><a href="/#about">关于我们</a><a href="/#services">服务</a><a href="/#support">订阅</a>
+      <a href="/#home">首页</a><a href="/#fields">学术进展</a><a href="/#deals">经济动态</a><a href="/#archive">存档</a><a href="/#about">关于我们</a><a href="/#services">服务与合作</a><a href="/#support">订阅</a>
     </div>
     <p class="footmail">广告、赞助、纠错都写 <a href="mailto:contact@inlightbio.com">contact@inlightbio.com</a></p>
   </div></div>
@@ -244,7 +244,7 @@ def build_article_page(article: dict, body_root: str, inner: dict, data: dict, e
 {FEED_LINK}
 <link rel="icon" type="image/png" href="../../img/favicon.png">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;800&family=Noto+Sans+SC:wght@400;500;700&display=swap">
-<link rel="stylesheet" href="../../site.css?v=2">
+<link rel="stylesheet" href="../../site.css?v=3">
 </head>
 <body>
 {article_nav()}

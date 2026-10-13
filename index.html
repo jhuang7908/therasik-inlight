@@ -677,6 +677,36 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 }
 @media (max-width:380px){.nav-in .nav-tabs a{padding:0 5px;font-size:12px}.navsub{padding:0 8px}}
 </style>
+<style>
+/* 深色顶栏（参照 inlightbio.com 深色配色） */
+nav{background:#111715;border-bottom:1px solid #2e3a37;backdrop-filter:none}
+nav .brand .bn,nav .qy-made{color:#e4ece9!important}
+nav .brand .bs{color:#9aaba6}
+nav .qy-made{border-right-color:#2e3a37}
+nav .nav-in a{color:#c9d6d2}
+nav .nav-in a:hover{background:#222b29;color:#fff}
+nav .nav-in a.on{background:#5cc4ae;color:#111715}
+nav .navsearch{color:#c9d6d2}
+nav .navsearch:hover,nav .navsearch[aria-expanded="true"]{background:#222b29;color:#5cc4ae}
+nav .navsub{background:#5cc4ae;color:#111715!important}
+nav .bmark-wrap{background:#e4ece9;border-radius:10px}
+/* BP 递交窗口 */
+.bpform{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;margin-top:12px}
+.bpform label{display:grid;gap:4px;font-size:13.5px;font-weight:600;color:var(--fg)}
+.bpform em{color:var(--c3);font-style:normal;margin-left:2px}
+.bpform input:not([type=checkbox]),.bpform select,.bpform textarea{font:inherit;font-size:14px;font-weight:400;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--fg);width:100%;box-sizing:border-box}
+.bpform input:focus,.bpform select:focus,.bpform textarea:focus{outline:2px solid var(--accent);outline-offset:0;border-color:var(--accent)}
+.bpform fieldset{border:1px solid var(--line);border-radius:8px;padding:6px 12px 10px;margin:0;display:flex;flex-wrap:wrap;gap:6px 16px}
+.bpform legend{font-size:13.5px;font-weight:600;padding:0 4px}
+.bpform label.ck{display:flex;align-items:center;gap:6px;font-weight:500}
+.bpform .full{grid-column:1/-1}
+.bpform .bpact{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.bpform button.btn{border:0;cursor:pointer;font-family:inherit}
+.bperr{color:var(--c3);font-size:13px}
+#bp,#bp-form-sec{scroll-margin-top:72px}
+.bpnote{background:var(--raise);border-left:4px solid var(--accent);border-radius:8px;padding:10px 12px;font-size:13.5px;max-width:none}
+@media (max-width:640px){.bpform{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
 
@@ -695,8 +725,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
     <a href="#home" data-v="home">首页</a>
     <a href="#fields" data-v="fields">学术进展</a>
     <a href="#deals" data-v="deals">经济动态</a>
-    <a href="#services" data-v="services">服务</a>
-    <a href="#bp" data-v="bp">项目合作</a>
+    <a href="#services" data-v="services">服务与合作</a>
     <a href="#about" data-v="about">关于我们</a>
   </div>
   <button class="navsearch" id="navsearch" type="button" aria-label="站内搜索" aria-expanded="false" aria-controls="srch" title="搜索（/）"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg></button>
@@ -1015,15 +1044,15 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
       <div class="cc"><span>纠错与建议</span><a href="mailto:contact@inlightbio.com?subject=%E7%BA%A0%E9%94%99%E4%B8%8E%E5%BB%BA%E8%AE%AE">同一邮箱，标题注明来意</a></div>
       <div class="cc"><span>每周邮件</span><a href="#support">订阅入口</a></div>
     </div>
-    <p>启元智研的内容与建站服务，见<a href="#services">服务页面</a>。</p>
+    <p>启元智研的内容与建站服务，见<a href="#services">服务与合作页面</a>。</p>
   </section>
 </div>
 
 <!-- ============ SERVICES ============ -->
 <div class="wrap view textpage" id="v-services" hidden>
   <header class="hero">
-    <h1>服务</h1>
-    <p style="display:flex;align-items:center;gap:8px"><img src="assets/brand/qiyuan_mark_A_tight.svg" alt="" aria-hidden="true" width="28" height="26" style="display:block;height:24px;width:auto;flex:none"><span>启元智研提供的内容与建站服务。</span></p>
+    <h1>服务与合作</h1>
+    <p style="display:flex;align-items:center;gap:8px"><img src="assets/brand/qiyuan_mark_A_tight.svg" alt="" aria-hidden="true" width="28" height="26" style="display:block;height:24px;width:auto;flex:none"><span>启元智研的内容与建站服务，以及创新药项目合作与 BP 投递。</span></p>
   </header>
   <section class="panel">
     <h2>我们提供的服务</h2>
@@ -1047,14 +1076,12 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
     <h2>联系我们</h2>
     <p>报价根据篇幅与交付周期确定。请将项目内容与时间要求发送至 <a href="mailto:contact@inlightbio.com?subject=%E5%90%88%E4%BD%9C%E5%92%A8%E8%AF%A2">contact@inlightbio.com</a>。</p>
   </section>
-</div>
 
-<!-- ============ BP 投递 / 项目合作 ============ -->
-<div class="wrap view textpage" id="v-bp" hidden>
-  <header class="hero">
-    <h1>项目合作 / BP投递</h1>
+  <!-- ===== 项目合作 / BP投递（原 #bp 视图，已并入服务与合作） ===== -->
+  <section class="panel" id="bp">
+    <h2>项目合作 / BP投递</h2>
     <p>面向临床及临床前阶段、尚未充分合作的创新资产，对接授权许可、NewCo 组建与联合开发等合作机会。</p>
-  </header>
+  </section>
   <section class="panel">
     <h2>合作方式</h2>
     <p>我们在全球范围内寻找具备差异化潜力、但尚未获得充分资源支持的创新药项目，评估其适合 NewCo、对外授权（License-out）还是联合开发，并协助设计交易结构：权益范围与地域、首付款、股权、里程碑付款与销售分成。</p>
@@ -1082,6 +1109,25 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
     <h2>投递方式</h2>
     <p>请将非保密摘要发送至 <a href="mailto:bd@inlightbio.com?subject=BP%E6%8A%95%E9%80%92%20%5BCN%5D">bd@inlightbio.com</a>，邮件标题注明「BP投递 [CN]」并附项目名称。我们会在收到后尽快回复初步意见。</p>
     <p><a class="btn" href="mailto:bd@inlightbio.com?subject=BP%E6%8A%95%E9%80%92%20%5BCN%5D">发送 BP</a></p>
+  </section>
+  <section class="panel bpform-wrap" id="bp-form-sec">
+    <h2>BP 递交窗口</h2>
+    <p>填写以下信息后点击「生成投递邮件」，系统将打开您的邮件客户端并自动填好收件人、标题与正文。本页不上传、不保存任何数据。</p>
+    <form class="bpform" id="bpform" novalidate>
+      <label><span>项目名称<em>*</em></span><input name="name" required maxlength="80"></label>
+      <label><span>公司 / 机构<em>*</em></span><input name="org" required maxlength="80"></label>
+      <label><span>联系人<em>*</em></span><input name="contact" required maxlength="40"></label>
+      <label><span>邮箱<em>*</em></span><input name="email" type="email" required maxlength="80"></label>
+      <label><span>靶点 / 分子类型<em>*</em></span><input name="target" required maxlength="120" placeholder="如：GLP-1R / 小分子；CD19×CD3 / 双抗"></label>
+      <label><span>适应症<em>*</em></span><input name="ind" required maxlength="120"></label>
+      <label><span>研发阶段<em>*</em></span><select name="stage" required><option value="">请选择</option><option>药物发现</option><option>临床前（PCC 已确定）</option><option>IND 申报中 / 已获批</option><option>临床 I 期</option><option>临床 II 期</option><option>临床 III 期</option><option>已上市</option></select></label>
+      <fieldset><legend>可授权权益<em>*</em></legend><label class="ck"><input type="checkbox" name="rights" value="全球">全球</label><label class="ck"><input type="checkbox" name="rights" value="美国以外">美国以外</label><label class="ck"><input type="checkbox" name="rights" value="区域权益">区域权益</label></fieldset>
+      <fieldset><legend>合作方式<em>*</em></legend><label class="ck"><input type="checkbox" name="mode" value="授权许可">授权许可</label><label class="ck"><input type="checkbox" name="mode" value="NewCo">NewCo</label><label class="ck"><input type="checkbox" name="mode" value="联合开发">联合开发</label></fieldset>
+      <label class="full"><span>非保密摘要<em>*</em></span><textarea name="sum" rows="6" required maxlength="1500" placeholder="作用机制、差异化优势、关键数据要点、IP 概况等（请勿填写保密信息）"></textarea></label>
+      <label class="ck full"><input type="checkbox" name="nc" required>我确认仅提交非保密信息</label>
+      <div class="full bpact"><button class="btn" type="submit">生成投递邮件</button><span class="bperr" id="bperr" role="alert"></span></div>
+      <p class="full bpnote" id="bpnote" hidden>请在弹出的邮件中附上非保密BP（PDF）后发送；如未弹出邮件，请直接发送至 <a href="mailto:bd@inlightbio.com?subject=BP%E6%8A%95%E9%80%92%20%5BCN%5D">bd@inlightbio.com</a>。</p>
+    </form>
   </section>
 </div>
 
@@ -1118,7 +1164,7 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
       <p class="fco" style="display:flex;align-items:center;gap:8px"><img src="assets/brand/qiyuan_mark_A_tight.svg" alt="" aria-hidden="true" width="28" height="26" style="display:block;height:26px;width:auto;flex:none"><span>启元智研 出品。九个领域的前沿进展与经济动态，中文整理。</span></p>
     </div>
     <div class="footnav">
-      <a href="#home">首页</a><a href="#fields">学术进展</a><a href="#deals">经济动态</a><a href="#archive">存档</a><a href="#about">关于我们</a><a href="#services">服务</a><a href="#support">订阅</a>
+      <a href="#home">首页</a><a href="#fields">学术进展</a><a href="#deals">经济动态</a><a href="#archive">存档</a><a href="#about">关于我们</a><a href="#services">服务与合作</a><a href="#support">订阅</a>
     </div>
     <p class="footmail">广告、赞助、纠错都写 <a href="mailto:contact@inlightbio.com">contact@inlightbio.com</a></p>
     <p class="footnote">如所报道公司为启元智研客户，将在文首标注。</p>
@@ -1681,7 +1727,7 @@ function renderConfs(){
       <div class="conftags"><span class="tag">${esc(x.kind)}</span>${(x.topics||[]).map(t=>`<span class="tag">${esc(t)}</span>`).join('')}<a href="${esc(x.url)}" target="_blank" rel="noopener">来源</a>${warn}</div>
     </article>`;}).join('');
 }
-const TITLES={home:'前沿追踪 - 中文生物医药前沿资讯',fields:'学术进展 - 前沿追踪',deals:'经济动态 - 前沿追踪',archive:'存档 - 前沿追踪',about:'关于我们 - 前沿追踪',support:'订阅 - 前沿追踪',bp:'项目合作 / BP投递 - 前沿追踪',services:'服务 - 前沿追踪',conf:'学术会议 - 前沿追踪'};
+const TITLES={home:'前沿追踪 - 中文生物医药前沿资讯',fields:'学术进展 - 前沿追踪',deals:'经济动态 - 前沿追踪',archive:'存档 - 前沿追踪',about:'关于我们 - 前沿追踪',support:'订阅 - 前沿追踪',services:'服务与合作 - 前沿追踪',conf:'学术会议 - 前沿追踪'};
 function route(){
   let h=(location.hash||'#home').slice(1);
   // Handle /a/{id} format from static share pages
@@ -1701,6 +1747,7 @@ function route(){
   // 查询参数：#deals?kind=acq 筛选交易类型；#fields?f=organoid 筛选主领域；#home?sec=articles 跳到解读区
   const qi=h.indexOf('?'), q=new URLSearchParams(qi<0?'':h.slice(qi+1));
   if(qi>=0) h=h.slice(0,qi);
+  const toBP=(h==='bp'||h==='bp-form'); const bpAnchor=h==='bp-form'?'bp-form-sec':'bp'; if(toBP) h='services';
   let target=document.getElementById('v-'+h)?h:'home';
   let pageTitle=TITLES[target]||TITLES.home;
   const paperId=h.startsWith('p-')?h.slice(2):(visibleCat().some(x=>x.id===h)?h:'');
@@ -1715,6 +1762,7 @@ function route(){
   }
   document.title=pageTitle;
   views.forEach(v=>{v.hidden = v.id!=='v-'+target});
+  if(toBP) setTimeout(()=>{const e=document.getElementById(bpAnchor); if(e) e.scrollIntoView({block:'start'});},80);
   if(target==='deals'){ const k=q.get('kind'); filter=(k&&DISPLAY_GROUPS.some(g=>g[0]===k))?k:'all'; renderChips(); renderFeed(); }
   if(target==='conf'){ renderConfs(); }
   if(target==='fields'){ const f=q.get('f'); ffilter=(f&&FIELDS.some(x=>x.k===f))?f:'all'; renderFields(); }
@@ -1835,5 +1883,21 @@ addEventListener('hashchange',route);
 route();
 </script>
 
+<script>
+(function(){const f=document.getElementById('bpform'); if(!f) return;
+f.addEventListener('submit',function(ev){ev.preventDefault();
+  const g=n=>(f.elements[n].value||'').trim(), cks=n=>[...f.querySelectorAll('input[name="'+n+'"]:checked')].map(x=>x.value);
+  const err=document.getElementById('bperr'), note=document.getElementById('bpnote'); err.textContent='';
+  const need=[['name','项目名称'],['org','公司 / 机构'],['contact','联系人'],['email','邮箱'],['target','靶点 / 分子类型'],['ind','适应症'],['stage','研发阶段'],['sum','非保密摘要']];
+  const miss=need.filter(([k])=>!g(k)).map(x=>x[1]);
+  if(!cks('rights').length) miss.push('可授权权益'); if(!cks('mode').length) miss.push('合作方式');
+  if(miss.length){err.textContent='请填写：'+miss.join('、');return;}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(g('email'))){err.textContent='邮箱格式不正确';return;}
+  if(!f.elements.nc.checked){err.textContent='请勾选「我确认仅提交非保密信息」';return;}
+  const body=['项目名称：'+g('name'),'公司 / 机构：'+g('org'),'联系人：'+g('contact'),'邮箱：'+g('email'),'靶点 / 分子类型：'+g('target'),'适应症：'+g('ind'),'研发阶段：'+g('stage'),'可授权权益：'+cks('rights').join('、'),'合作方式：'+cks('mode').join('、'),'','非保密摘要：',g('sum'),'','☑ 我确认仅提交非保密信息','','（请在本邮件中附上非保密 BP，PDF 格式）'].join('\r\n');
+  const url='mailto:bd@inlightbio.com?subject='+encodeURIComponent('BP投递 [CN] - '+g('name'))+'&body='+encodeURIComponent(body);
+  note.hidden=false; window.location.href=url;
+});})();
+</script>
 </body>
 </html>
