@@ -655,3 +655,17 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
   .navsub{padding:0 10px}
 }
 @media (max-width:380px){.nav-in .nav-tabs a{padding:0 5px;font-size:12px}.navsub{padding:0 8px}}
+
+/* 深色顶栏（参照 inlightbio.com 深色配色） */
+nav{background:#111715;border-bottom:1px solid #2e3a37;backdrop-filter:none}
+nav .brand .bn,nav .qy-made{color:#e4ece9!important}
+nav .brand .bs{color:#9aaba6}
+nav .qy-made{border-right-color:#2e3a37}
+nav .nav-in a{color:#c9d6d2}
+nav .nav-in a:hover{background:#222b29;color:#fff}
+nav .nav-in a.on{background:#5cc4ae;color:#111715}
+nav .navsearch{color:#c9d6d2}
+nav .navsearch:hover,nav .navsearch[aria-expanded="true"]{background:#222b29;color:#5cc4ae}
+nav .navsub{background:#5cc4ae;color:#111715!important}
+nav .bmark-wrap{background:#e4ece9;border-radius:10px}
+
