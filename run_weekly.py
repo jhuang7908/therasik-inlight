@@ -43,12 +43,21 @@ FIELDS = {
     "c9": "小核酸与 LNP",
 }
 DEAL_KINDS = {"acq", "lic", "newco", "clin", "inv", "policy"}
+# 配色锁定（2026-10-12，经 Jing 批准）：学术进展与经济动态两套固定风格，勿改。
+# 由 tools/audit_weekly.py 的 E4-分区配色 自动检查，见 docs/PUBLISH_CHECKLIST.md E4。
 IMAGE_PREFIX = (
-    "Flat BioRender-style scientific illustration on white background, "
-    "thin gray outlines, soft teal, coral, gold and blue-gray palette. "
-    "Minimalist, clean, diagrammatic. Show biological molecules, cells, or mechanisms. "
-    "No 3D effects, no glow, no gradients, no photorealism, no shadows. "
-    "Simple shapes only. The subject fills the frame. "
+    "Hand-drawn editorial illustration for a science article card, 16:10 landscape composition. "
+    "Soft pale-green watercolor washes with fine pencil lines on warm off-white paper (#f7f4ea), "
+    "visible paper grain, lots of white space. Two or three simple subjects arranged left to right. "
+    "Exactly one small red accent (terracotta red #C0492F). No blue tones. "
+    "No arrows, no diagrams, no 3D, no glow, no photorealism. Subject: "
+)
+DEAL_IMAGE_PREFIX = (
+    "Hand-drawn editorial illustration for a biopharma deal-news card, 16:10 landscape composition. "
+    "Pale light-blue and deep navy-blue watercolor washes with fine pencil lines on warm off-white paper, "
+    "visible paper grain, lots of white space. Two or three simple subjects. "
+    "Exactly one small red accent. No green tones. "
+    "No arrows, no charts with labels, no 3D, no glow, no photorealism. Subject: "
 )
 IMAGE_SUFFIX = (
     " No text, no letters, no words, no labels, no captions, no numbers, "
@@ -826,13 +835,15 @@ steps 必须是 3-5 个简短步骤（每个≤25字），描述论文的核心�
     return {"articles": articles[:cap_a], "deals": deals[:cap_d]}
 
 
-def draw_image(prompt: str, dest: Path) -> None:
+def draw_image(prompt: str, dest: Path, kind: str = "article") -> None:
+    """kind="article" 用学术进展绿色风格；kind="deal" 用经济动态蓝/海军蓝风格。"""
     from openai import OpenAI
 
     model = os.environ.get("OPENAI_IMAGE_MODEL", "gpt-image-1")
     # Sanitize model prompt to remove label requests, then add prefix and suffix
     clean_prompt = sanitize_image_prompt(prompt)
-    full_prompt = IMAGE_PREFIX + clean_prompt[:1000] + IMAGE_SUFFIX
+    prefix = DEAL_IMAGE_PREFIX if kind == "deal" else IMAGE_PREFIX
+    full_prompt = prefix + clean_prompt[:1000] + IMAGE_SUFFIX
     logging.info("画图 %s -> %s", model, dest.name)
     result = OpenAI().images.generate(
         model=model,
