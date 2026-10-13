@@ -671,5 +671,9 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 /* hero 加宽加高（参照 inlightbio.com：内容宽 1180px、hero 约 246px 高） */
 @media (max-width:1439px){.shell,.navshell,.footshell{max-width:1180px}}
 @media (min-width:1100px){.wrap{padding-left:10px;padding-right:10px}}
-@media (min-width:621px){.hero-band{min-height:246px}.hb-text{max-width:620px;padding:22px 24px 18px}}
+/* hero 高度与 inlightbio.com 实测一致（含 1px 边框：桌面 245.8px，768 宽 259.5px，手机 271.6px） */
+.hero-band{min-height:243.8px}
+.hb-text{max-width:620px;padding:16px 20px 14px}
+@media (max-width:899px){.hero-band{min-height:257.5px}}
+@media (max-width:620px){.hero-band{min-height:269.6px}.hb-text{padding:12px 14px 10px}}
 
