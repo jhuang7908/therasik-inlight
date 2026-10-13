@@ -678,18 +678,22 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 @media (max-width:380px){.nav-in .nav-tabs a{padding:0 5px;font-size:12px}.navsub{padding:0 8px}}
 </style>
 <style>
-/* 深色顶栏（参照 inlightbio.com 深色配色） */
-nav{background:#111715;border-bottom:1px solid #2e3a37;backdrop-filter:none}
-nav .brand .bn,nav .qy-made{color:#e4ece9!important}
-nav .brand .bs{color:#9aaba6}
-nav .qy-made{border-right-color:#2e3a37}
-nav .nav-in a{color:#c9d6d2}
-nav .nav-in a:hover{background:#222b29;color:#fff}
-nav .nav-in a.on{background:#5cc4ae;color:#111715}
-nav .navsearch{color:#c9d6d2}
-nav .navsearch:hover,nav .navsearch[aria-expanded="true"]{background:#222b29;color:#5cc4ae}
-nav .navsub{background:#5cc4ae;color:#111715!important}
-nav .bmark-wrap{background:#e4ece9;border-radius:10px}
+/* 顶栏：浅色背景 + 深色文字（参照 inlightbio.com 浅色模式） */
+.nav-in a{font-weight:600;color:color-mix(in srgb,var(--fg) 78%,var(--muted))}
+.nav-in a:hover{background:var(--raise);color:var(--fg)}
+.nav-in a.on{background:var(--accent);color:var(--bg)}
+@media (min-width:641px){
+  nav,.navshell,.nav-in{height:68px;max-height:68px;box-sizing:border-box}
+  .nav-in{padding:0 16px}
+  .nav-in .nav-tabs a{font-size:14.5px;height:42px;min-height:42px;padding:0 16px;border-radius:21px;font-weight:650;letter-spacing:.005em}
+  .navsub{height:42px;border-radius:21px}
+  .rail{top:80px;max-height:calc(100vh - 96px)}
+}
+@media (max-width:640px){.nav-in .nav-tabs a{font-weight:600}}
+/* hero 加宽加高（参照 inlightbio.com：内容宽 1180px、hero 约 246px 高） */
+@media (max-width:1439px){.shell,.navshell,.footshell{max-width:1180px}}
+@media (min-width:1100px){.wrap{padding-left:10px;padding-right:10px}}
+@media (min-width:621px){.hero-band{min-height:246px}.hb-text{max-width:620px;padding:22px 24px 18px}}
 /* BP 递交窗口 */
 .bpform{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;margin-top:12px}
 .bpform label{display:grid;gap:4px;font-size:13.5px;font-weight:600;color:var(--fg)}
