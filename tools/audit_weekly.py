@@ -239,7 +239,7 @@ def deal_key(d: dict) -> str:
 
 # ------------------------------------------------------------------ image metrics
 
-DEAL_BLUE_MIN = 0.15  # 经济动态图蓝色最低占比（配色锁定）
+DEAL_BLUE_MIN = 0.10  # 经济动态图蓝色最低占比（配色锁定）；lowered to 10% on 2026-10-15 for approved softer deal tone (Jing)
 DEAL_GREEN_MAX = 0.01  # 经济动态图绿色上限
 
 
@@ -568,7 +568,7 @@ def check_images(ctx: Ctx, site: Site, ref_groups: dict, new_items: set[str], we
             if m["red"] < 0.0005:
                 ctx.add("E4-分区配色", "图片", f"{item} [{g}]", "WARN", "未检出赤陶红强调色", new)
         if g == "deal":
-            # 配色锁定 2026-10-12：浅蓝 + 海军蓝水彩，蓝色占比须 ≥15%，不得含绿
+            # 配色锁定 2026-10-12：浅蓝 + 海军蓝水彩，蓝色占比须 ≥DEAL_BLUE_MIN（2026-10-15 起 10%），不得含绿
             if m["blue"] < DEAL_BLUE_MIN:
                 ctx.add("E4-分区配色", "图片", f"{item} [{g}]", "FAIL", f"经济动态图蓝色占比 {m['blue']:.1%} < {DEAL_BLUE_MIN:.0%}（应为浅蓝 + 海军蓝水彩加一点红）", new)
             if m["green"] > DEAL_GREEN_MAX:
