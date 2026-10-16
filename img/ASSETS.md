@@ -113,4 +113,4 @@ financing.
 - 顶栏标记改用 `img/logo_v2_512.png`（原图 1024：`img/logo_v2.png`）；旧 `img/logo.png` 保留不删。
 - favicon：`img/favicon_v2.png`（32×32）+ `img/favicon_v2_16.png`（16×16，简化版：镜圈、手柄、红色高亮线）。
 - apple-touch-icon：`img/apple-touch-icon_v2.png`（180×180）；分享图：`img/og-image_v2.png`（1200×630，同版式只换标记）。
-- `assets/brand/inlight_logo.png`（页脚“出品”与“出品方”区块）本次未改动。
+- 页脚“启光生物 出品”与“出品方”区块的品牌标记改用 `assets/brand/inlight_logo_v2.png`（1024×1024，同尺寸，由 logo_D 生成）；旧 `assets/brand/inlight_logo.png` 保留不删。
