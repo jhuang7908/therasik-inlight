@@ -56,7 +56,8 @@
     "img": "content/weekly/2026-10-11/images/w-20261006-43356a100f_card_v2.webp",
     "curated": false,
     "locked": false,
-    "status": "weekly",
+    "status": "excluded",
+    "excluded_reason": "duplicate of w-medgemma (fuller article with figure); removed from listings 2026-10-16",
     "study_type": "基础模型 / 基准评估",
     "evidence_level": "fulltext"
   },
