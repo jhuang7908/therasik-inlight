@@ -700,6 +700,16 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 .hb-text{max-width:620px;padding:16px 20px 14px}
 @media (max-width:899px){.hero-band{min-height:257.5px}}
 @media (max-width:620px){.hero-band{min-height:269.6px}.hb-text{padding:12px 14px 10px}}
+/* hero 右侧「欢迎订阅」卡片：桌面叠在插画上，手机排在按钮下方（不增高 hero） */
+.hb-sub{position:relative;z-index:2;display:grid;gap:6px;padding:14px 16px;border-radius:12px;background:color-mix(in srgb,var(--surface) 88%,transparent);border:1px solid var(--line);box-shadow:0 4px 18px rgba(29,42,39,.08);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.hb-sub h2{font-family:var(--display);font-size:17px;font-weight:800;line-height:1.3;color:var(--fg);margin:0}
+.hb-sub p{font-size:13px;line-height:1.5;color:var(--muted);margin:0;text-indent:0;text-align:left}
+.hb-sub .hbs-row{display:flex;gap:6px;margin-top:2px}
+.hb-sub input{flex:1;min-width:0;height:36px;padding:0 12px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--fg);font:inherit;font-size:13px}
+.hb-sub input:focus{outline:2px solid color-mix(in srgb,var(--accent) 45%,transparent);outline-offset:1px}
+.hb-sub .btn{flex:none;min-height:36px;height:36px;padding:0 16px;font-size:13px;font-weight:800;border:0;cursor:pointer;display:inline-flex;align-items:center}
+@media (min-width:769px){.hero-band{grid-template-columns:minmax(0,1fr) 300px;column-gap:20px}.hb-sub{grid-column:2;align-self:center;margin-right:28px}}
+@media (max-width:768px){.hero-band{align-content:end}.hb-sub{margin:0 14px 10px;padding:0;background:none;border:0;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;gap:3px}.hb-sub .hbs-head{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.hb-sub h2{font-size:14px}.hb-sub p{font-size:12px}.hb-text{padding-bottom:2px}}
 /* BP 递交窗口 */
 .bpform{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;margin-top:12px}
 .bpform label{display:grid;gap:4px;font-size:13.5px;font-weight:600;color:var(--fg)}
@@ -832,6 +842,13 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
         <span><b>9</b> 个领域</span><span>解读 <b id="hb-deep">0</b></span><span>动态 <b id="hb-deals">0</b></span>
       </div>
     </div>
+    <form class="hb-sub" id="hb-sub" action="mailto:contact@inlightbio.com?subject=%E8%AE%A2%E9%98%85%E5%90%AF%E5%85%89%E7%94%9F%E7%89%A9%E7%A7%91%E6%8A%80%E8%B5%84%E8%AE%AF%E6%AF%8F%E5%91%A8%E6%9B%B4%E6%96%B0%20%5BCN%5D" method="post" enctype="text/plain">
+      <div class="hbs-head"><h2>欢迎订阅</h2><p>每周一封，学术进展与交易动态</p></div>
+      <div class="hbs-row">
+        <input name="email" type="email" required maxlength="80" placeholder="你的邮箱" aria-label="邮箱" autocomplete="email">
+        <button class="btn" type="submit">订阅</button>
+      </div>
+    </form>
   </section>
 
   <!-- 头条：对标 BioPharma Dive / Fierce 的 lead story -->
@@ -1924,6 +1941,13 @@ f.addEventListener('submit',function(ev){ev.preventDefault();
   const body=['项目名称：'+g('name'),'公司 / 机构：'+g('org'),'联系人：'+g('contact'),'邮箱：'+g('email'),'靶点 / 分子类型：'+g('target'),'适应症：'+g('ind'),'研发阶段：'+g('stage'),'可授权权益：'+cks('rights').join('、'),'合作方式：'+cks('mode').join('、'),'','非保密摘要：',g('sum'),'','☑ 我确认仅提交非保密信息','','（请在本邮件中附上非保密 BP，PDF 格式）'].join('\r\n');
   const url='mailto:bd@inlightbio.com?subject='+encodeURIComponent('BP投递 [CN] - '+g('name'))+'&body='+encodeURIComponent(body);
   note.hidden=false; window.location.href=url;
+});})();
+</script>
+<script>
+/* hero 订阅卡：与订阅页相同的 mailto 流程（contact@inlightbio.com，标题「订阅启光生物科技资讯每周更新 [CN]」） */
+(function(){const f=document.getElementById('hb-sub');if(!f)return;f.addEventListener('submit',function(e){
+  e.preventDefault();const em=(f.email.value||'').trim();if(!em||!f.email.checkValidity()){f.email.reportValidity();return;}
+  window.location.href='mailto:contact@inlightbio.com?subject='+encodeURIComponent('订阅启光生物科技资讯每周更新 [CN]')+'&body='+encodeURIComponent('订阅邮箱：'+em);
 });})();
 </script>
 </body>
