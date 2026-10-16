@@ -686,28 +686,30 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 .hb-sub input{flex:1;min-width:0;height:36px;padding:0 12px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--fg);font:inherit;font-size:13px}
 .hb-sub input:focus{outline:2px solid color-mix(in srgb,var(--accent) 45%,transparent);outline-offset:1px}
 .hb-sub .btn{flex:none;min-height:36px;height:36px;padding:0 16px;font-size:13px;font-weight:800;border:0;cursor:pointer;display:inline-flex;align-items:center}
-/* 2026-10-16 Jing：订阅放 hero 右下角、不遮挡插画、尽量压低高度。
-   桌面：插画收进右上方的独立框（只显示细胞簇、边缘淡出，不再铺满整个 hero），订阅为右下角单行；hero 高度由左侧文字决定。 */
+/* 2026-10-16 Jing「原来图好看…重新布局」：插画恢复原尺寸、铺满 hero 右侧（与原来同比例，仅整体右移约 8%，让细胞落在右侧约 42% 的栏内）；
+   左侧文字栏约 58%，订阅放在文字栏右下（与按钮、数据同高，紧贴插画左侧），不压图；hero 最小高度降到 228px（原 243.8px），保留足够的细胞画面。 */
 @media (min-width:769px){
-  .hero-band{min-height:0;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:1fr auto;align-items:stretch;column-gap:16px;background:linear-gradient(100deg,var(--surface) 0%,var(--surface) 55%,color-mix(in srgb,var(--accent) 5%,var(--surface)) 100%)}
-  .hero-band::after{display:none}
-  .hb-text{grid-column:1;grid-row:1 / span 2;align-self:center;max-width:620px;padding:10px 20px 10px;gap:4px}
-  .hb-art{position:relative;inset:auto;z-index:auto;grid-column:2;grid-row:1;justify-self:end;align-self:end;width:calc(var(--hb-art-h,120px) * .8278);height:var(--hb-art-h,120px);margin:6px 40px 0 0;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 9%,#000 91%,transparent),linear-gradient(180deg,transparent,#000 5%,#000 95%,transparent);-webkit-mask-composite:source-in;mask-image:linear-gradient(90deg,transparent,#000 9%,#000 91%,transparent),linear-gradient(180deg,transparent,#000 5%,#000 95%,transparent);mask-composite:intersect}
-  .hb-art svg{display:none}
-  .hb-art img{inset:auto;top:0;left:-102.35%;width:auto;height:100%;max-width:none;object-fit:fill}
-  .hb-sub{grid-column:2;grid-row:2;justify-self:end;align-self:end;display:flex;align-items:center;gap:10px;margin:4px 12px 9px 0;padding:5px 5px 5px 12px;border-radius:999px;box-shadow:0 2px 8px rgba(29,42,39,.06);-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--surface)}
-  .hb-sub .hbs-head{display:grid;gap:0}
+  .hero-band{min-height:228px;align-items:center;background:var(--surface)}
+  .hb-art img{left:8.1%;right:auto;width:100%}
+  .hero-band::after{background:linear-gradient(95deg,rgba(255,255,255,.96) 8.1%,rgba(255,255,255,.92) 58.1%,rgba(255,255,255,.4) 100%)}
+  .hb-text{width:58%;max-width:58%;box-sizing:border-box;padding:12px 20px 12px;gap:4px;grid-template-columns:minmax(0,1fr) auto;column-gap:16px}
+  .hb-text>*{grid-column:1 / -1}
+  .hb-text>.hb-cta{grid-column:1;grid-row:4}
+  .hb-text>.hb-stats{grid-column:1;grid-row:5}
+  .hb-text>.hb-sub{grid-column:2;grid-row:4 / span 2;align-self:end;justify-self:end;display:grid;gap:3px;margin:0;padding:0;background:none;border:0;border-radius:0;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+  .hb-sub .hbs-head{display:flex;align-items:baseline;gap:8px;white-space:nowrap}
   .hb-sub h2{font-size:13.5px;line-height:1.25}
-  .hb-sub p{font-size:11.5px;line-height:1.3;white-space:nowrap}
+  .hb-sub p{font-size:11.5px;line-height:1.3}
   .hb-sub .hbs-row{margin:0;gap:5px}
-  .hb-sub input{width:170px;flex:none;height:32px}
+  .hb-sub input{width:180px;flex:none;height:32px}
   .hb-sub .btn{height:32px;min-height:32px;padding:0 14px}
 }
-/* 769–859px：右栏放不下单行订阅，订阅排在左栏底部，插画在右侧整高 */
-@media (min-width:769px) and (max-width:859px){
-  .hb-text{grid-row:1}
-  .hb-art{grid-row:1 / span 2;align-self:center;margin:8px 20px 8px 0}
-  .hb-sub{grid-column:1;justify-self:start;margin:0 0 10px 20px}
+@media (min-width:769px) and (prefers-color-scheme:dark){:root:not([data-theme="light"]) .hero-band::after{background:linear-gradient(100deg,rgba(17,23,21,.93) 8.1%,rgba(17,23,21,.8) 52.1%,rgba(17,23,21,.33) 100%)}}
+@media (min-width:769px){:root[data-theme="dark"] .hero-band::after{background:linear-gradient(100deg,rgba(17,23,21,.93) 8.1%,rgba(17,23,21,.8) 52.1%,rgba(17,23,21,.33) 100%)}}
+/* 769–979px：文字栏放不下按钮+订阅同行，订阅排在按钮下方（仍在左栏内） */
+@media (min-width:769px) and (max-width:979px){
+  .hb-text>.hb-sub{grid-column:1;grid-row:5;justify-self:start}
+  .hb-text>.hb-stats{grid-row:6}
 }
-@media (max-width:768px){.hero-band{min-height:0;align-content:end}.hb-sub{margin:0 14px 10px;padding:0;background:none;border:0;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;gap:3px}.hb-sub .hbs-head{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.hb-sub h2{font-size:14px}.hb-sub p{font-size:12px}.hb-text{padding:10px 14px 2px;gap:4px}.hb-cta .btn{min-height:36px;height:36px;padding:0 14px}.hb-sub .btn,.hb-sub input{height:34px;min-height:34px}}
+@media (max-width:768px){.hero-band{min-height:0}.hb-text>.hb-cta{grid-row:4}.hb-text>.hb-sub{grid-row:5;margin:2px 0 0;padding:0;background:none;border:0;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;gap:3px}.hb-text>.hb-stats{grid-row:6}.hb-sub .hbs-head{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.hb-sub h2{font-size:14px}.hb-sub p{font-size:12px}.hb-text{padding:10px 14px 10px;gap:4px}.hb-cta .btn{min-height:36px;height:36px;padding:0 14px}.hb-sub .btn,.hb-sub input{height:34px;min-height:34px}}
 
