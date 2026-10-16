@@ -319,7 +319,9 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 .foot-in div p{max-width:none}
 .foot-in b{font-family:var(--display);font-size:15px}
 .foot-in p{font-size:13px;color:var(--muted)}
-.coblock .colockup{display:block;height:64px;width:auto;margin:4px 0 2px}
+.coblock .corow{display:flex;align-items:center;gap:12px}
+.coblock .corow .colockup{display:block;flex:none;height:40px;width:40px;margin:0}
+.textpage .coblock .corow p,.coblock .corow p{margin:0;text-indent:0;text-align:left}
 .footnav{display:flex;gap:16px;flex-wrap:wrap}
 .footnav a{font-size:13.5px}
 .footmail{font-size:13px;color:var(--muted)}

@@ -340,7 +340,9 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 .foot-in div p{max-width:none}
 .foot-in b{font-family:var(--display);font-size:15px}
 .foot-in p{font-size:13px;color:var(--muted)}
-.coblock .colockup{display:block;height:64px;width:auto;margin:4px 0 2px}
+.coblock .corow{display:flex;align-items:center;gap:12px}
+.coblock .corow .colockup{display:block;flex:none;height:40px;width:40px;margin:0}
+.textpage .coblock .corow p,.coblock .corow p{margin:0;text-indent:0;text-align:left}
 .footnav{display:flex;gap:16px;flex-wrap:wrap}
 .footnav a{font-size:13.5px}
 .footmail{font-size:13px;color:var(--muted)}
@@ -1041,8 +1043,10 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 
   <section class="panel coblock">
     <h2>出品方</h2>
-    <img class="colockup" src="assets/brand/inlight_logo.png" alt="启光生物 InLight Bio" width="64" height="64" style="border-radius:22%">
-    <p>启光生物科技资讯由启光生物出品和维护。</p>
+    <div class="corow">
+      <img class="colockup" src="assets/brand/inlight_logo.png" alt="启光生物 InLight Bio" width="40" height="40" style="border-radius:22%">
+      <p>启光生物科技资讯由启光生物出品和维护。</p>
+    </div>
   </section>
 
   <section class="panel">
