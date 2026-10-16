@@ -87,7 +87,7 @@ def article_nav(active: str = "") -> str:
     return f"""<nav><div class="navshell"><div class="nav-in">
   <a class="qy-made" href="/#about" title="启光生物（InLight Bio）"><span>启光生物 出品</span></a>
   <a class="brand" href="/#home">
-    <span class="bmark-wrap"><img src="../../img/logo.png" alt=""></span>
+    <span class="bmark-wrap"><img src="../../img/logo_v2_512.png" alt=""></span>
     <span class="btext"><span class="bn">启光生物科技资讯</span><span class="bs">INLIGHT BIO</span></span>
   </a>
   <div class="nav-tabs">
@@ -243,7 +243,8 @@ def build_article_page(article: dict, body_root: str, inner: dict, data: dict, e
 <meta property="article:section" content="{html.escape(rec['n'])}">
 <link rel="canonical" href="{html.escape(page_url)}">
 {FEED_LINK}
-<link rel="icon" type="image/png" href="../../img/favicon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../../img/favicon_v2.png">
+<link rel="icon" type="image/png" sizes="16x16" href="../../img/favicon_v2_16.png">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;800&family=Noto+Sans+SC:wght@400;500;700&display=swap">
 <link rel="stylesheet" href="../../site.css?v=4">
 </head>
