@@ -98,6 +98,7 @@ def article_nav(active: str = "") -> str:
     {item('/#about', '关于我们', 'about')}
   </div>
   <a class="navsub" href="/#support">订阅</a>
+  <a class="navlang" href="https://inlightbio.com/" hreflang="en" lang="en" title="English site · InLight Bio" aria-label="English site (inlightbio.com)">EN</a>
 </div></div></nav>"""
 
 

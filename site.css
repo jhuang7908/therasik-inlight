@@ -707,3 +707,9 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 @media (min-width:769px) and (max-width:959px){.hb-text>.hb-sub{display:grid;gap:3px}.hb-sub .hbs-head{display:flex;align-items:baseline;gap:8px}.hb-sub input{width:170px}}
 @media (max-width:768px){.hero-band{min-height:0}.hb-text>.hb-sub{margin:4px 0 0;padding:0;background:none;border:0;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;gap:3px}.hb-sub .hbs-head{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.hb-sub h2{font-size:14px}.hb-sub p{font-size:12px}.hb-text{padding:10px 14px 12px;gap:4px}.hb-sub .btn,.hb-sub input{height:34px;min-height:34px}}
 
+/* 顶栏右上角 EN 链接：指向英文站 inlightbio.com；手机端收紧导航间距，避免加重「关于我们」被裁切 */
+.nav-in a.navlang{flex-shrink:0;height:28px;min-height:28px;padding:0 9px;margin-left:6px;border:1px solid var(--line);border-radius:14px;font-size:12px;font-weight:700;letter-spacing:.06em;color:var(--accent)}
+.nav-in a.navlang:hover{background:var(--raise);color:var(--accent);border-color:var(--accent)}
+@media (min-width:641px){.nav-in a.navlang{height:32px;min-height:32px;padding:0 11px;border-radius:16px;margin-left:8px}}
+@media (max-width:480px){.nav-in a.navlang{height:26px;min-height:26px;padding:0 5px;margin-left:0;font-size:11px;letter-spacing:.04em}.nav-in .nav-tabs a{padding:0 3px}.nav-in .nav-tabs a.on{padding:0 6px}.nav-in a.navsub{padding:0 7px}}
+@media (max-width:380px){.nav-in .nav-tabs a{padding:0 2px;font-size:11.5px}.nav-in .nav-tabs a.on{padding:0 4px}.nav-in a.navsub{padding:0 7px}}
