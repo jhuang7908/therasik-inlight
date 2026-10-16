@@ -644,7 +644,7 @@ def claude_draft(items: list[dict], config: dict) -> dict:
         },
     }
 
-    prompt = f"""你是前沿追踪的编辑。下面是过去 {config.get('window_days', 7)} 天从固定来源抓到的条目，每条只有标题、链接、日期和来源摘要。
+    prompt = f"""你是启光生物科技资讯的编辑。下面是过去 {config.get('window_days', 7)} 天从固定来源抓到的条目，每条只有标题、链接、日期和来源摘要。
 
 ## 规则
 
@@ -658,7 +658,7 @@ def claude_draft(items: list[dict], config: dict) -> dict:
 - 不写许可或版权自辩（如“许可为 CC BY，正文为改写”）。
 - 免责与说明（不构成投资建议、配图由 AI 生成、来源说明）由网站模板统一给出，正文里不要重复。
 - 各来源数字不一致时只写一次，格式为“各来源数字不一：A 报 X，B 报 Y。”，不写“本文按……”“口径冲突”之类的处理说明。
-- 不解释页面版式（“本页列出……”“下方卡片……”“点击……”），不写“前沿追踪即为……样例”这类自我介绍，不为自身独立性辩护。
+- 不解释页面版式（“本页列出……”“下方卡片……”“点击……”），不写“启光生物科技资讯即为……样例”这类自我介绍，不为自身独立性辩护。
 - 不用口语或俚语做自我评价。
 
 ## 领域分类规则
@@ -919,7 +919,7 @@ def wechat_html(articles: list[dict], deals: list[dict], week: str) -> str:
     
     parts = [
         '<section style="font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,sans-serif;font-size:16px;line-height:1.75;color:#333;">',
-        f'<p style="font-size:14px;color:#666;">前沿追踪 · {week} · 启元智研 出品</p>',
+        f'<p style="font-size:14px;color:#666;">启光生物科技资讯 · {week} · 启光生物 出品</p>',
     ]
     
     # Table of contents
@@ -1056,7 +1056,7 @@ def update_latest(dest: Path) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="生成一周的前沿追踪内容")
+    parser = argparse.ArgumentParser(description="生成一周的启光生物科技资讯内容")
     parser.add_argument("--dry-run", action="store_true", help="只写到 preview/（或 --out-dir），不改网站内容目录")
     parser.add_argument("--fetch-only", action="store_true", help="只抓取来源（含公告），写 candidates.json；不调用 Claude/OpenAI，不需要密钥")
     parser.add_argument("--out-dir", help="预览输出目录（配合 --dry-run / --fetch-only），默认 preview/weekly/日期")

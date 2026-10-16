@@ -618,11 +618,11 @@ footer{border-top:1px solid var(--line);background:var(--surface);margin-top:20p
 .srch-item span{font-size:12.5px;color:var(--muted);line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .srch-item em{font-style:normal;font-size:11.5px;color:#2f5d46;font-weight:700}
 .srch mark{background:rgba(192,73,47,.16);color:inherit;border-radius:2px;padding:0 1px}
-/* 左上角：启元智研 出品 */
+/* 左上角：启光生物 出品 */
 .navshell{position:relative}
 .qy-made{display:flex;align-items:center;gap:7px;flex-shrink:0;padding:0 12px 0 2px!important;margin-right:10px;height:36px;border-right:1px solid var(--line);border-radius:0!important;color:var(--fg)!important;font-size:14px!important;font-weight:700;white-space:nowrap}
 .qy-made:hover{background:none!important;opacity:.85}
-.qy-made img{display:block;height:24px;width:auto;flex:none}
+.qy-made img{display:block;height:24px;width:auto;flex:none;border-radius:22%}
 @media (max-width:899px){.qy-made{display:none!important}}
 @media (min-width:1440px){.qy-made{position:absolute;left:14px;top:50%;transform:translateY(-50%);border-right:0;margin:0;font-size:15px!important}.qy-made img{height:26px}}
 

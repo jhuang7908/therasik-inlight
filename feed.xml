@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
 <channel>
-  <title>前沿追踪 Frontier Digest</title>
+  <title>启光生物科技资讯</title>
   <link>https://inlight.therasik.com/</link>
-  <description>启元智研出品。九个领域的前沿进展与经济动态，中文整理。</description>
+  <description>启光生物出品。九个领域的前沿进展与经济动态，中文整理。</description>
   <language>zh-CN</language>
   <atom:link href="https://inlight.therasik.com/feed.xml" rel="self" type="application/rss+xml"/>
   <lastBuildDate>Sun, 11 Oct 2026 00:00:00 +0800</lastBuildDate>

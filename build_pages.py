@@ -85,10 +85,10 @@ def article_nav(active: str = "") -> str:
         on = ' class="on"' if key == active else ""
         return f'<a href="{href}"{on}>{label}</a>'
     return f"""<nav><div class="navshell"><div class="nav-in">
-  <a class="qy-made" href="/#about" title="启元智研（北京）生物科技有限公司"><img src="../../assets/brand/qiyuan_mark_A_tight.svg" alt="" aria-hidden="true" width="28" height="26"><span>启元智研 出品</span></a>
+  <a class="qy-made" href="/#about" title="启光生物（InLight Bio）"><span>启光生物 出品</span></a>
   <a class="brand" href="/#home">
     <span class="bmark-wrap"><img src="../../img/logo.png" alt=""></span>
-    <span class="btext"><span class="bn">前沿追踪</span><span class="bs">FRONTIER DIGEST</span></span>
+    <span class="btext"><span class="bn">启光生物科技资讯</span><span class="bs">INLIGHT BIO</span></span>
   </a>
   <div class="nav-tabs">
     {item('/#home', '首页', 'home')}
@@ -104,8 +104,8 @@ def article_nav(active: str = "") -> str:
 ARTICLE_FOOT = """<footer>
   <div class="footshell"><div class="foot-in">
     <div class="fbrand">
-      <b>前沿追踪</b>
-      <p class="fco" style="display:flex;align-items:center;gap:8px"><img src="../../assets/brand/qiyuan_mark_A_tight.svg" alt="" aria-hidden="true" width="28" height="26" style="display:block;height:26px;width:auto;flex:none"><span>启元智研 出品。九个领域的前沿进展与经济动态，中文整理。</span></p>
+      <b>启光生物科技资讯</b>
+      <p class="fco" style="display:flex;align-items:center;gap:8px"><img src="../../assets/brand/inlight_logo.png" alt="" aria-hidden="true" width="26" height="26" style="display:block;height:26px;width:auto;flex:none;border-radius:22%"><span>启光生物 出品。九个领域的前沿进展与经济动态，中文整理。</span></p>
     </div>
     <div class="footnav">
       <a href="/#home">首页</a><a href="/#fields">学术进展</a><a href="/#deals">经济动态</a><a href="/#archive">存档</a><a href="/#about">关于我们</a><a href="/#services">服务与合作</a><a href="/#support">订阅</a>
@@ -114,7 +114,7 @@ ARTICLE_FOOT = """<footer>
   </div></div>
 </footer>"""
 
-FEED_LINK = f'<link rel="alternate" type="application/rss+xml" title="前沿追踪" href="{SITE_URL}/feed.xml">'
+FEED_LINK = f'<link rel="alternate" type="application/rss+xml" title="启光生物科技资讯" href="{SITE_URL}/feed.xml">'
 
 
 def _short_date(ds: str) -> str:
@@ -218,14 +218,14 @@ def build_article_page(article: dict, body_root: str, inner: dict, data: dict, e
         author_intro=author_intro,
     )
     preprint_bit = " · 预印本（未经同行评审）" if article.get("preprint") else ""
-    og_title = html.escape(f"{title} - 前沿追踪")
+    og_title = html.escape(f"{title} - 启光生物科技资讯")
     og_desc = html.escape((quick_look or one)[:200] if (quick_look or one) else rec["n"])
     return f"""<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>{html.escape(title)} - 前沿追踪</title>
+<title>{html.escape(title)} - 启光生物科技资讯</title>
 <meta name="description" content="{og_desc}">
 <meta property="og:title" content="{og_title}">
 <meta property="og:description" content="{og_desc}">
@@ -233,7 +233,7 @@ def build_article_page(article: dict, body_root: str, inner: dict, data: dict, e
 <meta property="og:url" content="{html.escape(page_url)}">
 <meta property="og:image" content="{html.escape(og_image)}">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:site_name" content="前沿追踪">
+<meta property="og:site_name" content="启光生物科技资讯">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{og_title}">
 <meta name="twitter:description" content="{og_desc}">
@@ -335,9 +335,9 @@ def write_feed(published: list[dict]) -> Path:
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">',
         "<channel>",
-        "  <title>前沿追踪 Frontier Digest</title>",
+        "  <title>启光生物科技资讯</title>",
         f"  <link>{SITE_URL}/</link>",
-        "  <description>启元智研出品。九个领域的前沿进展与经济动态，中文整理。</description>",
+        "  <description>启光生物出品。九个领域的前沿进展与经济动态，中文整理。</description>",
         "  <language>zh-CN</language>",
         f'  <atom:link href="{SITE_URL}/feed.xml" rel="self" type="application/rss+xml"/>',
     ]
